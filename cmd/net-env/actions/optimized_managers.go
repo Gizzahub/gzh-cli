@@ -45,12 +45,12 @@ func NewOptimizedDNSManager() *OptimizedDNSManager {
 }
 
 // ConnectVPNBatch connects multiple VPNs efficiently.
-func (m *OptimizedVPNManager) ConnectVPNBatch(configs []vpnConfig) error {
+func (m *OptimizedVPNManager) ConnectVPNBatch(ctx context.Context, configs []vpnConfig) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	for _, config := range configs {
-		if err := m.connectSingleVPN(config); err != nil {
+		if err := m.connectSingleVPN(ctx, config); err != nil {
 			return fmt.Errorf("failed to connect VPN %s: %w", config.Name, err)
 		}
 
@@ -61,14 +61,13 @@ func (m *OptimizedVPNManager) ConnectVPNBatch(configs []vpnConfig) error {
 }
 
 // GetVPNStatusBatch gets status for multiple VPNs efficiently.
-func (m *OptimizedVPNManager) GetVPNStatusBatch(names []string) (map[string]string, error) {
+func (m *OptimizedVPNManager) GetVPNStatusBatch(ctx context.Context, names []string) (map[string]string, error) {
 	m.mutex.RLock()
 	defer m.mutex.RUnlock()
 
 	status := make(map[string]string)
 
 	// Check NetworkManager connections
-	ctx := context.Background()
 	cmd := exec.CommandContext(ctx, "nmcli", "-t", "-f", "NAME,STATE", "connection", "show", "--active")
 	if output, err := cmd.Output(); err == nil {
 		lines := strings.SplitSeq(strings.TrimSpace(string(output)), "\n")
@@ -98,19 +97,16 @@ func (m *OptimizedVPNManager) GetVPNStatusBatch(names []string) (map[string]stri
 }
 
 // connectSingleVPN connects a single VPN connection.
-func (m *OptimizedVPNManager) connectSingleVPN(config vpnConfig) error {
+func (m *OptimizedVPNManager) connectSingleVPN(ctx context.Context, config vpnConfig) error {
 	switch config.Type {
 	case "networkmanager":
-		ctx := context.Background()
 		return exec.CommandContext(ctx, "nmcli", "connection", "up", config.Name).Run()
 	case "openvpn":
 		if config.Service != "" {
-			ctx := context.Background()
 			return exec.CommandContext(ctx, "systemctl", "start", config.Service).Run()
 		}
 
 		if config.ConfigFile != "" {
-			ctx := context.Background()
 			cmd := exec.CommandContext(ctx, "openvpn", "--config", config.ConfigFile, "--daemon")
 			return cmd.Run()
 		}
@@ -118,11 +114,9 @@ func (m *OptimizedVPNManager) connectSingleVPN(config vpnConfig) error {
 		return fmt.Errorf("openvpn requires either service or config file")
 	case "wireguard":
 		if config.ConfigFile != "" {
-			ctx := context.Background()
 			return exec.CommandContext(ctx, "wg-quick", "up", config.ConfigFile).Run()
 		}
 
-		ctx := context.Background()
 		return exec.CommandContext(ctx, "wg-quick", "up", config.Name).Run()
 	default:
 		return fmt.Errorf("unsupported VPN type: %s", config.Type)
@@ -130,12 +124,12 @@ func (m *OptimizedVPNManager) connectSingleVPN(config vpnConfig) error {
 }
 
 // SetDNSServersBatch sets DNS servers for multiple configurations efficiently.
-func (m *OptimizedDNSManager) SetDNSServersBatch(configs []DNSConfig) error {
+func (m *OptimizedDNSManager) SetDNSServersBatch(ctx context.Context, configs []DNSConfig) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	for _, config := range configs {
-		if err := m.setSingleDNS(config); err != nil {
+		if err := m.setSingleDNS(ctx, config); err != nil {
 			return fmt.Errorf("failed to set DNS servers %v: %w", config.Servers, err)
 		}
 
@@ -146,11 +140,11 @@ func (m *OptimizedDNSManager) SetDNSServersBatch(configs []DNSConfig) error {
 }
 
 // setSingleDNS sets DNS servers for a single interface.
-func (m *OptimizedDNSManager) setSingleDNS(config DNSConfig) error {
+func (m *OptimizedDNSManager) setSingleDNS(ctx context.Context, config DNSConfig) error {
 	iface := config.Interface
 	if iface == "" {
 		// Auto-detect primary interface
-		if detectedIface, err := m.detectPrimaryInterface(); err == nil {
+		if detectedIface, err := m.detectPrimaryInterface(ctx); err == nil {
 			iface = detectedIface
 		} else {
 			iface = "wlan0" // fallback
@@ -162,11 +156,9 @@ func (m *OptimizedDNSManager) setSingleDNS(config DNSConfig) error {
 		args := []string{"dns", iface}
 		args = append(args, config.Servers...)
 
-		ctx := context.Background()
 		return exec.CommandContext(ctx, "resolvectl", args...).Run()
 	case "networkmanager":
 		servers := strings.Join(config.Servers, ",")
-		ctx := context.Background()
 		return exec.CommandContext(ctx, "nmcli", "connection", "modify", iface, "ipv4.dns", servers).Run()
 	default:
 		return fmt.Errorf("unsupported DNS method: %s", config.Method)
@@ -174,8 +166,7 @@ func (m *OptimizedDNSManager) setSingleDNS(config DNSConfig) error {
 }
 
 // detectPrimaryInterface detects the primary network interface.
-func (m *OptimizedDNSManager) detectPrimaryInterface() (string, error) {
-	ctx := context.Background()
+func (m *OptimizedDNSManager) detectPrimaryInterface(ctx context.Context) (string, error) {
 	cmd := exec.CommandContext(ctx, "ip", "route", "show", "default")
 
 	output, err := cmd.Output()

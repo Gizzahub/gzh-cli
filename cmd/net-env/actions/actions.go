@@ -309,7 +309,7 @@ func newVPNConnectCmd() *cobra.Command {
 		Use:   "connect",
 		Short: "Connect to VPN",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return connectVPN(vpnName, vpnType, configFile)
+			return connectVPN(cmd.Context(), vpnName, vpnType, configFile)
 		},
 	}
 
@@ -359,7 +359,7 @@ func newDNSSetCmd() *cobra.Command {
 		Short: "Set DNS servers",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			serverList := strings.Split(servers, ",")
-			return setDNSServers(serverList, iface)
+			return setDNSServers(cmd.Context(), serverList, iface)
 		},
 	}
 
@@ -445,7 +445,7 @@ func newHostsAddCmd() *cobra.Command {
 		Use:   "add",
 		Short: "Add entry to hosts file",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return addHostEntry(ip, host)
+			return addHostEntry(cmd.Context(), ip, host)
 		},
 	}
 
@@ -464,7 +464,7 @@ func newHostsRemoveCmd() *cobra.Command {
 		Use:   "remove",
 		Short: "Remove entry from hosts file",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return removeHostEntry(host)
+			return removeHostEntry(cmd.Context(), host)
 		},
 	}
 
@@ -618,7 +618,7 @@ func initOptimizedManagers() {
 }
 
 // VPN implementation functions.
-func connectVPN(name, vpnType, configFile string) error {
+func connectVPN(ctx context.Context, name, vpnType, configFile string) error {
 	fmt.Printf("🔐 Connecting to VPN: %s (type: %s)\n", name, vpnType)
 
 	initOptimizedManagers()
@@ -630,7 +630,7 @@ func connectVPN(name, vpnType, configFile string) error {
 		ConfigFile: configFile,
 	}}
 
-	if err := optimizedVPNManager.ConnectVPNBatch(configs); err != nil {
+	if err := optimizedVPNManager.ConnectVPNBatch(ctx, configs); err != nil {
 		return err
 	}
 
@@ -673,7 +673,7 @@ func showVPNStatus(ctx context.Context) error {
 	// this could be configured or discovered
 	commonVPNs := []string{"office", "home", "work", "company"}
 
-	if statuses, err := optimizedVPNManager.GetVPNStatusBatch(commonVPNs); err == nil {
+	if statuses, err := optimizedVPNManager.GetVPNStatusBatch(ctx, commonVPNs); err == nil {
 		fmt.Printf("VPN Connections Status:\n")
 
 		hasConnections := false
@@ -722,7 +722,7 @@ func showVPNStatus(ctx context.Context) error {
 }
 
 // DNS implementation functions.
-func setDNSServers(servers []string, iface string) error {
+func setDNSServers(ctx context.Context, servers []string, iface string) error {
 	fmt.Printf("🌐 Setting DNS servers: %s\n", strings.Join(servers, ", "))
 
 	initOptimizedManagers()
@@ -734,7 +734,7 @@ func setDNSServers(servers []string, iface string) error {
 		Method:    "resolvectl",
 	}}
 
-	if err := optimizedDNSManager.SetDNSServersBatch(configs); err != nil {
+	if err := optimizedDNSManager.SetDNSServersBatch(ctx, configs); err != nil {
 		return err
 	}
 
@@ -864,7 +864,7 @@ func showProxyStatusWithEnv(environment env.Environment) error {
 }
 
 // Hosts implementation functions.
-func addHostEntry(ip, host string) error {
+func addHostEntry(ctx context.Context, ip, host string) error {
 	fmt.Printf("📝 Adding host entry: %s -> %s\n", host, ip)
 
 	hostsFile := "/etc/hosts"
@@ -880,7 +880,6 @@ func addHostEntry(ip, host string) error {
 	}
 
 	// Create backup
-	ctx := context.Background()
 	backupFile := hostsFile + ".backup." + time.Now().Format("20060102-150405")
 	if err := exec.CommandContext(ctx, "cp", hostsFile, backupFile).Run(); err != nil {
 		fmt.Printf("⚠️  Warning: Could not create backup: %v\n", err)
@@ -906,7 +905,7 @@ func addHostEntry(ip, host string) error {
 	return nil
 }
 
-func removeHostEntry(host string) error {
+func removeHostEntry(ctx context.Context, host string) error {
 	fmt.Printf("🗑️  Removing host entry: %s\n", host)
 
 	hostsFile := "/etc/hosts"
@@ -939,7 +938,6 @@ func removeHostEntry(host string) error {
 	}
 
 	// Create backup
-	ctx := context.Background()
 	backupFile := hostsFile + ".backup." + time.Now().Format("20060102-150405")
 	if err := exec.CommandContext(ctx, "cp", hostsFile, backupFile).Run(); err != nil {
 		fmt.Printf("⚠️  Warning: Could not create backup: %v\n", err)
