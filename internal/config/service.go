@@ -174,9 +174,14 @@ func (s *DefaultConfigService) LoadConfiguration(_ context.Context, configPath s
 
 	s.config = s.unifiedFacade.GetConfiguration()
 
-	// Perform startup validation if enabled
+	// Perform startup validation if enabled.
+	//
+	// 이미 위에서 s.mu.Lock()을 잡고 있으므로 Locked 쪽을 부른다. sync.RWMutex는
+	// 재진입할 수 없어서, 쓰기 잠금을 쥔 채로 RLock을 다시 잡으면 그 자리에서
+	// 멈춘다. 예전에는 잠금을 거는 performStartupValidation을 불러서
+	// validationEnabled가 켜져 있으면 설정을 읽을 때마다 교착에 빠졌다.
 	if s.validationEnabled {
-		if err := s.performStartupValidation(); err != nil {
+		if err := s.performStartupValidationLocked(); err != nil {
 			return nil, fmt.Errorf("startup validation failed: %w", err)
 		}
 	}
@@ -257,15 +262,8 @@ func (s *DefaultConfigService) validateConfig() error {
 	return s.unifiedFacade.ValidateConfiguration()
 }
 
-// performStartupValidation performs startup validation with locking.
-func (s *DefaultConfigService) performStartupValidation() error {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	return s.performStartupValidationLocked()
-}
-
 // performStartupValidationLocked performs startup validation without locking.
+// 부르는 쪽이 s.mu를 잡고 있어야 한다.
 func (s *DefaultConfigService) performStartupValidationLocked() error {
 	if s.config == nil {
 		return fmt.Errorf("no configuration loaded")
