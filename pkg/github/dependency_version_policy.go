@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -445,7 +446,7 @@ func (dvm *DependencyVersionPolicyManager) AnalyzeDependencyVersionUpdate(ctx co
 	analysis.UpdateType = dvm.determineUpdateType(currentVersion, proposedVersion)
 
 	// Check version constraints
-	constraintResult, err := dvm.checkVersionConstraints(policy, dependencyName, proposedVersion, ecosystem)
+	constraintResult, err := dvm.checkVersionConstraints(policy, dependencyName, currentVersion, proposedVersion, ecosystem)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check version constraints: %w", err)
 	}
@@ -476,11 +477,16 @@ func (dvm *DependencyVersionPolicyManager) AnalyzeDependencyVersionUpdate(ctx co
 
 	analysis.BreakingChangeAnalysis = *breakingChangeResult
 
+	// Generate approval workflow
+	//
+	// 권고 조치보다 먼저 만든다. 승인 절차가 필요한 갱신이면 권고는
+	// "approve"가 아니라 "review"여야 하므로 판단에 이 결과가 필요하다.
+	// 예전에는 순서가 반대라 승인자가 지정된 마이너 갱신도 그대로
+	// 승인 권고가 나갔다.
+	analysis.ApprovalWorkflow = dvm.generateApprovalWorkflow(policy, analysis)
+
 	// Determine recommended action
 	analysis.RecommendedAction = dvm.determineRecommendedAction(analysis)
-
-	// Generate approval workflow
-	analysis.ApprovalWorkflow = dvm.generateApprovalWorkflow(policy, analysis)
 
 	dvm.logger.Info("Dependency version analysis completed",
 		"dependency", dependencyName,
@@ -638,7 +644,7 @@ func (dvm *DependencyVersionPolicyManager) determineUpdateType(currentVersion, p
 	return "patch"
 }
 
-func (dvm *DependencyVersionPolicyManager) checkVersionConstraints(policy *DependencyVersionPolicy, dependencyName, proposedVersion, ecosystem string) (*VersionConstraintCheckResult, error) {
+func (dvm *DependencyVersionPolicyManager) checkVersionConstraints(policy *DependencyVersionPolicy, dependencyName, currentVersion, proposedVersion, ecosystem string) (*VersionConstraintCheckResult, error) {
 	result := &VersionConstraintCheckResult{
 		DependencyName:      dependencyName,
 		ProposedVersion:     proposedVersion,
@@ -647,15 +653,13 @@ func (dvm *DependencyVersionPolicyManager) checkVersionConstraints(policy *Depen
 		ViolatedConstraints: make([]string, 0),
 	}
 
-	// Check ecosystem-specific policies
-	if ecosystemPolicy, exists := policy.EcosystemPolicies[ecosystem]; exists && ecosystemPolicy.Enabled {
-		if !ecosystemPolicy.AllowMajorUpdates && dvm.determineUpdateType("1.0.0", proposedVersion) == "major" {
-			result.Allowed = false
-			result.ViolatedConstraints = append(result.ViolatedConstraints, "Major updates not allowed for ecosystem")
-		}
-	}
-
 	// Check dependency-specific constraints
+	//
+	// 생태계 정책보다 먼저 본다. 의존성별 규칙이 더 구체적이므로
+	// AllowPrerelease 같은 예외를 여기서 먼저 확인해야 아래 생태계
+	// 허용목록이 그 예외를 덮어쓰지 않는다.
+	prereleaseAllowed := false
+
 	for i := range policy.VersionConstraints {
 		constraint := policy.VersionConstraints[i]
 		if constraint.Ecosystem == ecosystem {
@@ -665,7 +669,46 @@ func (dvm *DependencyVersionPolicyManager) checkVersionConstraints(policy *Depen
 			}
 
 			if matched {
+				if constraint.AllowPrerelease {
+					prereleaseAllowed = true
+				}
+
 				dvm.evaluateVersionConstraint(&constraint, proposedVersion, result)
+			}
+		}
+	}
+
+	// Check ecosystem-specific policies
+	//
+	// 예전에는 갱신 종류를 determineUpdateType("1.0.0", proposedVersion)으로
+	// 판정했다. 현재 버전 대신 "1.0.0"을 박아 둔 탓에 메이저가 1이 아닌 모든
+	// 버전이 메이저 갱신으로 분류됐다 -- lodash 4.17.20 -> 4.17.21 같은 패치
+	// 갱신도 "Major updates not allowed"로 거절됐다는 뜻이다.
+	//
+	// AllowMinorUpdates, AllowPatchUpdates는 선언만 되고 쓰이지 않았다. 셋을
+	// 함께 허용목록으로 다룬다. 목록에 없는 종류(prerelease)는 허용되지
+	// 않으며, 의존성별 규칙이 AllowPrerelease로 명시한 경우에만 통과한다.
+	if ecosystemPolicy, exists := policy.EcosystemPolicies[ecosystem]; exists && ecosystemPolicy.Enabled {
+		switch dvm.determineUpdateType(currentVersion, proposedVersion) {
+		case "major":
+			if !ecosystemPolicy.AllowMajorUpdates {
+				result.Allowed = false
+				result.ViolatedConstraints = append(result.ViolatedConstraints, "Major updates not allowed for ecosystem")
+			}
+		case "minor":
+			if !ecosystemPolicy.AllowMinorUpdates {
+				result.Allowed = false
+				result.ViolatedConstraints = append(result.ViolatedConstraints, "Minor updates not allowed for ecosystem")
+			}
+		case "patch":
+			if !ecosystemPolicy.AllowPatchUpdates {
+				result.Allowed = false
+				result.ViolatedConstraints = append(result.ViolatedConstraints, "Patch updates not allowed for ecosystem")
+			}
+		case "prerelease":
+			if !prereleaseAllowed {
+				result.Allowed = false
+				result.ViolatedConstraints = append(result.ViolatedConstraints, "Prerelease versions not allowed")
 			}
 		}
 	}
@@ -733,9 +776,61 @@ func (dvm *DependencyVersionPolicyManager) versionInRange(version string, versio
 	return true
 }
 
+// compareVersions는 두 버전을 자리별 숫자로 비교한다.
+//
+// 예전에는 strings.Compare로 문자열을 그대로 견줬다. 사전순 비교는
+// 자릿수가 다른 순간 뒤집힌다 -- "4.9.0"이 "4.10.0"보다 크다고 나온다.
+// 이 값은 MinimumVersion/MaximumVersion 판정에 쓰이므로, 최소 버전을
+// 4.9.0으로 잡아 두면 4.10.0이 "최소 미만"으로 거절된다.
+//
+// 접미 라벨(-beta.1 등)은 잘라내고 숫자 부분만 본다. 프리릴리스 간의
+// 우선순위(SemVer의 -alpha < -beta)까지는 다루지 않는다. 프리릴리스는
+// checkVersionConstraints에서 종류 자체로 걸러지므로 여기서 순서를 따질
+// 일이 없다.
 func (dvm *DependencyVersionPolicyManager) compareVersions(v1, v2 string) int {
-	// Simplified version comparison
-	return strings.Compare(v1, v2)
+	parts1 := versionSegments(v1)
+	parts2 := versionSegments(v2)
+
+	for i := 0; i < len(parts1) || i < len(parts2); i++ {
+		var seg1, seg2 int
+
+		if i < len(parts1) {
+			seg1 = parts1[i]
+		}
+
+		if i < len(parts2) {
+			seg2 = parts2[i]
+		}
+
+		if seg1 != seg2 {
+			if seg1 < seg2 {
+				return -1
+			}
+
+			return 1
+		}
+	}
+
+	return 0
+}
+
+// versionSegments는 "4.17.21-beta.1"을 [4 17 21]로 바꾼다. 숫자로 읽히지
+// 않는 자리는 0으로 둔다.
+func versionSegments(version string) []int {
+	core, _, _ := strings.Cut(strings.TrimPrefix(version, "v"), "-")
+	fields := strings.Split(core, ".")
+	segments := make([]int, 0, len(fields))
+
+	for _, field := range fields {
+		value, err := strconv.Atoi(field)
+		if err != nil {
+			value = 0
+		}
+
+		segments = append(segments, value)
+	}
+
+	return segments
 }
 
 func (dvm *DependencyVersionPolicyManager) performCompatibilityAnalysis(policy *DependencyVersionPolicy, dependencyName, currentVersion, proposedVersion, ecosystem string) (*CompatibilityAnalysisResult, error) {
@@ -807,6 +902,16 @@ func (dvm *DependencyVersionPolicyManager) determineRecommendedAction(analysis *
 		return RecommendedAction{
 			Action: "review",
 			Reason: "Breaking changes detected, manual review required",
+		}
+	}
+
+	// 정책이 승인 절차를 요구하면 자동 승인 권고를 낼 수 없다. 예전에는
+	// 이 검사가 없어서, 승인자 1명이 지정된 마이너 갱신도 "승인" 권고가
+	// 나가 절차 자체가 무의미해졌다.
+	if analysis.ApprovalWorkflow.Required {
+		return RecommendedAction{
+			Action: "review",
+			Reason: "Manual review required by approval policy",
 		}
 	}
 

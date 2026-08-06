@@ -947,7 +947,7 @@ func BenchmarkVersionConstraintCheck(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		_, _ = manager.checkVersionConstraints(policy, "lodash", "4.17.21", "npm") //nolint:errcheck // Benchmark test
+		_, _ = manager.checkVersionConstraints(policy, "lodash", "4.17.20", "4.17.21", "npm") //nolint:errcheck // Benchmark test
 	}
 }
 
