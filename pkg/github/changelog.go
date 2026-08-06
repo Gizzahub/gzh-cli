@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // ChangeRecord represents a single configuration change.
@@ -238,8 +240,20 @@ func (cl *ChangeLog) RecordRepositoryUpdate(ctx context.Context, owner, repo str
 }
 
 // Helper functions.
+// generateChangeID는 변경 기록을 구분하는 식별자를 만든다.
+//
+// 예전에는 time.Now().UnixNano()를 그대로 썼는데, 나노초 값은 고유하지
+// 않다. 시계 해상도가 이보다 거칠면(Apple Silicon의 단조 시계는 약 41ns
+// 단위) 연달아 호출한 두 번이 같은 값을 받는다. 실제로 이 패키지 전체를
+// 돌릴 때 TestGenerateChangeID가 간헐적으로 깨졌고, 단독 실행에서는
+// 통과해 원인이 잘 드러나지 않았다. 식별자가 겹치면 서로 다른 변경이
+// 같은 ID로 기록된다.
+//
+// 이 패키지는 다른 곳(rule_manager, automation_engine)에서 이미 uuid로
+// ID를 만들고 있으므로 같은 방식을 따른다. ch_ 접두어는 어느 도메인의
+// 식별자인지 드러내므로 유지한다.
 func generateChangeID() string {
-	return fmt.Sprintf("ch_%d", time.Now().UnixNano())
+	return "ch_" + uuid.New().String()
 }
 
 func getCurrentUser() string {
