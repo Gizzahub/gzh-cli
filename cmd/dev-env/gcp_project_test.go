@@ -427,13 +427,54 @@ func TestGCPProjectManager_Integration(t *testing.T) {
 	ctx := context.Background()
 	manager, err := NewGCPProjectManager(ctx)
 
-	// Should not fail even without real gcloud config
-	assert.NoError(t, err)
-	assert.NotNil(t, manager)
+	// Construction must survive an unusable gcloud: the config subcommands read
+	// only ~/.config/gcloud and would otherwise be unreachable on any machine
+	// that is not signed in.
+	require.NoError(t, err)
+	require.NotNil(t, manager)
+	assert.NoError(t, manager.listConfigurations())
 
-	// Test that empty manager can handle basic operations
+	// listProjects must not answer for gcloud. With no credentials there is no
+	// project list, and "we could not ask" is not the same claim as "you have
+	// none" — the difference decides whether the user goes looking for a
+	// missing project or for their login.
 	err = manager.listProjects("table")
-	assert.NoError(t, err) // Should handle empty project list gracefully
+	if manager.projectsErr != nil {
+		assert.ErrorContains(t, err, "could not list GCP projects")
+	} else {
+		assert.NoError(t, err)
+	}
+}
+
+// TestGCPProjectManagerUnavailableProjectsAreNotEmpty pins the distinction the
+// manager now keeps. Both cases below hold the same empty projects map; only
+// projectsErr says whether that map is an answer or the absence of one.
+func TestGCPProjectManagerUnavailableProjectsAreNotEmpty(t *testing.T) {
+	mgr := &GCPProjectManager{
+		gcloudConfigPath: t.TempDir(),
+		projects:         map[string]*GCPProject{},
+		configurations:   map[string]*GCPConfiguration{},
+		ctx:              context.Background(),
+	}
+
+	// gcloud answered and the account owns nothing.
+	assert.NoError(t, mgr.listProjects("table"))
+
+	// gcloud never answered. The reason has to reach the user, because it is
+	// the only thing that tells them to log in rather than go looking for a
+	// project that was never missing.
+	mgr.projectsErr = fmt.Errorf("gcloud projects list failed: exit status 1: run gcloud auth login")
+
+	err := mgr.listProjects("table")
+	require.Error(t, err)
+	assert.ErrorContains(t, err, "gcloud auth login")
+
+	// switch and show read the same map, so they refuse for the same reason.
+	assert.ErrorContains(t, mgr.switchProject("p", false, ""), "could not list GCP projects")
+	assert.ErrorContains(t, mgr.showProject("p", "table"), "could not list GCP projects")
+
+	// The config subcommands never read projects and must stay usable.
+	assert.NoError(t, mgr.listConfigurations())
 }
 
 // Benchmark tests for performance.

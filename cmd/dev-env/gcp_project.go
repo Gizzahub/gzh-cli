@@ -6,6 +6,7 @@ package devenv
 import (
 	"context"
 	"encoding/json"
+	stderrors "errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -45,7 +46,14 @@ type GCPProjectManager struct {
 	gcloudConfigPath string
 	projects         map[string]*GCPProject
 	configurations   map[string]*GCPConfiguration
-	ctx              context.Context
+
+	// projectsErr records why the project list could not be fetched. An empty
+	// projects map with a nil projectsErr means the account has no projects;
+	// an empty map with a non-nil projectsErr means gcloud never answered.
+	// Those are different facts and must not render as the same sentence.
+	projectsErr error
+
+	ctx context.Context
 }
 
 // GCPConfiguration represents a gcloud configuration.
@@ -77,11 +85,24 @@ func NewGCPProjectManager(ctx context.Context) (*GCPProjectManager, error) {
 		return nil, errors.Wrap(err, errors.ErrConfigNotFound)
 	}
 
-	if err := manager.loadProjects(); err != nil {
-		return nil, fmt.Errorf("failed to load projects: %w", err)
-	}
+	// The project list needs a reachable, authenticated gcloud. The `config`
+	// subcommands read only ~/.config/gcloud and have to keep working without
+	// one, so a failure here is recorded rather than fatal, and raised by the
+	// commands that actually read m.projects.
+	manager.projectsErr = manager.loadProjects()
 
 	return manager, nil
+}
+
+// requireProjects reports why the project list is missing, for the commands
+// that cannot do their job without it. They would otherwise present "gcloud
+// could not be asked" as "you have no projects".
+func (m *GCPProjectManager) requireProjects() error {
+	if m.projectsErr != nil {
+		return fmt.Errorf("could not list GCP projects: %w", m.projectsErr)
+	}
+
+	return nil
 }
 
 // newGCPProjectCmd creates the gcp-project command.
@@ -373,8 +394,14 @@ func (m *GCPProjectManager) loadProjects() error {
 
 	output, err := cmd.Output()
 	if err != nil {
-		// If gcloud is not available or not authenticated, return empty list
-		return err
+		// gcloud puts the actionable part on stderr ("run gcloud auth login"),
+		// which Output() hands back through ExitError rather than in err.Error().
+		var exitErr *exec.ExitError
+		if stderrors.As(err, &exitErr) && len(exitErr.Stderr) > 0 {
+			return fmt.Errorf("gcloud projects list failed: %w: %s", err, strings.TrimSpace(string(exitErr.Stderr)))
+		}
+
+		return fmt.Errorf("gcloud projects list failed: %w", err)
 	}
 
 	var projects []struct {
@@ -450,7 +477,13 @@ func (m *GCPProjectManager) getActiveConfiguration() (string, error) {
 
 	content, err := os.ReadFile(activeConfigPath)
 	if err != nil {
-		return "default", err // Default to "default" if no active config
+		// gcloud writes this file only once a configuration is activated; until
+		// then "default" is the active one. Absence is the answer, not a failure.
+		if os.IsNotExist(err) {
+			return "default", nil
+		}
+
+		return "", fmt.Errorf("failed to read %s: %w", activeConfigPath, err)
 	}
 
 	return strings.TrimSpace(string(content)), nil
@@ -530,8 +563,12 @@ func (m *GCPProjectManager) parseConfigurationProperties(propertiesPath string, 
 
 // listProjects lists all available projects.
 func (m *GCPProjectManager) listProjects(format string) error {
+	if err := m.requireProjects(); err != nil {
+		return err
+	}
+
 	if len(m.projects) == 0 {
-		fmt.Println("No GCP projects found. Make sure you are authenticated with gcloud.")
+		fmt.Println("No GCP projects found for the active account.")
 		return nil
 	}
 
@@ -583,6 +620,10 @@ func (m *GCPProjectManager) listProjects(format string) error {
 
 // switchProject switches to a specific project.
 func (m *GCPProjectManager) switchProject(projectID string, interactive bool, configuration string) error {
+	if err := m.requireProjects(); err != nil {
+		return err
+	}
+
 	// Interactive selection if no project specified
 	if projectID == "" || interactive {
 		var err error
@@ -682,6 +723,10 @@ func (m *GCPProjectManager) selectProjectInteractively() (string, error) {
 
 // showProject shows detailed information about a project.
 func (m *GCPProjectManager) showProject(projectID, format string) error {
+	if err := m.requireProjects(); err != nil {
+		return err
+	}
+
 	// Get current project if none specified
 	if projectID == "" {
 		var err error
