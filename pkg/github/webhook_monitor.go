@@ -281,7 +281,10 @@ func (wm *WebhookMonitor) GetActiveAlerts() []WebhookAlert {
 	wm.mu.RLock()
 	defer wm.mu.RUnlock()
 
-	var alerts []WebhookAlert
+	// 경보가 없으면 nil이 아니라 빈 목록을 돌려준다. nil 슬라이스는 JSON으로
+	// []가 아니라 null이 되어 받는 쪽에서 "경보 없음"과 "정보 없음"을 구분할
+	// 수 없다. 바로 위 GetMetrics도 같은 이유로 지도를 미리 만들어 둔다.
+	alerts := make([]WebhookAlert, 0)
 
 	for _, webhook := range wm.webhooks {
 		for _, alert := range webhook.Alerts {
