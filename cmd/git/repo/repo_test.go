@@ -99,38 +99,6 @@ func (s *GitRepoTestSuite) TearDownTest() {
 	}
 }
 
-// skipIfNoProviderToken skips the test if the required provider token is not available.
-// These tests require actual provider tokens because the current implementation
-// does not support mock provider injection. Tests pass with mocked setup expectations
-// but fail at runtime when getGitProvider() is called.
-func (s *GitRepoTestSuite) skipIfNoProviderToken(providerTypes ...string) {
-	tokenEnvVars := map[string][]string{
-		"github": {"GITHUB_TOKEN", "GH_TOKEN"},
-		"gitlab": {"GITLAB_TOKEN", "GL_TOKEN"},
-		"gitea":  {"GITEA_TOKEN"},
-		"gogs":   {"GOGS_TOKEN"},
-	}
-
-	for _, pt := range providerTypes {
-		envVars, ok := tokenEnvVars[pt]
-		if !ok {
-			continue
-		}
-
-		hasToken := false
-		for _, envVar := range envVars {
-			if os.Getenv(envVar) != "" {
-				hasToken = true
-				break
-			}
-		}
-
-		if !hasToken {
-			s.T().Skipf("Skipping test: %s token not available (set %v)", pt, envVars)
-		}
-	}
-}
-
 // generateTestRepos creates a set of test repositories for various scenarios.
 func (s *GitRepoTestSuite) generateTestRepos() []provider.Repository {
 	now := time.Now()

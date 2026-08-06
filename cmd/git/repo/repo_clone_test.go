@@ -14,21 +14,30 @@ import (
 )
 
 // TestCloneCommand tests the clone command functionality.
-// NOTE: Tests that execute commands with provider operations require tokens
-// because the current implementation doesn't support mock provider injection.
+//
+// Skipped: these cases cannot verify anything as written. CloneExecutor shells
+// out to git rather than calling provider.CloneRepository, so the mocked clone
+// expectations are never reached and the fixtures' CloneURLs point at real
+// github.com paths. The directory assertions then pass vacuously, because
+// createMockCloneDirectories below creates the very directories validate()
+// checks for -- and for the dry-run case it creates the directories that case
+// asserts must NOT exist, which can only fail.
+//
+// Making these meaningful needs a seam in CloneExecutor around the git
+// invocation; the cases are kept as the specification for that work.
 func (s *GitRepoTestSuite) TestCloneCommand() {
+	s.T().Skip("CloneExecutor has no seam around git; assertions here are vacuous (see doc comment)")
+
 	tests := []struct {
-		name              string
-		args              []string
-		setup             func()
-		validate          func()
-		expectErr         bool
-		requiresProviders []string
+		name      string
+		args      []string
+		setup     func()
+		validate  func()
+		expectErr bool
 	}{
 		{
-			name:              "Basic clone from GitHub",
-			args:              []string{"clone", "--provider", "github", "--org", "testorg", "--target", "repos"},
-			requiresProviders: []string{"github"},
+			name: "Basic clone from GitHub",
+			args: []string{"clone", "--provider", "github", "--org", "testorg", "--target", "repos"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -47,9 +56,8 @@ func (s *GitRepoTestSuite) TestCloneCommand() {
 			},
 		},
 		{
-			name:              "Clone with pattern matching",
-			args:              []string{"clone", "--provider", "github", "--org", "testorg", "--match", "api-*"},
-			requiresProviders: []string{"github"},
+			name: "Clone with pattern matching",
+			args: []string{"clone", "--provider", "github", "--org", "testorg", "--match", "api-*"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -72,9 +80,8 @@ func (s *GitRepoTestSuite) TestCloneCommand() {
 			},
 		},
 		{
-			name:              "Clone with exclude pattern",
-			args:              []string{"clone", "--provider", "github", "--org", "testorg", "--exclude", "mobile-*"},
-			requiresProviders: []string{"github"},
+			name: "Clone with exclude pattern",
+			args: []string{"clone", "--provider", "github", "--org", "testorg", "--exclude", "mobile-*"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -97,9 +104,8 @@ func (s *GitRepoTestSuite) TestCloneCommand() {
 			},
 		},
 		{
-			name:              "Clone with visibility filter",
-			args:              []string{"clone", "--provider", "github", "--org", "testorg", "--visibility", "private"},
-			requiresProviders: []string{"github"},
+			name: "Clone with visibility filter",
+			args: []string{"clone", "--provider", "github", "--org", "testorg", "--visibility", "private"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -128,9 +134,8 @@ func (s *GitRepoTestSuite) TestCloneCommand() {
 			},
 		},
 		{
-			name:              "Clone with language filter",
-			args:              []string{"clone", "--provider", "github", "--org", "testorg", "--language", "Go"},
-			requiresProviders: []string{"github"},
+			name: "Clone with language filter",
+			args: []string{"clone", "--provider", "github", "--org", "testorg", "--language", "Go"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -159,9 +164,8 @@ func (s *GitRepoTestSuite) TestCloneCommand() {
 			},
 		},
 		{
-			name:              "Clone single repository",
-			args:              []string{"clone", "--provider", "github", "--org", "testorg", "--repo", "web-app"},
-			requiresProviders: []string{"github"},
+			name: "Clone single repository",
+			args: []string{"clone", "--provider", "github", "--org", "testorg", "--repo", "web-app"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -177,9 +181,8 @@ func (s *GitRepoTestSuite) TestCloneCommand() {
 			},
 		},
 		{
-			name:              "Clone with parallel workers",
-			args:              []string{"clone", "--provider", "github", "--org", "testorg", "--parallel", "3"},
-			requiresProviders: []string{"github"},
+			name: "Clone with parallel workers",
+			args: []string{"clone", "--provider", "github", "--org", "testorg", "--parallel", "3"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -198,9 +201,8 @@ func (s *GitRepoTestSuite) TestCloneCommand() {
 			},
 		},
 		{
-			name:              "Clone with dry run",
-			args:              []string{"clone", "--provider", "github", "--org", "testorg", "--dry-run"},
-			requiresProviders: []string{"github"},
+			name: "Clone with dry run",
+			args: []string{"clone", "--provider", "github", "--org", "testorg", "--dry-run"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -230,11 +232,6 @@ func (s *GitRepoTestSuite) TestCloneCommand() {
 
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			// 토큰이 필요한 테스트는 토큰이 없으면 스킵
-			if len(tt.requiresProviders) > 0 {
-				s.skipIfNoProviderToken(tt.requiresProviders...)
-			}
-
 			// Setup
 			if tt.setup != nil {
 				tt.setup()
@@ -349,21 +346,20 @@ func (s *GitRepoTestSuite) TestCloneCommandOptions() {
 // 실제 토큰이 필요합니다. 토큰이 없으면 스킵됩니다.
 func (s *GitRepoTestSuite) TestCloneCommandErrorHandling() {
 	testCases := []struct {
-		name              string
-		args              []string
-		setup             func()
-		expectErr         bool
-		requiresProviders []string
+		name      string
+		args      []string
+		setup     func()
+		expectErr bool
 	}{
 		{
-			name:              "Provider authentication failure",
-			args:              []string{"clone", "--provider", "github", "--org", "testorg"},
-			requiresProviders: []string{"github"},
+			name: "Provider authentication failure",
+			args: []string{"clone", "--provider", "github", "--org", "testorg"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
-				// Simulate authentication error
-				mockProvider.SetupListResponse("testorg", nil)
+				// Only the failing expectation: a SetupListResponse("testorg", nil)
+				// here would be registered first and win the match, handing the
+				// executor an empty-but-successful list instead of the error.
 				mockProvider.On("ListRepositories", mock.Anything, mock.Anything).Return(
 					(*provider.RepositoryList)(nil),
 					fmt.Errorf("authentication failed"),
@@ -372,9 +368,8 @@ func (s *GitRepoTestSuite) TestCloneCommandErrorHandling() {
 			expectErr: true,
 		},
 		{
-			name:              "Organization not found",
-			args:              []string{"clone", "--provider", "github", "--org", "nonexistent"},
-			requiresProviders: []string{"github"},
+			name: "Organization not found",
+			args: []string{"clone", "--provider", "github", "--org", "nonexistent"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -386,9 +381,8 @@ func (s *GitRepoTestSuite) TestCloneCommandErrorHandling() {
 			expectErr: true,
 		},
 		{
-			name:              "Clone operation failure",
-			args:              []string{"clone", "--provider", "github", "--org", "testorg"},
-			requiresProviders: []string{"github"},
+			name: "Clone operation failure",
+			args: []string{"clone", "--provider", "github", "--org", "testorg"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -405,11 +399,6 @@ func (s *GitRepoTestSuite) TestCloneCommandErrorHandling() {
 
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
-			// 토큰이 필요한 테스트는 토큰이 없으면 스킵
-			if len(tc.requiresProviders) > 0 {
-				s.skipIfNoProviderToken(tc.requiresProviders...)
-			}
-
 			if tc.setup != nil {
 				tc.setup()
 			}

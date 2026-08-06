@@ -13,16 +13,13 @@ import (
 )
 
 // TestCreateCommand tests the repository creation functionality.
-// NOTE: Tests that execute commands with provider operations require tokens
-// because the current implementation doesn't support mock provider injection.
 func (s *GitRepoTestSuite) TestCreateCommand() {
 	tests := []struct {
-		name              string
-		args              []string
-		setup             func()
-		validate          func()
-		expectErr         bool
-		requiresProviders []string
+		name      string
+		args      []string
+		setup     func()
+		validate  func()
+		expectErr bool
 	}{
 		{
 			name: "Basic repository creation",
@@ -33,7 +30,6 @@ func (s *GitRepoTestSuite) TestCreateCommand() {
 				"--name", "newrepo",
 				"--description", "Test repository",
 			},
-			requiresProviders: []string{"github"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -69,7 +65,6 @@ func (s *GitRepoTestSuite) TestCreateCommand() {
 				"--private",
 				"--description", "Private test repository",
 			},
-			requiresProviders: []string{"github"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -107,7 +102,6 @@ func (s *GitRepoTestSuite) TestCreateCommand() {
 				"--projects",
 				"--topics", "golang,cli,testing",
 			},
-			requiresProviders: []string{"github"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -173,11 +167,6 @@ func (s *GitRepoTestSuite) TestCreateCommand() {
 
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			// 토큰이 필요한 테스트는 토큰이 없으면 스킵
-			if len(tt.requiresProviders) > 0 {
-				s.skipIfNoProviderToken(tt.requiresProviders...)
-			}
-
 			if tt.setup != nil {
 				tt.setup()
 			}
@@ -199,21 +188,17 @@ func (s *GitRepoTestSuite) TestCreateCommand() {
 }
 
 // TestListCommand tests the repository listing functionality.
-// NOTE: Tests that execute commands with provider operations require tokens
-// because the current implementation doesn't support mock provider injection.
 func (s *GitRepoTestSuite) TestListCommand() {
 	tests := []struct {
-		name              string
-		args              []string
-		setup             func()
-		validate          func()
-		expectErr         bool
-		requiresProviders []string
+		name      string
+		args      []string
+		setup     func()
+		validate  func()
+		expectErr bool
 	}{
 		{
-			name:              "List all repositories",
-			args:              []string{"list", "--provider", "github", "--org", "testorg"},
-			requiresProviders: []string{"github"},
+			name: "List all repositories",
+			args: []string{"list", "--provider", "github", "--org", "testorg"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -224,9 +209,8 @@ func (s *GitRepoTestSuite) TestListCommand() {
 			},
 		},
 		{
-			name:              "List with visibility filter",
-			args:              []string{"list", "--provider", "github", "--org", "testorg", "--visibility", "private"},
-			requiresProviders: []string{"github"},
+			name: "List with visibility filter",
+			args: []string{"list", "--provider", "github", "--org", "testorg", "--visibility", "private"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -255,9 +239,8 @@ func (s *GitRepoTestSuite) TestListCommand() {
 			},
 		},
 		{
-			name:              "List with language filter",
-			args:              []string{"list", "--provider", "github", "--org", "testorg", "--language", "Go"},
-			requiresProviders: []string{"github"},
+			name: "List with language filter",
+			args: []string{"list", "--provider", "github", "--org", "testorg", "--language", "Go"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -286,24 +269,24 @@ func (s *GitRepoTestSuite) TestListCommand() {
 			},
 		},
 		{
-			name:              "List with pagination",
-			args:              []string{"list", "--provider", "github", "--org", "testorg", "--page", "2", "--per-page", "2"},
-			requiresProviders: []string{"github"},
+			// list has no --page/--per-page: it always requests PerPage 100 and
+			// caps the result set client-side with --limit, so the flag never
+			// reaches the provider.
+			name: "List with limit",
+			args: []string{"list", "--provider", "github", "--org", "testorg", "--limit", "2"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
 
 				result := &provider.RepositoryList{
-					Repositories: s.testRepos[2:4], // Page 2 with 2 per page
+					Repositories: s.testRepos,
 					TotalCount:   len(s.testRepos),
-					Page:         2,
-					PerPage:      2,
-					HasNext:      true,
-					HasPrev:      true,
+					Page:         1,
+					PerPage:      100,
 				}
 
 				mockProvider.On("ListRepositories", mock.Anything, mock.MatchedBy(func(opts provider.ListOptions) bool {
-					return opts.Organization == "testorg" && opts.Page == 2 && opts.PerPage == 2
+					return opts.Organization == "testorg" && opts.PerPage == 100
 				})).Return(result, nil)
 			},
 			validate: func() {
@@ -333,11 +316,6 @@ func (s *GitRepoTestSuite) TestListCommand() {
 
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			// 토큰이 필요한 테스트는 토큰이 없으면 스킵
-			if len(tt.requiresProviders) > 0 {
-				s.skipIfNoProviderToken(tt.requiresProviders...)
-			}
-
 			if tt.setup != nil {
 				tt.setup()
 			}
@@ -359,21 +337,20 @@ func (s *GitRepoTestSuite) TestListCommand() {
 }
 
 // TestDeleteCommand tests the repository deletion functionality.
-// NOTE: Tests that execute commands with provider operations require tokens
-// because the current implementation doesn't support mock provider injection.
 func (s *GitRepoTestSuite) TestDeleteCommand() {
 	tests := []struct {
-		name              string
-		args              []string
-		setup             func()
-		validate          func()
-		expectErr         bool
-		requiresProviders []string
+		name      string
+		args      []string
+		setup     func()
+		validate  func()
+		expectErr bool
 	}{
 		{
-			name:              "Delete single repository",
-			args:              []string{"delete", "--provider", "github", "--org", "testorg", "--repo", "test-repo"},
-			requiresProviders: []string{"github"},
+			// --repo takes an org/repo pair; --org only scopes pattern matching.
+			// --force is what skips the stdin confirmation prompt, which under
+			// `go test` reads EOF and cancels the deletion.
+			name: "Delete single repository",
+			args: []string{"delete", "--provider", "github", "--repo", "testorg/test-repo", "--force"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -391,9 +368,9 @@ func (s *GitRepoTestSuite) TestDeleteCommand() {
 			},
 		},
 		{
-			name:              "Delete with pattern matching",
-			args:              []string{"delete", "--provider", "github", "--org", "testorg", "--match", "test-*"},
-			requiresProviders: []string{"github"},
+			// Pattern deletion is refused outright without --force.
+			name: "Delete with pattern matching",
+			args: []string{"delete", "--provider", "github", "--org", "testorg", "--match", "test-*", "--force"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -415,9 +392,12 @@ func (s *GitRepoTestSuite) TestDeleteCommand() {
 			},
 		},
 		{
-			name:              "Delete with confirmation",
-			args:              []string{"delete", "--provider", "github", "--org", "testorg", "--repo", "test-repo", "--confirm"},
-			requiresProviders: []string{"github"},
+			// There is no --confirm flag: confirmation is the interactive prompt,
+			// and --force is what bypasses it. Without --force the prompt reads
+			// EOF here and cancels, so this covers the safety guarantee that
+			// matters -- an unconfirmed delete removes nothing and still exits 0.
+			name: "Delete without force deletes nothing",
+			args: []string{"delete", "--provider", "github", "--repo", "testorg/test-repo"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -425,10 +405,11 @@ func (s *GitRepoTestSuite) TestDeleteCommand() {
 				testRepo := s.testRepos[0]
 				testRepo.FullName = "testorg/test-repo"
 				mockProvider.SetupGetResponse("testorg/test-repo", &testRepo, nil)
-				mockProvider.SetupDeleteResponse(testRepo.ID, nil)
+				// Deliberately no SetupDeleteResponse: a DeleteRepository call
+				// here would be an unexpected call and fail the test.
 			},
 			validate: func() {
-				s.mockProviders["github"].AssertExpectations(s.T())
+				s.mockProviders["github"].AssertNotCalled(s.T(), "DeleteRepository", mock.Anything, mock.Anything)
 			},
 		},
 		{
@@ -439,7 +420,7 @@ func (s *GitRepoTestSuite) TestDeleteCommand() {
 		},
 		{
 			name: "Delete non-existent repository",
-			args: []string{"delete", "--provider", "github", "--org", "testorg", "--repo", "nonexistent"},
+			args: []string{"delete", "--provider", "github", "--repo", "testorg/nonexistent", "--force"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -449,7 +430,7 @@ func (s *GitRepoTestSuite) TestDeleteCommand() {
 		},
 		{
 			name: "Delete with provider error",
-			args: []string{"delete", "--provider", "github", "--org", "testorg", "--repo", "test-repo"},
+			args: []string{"delete", "--provider", "github", "--repo", "testorg/test-repo", "--force"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -465,11 +446,6 @@ func (s *GitRepoTestSuite) TestDeleteCommand() {
 
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			// 토큰이 필요한 테스트는 토큰이 없으면 스킵
-			if len(tt.requiresProviders) > 0 {
-				s.skipIfNoProviderToken(tt.requiresProviders...)
-			}
-
 			if tt.setup != nil {
 				tt.setup()
 			}
@@ -491,22 +467,18 @@ func (s *GitRepoTestSuite) TestDeleteCommand() {
 }
 
 // TestArchiveCommand tests the repository archiving functionality.
-// NOTE: Tests that execute commands with provider operations require tokens
-// because the current implementation doesn't support mock provider injection.
 func (s *GitRepoTestSuite) TestArchiveCommand() {
 	tests := []struct {
-		name              string
-		args              []string
-		setup             func()
-		validate          func()
-		expectErr         bool
-		requiresProviders []string
+		name      string
+		args      []string
+		setup     func()
+		validate  func()
+		expectErr bool
 	}{
 		{
 			name: "Archive single repository",
 			// 수정: --repo 형식을 org/repo로 변경
-			args:              []string{"archive", "--provider", "github", "--repo", "testorg/test-repo"},
-			requiresProviders: []string{"github"},
+			args: []string{"archive", "--provider", "github", "--repo", "testorg/test-repo"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -524,8 +496,7 @@ func (s *GitRepoTestSuite) TestArchiveCommand() {
 		{
 			name: "Unarchive repository",
 			// 수정: --repo 형식을 org/repo로 변경
-			args:              []string{"archive", "--provider", "github", "--repo", "testorg/test-repo", "--unarchive"},
-			requiresProviders: []string{"github"},
+			args: []string{"archive", "--provider", "github", "--repo", "testorg/test-repo", "--unarchive"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -541,9 +512,10 @@ func (s *GitRepoTestSuite) TestArchiveCommand() {
 			},
 		},
 		{
-			name:              "Archive with pattern matching",
-			args:              []string{"archive", "--provider", "github", "--org", "testorg", "--match", "old-*"},
-			requiresProviders: []string{"github"},
+			// Archiving more than one repo prompts unless --force is given, and
+			// the prompt reads EOF under `go test` and cancels.
+			name: "Archive with pattern matching",
+			args: []string{"archive", "--provider", "github", "--org", "testorg", "--match", "old-*", "--force"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -571,8 +543,7 @@ func (s *GitRepoTestSuite) TestArchiveCommand() {
 		{
 			name: "Archive already archived repository",
 			// 수정: --repo 형식을 org/repo로 변경
-			args:              []string{"archive", "--provider", "github", "--repo", "testorg/test-repo"},
-			requiresProviders: []string{"github"},
+			args: []string{"archive", "--provider", "github", "--repo", "testorg/test-repo"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -591,11 +562,6 @@ func (s *GitRepoTestSuite) TestArchiveCommand() {
 
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			// 토큰이 필요한 테스트는 토큰이 없으면 스킵
-			if len(tt.requiresProviders) > 0 {
-				s.skipIfNoProviderToken(tt.requiresProviders...)
-			}
-
 			if tt.setup != nil {
 				tt.setup()
 			}
@@ -617,21 +583,24 @@ func (s *GitRepoTestSuite) TestArchiveCommand() {
 }
 
 // TestSearchCommand tests the repository search functionality.
-// NOTE: Tests that execute commands with provider operations require tokens
-// because the current implementation doesn't support mock provider injection.
+//
+// The cases below are kept as the specification for `gz git repo search`, which
+// is still a stub: newRepoSearchCmd returns "search command not yet implemented"
+// and declares no flags at all, so every case here fails on --provider. Two of
+// them used to look green only because "unknown flag" satisfied expectErr.
 func (s *GitRepoTestSuite) TestSearchCommand() {
+	s.T().Skip("gz git repo search is not implemented yet (newRepoSearchCmd is a stub)")
+
 	tests := []struct {
-		name              string
-		args              []string
-		setup             func()
-		validate          func()
-		expectErr         bool
-		requiresProviders []string
+		name      string
+		args      []string
+		setup     func()
+		validate  func()
+		expectErr bool
 	}{
 		{
-			name:              "Basic search",
-			args:              []string{"search", "--provider", "github", "--query", "golang cli"},
-			requiresProviders: []string{"github"},
+			name: "Basic search",
+			args: []string{"search", "--provider", "github", "--query", "golang cli"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -653,9 +622,8 @@ func (s *GitRepoTestSuite) TestSearchCommand() {
 			},
 		},
 		{
-			name:              "Search with filters",
-			args:              []string{"search", "--provider", "github", "--query", "api", "--language", "Go", "--sort", "stars"},
-			requiresProviders: []string{"github"},
+			name: "Search with filters",
+			args: []string{"search", "--provider", "github", "--query", "api", "--language", "Go", "--sort", "stars"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
@@ -698,11 +666,6 @@ func (s *GitRepoTestSuite) TestSearchCommand() {
 
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			// 토큰이 필요한 테스트는 토큰이 없으면 스킵
-			if len(tt.requiresProviders) > 0 {
-				s.skipIfNoProviderToken(tt.requiresProviders...)
-			}
-
 			if tt.setup != nil {
 				tt.setup()
 			}

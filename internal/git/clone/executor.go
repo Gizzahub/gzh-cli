@@ -86,6 +86,14 @@ func (e *CloneExecutor) Execute(ctx context.Context) error {
 	// 7. Print summary
 	e.printSummary(summary)
 
+	// Per-repository failures are reported to the progress writer and gathered
+	// into summary.Errors, but they used to stop there: Execute returned nil, so
+	// the command exited 0 even when every clone failed. The summary is still
+	// printed first -- it carries the per-repository detail this error cannot.
+	if summary.Failed > 0 {
+		return fmt.Errorf("%d of %d repositories failed to clone", summary.Failed, summary.Total)
+	}
+
 	return nil
 }
 

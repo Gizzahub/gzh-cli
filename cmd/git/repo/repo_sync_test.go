@@ -10,34 +10,54 @@ import (
 	"github.com/gizzahub/gzh-cli/pkg/git/provider"
 )
 
+// Two production gaps keep the sync happy paths from being exercisable. Both are
+// tracked in tasks/issue/; the cases tagged with them are kept as the
+// specification for that work rather than deleted.
+const (
+	// syncNeedsGitSeam: the code action shells out to git against the
+	// repository's real CloneURL (internal/git/sync/code.go:61), so any case that
+	// reaches execution tries to clone github.com/testorg/... for real and fails
+	// with exit status 128. Substituting the provider cannot help -- the git
+	// invocation itself has no seam.
+	syncNeedsGitSeam = "SyncEngine has no seam around git; its code action clones for real"
+
+	// syncNeedsOrgCreate: syncRepository refuses to create a repository when the
+	// destination is an organization rather than a single repository
+	// (internal/git/sync/parallel.go:185). The blocker underneath is that neither
+	// CreateRepoRequest nor ProviderConfig carries an owner, so there is nowhere
+	// to record which organization to create in.
+	syncNeedsOrgCreate = "org-level repository creation is not implemented"
+)
+
 // TestSyncCommand tests the repository synchronization functionality.
-// NOTE: Tests that execute commands with provider operations require tokens
-// because the current implementation doesn't support mock provider injection.
 func (s *GitRepoTestSuite) TestSyncCommand() {
 	tests := []struct {
-		name              string
-		args              []string
-		setup             func()
-		validate          func()
-		expectErr         bool
-		requiresProviders []string // 토큰이 필요한 프로바이더 목록
+		name       string
+		args       []string
+		setup      func()
+		validate   func()
+		expectErr  bool
+		skipReason string
 	}{
 		{
-			name: "Sync single repository",
+			name:       "Sync single repository",
+			skipReason: syncNeedsGitSeam,
 			args: []string{
 				"sync",
 				"--from", "github:testorg/webapp",
 				"--to", "gitlab:testgroup/webapp",
 				"--create-missing",
 			},
-			requiresProviders: []string{"github", "gitlab"},
 			setup: func() {
 				s.resetMocks()
 				srcProvider := s.mockProviders["github"]
 				dstProvider := s.mockProviders["gitlab"]
 
-				// Source repository exists
+				// Source repository exists. Name has to move with FullName: the
+				// create request the engine builds carries Name, which is what the
+				// matcher below keys on.
 				srcRepo := s.testRepos[0]
+				srcRepo.Name = "webapp"
 				srcRepo.FullName = "testorg/webapp"
 				srcProvider.SetupGetResponse("testorg/webapp", &srcRepo, nil)
 
@@ -58,7 +78,8 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 			},
 		},
 		{
-			name: "Sync organization repositories",
+			name:       "Sync organization repositories",
+			skipReason: syncNeedsOrgCreate,
 			args: []string{
 				"sync",
 				"--from", "github:sourceorg",
@@ -66,7 +87,6 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 				"--create-missing",
 				"--include-issues",
 			},
-			requiresProviders: []string{"github", "gitea"},
 			setup: func() {
 				s.resetMocks()
 				srcProvider := s.mockProviders["github"]
@@ -96,7 +116,8 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 			},
 		},
 		{
-			name: "Sync with filtering",
+			name:       "Sync with filtering",
+			skipReason: syncNeedsOrgCreate,
 			args: []string{
 				"sync",
 				"--from", "github:sourceorg",
@@ -104,7 +125,6 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 				"--match", "api-*",
 				"--create-missing",
 			},
-			requiresProviders: []string{"github", "gitlab"},
 			setup: func() {
 				s.resetMocks()
 				srcProvider := s.mockProviders["github"]
@@ -139,14 +159,14 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 			},
 		},
 		{
-			name: "Sync with update existing",
+			name:       "Sync with update existing",
+			skipReason: syncNeedsGitSeam,
 			args: []string{
 				"sync",
 				"--from", "github:sourceorg",
 				"--to", "gitlab:targetorg",
 				"--update-existing",
 			},
-			requiresProviders: []string{"github", "gitlab"},
 			setup: func() {
 				s.resetMocks()
 				srcProvider := s.mockProviders["github"]
@@ -179,7 +199,6 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 				"--create-missing",
 				"--dry-run",
 			},
-			requiresProviders: []string{"github", "gitlab"},
 			setup: func() {
 				s.resetMocks()
 				srcProvider := s.mockProviders["github"]
@@ -196,7 +215,8 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 			},
 		},
 		{
-			name: "Sync with parallel workers",
+			name:       "Sync with parallel workers",
+			skipReason: syncNeedsOrgCreate,
 			args: []string{
 				"sync",
 				"--from", "github:sourceorg",
@@ -204,7 +224,6 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 				"--create-missing",
 				"--parallel", "3",
 			},
-			requiresProviders: []string{"github", "gitlab"},
 			setup: func() {
 				s.resetMocks()
 				srcProvider := s.mockProviders["github"]
@@ -310,9 +329,8 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			// 토큰이 필요한 테스트는 토큰이 없으면 스킵
-			if len(tt.requiresProviders) > 0 {
-				s.skipIfNoProviderToken(tt.requiresProviders...)
+			if tt.skipReason != "" {
+				s.T().Skip(tt.skipReason)
 			}
 
 			if tt.setup != nil {
@@ -338,11 +356,10 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 // TestSyncCommandOptions tests sync command option parsing and validation.
 func (s *GitRepoTestSuite) TestSyncCommandOptions() {
 	tests := []struct {
-		name              string
-		args              []string
-		setup             func()
-		expectErr         bool
-		requiresProviders []string
+		name      string
+		args      []string
+		setup     func()
+		expectErr bool
 	}{
 		{
 			name: "Valid sync options",
@@ -357,7 +374,6 @@ func (s *GitRepoTestSuite) TestSyncCommandOptions() {
 				"--include-wiki",
 				"--parallel", "2",
 			},
-			requiresProviders: []string{"github", "gitlab"},
 			setup: func() {
 				s.resetMocks()
 				srcProvider := s.mockProviders["github"]
@@ -412,11 +428,6 @@ func (s *GitRepoTestSuite) TestSyncCommandOptions() {
 
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			// 토큰이 필요한 테스트는 토큰이 없으면 스킵
-			if len(tt.requiresProviders) > 0 {
-				s.skipIfNoProviderToken(tt.requiresProviders...)
-			}
-
 			if tt.setup != nil {
 				tt.setup()
 			}
@@ -437,15 +448,16 @@ func (s *GitRepoTestSuite) TestSyncCommandOptions() {
 // TestSyncCommandFeatures tests different sync features.
 func (s *GitRepoTestSuite) TestSyncCommandFeatures() {
 	tests := []struct {
-		name              string
-		args              []string
-		setup             func()
-		validate          func()
-		expectErr         bool
-		requiresProviders []string
+		name       string
+		args       []string
+		setup      func()
+		validate   func()
+		expectErr  bool
+		skipReason string
 	}{
 		{
-			name: "Sync with code only",
+			name:       "Sync with code only",
+			skipReason: syncNeedsGitSeam,
 			args: []string{
 				"sync",
 				"--from", "github:sourceorg/webapp",
@@ -453,7 +465,6 @@ func (s *GitRepoTestSuite) TestSyncCommandFeatures() {
 				"--create-missing",
 				"--include-code",
 			},
-			requiresProviders: []string{"github", "gitlab"},
 			setup: func() {
 				s.resetMocks()
 				s.setupBasicSyncMocks("sourceorg/webapp", "targetorg/webapp")
@@ -464,7 +475,8 @@ func (s *GitRepoTestSuite) TestSyncCommandFeatures() {
 			},
 		},
 		{
-			name: "Sync with all features",
+			name:       "Sync with all features",
+			skipReason: syncNeedsGitSeam,
 			args: []string{
 				"sync",
 				"--from", "github:sourceorg/webapp",
@@ -475,7 +487,6 @@ func (s *GitRepoTestSuite) TestSyncCommandFeatures() {
 				"--include-wiki",
 				"--include-releases",
 			},
-			requiresProviders: []string{"github", "gitlab"},
 			setup: func() {
 				s.resetMocks()
 				s.setupBasicSyncMocks("sourceorg/webapp", "targetorg/webapp")
@@ -486,7 +497,8 @@ func (s *GitRepoTestSuite) TestSyncCommandFeatures() {
 			},
 		},
 		{
-			name: "Sync with force option",
+			name:       "Sync with force option",
+			skipReason: syncNeedsGitSeam,
 			args: []string{
 				"sync",
 				"--from", "github:sourceorg/webapp",
@@ -494,7 +506,6 @@ func (s *GitRepoTestSuite) TestSyncCommandFeatures() {
 				"--update-existing",
 				"--force",
 			},
-			requiresProviders: []string{"github", "gitlab"},
 			setup: func() {
 				s.resetMocks()
 				s.setupUpdateSyncMocks("sourceorg/webapp", "targetorg/webapp")
@@ -508,9 +519,8 @@ func (s *GitRepoTestSuite) TestSyncCommandFeatures() {
 
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			// 토큰이 필요한 테스트는 토큰이 없으면 스킵
-			if len(tt.requiresProviders) > 0 {
-				s.skipIfNoProviderToken(tt.requiresProviders...)
+			if tt.skipReason != "" {
+				s.T().Skip(tt.skipReason)
 			}
 
 			if tt.setup != nil {
@@ -540,8 +550,11 @@ func (s *GitRepoTestSuite) setupBasicSyncMocks(srcRepoName, dstRepoName string) 
 	srcProvider := s.mockProviders["github"]
 	dstProvider := s.mockProviders["gitlab"]
 
-	// Source repository exists
+	// Source repository exists. Name has to move with FullName: the create
+	// request the engine builds carries Name, which is what the create matcher
+	// below keys on.
 	srcRepo := s.testRepos[0]
+	srcRepo.Name = getRepoNameFromFullName(srcRepoName)
 	srcRepo.FullName = srcRepoName
 	srcProvider.SetupGetResponse(srcRepoName, &srcRepo, nil)
 
