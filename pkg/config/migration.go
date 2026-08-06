@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -193,23 +194,38 @@ func (m *Migrator) convertGitHubConfigurations(legacy *synclone.BulkCloneConfig,
 		}
 	}
 
-	// Convert from defaults if no specific repos configured
-	if !hasGitHubConfig && legacy.Default.Github.RootPath != "" {
-		org := &OrganizationConfig{
-			Name:       legacy.Default.Github.OrgName,
+	// 기본 설정에 조직 이름이 적혀 있으면 그것도 옮긴다.
+	//
+	// 옛 로더(synclone의 GetGithubOrgConfig)는 repo_roots에서 못 찾으면
+	// default.github.org_name으로 한 번 더 찾는다. 즉 기본 설정의 이름은
+	// repo_roots가 없을 때만 쓰는 대체 설정이 아니라 그 자체로 부를 수 있는
+	// 조직이다. 예전에는 repo_roots가 하나라도 있으면 아래 구간을 통째로
+	// 건너뛰어서, 둘 다 적어 둔 사용자는 조직 하나를 옮기다가 조용히 잃었다.
+	if orgName := legacy.Default.Github.OrgName; orgName != "" && !hasOrganization(githubProvider, orgName) {
+		githubProvider.Organizations = append(githubProvider.Organizations, &OrganizationConfig{
+			Name:       orgName,
 			CloneDir:   legacy.Default.Github.RootPath,
 			Visibility: VisibilityAll,
 			Strategy:   StrategyReset,
 			Exclude:    legacy.IgnoreNameRegexes,
-		}
+		})
 
-		if legacy.Default.Github.OrgName == "" {
-			org.Name = "your-org-name"
+		hasGitHubConfig = true
+	}
 
-			*actions = append(*actions, "Update organization name in GitHub configuration")
-		}
+	// 옮길 조직을 하나도 못 찾았는데 기본 경로만 있으면, 사용자가 이름을
+	// 채워 넣도록 자리표시자를 남긴다.
+	if !hasGitHubConfig && legacy.Default.Github.RootPath != "" {
+		githubProvider.Organizations = append(githubProvider.Organizations, &OrganizationConfig{
+			Name:       "your-org-name",
+			CloneDir:   legacy.Default.Github.RootPath,
+			Visibility: VisibilityAll,
+			Strategy:   StrategyReset,
+			Exclude:    legacy.IgnoreNameRegexes,
+		})
 
-		githubProvider.Organizations = append(githubProvider.Organizations, org)
+		*actions = append(*actions, "Update organization name in GitHub configuration")
+
 		hasGitHubConfig = true
 	}
 
@@ -219,6 +235,14 @@ func (m *Migrator) convertGitHubConfigurations(legacy *synclone.BulkCloneConfig,
 	}
 
 	return nil
+}
+
+// hasOrganization은 이미 옮겨진 조직인지 본다. repo_roots와 기본 설정이
+// 같은 조직을 가리키면 한 번만 넣는다.
+func hasOrganization(provider *ProviderConfig, name string) bool {
+	return slices.ContainsFunc(provider.Organizations, func(org *OrganizationConfig) bool {
+		return org.Name == name
+	})
 }
 
 // convertGitLabConfigurations converts GitLab-specific configurations.
