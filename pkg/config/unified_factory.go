@@ -206,14 +206,15 @@ providers:
 }
 
 // GetDefaultConfigPath returns the default path for creating new config files.
+//
+// 주입된 environment만 본다. 예전에는 여기서 값이 비면 os.UserHomeDir()로
+// 넘어갔는데, 그건 Unix에서 결국 같은 $HOME을 읽으므로 실제 동작에는 보태는
+// 것이 없으면서 주입된 environment를 무력화했다 -- 테스트가 빈 MockEnvironment를
+// 넣어도 개발자 머신의 홈 디렉토리가 튀어나와, 결과가 머신마다 달라졌다.
 func (f *ConfigFactory) GetDefaultConfigPath() string {
 	homeDir := f.environment.Get(env.CommonEnvironmentKeys.HomeDir)
 	if homeDir == "" {
-		if h, err := os.UserHomeDir(); err == nil {
-			homeDir = h
-		} else {
-			return "./gzh.yaml" // Fallback to current directory
-		}
+		return "./gzh.yaml" // Fallback to current directory
 	}
 	return filepath.Join(homeDir, ".config", "gzh.yaml")
 }
@@ -235,13 +236,10 @@ func (f *ConfigFactory) GetSearchPaths() []string {
 // expandPath expands ~ to home directory and resolves relative paths.
 func (f *ConfigFactory) expandPath(path string) string {
 	if path != "" && path[0] == '~' {
+		// GetDefaultConfigPath와 같은 이유로 주입된 environment만 본다.
 		homeDir := f.environment.Get(env.CommonEnvironmentKeys.HomeDir)
 		if homeDir == "" {
-			if h, err := os.UserHomeDir(); err == nil {
-				homeDir = h
-			} else {
-				return path // Return original if we can't get home dir
-			}
+			return path // Return original if we can't get home dir
 		}
 		return filepath.Join(homeDir, path[1:])
 	}

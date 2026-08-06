@@ -52,8 +52,8 @@ func TestNewConfigFactoryWithOptions(t *testing.T) {
 }
 
 func TestConfigFactory_FindConfigFile(t *testing.T) {
-	tmpDir := t.TempDir()
-
+	// 경로는 서브테스트 안에서 조립한다. 파일명만 들고 있어야 케이스마다
+	// 자기 디렉토리를 쓸 수 있다.
 	tests := []struct {
 		name        string
 		envVar      string
@@ -63,14 +63,14 @@ func TestConfigFactory_FindConfigFile(t *testing.T) {
 	}{
 		{
 			name:       "finds config from environment variable",
-			envVar:     filepath.Join(tmpDir, "env-config.yaml"),
-			setupFiles: []string{filepath.Join(tmpDir, "env-config.yaml")},
-			expected:   filepath.Join(tmpDir, "env-config.yaml"),
+			envVar:     "env-config.yaml",
+			setupFiles: []string{"env-config.yaml"},
+			expected:   "env-config.yaml",
 		},
 		{
 			name:       "finds config from search paths",
-			setupFiles: []string{filepath.Join(tmpDir, "gzh.yaml")},
-			expected:   filepath.Join(tmpDir, "gzh.yaml"),
+			setupFiles: []string{"gzh.yaml"},
+			expected:   "gzh.yaml",
 		},
 		{
 			name:        "returns error when no config found",
@@ -80,15 +80,21 @@ func TestConfigFactory_FindConfigFile(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// 서브테스트마다 별도 디렉토리를 쓴다. 예전에는 바깥에서 만든 tmpDir
+			// 하나를 셋이 공유해서, "search paths" 케이스가 만든 gzh.yaml이 그대로
+			// 남은 채 "no config found" 케이스가 돌았다 -- 설정이 없어야 에러가
+			// 나는 테스트인데 앞 케이스의 잔여 파일을 찾아버렸다.
+			tmpDir := t.TempDir()
+
 			// Setup environment
 			mockEnv := env.NewMockEnvironment(map[string]string{})
 			if tt.envVar != "" {
-				mockEnv.Set(env.CommonEnvironmentKeys.GZHConfigPath, tt.envVar)
+				mockEnv.Set(env.CommonEnvironmentKeys.GZHConfigPath, filepath.Join(tmpDir, tt.envVar))
 			}
 
 			// Setup test files
 			for _, file := range tt.setupFiles {
-				require.NoError(t, os.WriteFile(file, []byte("version: 1.0.0"), 0o600))
+				require.NoError(t, os.WriteFile(filepath.Join(tmpDir, file), []byte("version: 1.0.0"), 0o600))
 			}
 
 			// Create factory with custom search paths
@@ -102,7 +108,7 @@ func TestConfigFactory_FindConfigFile(t *testing.T) {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, tt.expected, result)
+				assert.Equal(t, filepath.Join(tmpDir, tt.expected), result)
 			}
 		})
 	}
