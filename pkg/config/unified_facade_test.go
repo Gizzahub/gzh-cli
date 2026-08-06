@@ -251,12 +251,26 @@ func TestUnifiedConfigFacadeValidateConfiguration(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "no configuration loaded")
 
-	// Test validation with configuration
+	// DefaultUnifiedConfig()는 완성된 설정이 아니라 뼈대다. Providers를 빈
+	// 맵으로 두는 것은 의도된 것으로 -- 호출자가 nil 맵 대입 패닉 없이 채워
+	// 넣도록 make()로 만든다 -- 실제 호출자인 CreateDefaultConfiguration과
+	// 마이그레이션은 모두 그 뒤에 provider를 채운다. 따라서 뼈대 그대로는
+	// "at least one provider must be configured"에 걸리는 것이 맞다.
+	// 예전에는 이 상태로 NoError를 기대했는데, 주석부터 "일단 패닉만 안 나면
+	// 된다"고 적혀 있었다.
 	facade.config = DefaultUnifiedConfig()
 	err = facade.ValidateConfiguration()
-	// Note: This depends on the ValidateConfig implementation
-	// For now, we just test that it doesn't panic
-	assert.NoError(t, err)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "at least one provider must be configured")
+
+	// provider까지 채운 완성된 설정은 통과해야 한다.
+	facade.config.Providers["github"] = &ProviderConfig{
+		Token: "${GITHUB_TOKEN}",
+		Organizations: []*OrganizationConfig{
+			{Name: "test-org", CloneDir: "~/repos/test-org"},
+		},
+	}
+	assert.NoError(t, facade.ValidateConfiguration())
 }
 
 func TestUnifiedConfigFacadeSaveConfiguration(t *testing.T) {
@@ -281,7 +295,10 @@ func TestUnifiedConfigFacadeSaveConfiguration(t *testing.T) {
 	// Verify content
 	content, err := os.ReadFile(configPath)
 	require.NoError(t, err)
-	assert.Contains(t, string(content), "version: \"1.0.0\"")
+	// yaml.Marshal은 따옴표가 필요할 때만 붙인다. 1.0.0은 점이 둘이라 숫자로
+	// 해석될 수 없으므로 따옴표 없이 나가고, 다시 읽어도 문자열 "1.0.0"이다.
+	// 예전 기대값은 직렬화 라이브러리의 인용 스타일을 검증하고 있었다.
+	assert.Contains(t, string(content), "version: 1.0.0")
 	assert.Contains(t, string(content), "default_provider: github")
 	assert.Contains(t, string(content), "# gzh-manager unified configuration")
 }
