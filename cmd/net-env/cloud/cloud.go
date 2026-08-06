@@ -29,8 +29,14 @@ type cloudOptions struct {
 	verbose    bool
 }
 
-// newCloudCmd creates the cloud subcommand.
-func NewCmd(ctx context.Context) *cobra.Command {
+// NewCmd creates the cloud subcommand.
+//
+// ctx를 받지 않는다. 예전에는 받아서 하위 명령 생성자들에게 죽 넘겼는데,
+// 그 맥락은 register.go가 준 context.Background()라 취소되지 않았다. 각
+// RunE는 이제 cmd.Context()를 쓴다 -- root의 ExecuteContext가 넣어 준
+// 것이라 SIGINT/SIGTERM에 반응한다. 넘겨받을 까닭이 없어졌고, 남겨 두면
+// 진짜 맥락처럼 보여서 다시 같은 곳에 빠지기 쉽다.
+func NewCmd() *cobra.Command {
 	opts := &cloudOptions{}
 
 	cmd := &cobra.Command{
@@ -50,19 +56,19 @@ This command allows you to:
 	cmd.PersistentFlags().BoolVarP(&opts.verbose, "verbose", "v", false, "Enable verbose output")
 
 	// Add subcommands
-	cmd.AddCommand(newCloudListCmd(ctx, opts))
-	cmd.AddCommand(newCloudShowCmd(ctx, opts))
-	cmd.AddCommand(newCloudSwitchCmd(ctx, opts))
-	cmd.AddCommand(newCloudSyncCmd(ctx, opts))
-	cmd.AddCommand(newCloudValidateCmd(ctx, opts))
-	cmd.AddCommand(newCloudPolicyCmd(ctx, opts))
-	cmd.AddCommand(newCloudVPNCmd(ctx, opts))
+	cmd.AddCommand(newCloudListCmd(opts))
+	cmd.AddCommand(newCloudShowCmd(opts))
+	cmd.AddCommand(newCloudSwitchCmd(opts))
+	cmd.AddCommand(newCloudSyncCmd(opts))
+	cmd.AddCommand(newCloudValidateCmd(opts))
+	cmd.AddCommand(newCloudPolicyCmd(opts))
+	cmd.AddCommand(newCloudVPNCmd(opts))
 
 	return cmd
 }
 
 // newCloudListCmd creates the list subcommand.
-func newCloudListCmd(_ context.Context, opts *cloudOptions) *cobra.Command { //nolint:gocognit // Large command builder - requires architectural refactoring
+func newCloudListCmd(opts *cloudOptions) *cobra.Command { //nolint:gocognit // Large command builder - requires architectural refactoring
 	var (
 		showProfiles  bool
 		showProviders bool
@@ -109,7 +115,7 @@ func newCloudListCmd(_ context.Context, opts *cloudOptions) *cobra.Command { //n
 }
 
 // newCloudShowCmd creates the show subcommand.
-func newCloudShowCmd(_ context.Context, opts *cloudOptions) *cobra.Command { //nolint:gocognit // Complex cloud show command with multiple display options
+func newCloudShowCmd(opts *cloudOptions) *cobra.Command { //nolint:gocognit // Complex cloud show command with multiple display options
 	cmd := &cobra.Command{
 		Use:   "show [profile]",
 		Short: "Show detailed profile information",
@@ -150,7 +156,7 @@ func newCloudShowCmd(_ context.Context, opts *cloudOptions) *cobra.Command { //n
 }
 
 // newCloudSwitchCmd creates the switch subcommand.
-func newCloudSwitchCmd(ctx context.Context, opts *cloudOptions) *cobra.Command { //nolint:gocognit,gocyclo // Large command builder with multiple flags, options, and execution paths - requires architectural refactoring
+func newCloudSwitchCmd(opts *cloudOptions) *cobra.Command { //nolint:gocognit,gocyclo // Large command builder with multiple flags, options, and execution paths - requires architectural refactoring
 	var (
 		dryRun      bool
 		applyPolicy bool
@@ -168,6 +174,8 @@ This command will:
 4. Update environment variables`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+
 			profileName := args[0]
 
 			// Load configuration
@@ -307,7 +315,7 @@ This command will:
 }
 
 // newCloudSyncCmd creates the sync subcommand.
-func newCloudSyncCmd(ctx context.Context, opts *cloudOptions) *cobra.Command { //nolint:gocognit,gocyclo // Complex cloud sync command with profile management and multiple execution branches
+func newCloudSyncCmd(opts *cloudOptions) *cobra.Command { //nolint:gocognit,gocyclo // Complex cloud sync command with profile management and multiple execution branches
 	var (
 		source              string
 		target              string
@@ -325,6 +333,8 @@ func newCloudSyncCmd(ctx context.Context, opts *cloudOptions) *cobra.Command { /
 This allows you to maintain consistent network configurations across
 multiple cloud environments with intelligent conflict resolution.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+
 			// Load configuration
 			configPath := opts.configFile
 			if configPath == "" {
@@ -482,12 +492,14 @@ multiple cloud environments with intelligent conflict resolution.`,
 }
 
 // newCloudValidateCmd creates the validate subcommand.
-func newCloudValidateCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudValidateCmd(opts *cloudOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "validate",
 		Short: "Validate cloud configuration",
 		Long:  `Validate cloud configuration file and test provider connections.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+
 			// Load configuration
 			configPath := opts.configFile
 			if configPath == "" {
@@ -588,7 +600,7 @@ func getCurrentProfile() (string, error) {
 }
 
 // newCloudPolicyCmd creates the policy subcommand.
-func newCloudPolicyCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudPolicyCmd(opts *cloudOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "policy",
 		Short: "Manage network policies",
@@ -596,16 +608,16 @@ func newCloudPolicyCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
 	}
 
 	// Add policy subcommands
-	cmd.AddCommand(newCloudPolicyApplyCmd(ctx, opts))
-	cmd.AddCommand(newCloudPolicyListCmd(ctx, opts))
-	cmd.AddCommand(newCloudPolicyStatusCmd(ctx, opts))
-	cmd.AddCommand(newCloudPolicyValidateCmd(ctx, opts))
+	cmd.AddCommand(newCloudPolicyApplyCmd(opts))
+	cmd.AddCommand(newCloudPolicyListCmd(opts))
+	cmd.AddCommand(newCloudPolicyStatusCmd(opts))
+	cmd.AddCommand(newCloudPolicyValidateCmd(opts))
 
 	return cmd
 }
 
 // newCloudPolicyApplyCmd creates the policy apply subcommand.
-func newCloudPolicyApplyCmd(ctx context.Context, opts *cloudOptions) *cobra.Command { //nolint:gocognit // Complex policy application command with validation
+func newCloudPolicyApplyCmd(opts *cloudOptions) *cobra.Command { //nolint:gocognit // Complex policy application command with validation
 	var (
 		environment string
 		profileName string
@@ -620,6 +632,8 @@ func newCloudPolicyApplyCmd(ctx context.Context, opts *cloudOptions) *cobra.Comm
 This command can apply policies either by environment (all profiles in an environment)
 or by specific profile name.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+
 			return runPolicyApplyCommand(ctx, opts, environment, profileName, dryRun)
 		},
 	}
@@ -632,7 +646,7 @@ or by specific profile name.`,
 }
 
 // newCloudPolicyListCmd creates the policy list subcommand.
-func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command { //nolint:gocognit,gocyclo // Complex policy listing command with filtering and multiple display formats
+func newCloudPolicyListCmd(opts *cloudOptions) *cobra.Command { //nolint:gocognit,gocyclo // Complex policy listing command with filtering and multiple display formats
 	var (
 		profileName  string
 		environment  string
@@ -644,6 +658,8 @@ func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Comma
 		Short: "List network policies",
 		Long:  `List network policies for profiles or environments.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+
 			// Load configuration
 			configPath := opts.configFile
 			if configPath == "" {
@@ -802,12 +818,14 @@ func newCloudPolicyListCmd(ctx context.Context, opts *cloudOptions) *cobra.Comma
 }
 
 // newCloudPolicyStatusCmd creates the policy status subcommand.
-func newCloudPolicyStatusCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudPolicyStatusCmd(opts *cloudOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "status",
 		Short: "Show policy application status",
 		Long:  `Show the status of applied network policies across all profiles.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+
 			// Load configuration
 			configPath := opts.configFile
 			if configPath == "" {
@@ -867,7 +885,7 @@ func newCloudPolicyStatusCmd(ctx context.Context, opts *cloudOptions) *cobra.Com
 }
 
 // newCloudPolicyValidateCmd creates the policy validate subcommand.
-func newCloudPolicyValidateCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudPolicyValidateCmd(opts *cloudOptions) *cobra.Command {
 	var profileName string
 
 	cmd := &cobra.Command{
@@ -875,6 +893,8 @@ func newCloudPolicyValidateCmd(ctx context.Context, opts *cloudOptions) *cobra.C
 		Short: "Validate network policies",
 		Long:  `Validate network policies for syntax and consistency.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+
 			// Load configuration
 			configPath := opts.configFile
 			if configPath == "" {
@@ -960,7 +980,7 @@ func getProfilesForEnvironment(config *cloud.Config, environment string) []cloud
 }
 
 // newCloudVPNCmd creates the VPN subcommand.
-func newCloudVPNCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudVPNCmd(opts *cloudOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "vpn",
 		Short: "Manage VPN connections",
@@ -974,24 +994,24 @@ This command provides comprehensive VPN management including:
 	}
 
 	// Add VPN subcommands
-	cmd.AddCommand(newCloudVPNListCmd(ctx, opts))
-	cmd.AddCommand(newCloudVPNConnectCmd(ctx, opts))
-	cmd.AddCommand(newCloudVPNDisconnectCmd(ctx, opts))
-	cmd.AddCommand(newCloudVPNStatusCmd(ctx, opts))
-	cmd.AddCommand(newCloudVPNAddCmd(ctx, opts))
-	cmd.AddCommand(newCloudVPNRemoveCmd(ctx, opts))
-	cmd.AddCommand(newCloudVPNMonitorCmd(ctx, opts))
+	cmd.AddCommand(newCloudVPNListCmd(opts))
+	cmd.AddCommand(newCloudVPNConnectCmd(opts))
+	cmd.AddCommand(newCloudVPNDisconnectCmd(opts))
+	cmd.AddCommand(newCloudVPNStatusCmd(opts))
+	cmd.AddCommand(newCloudVPNAddCmd(opts))
+	cmd.AddCommand(newCloudVPNRemoveCmd(opts))
+	cmd.AddCommand(newCloudVPNMonitorCmd(opts))
 	// Hierarchical VPN management commands
-	cmd.AddCommand(newCloudVPNHierarchyCmd(ctx, opts))
-	cmd.AddCommand(newCloudVPNConnectHierarchicalCmd(ctx, opts))
-	cmd.AddCommand(newCloudVPNDisconnectHierarchicalCmd(ctx, opts))
-	cmd.AddCommand(newCloudVPNEnvironmentCmd(ctx, opts))
+	cmd.AddCommand(newCloudVPNHierarchyCmd(opts))
+	cmd.AddCommand(newCloudVPNConnectHierarchicalCmd(opts))
+	cmd.AddCommand(newCloudVPNDisconnectHierarchicalCmd(opts))
+	cmd.AddCommand(newCloudVPNEnvironmentCmd(opts))
 
 	return cmd
 }
 
 // newCloudVPNListCmd creates the VPN list subcommand.
-func newCloudVPNListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudVPNListCmd(opts *cloudOptions) *cobra.Command {
 	var showAll bool
 
 	cmd := &cobra.Command{
@@ -999,6 +1019,8 @@ func newCloudVPNListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command 
 		Short: "List VPN connections",
 		Long:  `List all configured VPN connections with their status and priority.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+
 			// Load configuration
 			configPath := opts.configFile
 			if configPath == "" {
@@ -1078,7 +1100,7 @@ func newCloudVPNListCmd(ctx context.Context, opts *cloudOptions) *cobra.Command 
 }
 
 // newCloudVPNConnectCmd creates the VPN connect subcommand.
-func newCloudVPNConnectCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudVPNConnectCmd(opts *cloudOptions) *cobra.Command {
 	var (
 		byPriority bool
 		vpnName    string
@@ -1093,6 +1115,8 @@ Examples:
   gz net-env cloud vpn connect my-vpn        # Connect to specific VPN
   gz net-env cloud vpn connect --priority    # Connect by priority order`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+
 			if len(args) > 0 {
 				vpnName = args[0]
 			}
@@ -1152,7 +1176,7 @@ Examples:
 }
 
 // newCloudVPNDisconnectCmd creates the VPN disconnect subcommand.
-func newCloudVPNDisconnectCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudVPNDisconnectCmd(opts *cloudOptions) *cobra.Command {
 	var disconnectAll bool
 
 	cmd := &cobra.Command{
@@ -1164,6 +1188,8 @@ Examples:
   gz net-env cloud vpn disconnect my-vpn    # Disconnect from specific VPN
   gz net-env cloud vpn disconnect --all     # Disconnect from all VPNs`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+
 			var vpnName string
 			if len(args) > 0 {
 				vpnName = args[0]
@@ -1220,7 +1246,7 @@ Examples:
 }
 
 // newCloudVPNStatusCmd creates the VPN status subcommand.
-func newCloudVPNStatusCmd(ctx context.Context, opts *cloudOptions) *cobra.Command { //nolint:gocognit // Complex VPN status command with multiple providers
+func newCloudVPNStatusCmd(opts *cloudOptions) *cobra.Command { //nolint:gocognit // Complex VPN status command with multiple providers
 	var (
 		showHealth bool
 		vpnName    string
@@ -1236,6 +1262,8 @@ Examples:
   gz net-env cloud vpn status my-vpn       # Show status of specific VPN
   gz net-env cloud vpn status --health     # Show health check details`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+
 			if len(args) > 0 {
 				vpnName = args[0]
 			}
@@ -1249,7 +1277,7 @@ Examples:
 }
 
 // newCloudVPNAddCmd creates the VPN add subcommand.
-func newCloudVPNAddCmd(_ context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudVPNAddCmd(opts *cloudOptions) *cobra.Command {
 	var (
 		vpnType     string
 		server      string
@@ -1326,7 +1354,7 @@ Examples:
 }
 
 // newCloudVPNRemoveCmd creates the VPN remove subcommand.
-func newCloudVPNRemoveCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudVPNRemoveCmd(opts *cloudOptions) *cobra.Command {
 	var force bool
 
 	cmd := &cobra.Command{
@@ -1339,6 +1367,8 @@ Examples:
   gz net-env cloud vpn remove work-vpn --force`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+
 			vpnName := args[0]
 
 			// Load configuration
@@ -1392,7 +1422,7 @@ Examples:
 }
 
 // newCloudVPNMonitorCmd creates the VPN monitor subcommand.
-func newCloudVPNMonitorCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudVPNMonitorCmd(opts *cloudOptions) *cobra.Command {
 	var interval time.Duration
 
 	cmd := &cobra.Command{
@@ -1406,6 +1436,8 @@ This command starts a continuous monitoring process that:
 - Attempts to reconnect failed connections
 - Provides real-time status updates`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+
 			// Load configuration
 			configPath := opts.configFile
 			if configPath == "" {
@@ -1507,7 +1539,7 @@ func removeVPNConnectionFromConfig(config *cloud.Config, name string) {
 // Hierarchical VPN Management Commands
 
 // newCloudVPNHierarchyCmd creates the VPN hierarchy management subcommand.
-func newCloudVPNHierarchyCmd(_ context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudVPNHierarchyCmd(opts *cloudOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "hierarchy",
 		Short: "Show VPN connection hierarchy",
@@ -1583,7 +1615,7 @@ This command helps visualize:
 }
 
 // newCloudVPNConnectHierarchicalCmd creates the hierarchical VPN connect subcommand.
-func newCloudVPNConnectHierarchicalCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudVPNConnectHierarchicalCmd(opts *cloudOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "connect-hierarchy [root-connection]",
 		Short: "Connect VPN connections in hierarchical order",
@@ -1595,6 +1627,8 @@ Examples:
   gz net-env cloud vpn connect-hierarchy personal-vpn    # Connect personal VPN hierarchy`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+
 			rootConnection := args[0]
 
 			// Load configuration
@@ -1634,7 +1668,7 @@ Examples:
 }
 
 // newCloudVPNDisconnectHierarchicalCmd creates the hierarchical VPN disconnect subcommand.
-func newCloudVPNDisconnectHierarchicalCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudVPNDisconnectHierarchicalCmd(opts *cloudOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "disconnect-hierarchy [root-connection]",
 		Short: "Disconnect VPN connections in reverse hierarchical order",
@@ -1646,6 +1680,8 @@ Examples:
   gz net-env cloud vpn disconnect-hierarchy personal-vpn    # Disconnect personal VPN hierarchy`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+
 			rootConnection := args[0]
 
 			// Load configuration
@@ -1683,7 +1719,7 @@ Examples:
 }
 
 // newCloudVPNEnvironmentCmd creates the environment-based VPN management subcommand.
-func newCloudVPNEnvironmentCmd(ctx context.Context, opts *cloudOptions) *cobra.Command {
+func newCloudVPNEnvironmentCmd(opts *cloudOptions) *cobra.Command {
 	var (
 		autoConnect bool
 		listOnly    bool
@@ -1707,6 +1743,8 @@ Examples:
   gz net-env cloud vpn environment home                    # Show home environment VPNs`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+
 			envStr := args[0]
 
 			if err := validateEnvironment(envStr); err != nil {
