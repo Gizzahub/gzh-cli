@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -76,6 +77,7 @@ type Validator struct {
 	httpClient *http.Client
 	validator  *validation.Validator
 	patterns   map[TokenType]*regexp.Regexp
+	baseURLs   map[TokenType]string
 }
 
 // NewValidator creates a new authentication validator.
@@ -84,7 +86,34 @@ func NewValidator() *Validator {
 		httpClient: httpclient.GetGlobalClient("default"),
 		validator:  validation.New(),
 		patterns:   initializeTokenPatterns(),
+		baseURLs:   defaultBaseURLs(),
 	}
+}
+
+// defaultBaseURLs returns the API 진입점을 플랫폼별로 돌려준다.
+//
+// 예전에는 각 validateXxxToken이 URL을 문자열 리터럴로 박아 두고 있었다.
+// 그래서 (1) 테스트가 httptest 서버를 띄워도 연결할 방법이 없어 실제
+// api.github.com으로 요청이 나갔고, (2) GitHub Enterprise나 자체 호스팅
+// GitLab/Gitea를 쓰는 사용자는 토큰 검증 자체를 할 수 없었다. 이 도구는
+// 여러 포지를 다루는 것이 목적이므로 후자가 더 큰 문제다.
+func defaultBaseURLs() map[TokenType]string {
+	//nolint:gosec // G101 오탐: TokenType 키 이름을 보고 자격증명으로 판단하지만 공개 API 주소다
+	return map[TokenType]string{
+		TokenTypeGitHub: "https://api.github.com",
+		TokenTypeGitLab: "https://gitlab.com/api/v4",
+		TokenTypeGitea:  "https://gitea.com/api/v1",
+	}
+}
+
+// baseURL은 플랫폼의 API 진입점을 돌려준다. 등록되지 않은 타입은 기본값으로
+// 되돌려 호출자가 빈 URL로 요청을 만드는 일이 없게 한다.
+func (av *Validator) baseURL(tokenType TokenType) string {
+	if url, ok := av.baseURLs[tokenType]; ok && url != "" {
+		return url
+	}
+
+	return defaultBaseURLs()[tokenType]
 }
 
 // initializeTokenPatterns sets up token format validation patterns.
@@ -191,7 +220,7 @@ func (av *Validator) validateGitHubToken(ctx context.Context, token string) (*To
 	defer cancel()
 
 	// Test token with user endpoint
-	req, err := http.NewRequestWithContext(ctx, "GET", "https://api.github.com/user", http.NoBody)
+	req, err := http.NewRequestWithContext(ctx, "GET", av.baseURL(TokenTypeGitHub)+"/user", http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -239,7 +268,7 @@ func (av *Validator) validateGitLabToken(ctx context.Context, token string) (*To
 	ctx, cancel := context.WithTimeout(ctx, constants.MediumHTTPTimeout)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, "GET", "https://gitlab.com/api/v4/user", http.NoBody)
+	req, err := http.NewRequestWithContext(ctx, "GET", av.baseURL(TokenTypeGitLab)+"/user", http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -264,7 +293,12 @@ func (av *Validator) validateGitLabToken(ctx context.Context, token string) (*To
 		tokenInfo.RateLimit = &RateLimitInfo{
 			Limit:     parseInt(limit),
 			Remaining: parseInt(resp.Header.Get("RateLimit-Remaining")),
-			ResetTime: parseRFC3339Timestamp(resp.Header.Get("RateLimit-Reset")),
+			// GitLab의 RateLimit-Reset은 RFC3339가 아니라 유닉스 epoch다.
+			// 같은 저장소의 GitLab 클라이언트(pkg/gitlab/streaming_api.go)도
+			// 같은 헤더를 epoch로 읽는다. RFC3339로 읽던 예전 코드는 어떤
+			// 값을 받아도 파싱에 실패했는데, 실패시 time.Now()를 돌려주던
+			// 자리표시자 때문에 그 사실이 드러나지 않았다.
+			ResetTime: parseUnixTimestamp(resp.Header.Get("RateLimit-Reset")),
 		}
 	}
 
@@ -280,7 +314,7 @@ func (av *Validator) validateGiteaToken(ctx context.Context, token string) (*Tok
 	ctx, cancel := context.WithTimeout(ctx, constants.MediumHTTPTimeout)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, "GET", "https://gitea.com/api/v1/user", http.NoBody)
+	req, err := http.NewRequestWithContext(ctx, "GET", av.baseURL(TokenTypeGitea)+"/user", http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -353,20 +387,30 @@ func (av *Validator) SecureTokenComparison(token1, token2 string) bool {
 }
 
 // Helper functions for parsing headers.
-func parseInt(_ string) int {
-	// Simple implementation - in production you'd want proper error handling
-	// Currently returns 0 as placeholder
-	return 0
+//
+// 셋 다 값을 읽지 않고 고정값을 돌려주는 자리표시자였다. 그래서 RateLimit
+// 정보는 언제나 Limit=0, Remaining=0이었고, analyzeRateLimit의 소진 검사
+// (Remaining < Limit/10)는 0 < 0이라 한 번도 참이 되지 않았으며
+// rate_limit_available은 항상 false로 보고됐다 -- 남은 호출이 얼마든
+// 결과가 같았다는 뜻이다.
+//
+// 헤더가 없거나 형식이 어긋나면 "모른다"에 해당하는 값(0, 제로 time)을
+// 돌려준다. time.Now()를 돌려주면 파싱 실패가 "방금 초기화됨"으로 읽혀
+// 값이 없다는 사실 자체가 사라진다.
+func parseInt(value string) int {
+	parsed, err := strconv.Atoi(strings.TrimSpace(value))
+	if err != nil {
+		return 0
+	}
+
+	return parsed
 }
 
-func parseUnixTimestamp(_ string) time.Time {
-	// Implementation would parse unix timestamp
-	// Currently returns current time as placeholder
-	return time.Now()
-}
+func parseUnixTimestamp(value string) time.Time {
+	seconds, err := strconv.ParseInt(strings.TrimSpace(value), 10, 64)
+	if err != nil {
+		return time.Time{}
+	}
 
-func parseRFC3339Timestamp(_ string) time.Time {
-	// Implementation would parse RFC3339 timestamp
-	// Currently returns current time as placeholder
-	return time.Now()
+	return time.Unix(seconds, 0)
 }

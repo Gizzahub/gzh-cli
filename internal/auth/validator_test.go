@@ -162,7 +162,15 @@ func TestValidator_ValidateToken_BasicValidation(t *testing.T) {
 }
 
 func TestValidator_ValidateToken_PatternWarnings(t *testing.T) {
+	// 형식 검사를 통과한 토큰은 기능 검증 단계에서 API를 호출한다. mock
+	// 서버로 향하게 하지 않으면 이 테스트가 api.github.com에 실제로 붙는다.
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusUnauthorized)
+	}))
+	defer server.Close()
+
 	validator := NewValidator()
+	validator.baseURLs[TokenTypeGitHub] = server.URL
 	ctx := context.Background()
 
 	// Test with token that passes basic validation but fails pattern matching
@@ -227,11 +235,13 @@ func TestValidator_validateGitHubToken(t *testing.T) {
 			}))
 			defer server.Close()
 
-			// Create validator with custom http client
+			// 검사기를 위 mock 서버로 향하게 한다. 예전에는 서버를 띄워
+			// 놓고 연결하지 않아 요청이 실제 api.github.com으로 나갔고,
+			// 그래서 위 헤더 어설션은 한 번도 실행되지 않았으며
+			// valid_token 케이스는 401을 받아 항상 실패했다.
 			validator := NewValidator()
+			validator.baseURLs[TokenTypeGitHub] = server.URL
 
-			// Replace GitHub API URL in the validation function (this would need refactoring in real code)
-			// For now, test the logic with a mock approach
 			tokenInfo, err := validator.validateGitHubToken(context.Background(), "test_token")
 
 			if test.expectedError {
@@ -240,46 +250,130 @@ func TestValidator_validateGitHubToken(t *testing.T) {
 				assert.NoError(t, err)
 			}
 
-			if tokenInfo != nil {
-				assert.Equal(t, TokenTypeGitHub, tokenInfo.Type)
-				assert.Equal(t, test.expectedValid, tokenInfo.Valid)
-				assert.NotNil(t, tokenInfo.Permissions)
-				assert.NotNil(t, tokenInfo.Metadata)
+			require.NotNil(t, tokenInfo)
+			assert.Equal(t, TokenTypeGitHub, tokenInfo.Type)
+			assert.Equal(t, test.expectedValid, tokenInfo.Valid)
+			assert.NotNil(t, tokenInfo.Permissions)
+			assert.NotNil(t, tokenInfo.Metadata)
+
+			// 헤더 값이 실제로 파싱되는지 확인한다. 예전 parseInt는 인자를
+			// 버리고 0을 돌려주는 자리표시자였고, 어떤 테스트도 파싱 결과를
+			// 보지 않아 RateLimit이 늘 0/0인 채로 남아 있었다.
+			if test.headers["X-RateLimit-Limit"] != "" {
+				require.NotNil(t, tokenInfo.RateLimit)
+				assert.Equal(t, 5000, tokenInfo.RateLimit.Limit)
+				assert.Equal(t, 4999, tokenInfo.RateLimit.Remaining)
+				assert.Equal(t, time.Unix(1234567890, 0), tokenInfo.RateLimit.ResetTime)
+				assert.Equal(t, []string{"repo", "user"}, tokenInfo.Scopes)
 			}
 		})
 	}
 }
 
+// 예전에는 이 두 테스트가 gitlab.com/gitea.com으로 실제 요청을 보내고
+// "성공하거나 네트워크 오류거나" 식으로 느슨하게 확인했다. 그 형태는 코드가
+// 동작하든 아니든 통과했고 -- 실제로 401 응답의 문구가 기대와 달라 어긋났을
+// 때에야 문제가 드러났다 -- CI를 외부 서비스에 묶어 두기도 했다.
 func TestValidator_validateGitLabToken(t *testing.T) {
-	validator := NewValidator()
-
-	tokenInfo, err := validator.validateGitLabToken(context.Background(), "test_token")
-	// Since this makes actual HTTP calls, we expect either success or network error
-	// In a real test environment, you would mock the HTTP client
-	if err != nil {
-		assert.Contains(t, err.Error(), "api request failed")
+	tests := []struct {
+		name          string
+		statusCode    int
+		headers       map[string]string
+		expectedValid bool
+		expectedError string
+	}{
+		{
+			name:       "valid_token",
+			statusCode: http.StatusOK,
+			headers: map[string]string{
+				"RateLimit-Limit":     "2000",
+				"RateLimit-Remaining": "1999",
+				"RateLimit-Reset":     "1234567890",
+			},
+			expectedValid: true,
+		},
+		{
+			name:          "invalid_token",
+			statusCode:    http.StatusUnauthorized,
+			expectedValid: false,
+			expectedError: "gitlab API returned status 401",
+		},
 	}
 
-	if tokenInfo != nil {
-		assert.Equal(t, TokenTypeGitLab, tokenInfo.Type)
-		assert.NotNil(t, tokenInfo.Permissions)
-		assert.NotNil(t, tokenInfo.Metadata)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, "Bearer test_token", r.Header.Get("Authorization"))
+				assert.Equal(t, "/user", r.URL.Path)
+
+				for key, value := range test.headers {
+					w.Header().Set(key, value)
+				}
+
+				w.WriteHeader(test.statusCode)
+			}))
+			defer server.Close()
+
+			validator := NewValidator()
+			validator.baseURLs[TokenTypeGitLab] = server.URL
+
+			tokenInfo, err := validator.validateGitLabToken(context.Background(), "test_token")
+
+			if test.expectedError != "" {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), test.expectedError)
+			} else {
+				require.NoError(t, err)
+			}
+
+			require.NotNil(t, tokenInfo)
+			assert.Equal(t, TokenTypeGitLab, tokenInfo.Type)
+			assert.Equal(t, test.expectedValid, tokenInfo.Valid)
+			assert.NotNil(t, tokenInfo.Permissions)
+			assert.NotNil(t, tokenInfo.Metadata)
+
+			if test.headers["RateLimit-Limit"] != "" {
+				require.NotNil(t, tokenInfo.RateLimit)
+				assert.Equal(t, 2000, tokenInfo.RateLimit.Limit)
+				assert.Equal(t, 1999, tokenInfo.RateLimit.Remaining)
+				assert.Equal(t, time.Unix(1234567890, 0), tokenInfo.RateLimit.ResetTime)
+			}
+		})
 	}
 }
 
 func TestValidator_validateGiteaToken(t *testing.T) {
-	validator := NewValidator()
-
-	tokenInfo, err := validator.validateGiteaToken(context.Background(), "test_token")
-	// Since this makes actual HTTP calls, we expect either success or network error
-	if err != nil {
-		assert.Contains(t, err.Error(), "api request failed")
+	tests := []struct {
+		name          string
+		statusCode    int
+		expectedValid bool
+	}{
+		{name: "valid_token", statusCode: http.StatusOK, expectedValid: true},
+		{name: "invalid_token", statusCode: http.StatusUnauthorized, expectedValid: false},
 	}
 
-	if tokenInfo != nil {
-		assert.Equal(t, TokenTypeGitea, tokenInfo.Type)
-		assert.NotNil(t, tokenInfo.Permissions)
-		assert.NotNil(t, tokenInfo.Metadata)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				// Gitea는 Bearer가 아니라 "token " 스킴을 쓴다.
+				assert.Equal(t, "token test_token", r.Header.Get("Authorization"))
+				assert.Equal(t, "/user", r.URL.Path)
+				w.WriteHeader(test.statusCode)
+			}))
+			defer server.Close()
+
+			validator := NewValidator()
+			validator.baseURLs[TokenTypeGitea] = server.URL
+
+			tokenInfo, err := validator.validateGiteaToken(context.Background(), "test_token")
+
+			require.NoError(t, err)
+			require.NotNil(t, tokenInfo)
+			assert.Equal(t, TokenTypeGitea, tokenInfo.Type)
+			assert.Equal(t, test.expectedValid, tokenInfo.Valid)
+			assert.NotNil(t, tokenInfo.Permissions)
+			assert.NotNil(t, tokenInfo.Metadata)
+		})
 	}
 }
 
