@@ -37,9 +37,14 @@ func NewAdaptiveRateLimiter() *AdaptiveRateLimiter {
 }
 
 // Wait blocks until it's safe to make a request.
+//
+// 기다리는 동안에는 잠금을 놓는다. 예전에는 defer로 끝까지 쥐고 있어서,
+// 한 쪽이 5분을 기다리면 그동안 UpdateRemaining도 UpdateResetTime도
+// GetStatus도 전부 같이 멈췄다. 응답 헤더로 새 잔량을 알려줄 수 없으니
+// 이미 낡은 값으로 계산한 대기 시간을 끝까지 지키게 되고, 진행 상황을
+// 보여주는 쪽도 얼어붙는다.
 func (rl *AdaptiveRateLimiter) Wait(ctx context.Context) error {
 	rl.mu.Lock()
-	defer rl.mu.Unlock()
 
 	now := time.Now()
 
@@ -49,17 +54,32 @@ func (rl *AdaptiveRateLimiter) Wait(ctx context.Context) error {
 	// Calculate delay based on current state
 	delay := rl.calculateDelay(now)
 
+	rl.mu.Unlock()
+
 	if delay > 0 {
+		timer := time.NewTimer(delay)
+		defer timer.Stop()
+
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		case <-time.After(delay):
+		case <-timer.C:
 		}
 	}
 
-	// Record this request
-	rl.lastRequest = now
-	rl.requestHistory = append(rl.requestHistory, now)
+	rl.mu.Lock()
+	defer rl.mu.Unlock()
+
+	// Record this request.
+	//
+	// 기다림이 끝난 지금 시각을 적는다. 요청은 Wait가 돌아온 뒤에 나가기
+	// 때문이다. 예전에는 기다리기 전 시각을 적어서, 다음 계산이 기다린
+	// 시간만큼을 "요청 이후 흐른 시간"으로 세고 대기를 0으로 만들었다.
+	// 그래서 잔량이 10일 때 한 번 5분 쉬고 나머지 둘을 연달아 내보냈다 --
+	// 몰아치지 않으려고 두는 장치가 정확히 몰아치는 모양이었다.
+	requested := time.Now()
+	rl.lastRequest = requested
+	rl.requestHistory = append(rl.requestHistory, requested)
 
 	return nil
 }
