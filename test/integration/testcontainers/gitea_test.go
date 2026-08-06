@@ -112,14 +112,45 @@ func (g *GiteaTestContainer) WaitForReady(ctx context.Context) error {
 	}
 }
 
+// requireDocker는 도커가 없으면 시험을 건너뛴다.
+//
+// 없는 것과 고장난 것은 다르다. 도커가 아예 없는 기계에서 이 시험이
+// 빨갛게 되면 진짜 고장과 구별할 수 없다. 건너뛴 것은 SKIP으로 남아
+// 눈에 보이므로, 통과했다고 거짓말하는 것과도 다르다.
+func requireDocker(t *testing.T) {
+	t.Helper()
+
+	provider, err := testcontainers.NewDockerProvider()
+	if err != nil {
+		t.Skipf("Docker를 쓸 수 없어 건너뛴다: %v", err)
+	}
+
+	defer func() { _ = provider.Close() }()
+
+	if err := provider.Health(context.Background()); err != nil {
+		t.Skipf("Docker 데몬에 닿지 않아 건너뛴다: %v", err)
+	}
+}
+
 func TestGiteaContainer_Integration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping Gitea container integration test in short mode")
 	}
 
+	requireDocker(t)
+
 	ctx := context.Background()
 
-	gitea := SetupGiteaContainer(ctx, t)
+	// 이 파일 위쪽의 진짜 구현을 쓴다. 예전에는 gitea.go의
+	// SetupGiteaContainer를 불렀는데 그것은 아무것도 띄우지 않고
+	// http://localhost:3000을 그대로 돌려주는 껍데기다. WaitForReady도
+	// 바로 nil을 돌려주니 "준비됐다"는 말만 하고 아무것도 기다리지 않았다.
+	// 그래서 이 시험은 늘 그 주소로 요청을 보내고 connection refused로
+	// 죽었다 -- 컨테이너가 뜨는지 보자는 시험이 컨테이너를 띄운 적이 없다.
+	// 이름이 SetupGiteaContainer와 SetupGiteaTestContainer로 한 글자
+	// 차이라 눈에 잘 안 띈다. 껍데기 쪽은 test/integration/docker가
+	// 아직 쓰고 있어서 남겨 둔다.
+	gitea := SetupGiteaTestContainer(ctx, t)
 
 	defer func() {
 		err := gitea.Cleanup(ctx)
