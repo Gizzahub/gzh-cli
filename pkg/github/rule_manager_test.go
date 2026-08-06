@@ -717,10 +717,14 @@ func TestRuleManager_Integration(t *testing.T) {
 	require.NoError(t, err)
 
 	// Get the rule
-	storage.On("GetRule", mock.Anything, rule.Organization, rule.ID).Return(rule, nil)
+	//
+	// CreateRule이 규칙을 캐시에 넣으므로 바로 이어지는 조회는 저장소까지
+	// 가지 않는다. 예전 시험은 storage.GetRule 호출을 기대해 두고 늘
+	// 실패했다. 의도된 캐시 동작이니 그대로 확인한다.
 	retrievedRule, err := rm.GetRule(context.Background(), rule.Organization, rule.ID)
 	require.NoError(t, err)
 	assert.Equal(t, rule.ID, retrievedRule.ID)
+	storage.AssertNotCalled(t, "GetRule", mock.Anything, mock.Anything, mock.Anything)
 
 	// Test the rule
 	event := createTestEventForRuleManager()
