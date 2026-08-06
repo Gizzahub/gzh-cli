@@ -499,7 +499,7 @@ func isRateLimitError(err error) bool {
 
 func (o *syncCloneGithubOptions) loadFromConfig() error {
 	// Use unified config loading
-	cfg, err := internalconfig.LoadCommandConfig(context.Background(), o.configFile, "synclone")
+	cfg, err := internalconfig.LoadCommandConfig(o.configFile, "synclone")
 	if err != nil {
 		return err
 	}

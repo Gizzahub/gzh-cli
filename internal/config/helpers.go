@@ -4,7 +4,6 @@
 package config
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -15,16 +14,21 @@ import (
 
 // LoadCommandConfig provides a unified way to load configuration for commands
 // It follows the standard precedence: explicit path > env var > default locations.
-func LoadCommandConfig(ctx context.Context, configPath, configType string) (*config.UnifiedConfig, error) {
+//
+// 맥락을 받지 않는다. 예전에는 ctx를 받아 loadConfigFromPath로 넘겼는데 그쪽이
+// `_`로 버렸다. 취소할 수 있는 척만 하는 셈이라 부르는 쪽에서 넘긴
+// context.Background()가 문제없어 보였다. 여기는 지역 파일을 읽고 끝나는
+// 자리다. 나중에 원격 설정을 가져오게 되면 그때 맥락을 다시 받는다.
+func LoadCommandConfig(configPath, configType string) (*config.UnifiedConfig, error) {
 	// 1. Use explicit config path if provided
 	if configPath != "" {
-		return loadConfigFromPath(ctx, configPath)
+		return loadConfigFromPath(configPath)
 	}
 
 	// 2. Check environment variable
 	envVar := fmt.Sprintf("GZH_%s_CONFIG", strings.ToUpper(strings.ReplaceAll(configType, "-", "_")))
 	if envPath := os.Getenv(envVar); envPath != "" {
-		return loadConfigFromPath(ctx, envPath)
+		return loadConfigFromPath(envPath)
 	}
 
 	// 3. Check standard locations
@@ -45,7 +49,7 @@ func LoadCommandConfig(ctx context.Context, configPath, configType string) (*con
 
 	for _, path := range searchPaths {
 		if _, err := os.Stat(path); err == nil {
-			return loadConfigFromPath(ctx, path)
+			return loadConfigFromPath(path)
 		}
 	}
 
@@ -61,7 +65,7 @@ func LoadCommandConfig(ctx context.Context, configPath, configType string) (*con
 }
 
 // loadConfigFromPath loads configuration from a specific path.
-func loadConfigFromPath(_ context.Context, path string) (*config.UnifiedConfig, error) {
+func loadConfigFromPath(path string) (*config.UnifiedConfig, error) {
 	// Use unified config loader
 	loader := config.NewUnifiedLoader()
 
