@@ -1,3 +1,15 @@
+// 이 파일의 예시는 실제 GitLab API를 부르고 저장소를 내려받는다. 그래서
+// // Output: 주석을 두지 않는다. 주석이 없는 Example은 컴파일만 되고 실행되지는
+// 않는다는 것이 Go의 규칙이고, 문서에는 그대로 실린다.
+//
+// 예전에는 주석이 붙어 있었지만 적힌 값이 코드가 찍는 내용과 아예 달랐다.
+// 이를테면 ExampleList는 "Found %d projects"를 찍는데 기대값은 "Found projects
+// in group"이었다. 통과할 수 없는 시험이었고, 게다가 ExampleClone은 실행될
+// 때마다 gitlab-org/gitlab을 통째로 받아왔다 -- 이 하나 때문에 패키지 시험이
+// 10분 가까이 걸렸고 망이 없으면 아예 돌지 않았다.
+//
+// 실제 호출까지 확인하려면 integration 빌드 태그를 붙인 별도 시험으로 둔다.
+// 같은 이유로 pkg/github/example_test.go도 같은 모양이다.
 package gitlab_test
 
 import (
@@ -24,7 +36,6 @@ func ExampleGetDefaultBranch() {
 	}
 
 	fmt.Printf("Default branch: %s", branch)
-	// Output: Default branch: master
 }
 
 // ExampleList demonstrates how to list all projects in a GitLab group.
@@ -44,7 +55,6 @@ func ExampleList() {
 	if len(projects) > 0 {
 		fmt.Printf("\nFirst project: %s", projects[0])
 	}
-	// Output: Found projects in group
 }
 
 // ExampleClone demonstrates how to clone a GitLab project to a local directory.
@@ -72,7 +82,6 @@ func ExampleClone() {
 	}
 
 	fmt.Println("Project cloned successfully")
-	// Output: Project cloned successfully
 }
 
 // ExampleClone_defaultBranch demonstrates cloning with automatic default branch detection.
@@ -100,7 +109,6 @@ func ExampleClone_defaultBranch() {
 	}
 
 	fmt.Println("Project cloned with default branch")
-	// Output: Project cloned with default branch
 }
 
 // ExampleList_groupWorkflow demonstrates a complete workflow of discovering and cloning
@@ -161,7 +169,6 @@ func ExampleList_groupWorkflow() {
 	}
 
 	fmt.Println("Group workflow completed")
-	// Output: Group workflow demonstrates GitLab project management
 }
 
 // ExampleGetDefaultBranch_authentication demonstrates handling authentication for private projects.
@@ -185,7 +192,6 @@ func ExampleGetDefaultBranch_authentication() {
 	}
 
 	fmt.Println("Authentication example completed")
-	// Output: Authentication setup guide for private repositories
 }
 
 // ExampleGetDefaultBranch_errorHandling demonstrates proper error handling when working
@@ -213,5 +219,4 @@ func ExampleGetDefaultBranch_errorHandling() {
 	}
 
 	fmt.Println("Error handling examples completed")
-	// Output: Error handling examples demonstrate proper error management
 }
