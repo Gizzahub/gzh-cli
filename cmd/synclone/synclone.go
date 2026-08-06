@@ -104,6 +104,13 @@ func (o *syncCloneOptions) run(ctx context.Context, _ *cobra.Command, _ []string
 
 // runWithCentralConfigService uses the central configuration service for unified config management.
 func (o *syncCloneOptions) runWithCentralConfigService(ctx context.Context) error {
+	// 깃발 값부터 본다. 파일을 읽지도 파싱하지도 않고 판단할 수 있는 것이라
+	// 제일 앞에 둔다. 예전에는 설정을 다 읽고 검사한 다음에야 확인해서,
+	// gz synclone --strategy bogus가 오타 대신 설정 오류를 답했다.
+	if o.strategy != "reset" && o.strategy != "pull" && o.strategy != "fetch" {
+		return fmt.Errorf("invalid strategy: %s. Must be one of: reset, pull, fetch", o.strategy)
+	}
+
 	// Create configuration service
 	configService, err := config.CreateDefaultConfigService()
 	if err != nil {
@@ -145,11 +152,6 @@ func (o *syncCloneOptions) runWithCentralConfigService(ctx context.Context) erro
 	actions := configService.GetRequiredActions()
 	for _, action := range actions {
 		fmt.Printf("📋 Action required: %s\n", action)
-	}
-
-	// Validate strategy
-	if o.strategy != "reset" && o.strategy != "pull" && o.strategy != "fetch" {
-		return fmt.Errorf("invalid strategy: %s. Must be one of: reset, pull, fetch", o.strategy)
 	}
 
 	// Get bulk clone targets using the service

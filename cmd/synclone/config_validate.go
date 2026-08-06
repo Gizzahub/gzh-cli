@@ -53,16 +53,24 @@ This command checks:
 
 			// For now, basic YAML validation is sufficient
 			// TODO: Implement full schema validation using pkg/config validators
-			fmt.Printf("✓ YAML syntax is valid for file '%s'\n", configFile)
 
-			// Output result
+			// cmd.OutOrStdout()으로 내보낸다. fmt.Printf는 프로세스의 표준출력에
+			// 바로 쓰기 때문에 cmd.SetOut으로 받을 수 없었다 -- 감싸서 쓰는 쪽도
+			// 시험도 아무것도 못 봤다.
+			out := cmd.OutOrStdout()
+
 			switch format {
 			case "json":
-				fmt.Println(`{"valid": true, "file": "` + configFile + `"}`)
+				// %q로 감싼다. 예전에는 문자열을 이어 붙여서 경로에 따옴표나
+				// 역슬래시가 있으면 JSON이 깨졌다.
+				fmt.Fprintf(out, "{\"valid\": true, \"file\": %q}\n", configFile)
 			case "quiet":
-				// No output on success
+				// 아무것도 내지 않는다. 종료 코드로만 답한다. 예전에는 위에서
+				// 한 줄을 무조건 찍어서 quiet가 quiet가 아니었고, json도 JSON
+				// 앞에 사람이 읽는 줄이 하나 붙어 나갔다.
 			default:
-				fmt.Printf("✓ Configuration file '%s' is valid\n", configFile)
+				fmt.Fprintf(out, "✓ YAML syntax is valid for file '%s'\n", configFile)
+				fmt.Fprintf(out, "✓ Configuration file '%s' is valid\n", configFile)
 			}
 
 			return nil
