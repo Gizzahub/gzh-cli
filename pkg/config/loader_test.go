@@ -138,22 +138,13 @@ func TestCreateDefaultConfig(t *testing.T) {
 
 	configPath := filepath.Join(tmpDir, "gzh.yaml")
 
-	// Set environment variables for test
-	if err := os.Setenv("GITHUB_TOKEN", "test-github-token"); err != nil {
-		t.Logf("Warning: failed to set GITHUB_TOKEN: %v", err)
-	}
-	if err := os.Setenv("GITLAB_TOKEN", "test-gitlab-token"); err != nil {
-		t.Logf("Warning: failed to set GITLAB_TOKEN: %v", err)
-	}
-
-	defer func() {
-		if err := os.Unsetenv("GITHUB_TOKEN"); err != nil {
-			t.Logf("Warning: failed to unset GITHUB_TOKEN: %v", err)
-		}
-		if err := os.Unsetenv("GITLAB_TOKEN"); err != nil {
-			t.Logf("Warning: failed to unset GITLAB_TOKEN: %v", err)
-		}
-	}()
+	// t.Setenv: 이전에는 defer에서 Unsetenv로 되돌렸는데, 개발자 셸에 이미
+	// GITHUB_TOKEN이 있으면 그것까지 지워버려 같은 패키지의 뒤따르는 테스트가
+	// 오염됐다. TestStartupValidator_ValidateUnifiedConfig가 "환경변수 없음"
+	// 경고 개수를 세는데, 이 테스트가 먼저 도느냐에 따라 결과가 뒤집혔다.
+	// t.Setenv는 원래 값을 -- 없었다는 사실까지 포함해 -- 복원한다.
+	t.Setenv("GITHUB_TOKEN", "test-github-token")
+	t.Setenv("GITLAB_TOKEN", "test-gitlab-token")
 
 	err = CreateDefaultConfig(configPath)
 	assert.NoError(t, err)

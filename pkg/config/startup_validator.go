@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -121,14 +122,23 @@ func (sv *StartupValidator) ValidateConfig(config *Config) *StartupValidationRes
 }
 
 // validateBusinessRules performs custom business logic validation.
+//
+// 이 함수는 sv.validator.Struct()가 이미 한 번 훑은 뒤에 돌기 때문에, 같은
+// 필드를 다시 지적하지 않도록 hasErrorForField로 걸러야 한다. 두 검사가
+// 서로를 모르는 채 겹쳐서, 오타 하나에 에러가 둘씩 붙고 있었다 --
+// version: "invalid-version"이면 태그의 oneof=1.0.0과 여기의 semver 검사가
+// 동시에 터졌다. 두 검사 자체는 서로를 대체하지 못한다. default_provider가
+// "gitea"면 태그(알려진 provider인가)는 통과하고 여기(설정되어 있는가)만
+// 걸린다. 그래서 검사를 지우는 대신, 스키마가 이미 거절한 필드에 두 번째
+// 불평을 얹지 않는 쪽으로 정리한다.
 func (sv *StartupValidator) validateBusinessRules(config *UnifiedConfig) {
 	// Validate version format
-	if config.Version != "" && !isValidVersionFormat(config.Version) {
+	if config.Version != "" && !sv.hasErrorForField("Version") && !isValidVersionFormat(config.Version) {
 		sv.addError("Version", "version_format", config.Version, "version must be in semantic versioning format (e.g., 1.0.0)")
 	}
 
 	// Validate default provider exists in providers map
-	if config.DefaultProvider != "" {
+	if config.DefaultProvider != "" && !sv.hasErrorForField("DefaultProvider") {
 		if _, exists := config.Providers[config.DefaultProvider]; !exists {
 			sv.addError("DefaultProvider", "provider_exists", config.DefaultProvider, "default provider must exist in providers configuration")
 		}
@@ -472,6 +482,16 @@ func (sv *StartupValidator) addError(field, tag, value, message string) {
 		Tag:     tag,
 		Value:   value,
 		Message: message,
+	})
+}
+
+// hasErrorForField reports whether an error has already been recorded for a field.
+//
+// 스키마 태그 검사와 비즈니스 규칙 검사가 같은 필드를 이중으로 지적하는 것을
+// 막는 데 쓴다.
+func (sv *StartupValidator) hasErrorForField(field string) bool {
+	return slices.ContainsFunc(sv.errors, func(e StartupValidationError) bool {
+		return e.Field == field
 	})
 }
 

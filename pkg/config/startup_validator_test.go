@@ -2,7 +2,6 @@
 package config
 
 import (
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -171,19 +170,17 @@ func TestStartupValidator_ValidateUnifiedConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// 이 테스트는 "${GITHUB_TOKEN}이 설정되지 않았다" 경고의 개수를 세므로,
+			// 개발자 셸에 토큰이 있으면 기대값이 뒤집힌다. 기본값을 빈 값으로
+			// 못박아 머신과 무관하게 같은 결과가 나오게 한다 --
+			// checkConfigurationWarnings는 os.Getenv로 비교하므로 빈 값은
+			// 미설정과 구분되지 않는다. t.Setenv는 원래 값을 자동 복원한다.
+			t.Setenv("GITHUB_TOKEN", "")
+
 			// Setup environment variables
-			var envKeys []string
-			if tt.setupEnv != nil {
-				for key, value := range tt.setupEnv {
-					_ = os.Setenv(key, value) //nolint:errcheck // Test environment setup
-					envKeys = append(envKeys, key)
-				}
+			for key, value := range tt.setupEnv {
+				t.Setenv(key, value)
 			}
-			defer func() {
-				for _, key := range envKeys {
-					_ = os.Unsetenv(key) //nolint:errcheck // Test cleanup
-				}
-			}()
 
 			result := validator.ValidateUnifiedConfig(tt.config)
 
