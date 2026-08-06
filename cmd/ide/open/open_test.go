@@ -203,7 +203,25 @@ func TestGetAvailableIDENames(t *testing.T) {
 					Aliases: []string{"pycharm"},
 				},
 			},
-			expected: "VS Code, code, PyCharm, pycharm",
+			// "pycharm" is dropped: getAvailableIDENames dedups case-insensitively,
+			// and FindIDEByAlias matches the same way, so listing both spellings
+			// would offer the user two ways to type one identical lookup.
+			expected: "VS Code, code, PyCharm",
+		},
+		{
+			// Aliases that differ from the name by more than case are all kept.
+			name: "Alias colliding with another IDE's name is still listed once",
+			ides: []IDE{
+				{
+					Name:    "IntelliJ IDEA",
+					Aliases: []string{"idea", "intellij"},
+				},
+				{
+					Name:    "GoLand",
+					Aliases: []string{"goland", "GOLAND"},
+				},
+			},
+			expected: "IntelliJ IDEA, idea, intellij, GoLand",
 		},
 	}
 
