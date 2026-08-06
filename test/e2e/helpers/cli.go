@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -176,7 +177,11 @@ func (c *CLIExecutor) RunAsync(ctx context.Context, args ...string) (*exec.Cmd, 
 func BuildBinary(ctx context.Context, projectRoot string) (string, error) {
 	binaryPath := filepath.Join(projectRoot, "gz")
 
-	cmd := exec.CommandContext(ctx, "go", "build", "-o", binaryPath) //nolint:gosec // E2E test helper building known binary
+	// 만들 꾸러미를 짚어 준다. 예전에는 인자가 없어서 go build가 저장소
+	// 뿌리를 만들려 했는데 거기에는 .go 파일이 하나도 없다. main은
+	// cmd/gz에 있다(Makefile도 ./cmd/gz를 만든다). 그래서 e2e 시험 36개가
+	// 하나도 빠짐없이 첫 걸음에서 죽었다.
+	cmd := exec.CommandContext(ctx, "go", "build", "-o", binaryPath, "./cmd/gz") //nolint:gosec // E2E test helper building known binary
 	cmd.Dir = projectRoot
 
 	var stderr bytes.Buffer
@@ -184,7 +189,11 @@ func BuildBinary(ctx context.Context, projectRoot string) (string, error) {
 	cmd.Stderr = &stderr
 
 	if err := cmd.Run(); err != nil {
-		return "", err
+		// go가 stderr에 적어 준 이유를 함께 돌려준다. 예전에는 stderr를
+		// 모아 두고는 쓰지 않고 버려서, 부르는 쪽은 "exit status 1"만
+		// 받았다. 위의 잘못된 꾸러미 인자가 오래 안 보인 이유가 이것이다.
+		return "", fmt.Errorf("go build ./cmd/gz failed: %w: %s",
+			err, strings.TrimSpace(stderr.String()))
 	}
 
 	return binaryPath, nil
