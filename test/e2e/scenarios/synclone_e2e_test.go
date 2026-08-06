@@ -44,7 +44,7 @@ func TestSyncClone_ConfigValidation_E2E(t *testing.T) {
 
 	// Create a valid configuration
 	validConfig := `
-version: defaultVersion
+version: "1.0.0"
 default_provider: github
 providers:
   github:
@@ -90,7 +90,7 @@ func TestSyncClone_DryRun_E2E(t *testing.T) {
 
 	// Create test configuration
 	config := `
-version: defaultVersion
+version: "1.0.0"
 default_provider: github
 providers:
   github:
@@ -121,7 +121,7 @@ func TestSyncClone_MultipleProviders_E2E(t *testing.T) {
 
 	// Create configuration with multiple providers
 	config := `
-version: defaultVersion
+version: "1.0.0"
 default_provider: github
 providers:
   github:
@@ -169,7 +169,7 @@ func TestSyncClone_StrategyOptions_E2E(t *testing.T) {
 	for _, strategy := range strategies {
 		t.Run("strategy_"+strategy, func(t *testing.T) {
 			config := `
-version: defaultVersion
+version: "1.0.0"
 providers:
   github:
     token: "test-token"
@@ -200,7 +200,7 @@ func TestSyncClone_VisibilityFiltering_E2E(t *testing.T) {
 	for _, visibility := range visibilityOptions {
 		t.Run("visibility_"+visibility, func(t *testing.T) {
 			config := `
-version: defaultVersion
+version: "1.0.0"
 providers:
   github:
     token: "test-token"
@@ -227,7 +227,7 @@ func TestSyncClone_PatternMatching_E2E(t *testing.T) {
 
 	// Test pattern matching and exclusion
 	config := `
-version: defaultVersion
+version: "1.0.0"
 providers:
   github:
     token: "test-token"
@@ -266,7 +266,7 @@ func TestSyncClone_ErrorHandling_E2E(t *testing.T) {
 
 	// Test with malformed YAML
 	malformedConfig := `
-version: defaultVersion
+version: "1.0.0"
 providers:
   github:
     token: "test"
@@ -290,7 +290,7 @@ func TestSyncClone_EnvironmentVariables_E2E(t *testing.T) {
 
 	// Create configuration using environment variables
 	config := `
-version: defaultVersion
+version: "1.0.0"
 providers:
   github:
     token: "${GITHUB_TOKEN}"
@@ -346,7 +346,7 @@ func TestSyncClone_CacheIntegration_E2E(t *testing.T) {
 
 	// Create configuration with cache enabled
 	config := `
-version: defaultVersion
+version: "1.0.0"
 cache:
   enabled: true
   type: "file"

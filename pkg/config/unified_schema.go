@@ -15,7 +15,7 @@ type UnifiedConfig struct {
 	Version string `yaml:"version" json:"version" validate:"required,oneof=1.0.0"`
 
 	// Default provider to use when not specified
-	DefaultProvider string `yaml:"defaultProvider,omitempty" json:"defaultProvider,omitempty" validate:"oneof=github gitlab gitea gogs"` //nolint:revive // Custom validation tags are valid
+	DefaultProvider string `yaml:"default_provider,omitempty" json:"default_provider,omitempty" validate:"omitempty,oneof=github gitlab gitea gogs"` //nolint:tagliatelle,revive // YAML compatibility required; custom validation tags are valid
 
 	// Global settings that apply to all providers
 	Global *GlobalSettings `yaml:"global,omitempty" json:"global,omitempty"`

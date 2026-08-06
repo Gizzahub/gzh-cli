@@ -6,7 +6,7 @@ package config
 // Config represents the top-level gzh.yaml configuration.
 type Config struct {
 	Version         string              `yaml:"version" json:"version"`
-	DefaultProvider string              `yaml:"defaultProvider,omitempty" json:"defaultProvider,omitempty"`
+	DefaultProvider string              `yaml:"default_provider,omitempty" json:"default_provider,omitempty"` //nolint:tagliatelle // YAML compatibility required
 	Providers       map[string]Provider `yaml:"providers,omitempty" json:"providers,omitempty"`
 }
 

@@ -31,7 +31,7 @@ func TestConfigService_LoadConfiguration(t *testing.T) {
 		{
 			name: "load valid unified configuration",
 			setupConfig: func(dir string) string {
-				content := `version: defaultVersion
+				content := `version: "1.0.0"
 default_provider: github
 providers:
   github:
@@ -141,7 +141,7 @@ func TestConfigService_ReloadConfiguration(t *testing.T) {
 	configPath := filepath.Join(tempDir, "gzh.yaml")
 
 	// Initial configuration
-	initialContent := `version: defaultVersion
+	initialContent := `version: "1.0.0"
 default_provider: github
 providers:
   github:
@@ -179,7 +179,7 @@ providers:
 	assert.Equal(t, "initial-org", cfg.Providers["github"].Organizations[0].Name)
 
 	// Update configuration file
-	updatedContent := `version: defaultVersion
+	updatedContent := `version: "1.0.0"
 default_provider: github
 providers:
   github:
@@ -282,7 +282,7 @@ func TestConfigService_WatchConfiguration(t *testing.T) {
 	configPath := filepath.Join(tempDir, "gzh.yaml")
 
 	// Initial configuration
-	initialContent := `version: defaultVersion
+	initialContent := `version: "1.0.0"
 default_provider: github
 providers:
   github:
@@ -335,7 +335,7 @@ providers:
 	defer service.StopWatching()
 
 	// Update configuration file
-	updatedContent := `version: defaultVersion
+	updatedContent := `version: "1.0.0"
 default_provider: gitlab
 providers:
   gitlab:
@@ -414,7 +414,7 @@ func TestConfigService_BulkCloneIntegration(t *testing.T) {
 	configPath := filepath.Join(tempDir, "gzh.yaml")
 
 	// Configuration with multiple providers
-	content := `version: defaultVersion
+	content := `version: "1.0.0"
 default_provider: github
 providers:
   github:

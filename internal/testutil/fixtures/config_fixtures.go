@@ -114,7 +114,7 @@ func (f *ConfigYAMLFixtures) MultiProviderYAML() string {
 
 // InvalidYAML returns invalid YAML for error testing.
 func (f *ConfigYAMLFixtures) InvalidYAML() string {
-	return `version: defaultVersion
+	return `version: "1.0.0"
 providers:
   github:
     token: "unclosed string
@@ -125,7 +125,7 @@ providers:
 
 // MalformedYAML returns malformed YAML for error testing.
 func (f *ConfigYAMLFixtures) MalformedYAML() string {
-	return `version: defaultVersion
+	return `version: "1.0.0"
 providers:
   github:
     token: "test-token"
@@ -136,7 +136,7 @@ providers:
 
 // EnvironmentVariableYAML returns YAML with environment variables.
 func (f *ConfigYAMLFixtures) EnvironmentVariableYAML() string {
-	return `version: defaultVersion
+	return `version: "1.0.0"
 default_provider: github
 providers:
   github:
@@ -150,7 +150,7 @@ providers:
 
 // MinimalYAML returns minimal valid YAML.
 func (f *ConfigYAMLFixtures) MinimalYAML() string {
-	return `version: defaultVersion
+	return `version: "1.0.0"
 default_provider: github
 providers:
   github:

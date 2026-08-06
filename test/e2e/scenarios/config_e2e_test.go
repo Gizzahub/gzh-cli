@@ -51,7 +51,7 @@ func TestConfig_Validate_E2E(t *testing.T) {
 
 	// Create valid configuration
 	validConfig := `
-version: defaultVersion
+version: "1.0.0"
 default_provider: github
 providers:
   github:
@@ -78,14 +78,14 @@ func TestConfig_ValidateAll_E2E(t *testing.T) {
 	// Create multiple configuration files
 	configs := map[string]string{
 		"github-config.yaml": `
-version: defaultVersion
+version: "1.0.0"
 providers:
   github:
     token: "test"
     orgs: [{name: "test-org"}]
 `,
 		"gitlab-config.yaml": `
-version: defaultVersion
+version: "1.0.0"
 providers:
   gitlab:
     token: "test"
@@ -112,7 +112,7 @@ func TestConfig_Show_E2E(t *testing.T) {
 
 	// Create configuration
 	config := `
-version: defaultVersion
+version: "1.0.0"
 default_provider: github
 providers:
   github:
@@ -164,7 +164,7 @@ func TestConfig_Watch_E2E(t *testing.T) {
 
 	// Create configuration
 	config := `
-version: defaultVersion
+version: "1.0.0"
 providers:
   github:
     token: "test"
@@ -192,7 +192,7 @@ func TestConfig_ErrorHandling_E2E(t *testing.T) {
 
 	// Test with invalid YAML
 	invalidConfig := `
-version: defaultVersion
+version: "1.0.0"
 providers:
   github:
     invalid_yaml: [
@@ -253,7 +253,7 @@ func TestConfig_ConfigPath_E2E(t *testing.T) {
 	env.CreateDir(customDir)
 
 	config := `
-version: defaultVersion
+version: "1.0.0"
 providers:
   github:
     token: "test"
@@ -276,7 +276,7 @@ func TestConfig_Backup_E2E(t *testing.T) {
 
 	// Create configuration
 	config := `
-version: defaultVersion
+version: "1.0.0"
 providers:
   github:
     token: "backup-test"
