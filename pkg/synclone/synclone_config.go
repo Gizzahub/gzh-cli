@@ -25,46 +25,58 @@ type bulkCloneDefault struct {
 }
 
 // bulkCloneDefaultGithub defines default GitHub-specific configuration.
-type bulkCloneDefaultGithub struct {
-	RootPath string `yaml:"rootPath"`
+//
+// 키 표기는 snake_case다. 이 패키지가 함께 들고 있는 JSON 스키마
+// (schema_validator.go), examples/synclone/*.yaml, 마이그레이션 문서가 모두
+// snake_case를 쓴다. 예전에는 여기만 camelCase라서 설정 파일의 값이 통째로
+// 버려졌다 -- yaml.Unmarshal은 모르는 키를 오류로 보지 않고 그냥 지나치므로
+// 아무 데도 흔적이 남지 않았다. tagliatelle은 yaml 태그를 camel로 요구하지만
+// 그건 린터 설정이 실제 파일 형식과 어긋난 것이다(tasks/issue/33).
+type bulkCloneDefaultGithub struct { //nolint:tagliatelle // 설정 파일 형식이 snake_case다
+	RootPath string `yaml:"root_path"`
 	Provider string `yaml:"provider"`
 	Protocol string `yaml:"protocol"`
-	OrgName  string `yaml:"orgName"`
+	OrgName  string `yaml:"org_name"`
 }
 
 // bulkCloneDefaultGitlab defines default GitLab-specific configuration.
-type bulkCloneDefaultGitlab struct {
-	RootPath  string `yaml:"rootPath"`
+type bulkCloneDefaultGitlab struct { //nolint:tagliatelle // 설정 파일 형식이 snake_case다
+	RootPath  string `yaml:"root_path"`
 	Provider  string `yaml:"provider"`
 	URL       string `yaml:"url"`
 	Recursive bool   `yaml:"recursive"`
 	Protocol  string `yaml:"protocol"`
-	GroupName string `yaml:"groupName"`
+	GroupName string `yaml:"group_name"`
 }
 
 // BulkCloneGithub represents GitHub bulk clone configuration.
-type BulkCloneGithub struct { //nolint:revive // Type name maintained for clarity in configuration structs
-	RootPath string `yaml:"rootPath" validate:"required"`
+//
+//nolint:revive,tagliatelle // Type name maintained for clarity; 설정 파일 형식이 snake_case다
+type BulkCloneGithub struct {
+	RootPath string `yaml:"root_path" validate:"required"`
 	Provider string `yaml:"provider" validate:"required"`
 	Protocol string `yaml:"protocol" validate:"required,oneof=http https ssh"`
-	OrgName  string `yaml:"orgName" validate:"required"`
+	OrgName  string `yaml:"org_name" validate:"required"`
 }
 
 // BulkCloneGitlab represents GitLab bulk clone configuration.
-type BulkCloneGitlab struct { //nolint:revive // Type name maintained for clarity in configuration structs
-	RootPath  string `yaml:"rootPath" validate:"required"`
+//
+//nolint:revive,tagliatelle // Type name maintained for clarity; 설정 파일 형식이 snake_case다
+type BulkCloneGitlab struct {
+	RootPath  string `yaml:"root_path" validate:"required"`
 	Provider  string `yaml:"provider" validate:"required"`
 	URL       string `yaml:"url"`
 	Recursive bool   `yaml:"recursive"`
 	Protocol  string `yaml:"protocol" validate:"required,oneof=http https ssh"`
-	GroupName string `yaml:"groupName" validate:"required"`
+	GroupName string `yaml:"group_name" validate:"required"`
 }
 
+//nolint:tagliatelle // 설정 파일 형식이 snake_case다
 type bulkCloneConfig struct {
 	Version           string            `yaml:"version"`
 	Default           bulkCloneDefault  `yaml:"default"`
-	IgnoreNameRegexes []string          `yaml:"ignoreNames"`
-	RepoRoots         []BulkCloneGithub `yaml:"repoRoots"`
+	IgnoreNameRegexes []string          `yaml:"ignore_names"`
+	RepoRoots         []BulkCloneGithub `yaml:"repo_roots"`
 }
 
 func fileExists(filePath string) bool {

@@ -87,7 +87,14 @@ repo_roots:
 		fmt.Printf("- First GitHub org: %s\n", config.RepoRoots[0].OrgName)
 	}
 
-	// Output: Configuration loaded successfully with multiple providers
+	// Output:
+	// Loaded configuration with:
+	// - Version: 1.0
+	// - Repository roots: 3
+	// - GitHub organizations: 1
+	// - GitLab groups: 1
+	// - Gitea organizations: 1
+	// - First GitHub org: octocat
 }
 
 // ExampleLoadConfig_validation demonstrates configuration validation and error handling.
@@ -151,7 +158,20 @@ repo_roots:
 		fmt.Printf("Provider: %s\n", config.RepoRoots[0].Provider)
 	}
 
-	// Output: Configuration validation demonstrates error detection and handling
+	// 첫 줄 "Error: ..."는 이 예시가 찍는 것이 아니라 synclone_config.go의
+	// printValidationErrors가 표준출력으로 내보내는 것이다. Example은 표준출력을
+	// 통째로 받으므로 기대값에도 들어간다.
+	//
+	// 아래 주석 앞의 빈 줄은 반드시 있어야 한다. Go는 함수 본문의 마지막 주석
+	// 덩어리가 "Output:"으로 시작할 때만 그것을 기대값으로 인정한다. 빈 줄이
+	// 없으면 위 설명과 한 덩어리가 되어 예시가 아예 실행되지 않는다.
+
+	// Output:
+	// Error: This field is required.
+	// Validation caught error: failed to validate config file: Key: 'bulkCloneConfig.Default.Protocol' Error:Field validation for 'Protocol' failed on the 'required' tag
+	// Valid configuration loaded successfully
+	// Organization: valid-org
+	// Provider: github
 }
 
 // ExampleMultiProviderConfig demonstrates a comprehensive configuration
@@ -251,7 +271,17 @@ repo_roots:
 		break
 	}
 
-	// Output: Multi-provider configuration demonstrates comprehensive setup
+	// Output:
+	// Multi-provider configuration loaded:
+	// - GitHub: 2 organizations
+	// - GitLab: 2 groups
+	// - Gitea: 1 organizations
+	// - Gogs: 1 organizations
+	//
+	// GitHub org details:
+	//   Name: github-org-1
+	//   Target: ./github/org1
+	//   Protocol: https
 }
 
 // ExampleConfigStrategies demonstrates different cloning strategies
@@ -306,7 +336,11 @@ repo_roots:
 		}
 	}
 
-	// Output: Clone strategies provide different update behaviors
+	// Output:
+	// Clone strategies configured:
+	// - production-org: ./production
+	// - development-org: ./development
+	// - backup-org: ./backup
 }
 
 // ExampleEnvironmentVariables demonstrates how environment variables
@@ -372,5 +406,8 @@ repo_roots:
 	fmt.Printf("GitHub token available: %t\n", githubToken != "")
 	fmt.Printf("GitLab token available: %t\n", gitlabToken != "")
 
-	// Output: Environment variables provide secure token management
+	// Output:
+	// Environment variable configuration:
+	// GitHub token available: true
+	// GitLab token available: true
 }

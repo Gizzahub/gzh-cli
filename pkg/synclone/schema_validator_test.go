@@ -11,13 +11,12 @@ import (
 )
 
 func TestValidateConfigWithSchema(t *testing.T) {
-	t.Run("valid simple config", func(t *testing.T) {
-		err := ValidateConfigWithSchema("../../examples/bulk-clone/bulk-clone-simple.yaml")
-		assert.NoError(t, err, "Simple config should be valid against schema")
-	})
-
+	// 배포되는 예시가 스키마와 로더 양쪽을 다 통과해야 한다. 이 둘이 갈라진
+	// 적이 있다 -- 스키마는 snake_case를 요구하는데 구조체 태그는 camelCase여서,
+	// 스키마 검사는 통과하고 로더는 내용을 통째로 버렸다. 그래서 gz synclone
+	// validate가 읽지도 못한 설정을 "valid"라고 답했다.
 	t.Run("valid comprehensive config", func(t *testing.T) {
-		err := ValidateConfigWithSchema("../../examples/bulk-clone/bulk-clone-example.yaml")
+		err := ValidateConfigWithSchema(legacyExampleConfig)
 		assert.NoError(t, err, "Example config should be valid against schema")
 	})
 
