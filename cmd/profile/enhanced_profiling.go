@@ -136,7 +136,12 @@ Examples:
 		RunE: func(cmd *cobra.Command, args []string) error {
 			analyzer := NewProfileAnalyzer("tmp/profiles")
 
-			return analyzer.RunContinuousProfiling(context.Background(), profileType, interval, duration, autoAnalyze)
+			// cmd.Context()여야 한다. 예전에는 context.Background()를
+			// 줘서 RunContinuousProfiling 안의 ctx.Done()이 죽어 있었다.
+			// --duration 기본값이 1시간인데 Ctrl+C로 멈출 수가 없었다 --
+			// apprunner가 signal.Notify로 기본 동작(신호 받으면 죽기)을
+			// 가로챈 뒤 자기 맥락만 취소하기 때문이다.
+			return analyzer.RunContinuousProfiling(cmd.Context(), profileType, interval, duration, autoAnalyze)
 		},
 	}
 

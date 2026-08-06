@@ -66,7 +66,7 @@ Examples:
   # Show status without colors (for scripting)
   gz dev-env status --no-color`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runStatusCmd(services, format, checkHealth, watch, timeout, !noColor)
+			return runStatusCmd(cmd.Context(), services, format, checkHealth, watch, timeout, !noColor)
 		},
 	}
 
@@ -81,9 +81,11 @@ Examples:
 }
 
 // runStatusCmd executes the status command.
-func runStatusCmd(services []string, format string, checkHealth, watch bool, timeout time.Duration, useColor bool) error {
-	ctx := context.Background()
-
+//
+// ctx는 실행 맥락이다. 예전에는 여기서 context.Background()를 만들었는데,
+// --watch는 무한 고리를 돌면서 "Press Ctrl+C to exit watch mode"라고
+// 찍어 놓고 정작 ctx.Done()은 절대 닫히지 않았다. 안내가 사실이 아니었다.
+func runStatusCmd(ctx context.Context, services []string, format string, checkHealth, watch bool, timeout time.Duration, useColor bool) error {
 	// Create service checkers
 	checkers := createServiceCheckers(services)
 	if len(checkers) == 0 {
@@ -214,7 +216,13 @@ func runWatchMode(ctx context.Context, collector *status.StatusCollector, format
 
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			// Ctrl+C는 감시 방식에서 빠져나오는 정상적인 길이다. 바로 위에
+			// "Press Ctrl+C to exit watch mode"라고 안내해 놓고 그렇게 했다고
+			// 오류를 돌려주면 앞뒤가 맞지 않는다. ctx.Err()를 그대로 올리면
+			// "Error: context canceled"와 사용법이 찍히고 종료 코드도 1이
+			// 된다. profile continuous도 같은 자리에서 nil을 돌려준다.
+			fmt.Println("\nExiting watch mode")
+			return nil
 		case <-ticker.C:
 			// Continue loop
 		}
