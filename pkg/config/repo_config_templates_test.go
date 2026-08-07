@@ -10,6 +10,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// assertBoolPtr fails the assertion when got is nil instead of panicking on deref.
+func assertBoolPtr(t *testing.T, want bool, got *bool, msgAndArgs ...interface{}) {
+	t.Helper()
+	if !assert.NotNil(t, got, msgAndArgs...) {
+		return
+	}
+	assert.Equal(t, want, *got, msgAndArgs...)
+}
+
 func TestPolicyTemplates(t *testing.T) {
 	// Test loading each policy template
 	templates := []struct {
@@ -61,23 +70,23 @@ func testSecurityTemplate(t *testing.T, config *RepoConfig) {
 
 	// Verify security settings
 	assert.NotNil(t, template.Settings)
-	assert.True(t, *template.Settings.Private, "Security repos must be private")
-	assert.False(t, *template.Settings.HasWiki, "Wiki should be disabled")
-	assert.True(t, *template.Settings.WebCommitSignoffRequired, "DCO should be required")
+	assertBoolPtr(t, true, template.Settings.Private, "Security repos must be private")
+	assertBoolPtr(t, false, template.Settings.HasWiki, "Wiki should be disabled")
+	assertBoolPtr(t, true, template.Settings.WebCommitSignoffRequired, "DCO should be required")
 
 	// Verify security features
 	assert.NotNil(t, template.Security)
-	assert.True(t, *template.Security.VulnerabilityAlerts)
-	assert.True(t, *template.Security.AutomatedSecurityFixes)
-	assert.True(t, *template.Security.PrivateVulnerabilityReporting)
+	assertBoolPtr(t, true, template.Security.VulnerabilityAlerts)
+	assertBoolPtr(t, true, template.Security.AutomatedSecurityFixes)
+	assertBoolPtr(t, true, template.Security.PrivateVulnerabilityReporting)
 
 	// Verify branch protection
 	mainProtection, ok := template.Security.BranchProtection["main"]
 	require.True(t, ok, "main branch protection not found")
 	assert.Equal(t, 3, *mainProtection.RequiredReviews)
-	assert.True(t, *mainProtection.RequireCodeOwnerReviews)
-	assert.True(t, *mainProtection.EnforceAdmins)
-	assert.False(t, *mainProtection.AllowForcePushes)
+	assertBoolPtr(t, true, mainProtection.RequireCodeOwnerReviews)
+	assertBoolPtr(t, true, mainProtection.EnforceAdmins)
+	assertBoolPtr(t, false, mainProtection.AllowForcePushes)
 
 	// Verify required status checks
 	assert.Contains(t, mainProtection.RequiredStatusChecks, "security/vulnerability-scan")
@@ -101,25 +110,25 @@ func testOpenSourceTemplate(t *testing.T, config *RepoConfig) {
 
 	// Verify open source settings
 	assert.NotNil(t, template.Settings)
-	assert.False(t, *template.Settings.Private, "Open source repos must be public")
-	assert.True(t, *template.Settings.HasIssues)
-	assert.True(t, *template.Settings.HasWiki)
-	assert.True(t, *template.Settings.HasProjects)
-	assert.True(t, *template.Settings.HasDiscussions)
-	assert.True(t, *template.Settings.AllowForking)
+	assertBoolPtr(t, false, template.Settings.Private, "Open source repos must be public")
+	assertBoolPtr(t, true, template.Settings.HasIssues)
+	assertBoolPtr(t, true, template.Settings.HasWiki)
+	assertBoolPtr(t, true, template.Settings.HasProjects)
+	assertBoolPtr(t, true, template.Settings.HasDiscussions)
+	assertBoolPtr(t, true, template.Settings.AllowForking)
 
 	// Verify all merge types allowed
-	assert.True(t, *template.Settings.AllowSquashMerge)
-	assert.True(t, *template.Settings.AllowMergeCommit)
-	assert.True(t, *template.Settings.AllowRebaseMerge)
-	assert.True(t, *template.Settings.AllowAutoMerge)
+	assertBoolPtr(t, true, template.Settings.AllowSquashMerge)
+	assertBoolPtr(t, true, template.Settings.AllowMergeCommit)
+	assertBoolPtr(t, true, template.Settings.AllowRebaseMerge)
+	assertBoolPtr(t, true, template.Settings.AllowAutoMerge)
 
 	// Verify relaxed branch protection
 	mainProtection, ok := template.Security.BranchProtection["main"]
 	require.True(t, ok, "main branch protection not found")
 	assert.Equal(t, 1, *mainProtection.RequiredReviews)
-	assert.False(t, *mainProtection.DismissStaleReviews)
-	assert.False(t, *mainProtection.EnforceAdmins)
+	assertBoolPtr(t, false, mainProtection.DismissStaleReviews)
+	assertBoolPtr(t, false, mainProtection.EnforceAdmins)
 
 	// Verify CLA/DCO checks
 	assert.Contains(t, mainProtection.RequiredStatusChecks, "license/cla")
@@ -157,24 +166,24 @@ func testEnterpriseTemplate(t *testing.T, config *RepoConfig) {
 
 	// Verify enterprise settings
 	assert.NotNil(t, template.Settings)
-	assert.True(t, *template.Settings.Private, "Enterprise repos should be private")
-	assert.True(t, *template.Settings.HasIssues)
-	assert.True(t, *template.Settings.HasWiki)
-	assert.True(t, *template.Settings.HasProjects)
-	assert.False(t, *template.Settings.HasDiscussions, "Should use enterprise forums")
+	assertBoolPtr(t, true, template.Settings.Private, "Enterprise repos should be private")
+	assertBoolPtr(t, true, template.Settings.HasIssues)
+	assertBoolPtr(t, true, template.Settings.HasWiki)
+	assertBoolPtr(t, true, template.Settings.HasProjects)
+	assertBoolPtr(t, false, template.Settings.HasDiscussions, "Should use enterprise forums")
 
 	// Verify merge strategy
-	assert.True(t, *template.Settings.AllowSquashMerge)
-	assert.False(t, *template.Settings.AllowMergeCommit)
-	assert.False(t, *template.Settings.AllowRebaseMerge)
-	assert.False(t, *template.Settings.AllowAutoMerge)
+	assertBoolPtr(t, true, template.Settings.AllowSquashMerge)
+	assertBoolPtr(t, false, template.Settings.AllowMergeCommit)
+	assertBoolPtr(t, false, template.Settings.AllowRebaseMerge)
+	assertBoolPtr(t, false, template.Settings.AllowAutoMerge)
 
 	// Verify branch protection
 	mainProtection, ok := template.Security.BranchProtection["main"]
 	require.True(t, ok, "main branch protection not found")
 	assert.Equal(t, 2, *mainProtection.RequiredReviews)
-	assert.True(t, *mainProtection.RequireCodeOwnerReviews)
-	assert.True(t, *mainProtection.EnforceAdmins)
+	assertBoolPtr(t, true, mainProtection.RequireCodeOwnerReviews)
+	assertBoolPtr(t, true, mainProtection.EnforceAdmins)
 
 	// Verify enterprise CI checks
 	assert.Contains(t, mainProtection.RequiredStatusChecks, "enterprise/security-scan")
@@ -250,18 +259,18 @@ func TestTemplateInheritanceInSchema(t *testing.T) {
 	require.NoError(t, err)
 
 	// Should have settings from both templates
-	assert.True(t, *settings.Private)           // From security template
-	assert.True(t, *settings.AllowSquashMerge)  // From standard template
-	assert.False(t, *settings.AllowMergeCommit) // From standard template
+	assertBoolPtr(t, true, settings.Private)           // From security template
+	assertBoolPtr(t, true, settings.AllowSquashMerge)  // From standard template
+	assertBoolPtr(t, false, settings.AllowMergeCommit) // From standard template
 
 	// Security settings should be merged
-	assert.True(t, *security.VulnerabilityAlerts)           // From standard
-	assert.True(t, *security.PrivateVulnerabilityReporting) // From security
+	assertBoolPtr(t, true, security.VulnerabilityAlerts)           // From standard
+	assertBoolPtr(t, true, security.PrivateVulnerabilityReporting) // From security
 
 	// Branch protection should be merged with security overrides
 	mainProtection := security.BranchProtection["main"]
-	assert.Equal(t, 2, *mainProtection.RequiredReviews) // Security overrides standard's 1
-	assert.True(t, *mainProtection.EnforceAdmins)       // Security overrides standard's false
+	assert.Equal(t, 2, *mainProtection.RequiredReviews)  // Security overrides standard's 1
+	assertBoolPtr(t, true, mainProtection.EnforceAdmins) // Security overrides standard's false
 }
 
 func TestPolicyValidation(t *testing.T) {
