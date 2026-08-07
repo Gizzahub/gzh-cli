@@ -350,33 +350,138 @@ func (g *GitLabProvider) SearchRepositories(ctx context.Context, query provider.
 	}, nil
 }
 
-// Webhook management — GitHub implemented; GitLab project hooks deferred (issue 26).
+// gitlabProjectHook is the GitLab project hook API shape.
+type gitlabProjectHook struct {
+	ID        int      `json:"id"`
+	URL       string   `json:"url"`
+	PushEvents bool    `json:"push_events"`
+	EnableSSL  bool    `json:"enable_ssl_verification"`
+	CreatedAt  string  `json:"created_at"`
+}
+
+// Webhook management — GitLab project hooks API.
 func (g *GitLabProvider) ListWebhooks(ctx context.Context, repoID string) ([]provider.Webhook, error) {
-	return nil, fmt.Errorf("webhook management not implemented for gitlab: use github provider or implement project hooks (issue 26)")
+	if repoID == "" {
+		return nil, fmt.Errorf("repository id is required")
+	}
+	encoded := url.PathEscape(repoID)
+	var hooks []gitlabProjectHook
+	if err := g.doJSON(ctx, "GET", "projects/"+encoded+"/hooks", nil, &hooks, http.StatusOK); err != nil {
+		return nil, g.FormatError("list webhooks", err)
+	}
+	out := make([]provider.Webhook, 0, len(hooks))
+	for i := range hooks {
+		out = append(out, gitlabHookToProvider(&hooks[i]))
+	}
+	return out, nil
 }
 
 func (g *GitLabProvider) GetWebhook(ctx context.Context, repoID, webhookID string) (*provider.Webhook, error) {
-	return nil, fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+	if repoID == "" || webhookID == "" {
+		return nil, fmt.Errorf("repository id and webhook id are required")
+	}
+	encoded := url.PathEscape(repoID)
+	var hook gitlabProjectHook
+	if err := g.doJSON(ctx, "GET", "projects/"+encoded+"/hooks/"+webhookID, nil, &hook, http.StatusOK); err != nil {
+		return nil, g.FormatError("get webhook", err)
+	}
+	w := gitlabHookToProvider(&hook)
+	return &w, nil
 }
 
 func (g *GitLabProvider) CreateWebhook(ctx context.Context, repoID string, webhook provider.CreateWebhookRequest) (*provider.Webhook, error) {
-	return nil, fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+	if err := g.ValidateWebhookURL(ctx, webhook.Config.URL); err != nil {
+		return nil, err
+	}
+	if repoID == "" {
+		return nil, fmt.Errorf("repository id is required")
+	}
+	payload := map[string]any{
+		"url":                     webhook.Config.URL,
+		"push_events":             true,
+		"enable_ssl_verification": !webhook.Config.InsecureSSL,
+	}
+	if webhook.Config.Secret != "" {
+		payload["token"] = webhook.Config.Secret
+	}
+	encoded := url.PathEscape(repoID)
+	var hook gitlabProjectHook
+	if err := g.doJSON(ctx, "POST", "projects/"+encoded+"/hooks", payload, &hook, http.StatusCreated, http.StatusOK); err != nil {
+		return nil, g.FormatError("create webhook", err)
+	}
+	w := gitlabHookToProvider(&hook)
+	return &w, nil
 }
 
 func (g *GitLabProvider) UpdateWebhook(ctx context.Context, repoID, webhookID string, updates provider.UpdateWebhookRequest) (*provider.Webhook, error) {
-	return nil, fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+	if repoID == "" || webhookID == "" {
+		return nil, fmt.Errorf("repository id and webhook id are required")
+	}
+	payload := map[string]any{}
+	if updates.Config != nil {
+		if updates.Config.URL != "" {
+			if err := g.ValidateWebhookURL(ctx, updates.Config.URL); err != nil {
+				return nil, err
+			}
+			payload["url"] = updates.Config.URL
+		}
+		payload["enable_ssl_verification"] = !updates.Config.InsecureSSL
+		if updates.Config.Secret != "" {
+			payload["token"] = updates.Config.Secret
+		}
+	}
+	if updates.Active != nil {
+		// GitLab has no active flag; map to push_events for best-effort.
+		payload["push_events"] = *updates.Active
+	}
+	encoded := url.PathEscape(repoID)
+	var hook gitlabProjectHook
+	if err := g.doJSON(ctx, "PUT", "projects/"+encoded+"/hooks/"+webhookID, payload, &hook, http.StatusOK); err != nil {
+		return nil, g.FormatError("update webhook", err)
+	}
+	w := gitlabHookToProvider(&hook)
+	return &w, nil
 }
 
 func (g *GitLabProvider) DeleteWebhook(ctx context.Context, repoID, webhookID string) error {
-	return fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+	if repoID == "" || webhookID == "" {
+		return fmt.Errorf("repository id and webhook id are required")
+	}
+	encoded := url.PathEscape(repoID)
+	if err := g.doJSON(ctx, "DELETE", "projects/"+encoded+"/hooks/"+webhookID, nil, nil, http.StatusNoContent, http.StatusOK); err != nil {
+		return g.FormatError("delete webhook", err)
+	}
+	return nil
 }
 
 func (g *GitLabProvider) TestWebhook(ctx context.Context, repoID, webhookID string) (*provider.WebhookTestResult, error) {
-	return nil, fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+	// GitLab has no direct "test hook" equivalent in all versions; report not supported clearly.
+	return nil, fmt.Errorf("test webhook not supported by GitLab project hooks API")
 }
 
-func (g *GitLabProvider) ValidateWebhookURL(ctx context.Context, url string) error {
-	return fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+func (g *GitLabProvider) ValidateWebhookURL(_ context.Context, webhookURL string) error {
+	if strings.TrimSpace(webhookURL) == "" {
+		return fmt.Errorf("webhook URL cannot be empty")
+	}
+	if !strings.HasPrefix(webhookURL, "http://") && !strings.HasPrefix(webhookURL, "https://") {
+		return fmt.Errorf("webhook URL must be a valid HTTP/HTTPS URL")
+	}
+	return nil
+}
+
+func gitlabHookToProvider(h *gitlabProjectHook) provider.Webhook {
+	return provider.Webhook{
+		ID:     fmt.Sprintf("%d", h.ID),
+		Name:   "project_hook",
+		URL:    h.URL,
+		Active: h.PushEvents,
+		Events: []string{"push"},
+		Config: provider.WebhookConfig{
+			URL:         h.URL,
+			ContentType: "json",
+			InsecureSSL: !h.EnableSSL,
+		},
+	}
 }
 
 // Event management methods — not in CLI surface; deferred (issue 26 phase 2+)

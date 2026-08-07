@@ -190,3 +190,47 @@ func TestGiteaProvider_UpdateAndFork(t *testing.T) {
 	_, err = p.UpdateRepository(ctx, "bad", provider.UpdateRepoRequest{})
 	require.Error(t, err)
 }
+
+func TestGiteaProvider_Webhooks(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == http.MethodGet && strings.HasSuffix(r.URL.Path, "/hooks"):
+			_ = json.NewEncoder(w).Encode([]map[string]any{
+				{"id": 3, "type": "gitea", "active": true, "config": map[string]string{"url": "https://ex/h", "content_type": "json"}, "events": []string{"push"}},
+			})
+		case r.Method == http.MethodPost && strings.HasSuffix(r.URL.Path, "/hooks"):
+			w.WriteHeader(http.StatusCreated)
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id": 4, "type": "gitea", "active": true, "config": map[string]string{"url": "https://ex/n", "content_type": "json"}, "events": []string{"push"},
+			})
+		case r.Method == http.MethodDelete:
+			w.WriteHeader(http.StatusNoContent)
+		case r.Method == http.MethodPost && strings.Contains(r.URL.Path, "/tests"):
+			w.WriteHeader(http.StatusNoContent)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	t.Cleanup(server.Close)
+
+	p := NewGiteaProvider(server.URL)
+	p.SetToken("t")
+	ctx := context.Background()
+
+	hooks, err := p.ListWebhooks(ctx, "acme/widget")
+	require.NoError(t, err)
+	require.Len(t, hooks, 1)
+
+	created, err := p.CreateWebhook(ctx, "acme/widget", provider.CreateWebhookRequest{
+		Config: provider.WebhookConfig{URL: "https://ex/n"},
+		Active: true,
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "4", created.ID)
+
+	res, err := p.TestWebhook(ctx, "acme/widget", "4")
+	require.NoError(t, err)
+	assert.True(t, res.Success)
+
+	require.NoError(t, p.DeleteWebhook(ctx, "acme/widget", "4"))
+}

@@ -177,3 +177,43 @@ func TestGitLabProvider_UpdateAndFork(t *testing.T) {
 	_, err = p.UpdateRepository(ctx, "", provider.UpdateRepoRequest{})
 	require.Error(t, err)
 }
+
+func TestGitLabProvider_Webhooks(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == http.MethodGet && strings.HasSuffix(r.URL.Path, "/hooks"):
+			_ = json.NewEncoder(w).Encode([]map[string]any{
+				{"id": 7, "url": "https://example.com/hook", "push_events": true, "enable_ssl_verification": true},
+			})
+		case r.Method == http.MethodPost && strings.HasSuffix(r.URL.Path, "/hooks"):
+			w.WriteHeader(http.StatusCreated)
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id": 8, "url": "https://example.com/new", "push_events": true, "enable_ssl_verification": true,
+			})
+		case r.Method == http.MethodDelete:
+			w.WriteHeader(http.StatusNoContent)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	t.Cleanup(server.Close)
+
+	p := NewGitLabProvider(server.URL)
+	p.SetToken("t")
+	ctx := context.Background()
+
+	hooks, err := p.ListWebhooks(ctx, "acme/widget")
+	require.NoError(t, err)
+	require.Len(t, hooks, 1)
+	assert.Equal(t, "7", hooks[0].ID)
+
+	created, err := p.CreateWebhook(ctx, "acme/widget", provider.CreateWebhookRequest{
+		Config: provider.WebhookConfig{URL: "https://example.com/new"},
+		Active: true,
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "8", created.ID)
+
+	require.NoError(t, p.DeleteWebhook(ctx, "acme/widget", "8"))
+	require.Error(t, p.ValidateWebhookURL(ctx, "ftp://bad"))
+}

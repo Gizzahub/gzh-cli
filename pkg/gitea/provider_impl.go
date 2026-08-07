@@ -351,39 +351,168 @@ func (g *GiteaProvider) SearchRepositories(ctx context.Context, query provider.S
 	}, nil
 }
 
-// Webhook management — GitHub implemented; Gitea hooks deferred (issue 26).
+// giteaHook is the Gitea repository hook API shape.
+type giteaHook struct {
+	ID     int64  `json:"id"`
+	Type   string `json:"type"`
+	Active bool   `json:"active"`
+	Config struct {
+		URL         string `json:"url"`
+		ContentType string `json:"content_type"`
+	} `json:"config"`
+	Events []string `json:"events"`
+}
+
+// Webhook management — Gitea repository hooks API.
 func (g *GiteaProvider) ListWebhooks(ctx context.Context, repoID string) ([]provider.Webhook, error) {
-	return nil, g.FormatError("list webhooks", fmt.Errorf("not implemented for gitea: use github provider or implement repo hooks (issue 26)"))
+	owner, repo, err := parseOwnerRepo(repoID)
+	if err != nil {
+		return nil, err
+	}
+	var hooks []giteaHook
+	if err := g.doJSON(ctx, "GET", fmt.Sprintf("repos/%s/%s/hooks", owner, repo), nil, &hooks, http.StatusOK); err != nil {
+		return nil, g.FormatError("list webhooks", err)
+	}
+	out := make([]provider.Webhook, 0, len(hooks))
+	for i := range hooks {
+		out = append(out, giteaHookToProvider(&hooks[i]))
+	}
+	return out, nil
 }
 
 func (g *GiteaProvider) GetWebhook(ctx context.Context, repoID, webhookID string) (*provider.Webhook, error) {
-	return nil, g.FormatError("get webhook", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
+	owner, repo, err := parseOwnerRepo(repoID)
+	if err != nil {
+		return nil, err
+	}
+	var hook giteaHook
+	if err := g.doJSON(ctx, "GET", fmt.Sprintf("repos/%s/%s/hooks/%s", owner, repo, webhookID), nil, &hook, http.StatusOK); err != nil {
+		return nil, g.FormatError("get webhook", err)
+	}
+	w := giteaHookToProvider(&hook)
+	return &w, nil
 }
 
 func (g *GiteaProvider) CreateWebhook(ctx context.Context, repoID string, webhook provider.CreateWebhookRequest) (*provider.Webhook, error) {
-	if err := g.helpers.ValidateWebhookRequest(repoID, "", webhook.Config.URL); err != nil {
+	if err := g.ValidateWebhookURL(ctx, webhook.Config.URL); err != nil {
+		return nil, err
+	}
+	owner, repo, err := parseOwnerRepo(repoID)
+	if err != nil {
+		return nil, err
+	}
+	events := webhook.Events
+	if len(events) == 0 {
+		events = []string{"push"}
+	}
+	ct := webhook.Config.ContentType
+	if ct == "" {
+		ct = "json"
+	}
+	payload := map[string]any{
+		"type":   "gitea",
+		"active": webhook.Active,
+		"events": events,
+		"config": map[string]any{
+			"url":          webhook.Config.URL,
+			"content_type": ct,
+		},
+	}
+	var hook giteaHook
+	if err := g.doJSON(ctx, "POST", fmt.Sprintf("repos/%s/%s/hooks", owner, repo), payload, &hook, http.StatusCreated, http.StatusOK); err != nil {
 		return nil, g.FormatError("create webhook", err)
 	}
-	return nil, g.FormatError("create webhook", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
+	w := giteaHookToProvider(&hook)
+	return &w, nil
 }
 
 func (g *GiteaProvider) UpdateWebhook(ctx context.Context, repoID, webhookID string, updates provider.UpdateWebhookRequest) (*provider.Webhook, error) {
-	return nil, g.FormatError("update webhook", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
+	owner, repo, err := parseOwnerRepo(repoID)
+	if err != nil {
+		return nil, err
+	}
+	payload := map[string]any{}
+	if updates.Active != nil {
+		payload["active"] = *updates.Active
+	}
+	if len(updates.Events) > 0 {
+		payload["events"] = updates.Events
+	}
+	if updates.Config != nil {
+		if updates.Config.URL != "" {
+			if err := g.ValidateWebhookURL(ctx, updates.Config.URL); err != nil {
+				return nil, err
+			}
+		}
+		ct := updates.Config.ContentType
+		if ct == "" {
+			ct = "json"
+		}
+		payload["config"] = map[string]any{
+			"url":          updates.Config.URL,
+			"content_type": ct,
+		}
+	}
+	var hook giteaHook
+	if err := g.doJSON(ctx, "PATCH", fmt.Sprintf("repos/%s/%s/hooks/%s", owner, repo, webhookID), payload, &hook, http.StatusOK); err != nil {
+		return nil, g.FormatError("update webhook", err)
+	}
+	w := giteaHookToProvider(&hook)
+	return &w, nil
 }
 
 func (g *GiteaProvider) DeleteWebhook(ctx context.Context, repoID, webhookID string) error {
-	return g.FormatError("delete webhook", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
+	owner, repo, err := parseOwnerRepo(repoID)
+	if err != nil {
+		return err
+	}
+	if err := g.doJSON(ctx, "DELETE", fmt.Sprintf("repos/%s/%s/hooks/%s", owner, repo, webhookID), nil, nil, http.StatusNoContent, http.StatusOK); err != nil {
+		return g.FormatError("delete webhook", err)
+	}
+	return nil
 }
 
 func (g *GiteaProvider) TestWebhook(ctx context.Context, repoID, webhookID string) (*provider.WebhookTestResult, error) {
-	return nil, g.FormatError("test webhook", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
+	owner, repo, err := parseOwnerRepo(repoID)
+	if err != nil {
+		return nil, err
+	}
+	if err := g.doJSON(ctx, "POST", fmt.Sprintf("repos/%s/%s/hooks/%s/tests", owner, repo, webhookID), nil, nil, http.StatusNoContent, http.StatusOK); err != nil {
+		return nil, g.FormatError("test webhook", err)
+	}
+	return &provider.WebhookTestResult{Success: true, StatusCode: http.StatusNoContent}, nil
 }
 
-func (g *GiteaProvider) ValidateWebhookURL(ctx context.Context, url string) error {
-	if err := g.helpers.ValidateWebhookRequest("", "", url); err != nil {
-		return g.FormatError("validate webhook URL", err)
+func (g *GiteaProvider) ValidateWebhookURL(_ context.Context, webhookURL string) error {
+	if strings.TrimSpace(webhookURL) == "" {
+		return fmt.Errorf("webhook URL cannot be empty")
 	}
-	return g.FormatError("validate webhook URL", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
+	if !strings.HasPrefix(webhookURL, "http://") && !strings.HasPrefix(webhookURL, "https://") {
+		return fmt.Errorf("webhook URL must be a valid HTTP/HTTPS URL")
+	}
+	return nil
+}
+
+func giteaHookToProvider(h *giteaHook) provider.Webhook {
+	name := h.Type
+	if name == "" {
+		name = "gitea"
+	}
+	ct := h.Config.ContentType
+	if ct == "" {
+		ct = "json"
+	}
+	return provider.Webhook{
+		ID:     fmt.Sprintf("%d", h.ID),
+		Name:   name,
+		URL:    h.Config.URL,
+		Active: h.Active,
+		Events: h.Events,
+		Config: provider.WebhookConfig{
+			URL:         h.Config.URL,
+			ContentType: ct,
+		},
+	}
 }
 
 // Event management methods — not in CLI surface; deferred (issue 26 phase 2+)
