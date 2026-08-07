@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+// ErrNotImplemented indicates a feature path is intentionally unimplemented.
+// Callers must surface this instead of reporting fabricated success.
+var ErrNotImplemented = errors.New("not implemented")
+
 // webhookConfigurationServiceImpl implements WebhookConfigurationService.
 type webhookConfigurationServiceImpl struct {
 	webhookService WebhookService
@@ -721,31 +725,17 @@ func (w *webhookConfigurationServiceImpl) applyRuleToRepository(ctx context.Cont
 	if dryRun {
 		result.Success = true
 		result.Changes = []string{fmt.Sprintf("Would %s webhook '%s'", rule.Action, rule.Template.Name)}
+		result.Duration = time.Since(startTime).String()
 
 		return result
 	}
 
-	// Apply the rule (mock implementation)
-	switch rule.Action {
-	case WebhookActionCreate:
-		// Create webhook
-		result.Success = true
-		result.WebhookID = int64Ptr(123456)
-		result.Changes = []string{fmt.Sprintf("Created webhook '%s'", rule.Template.Name)}
-	case WebhookActionUpdate:
-		// Update webhook
-		result.Success = true
-		result.Changes = []string{fmt.Sprintf("Updated webhook '%s'", rule.Template.Name)}
-	case WebhookActionDelete:
-		// Delete webhook
-		result.Success = true
-		result.Changes = []string{fmt.Sprintf("Deleted webhook '%s'", rule.Template.Name)}
-	case WebhookActionEnsure:
-		// Ensure webhook exists with correct configuration
-		result.Success = true
-		result.Changes = []string{fmt.Sprintf("Ensured webhook '%s' exists", rule.Template.Name)}
-	}
-
+	// Live webhook mutation via webhookService is not implemented yet.
+	// Do not fabricate success, webhook IDs, or change lists.
+	result.Success = false
+	result.Skipped = true
+	result.SkipReason = "webhook policy application is not implemented"
+	result.Error = ErrNotImplemented.Error()
 	result.Duration = time.Since(startTime).String()
 
 	return result

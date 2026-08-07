@@ -3,6 +3,7 @@ package github
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -805,19 +806,27 @@ func (pm *DependabotPolicyManager) executeBulkOperation(ctx context.Context, ope
 		err := pm.applyPolicyToRepository(ctx, policy, operation.Organization, repoName)
 		result.Duration = time.Since(startTime)
 
-		if err != nil {
+		switch {
+		case errors.Is(err, ErrNotImplemented):
+			result.Status = OperationResultStatusSkipped
+			result.Error = err.Error()
+			result.Message = "Policy application is not implemented"
+		case err != nil:
 			result.Status = OperationResultStatusFailed
 			result.Error = err.Error()
-		} else {
+		default:
 			result.Status = OperationResultStatusSuccess
 			result.Message = "Policy applied successfully"
 		}
 
 		pm.operationsMutex.Lock()
 
-		if err != nil {
+		switch {
+		case errors.Is(err, ErrNotImplemented):
+			operation.Progress.Skipped++
+		case err != nil:
 			operation.Progress.Failed++
-		} else {
+		default:
 			operation.Progress.Completed++
 		}
 
@@ -851,16 +860,16 @@ func (pm *DependabotPolicyManager) executeBulkOperation(ctx context.Context, ope
 }
 
 func (pm *DependabotPolicyManager) applyPolicyToRepository(ctx context.Context, policy *DependabotPolicyConfig, organization, repository string) error {
-	// In a real implementation, this would apply the policy configuration to the repository
-	// For now, simulate the operation
-	pm.logger.Debug("Applying policy to repository",
+	// Writing .github/dependabot.yml (or opening a PR) is not implemented.
+	// Fail honestly so bulk results never report fabricated success.
+	_ = ctx
+
+	pm.logger.Debug("Policy application not implemented",
 		"policy_id", policy.ID,
+		"organization", organization,
 		"repository", repository)
 
-	// Simulate processing time
-	time.Sleep(100 * time.Millisecond)
-
-	return nil
+	return fmt.Errorf("%w: dependabot policy application for %s/%s", ErrNotImplemented, organization, repository)
 }
 
 func (pm *DependabotPolicyManager) generateTrendAnalysis(organization, policyID string) PolicyTrendAnalysis {

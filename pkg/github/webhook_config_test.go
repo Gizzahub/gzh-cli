@@ -632,3 +632,50 @@ func BenchmarkRuleAppliesTo(b *testing.B) {
 		_, _ = service.ruleAppliesTo("api-service", conditions)
 	}
 }
+
+func TestApplyRuleToRepository_NotImplementedWhenNotDryRun(t *testing.T) {
+	service := &webhookConfigurationServiceImpl{
+		logger: &mockLogger{},
+	}
+
+	rule := &WebhookPolicyRule{
+		ID:     "rule-1",
+		Action: WebhookActionCreate,
+		Template: WebhookTemplate{
+			Name: "ci-hook",
+		},
+	}
+
+	result := service.applyRuleToRepository(context.Background(), "test-repo", "policy-1", rule, false, false)
+
+	assert.False(t, result.Success)
+	assert.True(t, result.Skipped)
+	assert.NotEmpty(t, result.SkipReason)
+	assert.Equal(t, ErrNotImplemented.Error(), result.Error)
+	assert.Nil(t, result.WebhookID)
+	assert.Empty(t, result.Changes)
+	assert.NotContains(t, result.SkipReason, "123456")
+}
+
+func TestApplyRuleToRepository_DryRunStillReportsPreview(t *testing.T) {
+	service := &webhookConfigurationServiceImpl{
+		logger: &mockLogger{},
+	}
+
+	rule := &WebhookPolicyRule{
+		ID:     "rule-1",
+		Action: WebhookActionCreate,
+		Template: WebhookTemplate{
+			Name: "ci-hook",
+		},
+	}
+
+	result := service.applyRuleToRepository(context.Background(), "test-repo", "policy-1", rule, true, false)
+
+	assert.True(t, result.Success)
+	assert.False(t, result.Skipped)
+	assert.Empty(t, result.Error)
+	assert.Nil(t, result.WebhookID)
+	require.Len(t, result.Changes, 1)
+	assert.Contains(t, result.Changes[0], "Would create")
+}

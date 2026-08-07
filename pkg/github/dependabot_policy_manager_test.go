@@ -313,9 +313,8 @@ func TestDependabotPolicyManager_ApplyPolicyToOrganization(t *testing.T) {
 	assert.NotEmpty(t, operation.ID)
 	assert.Equal(t, []string{"repo-a", "repo-b"}, operation.TargetRepos)
 
-	// 진행 상황은 ID로 다시 물어본다. 고정된 sleep 대신 완료를 기다린다 --
-	// applyPolicyToRepository가 저장소마다 100ms를 쓰므로 저장소 수가
-	// 바뀌면 고정 대기는 곧 깨진다.
+	// 진행 상황은 ID로 다시 물어본다. applyPolicyToRepository는 미구현이라
+	// 즉시 반환하므로 고정 sleep 없이 완료를 기다린다.
 	require.Eventually(t, func() bool {
 		// Eventually는 조건을 별도 고루틴에서 돌리므로 바깥 변수에 쓰지
 		// 않는다. 결과는 완료를 확인한 뒤 다시 조회해서 가져온다.
@@ -327,9 +326,17 @@ func TestDependabotPolicyManager_ApplyPolicyToOrganization(t *testing.T) {
 	current, err := policyManager.GetBulkOperation(ctx, operation.ID)
 	require.NoError(t, err)
 	assert.Equal(t, 2, current.Progress.Total)
-	assert.Equal(t, 2, current.Progress.Completed)
+	// Policy application is not implemented: every repo must be skipped,
+	// never reported as successful.
+	assert.Equal(t, 0, current.Progress.Completed)
+	assert.Equal(t, 2, current.Progress.Skipped)
 	assert.Len(t, current.Results, 2)
 	assert.NotNil(t, current.CompletedAt)
+	for _, result := range current.Results {
+		assert.Equal(t, OperationResultStatusSkipped, result.Status)
+		assert.Contains(t, result.Error, ErrNotImplemented.Error())
+		assert.NotContains(t, result.Message, "successfully")
+	}
 
 	// Test with non-existent operation
 	_, err = policyManager.GetBulkOperation(ctx, "non-existent")
@@ -706,4 +713,14 @@ func createTestDependabotPolicy() *DependabotPolicyConfig {
 			},
 		},
 	}
+}
+
+func TestApplyPolicyToRepository_NotImplemented(t *testing.T) {
+	pm := createTestPolicyManager()
+	policy := createTestDependabotPolicy()
+
+	err := pm.applyPolicyToRepository(context.Background(), policy, "testorg", "repo-a")
+	require.Error(t, err)
+	assert.ErrorIs(t, err, ErrNotImplemented)
+	assert.NotContains(t, err.Error(), "successfully")
 }
