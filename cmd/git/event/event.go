@@ -12,12 +12,46 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 
 	"github.com/gizzahub/gzh-cli/pkg/github"
 )
+
+const (
+	outputFormatJSON  = "json"
+	outputFormatYAML  = "yaml"
+	outputFormatTable = "table"
+)
+
+// defaultEventStorage is process-local storage shared by server/list/get/metrics
+// within the same process. It is intentionally in-memory only.
+var (
+	defaultStorageMu sync.RWMutex
+	defaultStorage   github.EventStorage = github.NewMemoryEventStorage()
+)
+
+// SetDefaultEventStorage replaces the package-level storage (tests / DI).
+func SetDefaultEventStorage(storage github.EventStorage) {
+	defaultStorageMu.Lock()
+	defer defaultStorageMu.Unlock()
+	if storage == nil {
+		defaultStorage = github.NewMemoryEventStorage()
+		return
+	}
+	defaultStorage = storage
+}
+
+// DefaultEventStorage returns the package-level event storage.
+func DefaultEventStorage() github.EventStorage {
+	defaultStorageMu.RLock()
+	defer defaultStorageMu.RUnlock()
+	return defaultStorage
+}
 
 // NewEventCmd creates a new event command.
 func NewEventCmd() *cobra.Command {
@@ -50,7 +84,10 @@ This command provides comprehensive event management capabilities including:
 - Running webhook servers to receive GitHub events
 - Querying and filtering stored events
 - Managing event handlers and processors
-- Monitoring event processing metrics`,
+- Monitoring event processing metrics
+
+Note: event storage is process-local (in-memory). list/get/metrics only see
+events received by a server running in the same process.`,
 	}
 
 	eventServerCmd := &cobra.Command{
@@ -59,7 +96,8 @@ This command provides comprehensive event management capabilities including:
 		Long: `Start a webhook server to receive and process GitHub events.
 
 The server listens for incoming webhook requests from GitHub and processes them
-according to registered event handlers and policies.`,
+according to registered event handlers and policies. Received events are stored
+in process-local memory.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runEventServer(cmd, args, eventServerHost, eventServerPort, eventServerSecret)
 		},
@@ -71,7 +109,10 @@ according to registered event handlers and policies.`,
 		Long: `List GitHub events stored in the system with optional filtering.
 
 Supports filtering by organization, repository, event type, action, sender,
-and time range to help find specific events.`,
+and time range to help find specific events.
+
+Events are process-local (in-memory); an empty result means nothing has been
+stored in this process yet.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runEventList(cmd, args, eventFilterOrg, eventFilterRepo, eventFilterType,
 				eventFilterAction, eventFilterSender, eventFilterSince, eventFilterUntil,
@@ -85,7 +126,7 @@ and time range to help find specific events.`,
 		Long: `Retrieve detailed information about a specific GitHub event by its ID.
 
 Shows the complete event payload, headers, processing status, and any
-associated handler results.`,
+associated handler results. Returns a clear error when the event is not found.`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runEventGet(cmd, args, eventOutputFormat)
@@ -95,11 +136,12 @@ associated handler results.`,
 	eventMetricsCmd := &cobra.Command{
 		Use:   "metrics",
 		Short: "Show event processing metrics",
-		Long: `Display comprehensive metrics about event processing including:
-- Total events received and processed
+		Long: `Display metrics derived from process-local stored events including:
+- Total events received and stored
 - Events by type and organization
-- Average processing time
-- Handler status and performance`,
+- Last event timestamp
+
+Zeros mean no events are stored in this process (not fabricated sample data).`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runEventMetrics(cmd, args, eventOutputFormat)
 		},
@@ -152,24 +194,15 @@ without waiting for actual GitHub events.`,
 	return eventCmd
 }
 
-// errEventStorageNotImplemented is returned by list/get/metrics until real storage exists.
-var errEventStorageNotImplemented = fmt.Errorf("event storage is not implemented")
-
 func runEventServer(_ *cobra.Command, _ []string, host string, port int, secret string) error {
 	logger := getLogger()
 	logger.Info("Starting GitHub webhook server", "host", host, "port", port)
-	logger.Warn("event storage is a no-op: received events are not persisted; list/get/metrics will fail")
+	logger.Info("using process-local in-memory event storage")
 
-	// Storage is intentionally a no-op: events are processed but not retained.
-	storage := &noopEventStorage{}
-
-	// Create event processor
+	storage := DefaultEventStorage()
 	processor := github.NewEventProcessor(storage, logger)
-
-	// Create webhook server
 	server := github.NewEventWebhookServer(processor, secret, logger)
 
-	// Setup HTTP routes
 	mux := http.NewServeMux()
 	mux.HandleFunc("/webhook", server.HandleWebhook)
 	mux.HandleFunc("/health", server.GetHealthCheck)
@@ -179,8 +212,13 @@ func runEventServer(_ *cobra.Command, _ []string, host string, port int, secret 
 			return
 		}
 
-		// Processor metrics cover in-process handling only (not durable storage).
-		metrics := processor.GetMetrics()
+		// Prefer storage-backed counts; fall back to processor timing metrics.
+		var metrics any
+		if mem, ok := storage.(*github.MemoryEventStorage); ok {
+			metrics = mem.AggregateMetrics(r.Context())
+		} else {
+			metrics = processor.GetMetrics()
+		}
 
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(metrics); err != nil {
@@ -188,7 +226,6 @@ func runEventServer(_ *cobra.Command, _ []string, host string, port int, secret 
 		}
 	})
 
-	// Start server
 	addr := fmt.Sprintf("%s:%d", host, port)
 	srv := &http.Server{
 		Addr:              addr,
@@ -201,21 +238,130 @@ func runEventServer(_ *cobra.Command, _ []string, host string, port int, secret 
 	fmt.Printf("Webhook endpoint: http://%s/webhook\n", addr)
 	fmt.Printf("Health check: http://%s/health\n", addr)
 	fmt.Printf("Metrics: http://%s/metrics\n", addr)
-	fmt.Printf("Warning: event storage is not implemented; events are not persisted\n")
+	fmt.Printf("Note: events are stored in process-local memory only\n")
 
 	return srv.ListenAndServe()
 }
 
-func runEventList(_ *cobra.Command, _ []string, _, _, _, _, _, _, _ string, _, _ int, _ string) error {
-	return errEventStorageNotImplemented
+func runEventList(_ *cobra.Command, _ []string, org, repo, eventType, action, sender, since, until string, limit, offset int, outputFormat string) error {
+	ctx := context.Background()
+	storage := DefaultEventStorage()
+
+	filter, err := buildEventFilter(org, repo, eventType, action, sender, since, until)
+	if err != nil {
+		return err
+	}
+
+	events, err := storage.ListEvents(ctx, filter, limit, offset)
+	if err != nil {
+		return fmt.Errorf("list events: %w", err)
+	}
+
+	if len(events) == 0 {
+		fmt.Println("No events stored in process-local memory")
+		fmt.Println("(start `gz git event server` in this process and receive webhooks first)")
+		return nil
+	}
+
+	switch outputFormat {
+	case outputFormatJSON:
+		return outputJSON(events)
+	case outputFormatYAML:
+		return outputYAML(events)
+	default:
+		return outputEventTable(events)
+	}
 }
 
-func runEventGet(_ *cobra.Command, _ []string, _ string) error {
-	return errEventStorageNotImplemented
+func runEventGet(_ *cobra.Command, args []string, outputFormat string) error {
+	eventID := args[0]
+	ctx := context.Background()
+	storage := DefaultEventStorage()
+
+	event, err := storage.GetEvent(ctx, eventID)
+	if err != nil {
+		return err
+	}
+
+	switch outputFormat {
+	case outputFormatYAML:
+		return outputYAML(event)
+	default:
+		return outputJSON(event)
+	}
 }
 
-func runEventMetrics(_ *cobra.Command, _ []string, _ string) error {
-	return errEventStorageNotImplemented
+func runEventMetrics(_ *cobra.Command, _ []string, outputFormat string) error {
+	ctx := context.Background()
+	storage := DefaultEventStorage()
+
+	var metrics *github.EventMetrics
+	if mem, ok := storage.(*github.MemoryEventStorage); ok {
+		metrics = mem.AggregateMetrics(ctx)
+	} else {
+		// Best-effort for non-memory backends: count only.
+		count, err := storage.CountEvents(ctx, nil)
+		if err != nil {
+			return fmt.Errorf("count events: %w", err)
+		}
+		metrics = &github.EventMetrics{
+			TotalEventsReceived:  int64(count),
+			TotalEventsProcessed: int64(count),
+			EventsByType:         map[string]int64{},
+			EventsByOrganization: map[string]int64{},
+			HandlersStatus:       map[string]string{},
+		}
+	}
+
+	switch outputFormat {
+	case outputFormatJSON:
+		return outputJSON(metrics)
+	case outputFormatYAML:
+		return outputYAML(metrics)
+	default:
+		return outputMetricsTable(metrics)
+	}
+}
+
+func buildEventFilter(org, repo, eventType, action, sender, since, until string) (*github.EventFilter, error) {
+	filter := &github.EventFilter{
+		Organization: org,
+		Repository:   repo,
+		Sender:       sender,
+	}
+
+	if eventType != "" {
+		filter.EventTypes = []github.EventType{github.EventType(eventType)}
+	}
+	if action != "" {
+		filter.Actions = []github.EventAction{github.EventAction(action)}
+	}
+
+	var timeRange *github.TimeRange
+	if since != "" {
+		t, err := time.Parse(time.RFC3339, since)
+		if err != nil {
+			return nil, fmt.Errorf("invalid since time format: %w", err)
+		}
+		timeRange = &github.TimeRange{Start: t}
+	}
+	if until != "" {
+		t, err := time.Parse(time.RFC3339, until)
+		if err != nil {
+			return nil, fmt.Errorf("invalid until time format: %w", err)
+		}
+		if timeRange == nil {
+			timeRange = &github.TimeRange{}
+		}
+		timeRange.End = t
+	}
+	filter.TimeRange = timeRange
+
+	// If no criteria set, return nil filter for "match all".
+	if org == "" && repo == "" && eventType == "" && action == "" && sender == "" && timeRange == nil {
+		return nil, nil
+	}
+	return filter, nil
 }
 
 func runEventTest(cmd *cobra.Command, _ []string, eventType, action, payload string, port int) error {
@@ -303,6 +449,78 @@ func runEventTest(cmd *cobra.Command, _ []string, eventType, action, payload str
 	return nil
 }
 
+// Output helper functions.
+func outputEventTable(events []*github.GitHubEvent) error {
+	fmt.Printf("%-20s %-15s %-12s %-15s %-15s %-20s\n",
+		"EVENT ID", "TYPE", "ACTION", "ORGANIZATION", "REPOSITORY", "TIMESTAMP")
+	fmt.Println(strings.Repeat("-", 100))
+
+	for _, event := range events {
+		timestamp := event.Timestamp.Format("2006-01-02 15:04:05")
+		fmt.Printf("%-20s %-15s %-12s %-15s %-15s %-20s\n",
+			truncate(event.ID, 20),
+			truncate(event.Type, 15),
+			truncate(event.Action, 12),
+			truncate(event.Organization, 15),
+			truncate(event.Repository, 15),
+			timestamp)
+	}
+
+	fmt.Printf("\nTotal: %d events\n", len(events))
+	return nil
+}
+
+func outputMetricsTable(metrics *github.EventMetrics) error {
+	fmt.Println("GitHub Event Processing Metrics (process-local storage)")
+	fmt.Println(strings.Repeat("=", 50))
+	fmt.Printf("Total Events Received:  %d\n", metrics.TotalEventsReceived)
+	fmt.Printf("Total Events Processed: %d\n", metrics.TotalEventsProcessed)
+	fmt.Printf("Total Events Failed:    %d\n", metrics.TotalEventsFailed)
+	if metrics.AverageProcessingTime > 0 {
+		fmt.Printf("Average Processing Time: %v\n", metrics.AverageProcessingTime)
+	}
+	if !metrics.LastEventAt.IsZero() {
+		fmt.Printf("Last Event At:          %s\n", metrics.LastEventAt.Format(time.RFC3339))
+	} else {
+		fmt.Printf("Last Event At:          (none)\n")
+	}
+
+	fmt.Println("\nEvents by Type:")
+	fmt.Println(strings.Repeat("-", 30))
+	if len(metrics.EventsByType) == 0 {
+		fmt.Println("  (none)")
+	}
+	for eventType, count := range metrics.EventsByType {
+		fmt.Printf("  %-15s %d\n", eventType, count)
+	}
+
+	fmt.Println("\nEvents by Organization:")
+	fmt.Println(strings.Repeat("-", 30))
+	if len(metrics.EventsByOrganization) == 0 {
+		fmt.Println("  (none)")
+	}
+	for org, count := range metrics.EventsByOrganization {
+		fmt.Printf("  %-15s %d\n", org, count)
+	}
+
+	if len(metrics.HandlersStatus) > 0 {
+		fmt.Println("\nHandler Status:")
+		fmt.Println(strings.Repeat("-", 30))
+		for handler, status := range metrics.HandlersStatus {
+			fmt.Printf("  %-15s %s\n", handler, status)
+		}
+	}
+
+	return nil
+}
+
+func truncate(s string, maxLen int) string {
+	if len(s) <= maxLen {
+		return s
+	}
+	return s[:maxLen-3] + "..."
+}
+
 // getLogger returns a logger that implements the github.Logger interface.
 func getLogger() github.Logger {
 	return &simpleLogger{}
@@ -332,30 +550,25 @@ func formatMessage(msg string, args ...any) string {
 	if len(args) == 0 {
 		return msg
 	}
-
 	return fmt.Sprintf("%s %v", msg, args)
 }
 
-// noopEventStorage accepts events but does not persist them.
-// list/get/metrics CLI commands fail-fast until a real backend exists.
-type noopEventStorage struct{}
-
-func (m *noopEventStorage) StoreEvent(_ context.Context, _ *github.GitHubEvent) error {
+// outputJSON marshals the data to JSON and prints it.
+func outputJSON(data any) error {
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal JSON: %w", err)
+	}
+	fmt.Println(string(jsonData))
 	return nil
 }
 
-func (m *noopEventStorage) GetEvent(_ context.Context, eventID string) (*github.GitHubEvent, error) {
-	return nil, fmt.Errorf("%w: %s", errEventStorageNotImplemented, eventID)
-}
-
-func (m *noopEventStorage) ListEvents(_ context.Context, _ *github.EventFilter, _, _ int) ([]*github.GitHubEvent, error) {
-	return nil, errEventStorageNotImplemented
-}
-
-func (m *noopEventStorage) DeleteEvent(_ context.Context, _ string) error {
-	return errEventStorageNotImplemented
-}
-
-func (m *noopEventStorage) CountEvents(_ context.Context, _ *github.EventFilter) (int, error) {
-	return 0, errEventStorageNotImplemented
+// outputYAML marshals the data to YAML and prints it.
+func outputYAML(data any) error {
+	yamlData, err := yaml.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("failed to marshal YAML: %w", err)
+	}
+	fmt.Println(string(yamlData))
+	return nil
 }
