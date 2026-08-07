@@ -46,8 +46,6 @@ type Repository struct {
 	Size          int64  `json:"size"`
 }
 
-// ProviderFactory is defined in factory.go
-
 // ConfigurationService handles configuration loading and validation.
 type ConfigurationService interface {
 	// Configuration Loading

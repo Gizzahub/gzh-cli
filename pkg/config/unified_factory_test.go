@@ -4,7 +4,6 @@
 package config
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -165,28 +164,6 @@ func TestConfigFactory_GetDefaultConfigPath(t *testing.T) {
 			assert.Equal(t, tt.expected, result)
 		})
 	}
-}
-
-func TestConfigFactory_CreateProviderFactory(t *testing.T) {
-	factory := NewConfigFactory()
-	providerFactory := factory.CreateProviderFactory()
-
-	assert.NotNil(t, providerFactory)
-	assert.True(t, len(providerFactory.GetSupportedProviders()) > 0)
-}
-
-func TestConfigFactory_CreateProviderCloner(t *testing.T) {
-	factory := NewConfigFactory()
-	ctx := context.Background()
-
-	// Test with supported provider
-	cloner, err := factory.CreateProviderCloner(ctx, "github", "test-token")
-	assert.NoError(t, err)
-	assert.NotNil(t, cloner)
-
-	// Test with unsupported provider
-	_, err = factory.CreateProviderCloner(ctx, "unsupported", "test-token")
-	assert.Error(t, err)
 }
 
 func TestConfigFactory_ExpandPath(t *testing.T) {

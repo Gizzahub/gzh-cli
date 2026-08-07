@@ -423,18 +423,7 @@ func TestIntegration_ProviderConfiguration(t *testing.T) {
 		},
 	}
 
-	// Test bulk clone executor creation
-	executor, err := NewBulkCloneExecutor(config)
-	require.NoError(t, err)
-	assert.NotNil(t, executor)
-	assert.Len(t, executor.cloners, 3)
-
-	// Verify all providers have cloners
-	assert.Contains(t, executor.cloners, "github")
-	assert.Contains(t, executor.cloners, "gitlab")
-	assert.Contains(t, executor.cloners, "gitea")
-
-	// Test provider-specific target retrieval
+	// Test provider-specific target retrieval via bulk clone integration
 	integration := NewBulkCloneIntegration(config)
 
 	githubTargets, err := integration.GetTargetsByProvider("github")

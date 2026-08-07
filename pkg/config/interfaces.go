@@ -89,9 +89,6 @@ type ProviderManager interface {
 	// Get specific provider configuration
 	GetProvider(ctx context.Context, name string) (*Provider, error)
 
-	// Create provider cloner
-	CreateProviderCloner(ctx context.Context, providerName, token string) (ProviderCloner, error)
-
 	// Validate provider configuration
 	ValidateProvider(ctx context.Context, provider *Provider) error
 

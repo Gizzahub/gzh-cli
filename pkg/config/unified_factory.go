@@ -4,7 +4,6 @@
 package config
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -133,17 +132,6 @@ func (f *ConfigFactory) LoadConfigFromPath(configPath string) (*UnifiedConfig, e
 	}
 
 	return result.Config, nil
-}
-
-// CreateProviderFactory creates a provider factory using this config factory's dependencies.
-func (f *ConfigFactory) CreateProviderFactory() ProviderFactory {
-	return NewProviderFactory(f.environment, f.logger)
-}
-
-// CreateProviderCloner creates a provider cloner for the specified provider.
-func (f *ConfigFactory) CreateProviderCloner(ctx context.Context, providerName, token string) (ProviderCloner, error) {
-	factory := f.CreateProviderFactory()
-	return factory.CreateCloner(ctx, providerName, token)
 }
 
 // FindConfigFile finds the first available configuration file in search paths.

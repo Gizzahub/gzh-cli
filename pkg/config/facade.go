@@ -28,7 +28,6 @@ type ConfigurationManager interface {
 	// Provider Management
 	GetProviders(ctx context.Context) (map[string]Provider, error)
 	GetProvider(ctx context.Context, name string) (*Provider, error)
-	CreateProviderInstance(ctx context.Context, providerName, token string) (ProviderCloner, error)
 
 	// Repository Filtering
 	CreateRepositoryFilter(ctx context.Context, config *RepositoryFilterConfig) (*RepositoryFilter, error)
@@ -261,12 +260,6 @@ func (c *configurationManagerImpl) GetProviders(ctx context.Context) (map[string
 func (c *configurationManagerImpl) GetProvider(ctx context.Context, name string) (*Provider, error) {
 	c.logger.Debug("Getting provider", "name", name)
 	return c.providerMgr.GetProvider(ctx, name)
-}
-
-// CreateProviderInstance creates a provider cloner instance.
-func (c *configurationManagerImpl) CreateProviderInstance(ctx context.Context, providerName, token string) (ProviderCloner, error) {
-	c.logger.Debug("Creating provider instance", "provider", providerName)
-	return c.providerMgr.CreateProviderCloner(ctx, providerName, token)
 }
 
 // CreateRepositoryFilter creates a repository filter.
