@@ -28,10 +28,11 @@ func newSyncCloneGiteaCmd(appCtx *app.AppContext) *cobra.Command {
 	o := defaultSyncCloneGiteaOptions()
 
 	cmd := &cobra.Command{
-		Use:   "gitea",
-		Short: "Clone repositories from a Gitea organization",
-		Args:  cobra.NoArgs,
-		RunE:  o.run,
+		Use:        "gitea",
+		Short:      "Clone repositories from a Gitea organization",
+		Deprecated: legacySyncloneProviderDeprecation("gitea"),
+		Args:       cobra.NoArgs,
+		RunE:       o.run,
 	}
 
 	cmd.Flags().StringVarP(&o.targetPath, "targetPath", "t", o.targetPath, "targetPath")

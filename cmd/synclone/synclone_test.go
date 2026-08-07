@@ -263,6 +263,25 @@ repo_roots: []
 	})
 }
 
+func TestLegacySyncloneDeprecation(t *testing.T) {
+	cmd := NewSyncCloneCmd(app.NewTestAppContext())
+	require.NotNil(t, cmd)
+
+	for _, provider := range []string{"github", "gitlab", "gitea"} {
+		t.Run(provider, func(t *testing.T) {
+			sub, _, err := cmd.Find([]string{provider})
+			require.NoError(t, err)
+			require.NotNil(t, sub)
+			require.NotEmpty(t, sub.Deprecated, "legacy %s command must set cobra Deprecated", provider)
+			assert.Contains(t, sub.Deprecated, "forge",
+				"deprecation message for %s must mention forge replacement path", provider)
+			assert.Contains(t, sub.Deprecated, provider,
+				"deprecation message should include the provider name %s", provider)
+			assert.Contains(t, sub.Deprecated, "gz synclone forge --provider "+provider)
+		})
+	}
+}
+
 func TestMainSyncCloneCommandFlags(t *testing.T) {
 	t.Run("command creation", func(t *testing.T) {
 		cmd := NewSyncCloneCmd(app.NewTestAppContext())

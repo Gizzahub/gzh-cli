@@ -48,6 +48,7 @@ func newSyncCloneGitlabCmd(appCtx *app.AppContext) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "gitlab",
 		Short:        "Clone repositories from a GitLab group",
+		Deprecated:   legacySyncloneProviderDeprecation("gitlab"),
 		Args:         cobra.NoArgs,
 		SilenceUsage: true,
 		RunE:         o.run,

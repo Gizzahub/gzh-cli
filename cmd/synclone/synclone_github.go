@@ -179,9 +179,10 @@ func newSyncCloneGithubCmd(appCtx *app.AppContext) *cobra.Command {
 	o := defaultSyncCloneGithubOptions()
 
 	cmd := &cobra.Command{
-		Use:   "github",
-		Short: "Clone repositories from a GitHub organization",
-		Args:  cobra.NoArgs,
+		Use:        "github",
+		Short:      "Clone repositories from a GitHub organization",
+		Deprecated: legacySyncloneProviderDeprecation("github"),
+		Args:       cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return o.run(cmd, args, appCtx)
 		},

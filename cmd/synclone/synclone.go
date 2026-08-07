@@ -31,6 +31,13 @@ type syncCloneOptions struct {
 	cleanupOrphans bool
 }
 
+// legacySyncloneProviderDeprecation returns the cobra Deprecated message for
+// provider-specific synclone subcommands (github/gitlab/gitea), pointing users
+// at the unified forge path.
+func legacySyncloneProviderDeprecation(provider string) string {
+	return fmt.Sprintf("use 'gz synclone forge --provider %s' instead", provider)
+}
+
 func defaultSyncCloneOptions() *syncCloneOptions {
 	return &syncCloneOptions{
 		strategy:       "reset",
