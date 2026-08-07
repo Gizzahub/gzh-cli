@@ -39,13 +39,14 @@ type TokenAwareGitHubClientConfig struct {
 // Simple configuration without external recovery dependency.
 func DefaultTokenAwareGitHubClientConfig() TokenAwareGitHubClientConfig {
 	return TokenAwareGitHubClientConfig{
-		BaseURL: "https://api.github.com",
+		BaseURL: DefaultGitHubAPIBaseURL,
 		Timeout: 30 * time.Second,
 	}
 }
 
 // NewTokenAwareGitHubClient creates a new token-aware GitHub client - DISABLED (recovery package removed)
 // Simple HTTP client implementation to replace deleted recovery package.
+// Empty config.BaseURL falls back to DefaultGitHubAPIBaseURL.
 func NewTokenAwareGitHubClient(config TokenAwareGitHubClientConfig) (*TokenAwareGitHubClient, error) {
 	timeout := config.Timeout
 	if timeout == 0 {
@@ -56,7 +57,7 @@ func NewTokenAwareGitHubClient(config TokenAwareGitHubClientConfig) (*TokenAware
 		httpClient: &http.Client{
 			Timeout: timeout,
 		},
-		baseURL:        config.BaseURL,
+		baseURL:        ResolveGitHubAPIBaseURL(config.BaseURL),
 		primaryToken:   config.PrimaryToken,
 		fallbackTokens: config.FallbackTokens,
 	}, nil

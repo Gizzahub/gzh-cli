@@ -18,11 +18,21 @@ func TestNewRepoConfigClient(t *testing.T) {
 	client := NewRepoConfigClient("test-token")
 
 	assert.Equal(t, "test-token", client.token)
-	assert.Equal(t, "https://api.github.com", client.baseURL)
+	assert.Equal(t, DefaultGitHubAPIBaseURL, client.baseURL)
 	assert.NotNil(t, client.httpClient)
 	assert.NotNil(t, client.rateLimiter)
 	// TODO: Cannot check timeout on interface
 	// assert.Equal(t, 30*time.Second, client.httpClient.Timeout)
+}
+
+func TestNewRepoConfigClientWithBaseURL(t *testing.T) {
+	client := NewRepoConfigClientWithBaseURL("test-token", "https://ghes.example.com/api/v3/")
+
+	assert.Equal(t, "test-token", client.token)
+	assert.Equal(t, "https://ghes.example.com/api/v3", client.baseURL)
+
+	defaulted := NewRepoConfigClientWithBaseURL("tok", "")
+	assert.Equal(t, DefaultGitHubAPIBaseURL, defaulted.baseURL)
 }
 
 func TestSetTimeout(_ *testing.T) {

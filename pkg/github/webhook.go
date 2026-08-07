@@ -211,22 +211,34 @@ type webhookServiceImpl struct {
 	logger     Logger
 }
 
-// NewWebhookService creates a new webhook service instance.
+// NewWebhookService creates a new webhook service instance using the public GitHub API host.
 func NewWebhookService(apiClient APIClient, logger Logger) WebhookService {
+	return NewWebhookServiceWithBaseURL(apiClient, logger, "")
+}
+
+// NewWebhookServiceWithBaseURL creates a webhook service with a custom API base URL.
+// Empty baseURL falls back to DefaultGitHubAPIBaseURL (for GHES or tests).
+func NewWebhookServiceWithBaseURL(apiClient APIClient, logger Logger, baseURL string) WebhookService {
 	return &webhookServiceImpl{
 		apiClient:  apiClient,
 		httpClient: &http.Client{Timeout: 30 * time.Second},
-		baseURL:    "https://api.github.com",
+		baseURL:    ResolveGitHubAPIBaseURL(baseURL),
 		logger:     logger,
 	}
 }
 
 // NewWebhookServiceWithToken creates a webhook service with a token for API calls.
 func NewWebhookServiceWithToken(apiClient APIClient, token string, logger Logger) WebhookService {
+	return NewWebhookServiceWithTokenAndBaseURL(apiClient, token, logger, "")
+}
+
+// NewWebhookServiceWithTokenAndBaseURL creates a webhook service with token and custom API base URL.
+// Empty baseURL falls back to DefaultGitHubAPIBaseURL (for GHES or tests).
+func NewWebhookServiceWithTokenAndBaseURL(apiClient APIClient, token string, logger Logger, baseURL string) WebhookService {
 	return &webhookServiceImpl{
 		apiClient:  apiClient,
 		httpClient: &http.Client{Timeout: 30 * time.Second},
-		baseURL:    "https://api.github.com",
+		baseURL:    ResolveGitHubAPIBaseURL(baseURL),
 		token:      token,
 		logger:     logger,
 	}

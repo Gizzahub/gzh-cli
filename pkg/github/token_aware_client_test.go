@@ -340,7 +340,24 @@ func TestTokenAwareGitHubClient_TokenStatus(t *testing.T) {
 func TestDefaultTokenAwareGitHubClientConfig(t *testing.T) {
 	config := github.DefaultTokenAwareGitHubClientConfig()
 
-	assert.Equal(t, "https://api.github.com", config.BaseURL)
+	assert.Equal(t, github.DefaultGitHubAPIBaseURL, config.BaseURL)
 	assert.Equal(t, 30*time.Second, config.Timeout)
 	// HTTPConfig and ExpirationConfig were removed when recovery package was removed
+}
+
+func TestNewTokenAwareGitHubClient_EmptyBaseURL(t *testing.T) {
+	config := github.TokenAwareGitHubClientConfig{
+		PrimaryToken: "token",
+		// BaseURL intentionally empty
+	}
+
+	client, err := github.NewTokenAwareGitHubClient(config)
+	require.NoError(t, err)
+	require.NotNil(t, client)
+
+	// Black-box: exercise via GetStats or similar if available; use Start/Stop smoke.
+	// BaseURL resolution is covered via Default config + Resolve unit tests;
+	// empty BaseURL must not prevent construction.
+	assert.NoError(t, client.Start(context.Background()))
+	client.Stop()
 }

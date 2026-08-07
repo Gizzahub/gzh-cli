@@ -43,7 +43,7 @@ type APIClientConfig struct {
 // DefaultAPIClientConfig returns default configuration.
 func DefaultAPIClientConfig() *APIClientConfig {
 	return &APIClientConfig{
-		BaseURL:    "https://api.github.com",
+		BaseURL:    DefaultGitHubAPIBaseURL,
 		Timeout:    30 * time.Second,
 		UserAgent:  "gzh-cli/1.0",
 		RetryCount: 3,
@@ -66,9 +66,16 @@ type Logger interface {
 }
 
 // NewAPIClient creates a new GitHub API client with dependencies.
+// Empty config.BaseURL falls back to DefaultGitHubAPIBaseURL.
 func NewAPIClient(config *APIClientConfig, httpClient HTTPClientInterface, logger Logger) APIClient {
 	if config == nil {
 		config = DefaultAPIClientConfig()
+	} else {
+		// Resolve without mutating the caller's config pointer unexpectedly for other fields;
+		// BaseURL empty→default is intentional so GHES/tests can omit it.
+		resolved := *config
+		resolved.BaseURL = ResolveGitHubAPIBaseURL(config.BaseURL)
+		config = &resolved
 	}
 
 	return &GitHubAPIClient{

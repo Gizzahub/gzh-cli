@@ -22,10 +22,16 @@ type GitHubProvider struct {
 // Ensure GitHubProvider implements GitProvider interface
 var _ provider.GitProvider = (*GitHubProvider)(nil)
 
-// NewGitHubProvider creates a new GitHub provider instance.
+// NewGitHubProvider creates a new GitHub provider instance using the public GitHub API host.
 func NewGitHubProvider(client APIClient, cloner CloneService) *GitHubProvider {
+	return NewGitHubProviderWithBaseURL(client, cloner, "")
+}
+
+// NewGitHubProviderWithBaseURL creates a GitHub provider with a custom API base URL.
+// Empty baseURL falls back to DefaultGitHubAPIBaseURL (for GHES or tests).
+func NewGitHubProviderWithBaseURL(client APIClient, cloner CloneService, baseURL string) *GitHubProvider {
 	return &GitHubProvider{
-		BaseProvider: provider.NewBaseProvider("github", "https://api.github.com", ""),
+		BaseProvider: provider.NewBaseProvider("github", ResolveGitHubAPIBaseURL(baseURL), ""),
 		client:       client,
 		cloner:       cloner,
 		helpers:      provider.NewCommonHelpers(),

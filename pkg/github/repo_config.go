@@ -178,9 +178,15 @@ func (e *APIError) Error() string {
 
 // NewRepoConfigClient creates a new GitHub API client for repository configuration.
 func NewRepoConfigClient(token string) *RepoConfigClient {
+	return NewRepoConfigClientWithBaseURL(token, "")
+}
+
+// NewRepoConfigClientWithBaseURL creates a repository configuration client with a custom API base URL.
+// Empty baseURL falls back to DefaultGitHubAPIBaseURL (for GHES or tests).
+func NewRepoConfigClientWithBaseURL(token, baseURL string) *RepoConfigClient {
 	return &RepoConfigClient{
 		token:   token,
-		baseURL: "https://api.github.com",
+		baseURL: ResolveGitHubAPIBaseURL(baseURL),
 		httpClient: NewHTTPClientAdapterWithClient(&http.Client{
 			Timeout: 30 * time.Second,
 		}),

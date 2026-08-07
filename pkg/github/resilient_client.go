@@ -21,11 +21,17 @@ type ResilientGitHubClient struct {
 // NewResilientGitHubClient creates a new resilient GitHub client - DISABLED (recovery package removed)
 // Simple HTTP client implementation to replace deleted recovery package.
 func NewResilientGitHubClient(token string) *ResilientGitHubClient {
+	return NewResilientGitHubClientWithBaseURL(token, "")
+}
+
+// NewResilientGitHubClientWithBaseURL creates a resilient GitHub client with a custom API base URL.
+// Empty baseURL falls back to DefaultGitHubAPIBaseURL (for GHES or tests).
+func NewResilientGitHubClientWithBaseURL(token, baseURL string) *ResilientGitHubClient {
 	return &ResilientGitHubClient{
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
 		},
-		baseURL: "https://api.github.com",
+		baseURL: ResolveGitHubAPIBaseURL(baseURL),
 		token:   token,
 	}
 }
@@ -33,6 +39,12 @@ func NewResilientGitHubClient(token string) *ResilientGitHubClient {
 // NewResilientGitHubClientWithConfig creates a resilient GitHub client with custom config - DISABLED (recovery package removed)
 // Simple HTTP client implementation to replace deleted recovery package.
 func NewResilientGitHubClientWithConfig(token string, timeout time.Duration) *ResilientGitHubClient {
+	return NewResilientGitHubClientWithConfigAndBaseURL(token, timeout, "")
+}
+
+// NewResilientGitHubClientWithConfigAndBaseURL creates a resilient GitHub client with timeout and custom API base URL.
+// Empty baseURL falls back to DefaultGitHubAPIBaseURL (for GHES or tests).
+func NewResilientGitHubClientWithConfigAndBaseURL(token string, timeout time.Duration, baseURL string) *ResilientGitHubClient {
 	if timeout == 0 {
 		timeout = 30 * time.Second
 	}
@@ -41,7 +53,7 @@ func NewResilientGitHubClientWithConfig(token string, timeout time.Duration) *Re
 		httpClient: &http.Client{
 			Timeout: timeout,
 		},
-		baseURL: "https://api.github.com",
+		baseURL: ResolveGitHubAPIBaseURL(baseURL),
 		token:   token,
 	}
 }
@@ -280,6 +292,7 @@ func (c *ResilientGitHubClient) SetToken(token string) {
 }
 
 // SetBaseURL updates the base URL (useful for GitHub Enterprise).
+// Empty baseURL falls back to DefaultGitHubAPIBaseURL.
 func (c *ResilientGitHubClient) SetBaseURL(baseURL string) {
-	c.baseURL = strings.TrimSuffix(baseURL, "/")
+	c.baseURL = ResolveGitHubAPIBaseURL(baseURL)
 }
