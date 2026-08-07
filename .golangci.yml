@@ -111,8 +111,12 @@ linters:
     goheader:
       values:
         const:
-          COMPANY: Archmagece
+          # Match file headers and remote org (Gizzahub/gzh-cli). Do not rewrite files to Archmagece.
+          COMPANY: Gizzahub
           LICENSE: MIT
+        regexp:
+          # Any 20xx year — do not require the current calendar year (avoids mass year churn).
+          YEAR: 20\d\d
       template: |-
         Copyright (c) {{ YEAR }} {{ COMPANY }}
         SPDX-License-Identifier: {{ LICENSE }}
