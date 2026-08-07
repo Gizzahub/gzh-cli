@@ -73,6 +73,22 @@ func (m *mockAPIClient) CreateRepository(ctx context.Context, owner string, opts
 	return nil, args.Error(1)
 }
 
+func (m *mockAPIClient) UpdateRepository(ctx context.Context, owner, repo string, opts *UpdateRepositoryOptions) (*RepositoryInfo, error) {
+	args := m.Called(ctx, owner, repo, opts)
+	if info, ok := args.Get(0).(*RepositoryInfo); ok {
+		return info, args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+func (m *mockAPIClient) ForkRepository(ctx context.Context, owner, repo string, opts *ForkRepositoryOptions) (*RepositoryInfo, error) {
+	args := m.Called(ctx, owner, repo, opts)
+	if info, ok := args.Get(0).(*RepositoryInfo); ok {
+		return info, args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
 func (m *mockAPIClient) DeleteRepository(ctx context.Context, owner, repo string) error {
 	args := m.Called(ctx, owner, repo)
 	return args.Error(0)

@@ -350,6 +350,85 @@ func (c *ResilientGitHubClient) doCreateRepository(ctx context.Context, endpoint
 	return &info, nil
 }
 
+// UpdateRepository patches repository settings (description, private, archived, etc.).
+func (c *ResilientGitHubClient) UpdateRepository(ctx context.Context, owner, repo string, opts *UpdateRepositoryOptions) (*RepositoryInfo, error) {
+	if owner == "" || repo == "" {
+		return nil, fmt.Errorf("owner and repo are required")
+	}
+	if opts == nil {
+		opts = &UpdateRepositoryOptions{}
+	}
+
+	body, err := json.Marshal(opts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode update repository request: %w", err)
+	}
+
+	endpoint := fmt.Sprintf("%s/repos/%s/%s", c.baseURL, owner, repo)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPatch, endpoint, bytes.NewReader(body))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+	c.prepareRequest(req)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update repository: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, c.handleAPIError(resp, "failed to update repository")
+	}
+
+	var info RepositoryInfo
+	if err := json.NewDecoder(resp.Body).Decode(&info); err != nil {
+		return nil, fmt.Errorf("failed to decode update repository response: %w", err)
+	}
+	return &info, nil
+}
+
+// ForkRepository forks a repository. Returns 202 Accepted on GitHub.
+func (c *ResilientGitHubClient) ForkRepository(ctx context.Context, owner, repo string, opts *ForkRepositoryOptions) (*RepositoryInfo, error) {
+	if owner == "" || repo == "" {
+		return nil, fmt.Errorf("owner and repo are required")
+	}
+	if opts == nil {
+		opts = &ForkRepositoryOptions{}
+	}
+
+	body, err := json.Marshal(opts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode fork repository request: %w", err)
+	}
+
+	endpoint := fmt.Sprintf("%s/repos/%s/%s/forks", c.baseURL, owner, repo)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+	c.prepareRequest(req)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fork repository: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	// GitHub returns 202 Accepted for forks; some proxies may return 201/200.
+	if resp.StatusCode != http.StatusAccepted && resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
+		return nil, c.handleAPIError(resp, "failed to fork repository")
+	}
+
+	var info RepositoryInfo
+	if err := json.NewDecoder(resp.Body).Decode(&info); err != nil {
+		return nil, fmt.Errorf("failed to decode fork repository response: %w", err)
+	}
+	return &info, nil
+}
+
 // DeleteRepository deletes a repository identified by owner/repo.
 func (c *ResilientGitHubClient) DeleteRepository(ctx context.Context, owner, repo string) error {
 	if owner == "" || repo == "" {

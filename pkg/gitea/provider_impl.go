@@ -192,10 +192,49 @@ func (g *GiteaProvider) CreateRepository(ctx context.Context, req provider.Creat
 	return giteaRepoToProvider(&repo), nil
 }
 
-// UpdateRepository updates repository settings.
-// not in CLI surface; deferred (issue 26 phase 2+)
+// UpdateRepository updates repository settings via PATCH /repos/{owner}/{repo}.
+// id must be owner/repo.
 func (g *GiteaProvider) UpdateRepository(ctx context.Context, id string, updates provider.UpdateRepoRequest) (*provider.Repository, error) {
-	return nil, g.FormatError("update repository", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
+	owner, repo, err := parseOwnerRepo(id)
+	if err != nil {
+		return nil, g.FormatError("update repository", err)
+	}
+
+	payload := map[string]any{}
+	if updates.Name != nil {
+		payload["name"] = *updates.Name
+	}
+	if updates.Description != nil {
+		payload["description"] = *updates.Description
+	}
+	if updates.Private != nil {
+		payload["private"] = *updates.Private
+	}
+	if updates.Archived != nil {
+		payload["archived"] = *updates.Archived
+	}
+	if updates.DefaultBranch != nil {
+		payload["default_branch"] = *updates.DefaultBranch
+	}
+	if updates.HasIssues != nil {
+		payload["has_issues"] = *updates.HasIssues
+	}
+	if updates.HasWiki != nil {
+		payload["has_wiki"] = *updates.HasWiki
+	}
+	if updates.HasProjects != nil {
+		payload["has_projects"] = *updates.HasProjects
+	}
+	if updates.Homepage != nil {
+		payload["website"] = *updates.Homepage
+	}
+
+	path := fmt.Sprintf("repos/%s/%s", url.PathEscape(owner), url.PathEscape(repo))
+	var out giteaRepo
+	if err := g.doJSON(ctx, "PATCH", path, payload, &out, http.StatusOK); err != nil {
+		return nil, g.FormatError("update repository", err)
+	}
+	return giteaRepoToProvider(&out), nil
 }
 
 // DeleteRepository deletes a repository. id is owner/repo.
@@ -238,10 +277,28 @@ func (g *GiteaProvider) setArchived(ctx context.Context, id string, archived boo
 	return nil
 }
 
-// ForkRepository forks a repository.
-// not in CLI surface; deferred (issue 26 phase 2+)
+// ForkRepository forks a repository via POST /repos/{owner}/{repo}/forks.
+// id must be owner/repo.
 func (g *GiteaProvider) ForkRepository(ctx context.Context, id string, opts provider.ForkOptions) (*provider.Repository, error) {
-	return nil, g.FormatError("fork repository", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
+	owner, repo, err := parseOwnerRepo(id)
+	if err != nil {
+		return nil, g.FormatError("fork repository", err)
+	}
+
+	payload := map[string]any{}
+	if opts.Organization != "" {
+		payload["organization"] = opts.Organization
+	}
+	if opts.Name != "" {
+		payload["name"] = opts.Name
+	}
+
+	path := fmt.Sprintf("repos/%s/%s/forks", url.PathEscape(owner), url.PathEscape(repo))
+	var out giteaRepo
+	if err := g.doJSON(ctx, "POST", path, payload, &out, http.StatusCreated, http.StatusOK, http.StatusAccepted); err != nil {
+		return nil, g.FormatError("fork repository", err)
+	}
+	return giteaRepoToProvider(&out), nil
 }
 
 // SearchRepositories searches repositories via the Gitea search API.
@@ -294,9 +351,9 @@ func (g *GiteaProvider) SearchRepositories(ctx context.Context, query provider.S
 	}, nil
 }
 
-// Webhook management methods — not in CLI surface; deferred (issue 26 phase 2+)
+// Webhook management — GitHub implemented; Gitea hooks deferred (issue 26).
 func (g *GiteaProvider) ListWebhooks(ctx context.Context, repoID string) ([]provider.Webhook, error) {
-	return nil, g.FormatError("list webhooks", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
+	return nil, g.FormatError("list webhooks", fmt.Errorf("not implemented for gitea: use github provider or implement repo hooks (issue 26)"))
 }
 
 func (g *GiteaProvider) GetWebhook(ctx context.Context, repoID, webhookID string) (*provider.Webhook, error) {

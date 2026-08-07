@@ -185,6 +185,47 @@ func (c *GitHubAPIClient) CreateRepository(ctx context.Context, owner string, op
 	return &repo, nil
 }
 
+// UpdateRepository implements APIClient interface.
+func (c *GitHubAPIClient) UpdateRepository(ctx context.Context, owner, repo string, opts *UpdateRepositoryOptions) (*RepositoryInfo, error) {
+	if owner == "" || repo == "" {
+		return nil, fmt.Errorf("owner and repo are required")
+	}
+	if opts == nil {
+		opts = &UpdateRepositoryOptions{}
+	}
+	c.logger.Debug("Updating repository", "owner", owner, "repo", repo)
+	body, err := c.doJSONRequest(ctx, http.MethodPatch, fmt.Sprintf("/repos/%s/%s", owner, repo), opts, http.StatusOK)
+	if err != nil {
+		return nil, err
+	}
+	var info RepositoryInfo
+	if err := json.Unmarshal(body, &info); err != nil {
+		return nil, fmt.Errorf("failed to decode update repository response: %w", err)
+	}
+	return &info, nil
+}
+
+// ForkRepository implements APIClient interface.
+func (c *GitHubAPIClient) ForkRepository(ctx context.Context, owner, repo string, opts *ForkRepositoryOptions) (*RepositoryInfo, error) {
+	if owner == "" || repo == "" {
+		return nil, fmt.Errorf("owner and repo are required")
+	}
+	if opts == nil {
+		opts = &ForkRepositoryOptions{}
+	}
+	c.logger.Debug("Forking repository", "owner", owner, "repo", repo)
+	// GitHub returns 202 Accepted for forks.
+	body, err := c.doJSONRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/forks", owner, repo), opts, http.StatusAccepted)
+	if err != nil {
+		return nil, err
+	}
+	var info RepositoryInfo
+	if err := json.Unmarshal(body, &info); err != nil {
+		return nil, fmt.Errorf("failed to decode fork repository response: %w", err)
+	}
+	return &info, nil
+}
+
 // DeleteRepository implements APIClient interface.
 func (c *GitHubAPIClient) DeleteRepository(ctx context.Context, owner, repo string) error {
 	if owner == "" || repo == "" {

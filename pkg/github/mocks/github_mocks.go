@@ -276,6 +276,36 @@ func (mr *MockAPIClientMockRecorder) CreateRepository(ctx, owner, opts any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRepository", reflect.TypeOf((*MockAPIClient)(nil).CreateRepository), ctx, owner, opts)
 }
 
+// UpdateRepository mocks base method.
+func (m *MockAPIClient) UpdateRepository(ctx context.Context, owner, repo string, opts *github.UpdateRepositoryOptions) (*github.RepositoryInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateRepository", ctx, owner, repo, opts)
+	ret0, _ := ret[0].(*github.RepositoryInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateRepository indicates an expected call of UpdateRepository.
+func (mr *MockAPIClientMockRecorder) UpdateRepository(ctx, owner, repo, opts any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRepository", reflect.TypeOf((*MockAPIClient)(nil).UpdateRepository), ctx, owner, repo, opts)
+}
+
+// ForkRepository mocks base method.
+func (m *MockAPIClient) ForkRepository(ctx context.Context, owner, repo string, opts *github.ForkRepositoryOptions) (*github.RepositoryInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ForkRepository", ctx, owner, repo, opts)
+	ret0, _ := ret[0].(*github.RepositoryInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ForkRepository indicates an expected call of ForkRepository.
+func (mr *MockAPIClientMockRecorder) ForkRepository(ctx, owner, repo, opts any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForkRepository", reflect.TypeOf((*MockAPIClient)(nil).ForkRepository), ctx, owner, repo, opts)
+}
+
 // DeleteRepository mocks base method.
 func (m *MockAPIClient) DeleteRepository(ctx context.Context, owner, repo string) error {
 	m.ctrl.T.Helper()

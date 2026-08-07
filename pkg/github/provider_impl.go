@@ -4,8 +4,14 @@
 package github
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gizzahub/gzh-cli/pkg/git/provider"
@@ -192,10 +198,36 @@ func (g *GitHubProvider) CreateRepository(ctx context.Context, req provider.Crea
 	return repositoryInfoToProvider(info), nil
 }
 
-// UpdateRepository updates repository settings.
-// not in CLI surface; deferred (issue 26 phase 2+)
+// UpdateRepository updates repository settings via PATCH /repos/{owner}/{repo}.
+// id must be owner/repo.
 func (g *GitHubProvider) UpdateRepository(ctx context.Context, id string, updates provider.UpdateRepoRequest) (*provider.Repository, error) {
-	return nil, fmt.Errorf("update repository not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+	owner, repo, err := parseFullName(id)
+	if err != nil {
+		return nil, err
+	}
+
+	opts := &UpdateRepositoryOptions{
+		Name:             updates.Name,
+		Description:      updates.Description,
+		Homepage:         updates.Homepage,
+		Private:          updates.Private,
+		HasIssues:        updates.HasIssues,
+		HasProjects:      updates.HasProjects,
+		HasWiki:          updates.HasWiki,
+		HasDownloads:     updates.HasDownloads,
+		DefaultBranch:    updates.DefaultBranch,
+		AllowSquashMerge: updates.AllowSquashMerge,
+		AllowMergeCommit: updates.AllowMergeCommit,
+		AllowRebaseMerge: updates.AllowRebaseMerge,
+		AllowAutoMerge:   updates.AllowAutoMerge,
+		Archived:         updates.Archived,
+	}
+
+	info, err := g.client.UpdateRepository(ctx, owner, repo, opts)
+	if err != nil {
+		return nil, g.FormatError("update repository", err)
+	}
+	return repositoryInfoToProvider(info), nil
 }
 
 // DeleteRepository deletes a repository. id is owner/repo or full name.
@@ -257,10 +289,25 @@ func (g *GitHubProvider) CloneRepository(ctx context.Context, repo provider.Repo
 	return g.cloner.CloneRepository(ctx, repoInfo, target, opts.Strategy)
 }
 
-// ForkRepository creates a fork of a repository.
-// not in CLI surface; deferred (issue 26 phase 2+)
+// ForkRepository creates a fork of a repository via POST /repos/{owner}/{repo}/forks.
+// id must be owner/repo.
 func (g *GitHubProvider) ForkRepository(ctx context.Context, id string, opts provider.ForkOptions) (*provider.Repository, error) {
-	return nil, fmt.Errorf("fork repository not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+	owner, repo, err := parseFullName(id)
+	if err != nil {
+		return nil, err
+	}
+
+	forkOpts := &ForkRepositoryOptions{
+		Organization:      opts.Organization,
+		Name:              opts.Name,
+		DefaultBranchOnly: opts.DefaultBranchOnly,
+	}
+
+	info, err := g.client.ForkRepository(ctx, owner, repo, forkOpts)
+	if err != nil {
+		return nil, g.FormatError("fork repository", err)
+	}
+	return repositoryInfoToProvider(info), nil
 }
 
 // SearchRepositories searches for repositories via the GitHub search API.
@@ -306,33 +353,270 @@ func (g *GitHubProvider) SearchRepositories(ctx context.Context, query provider.
 	}, nil
 }
 
-// Webhook management methods — not in CLI surface; deferred (issue 26 phase 2+)
+// Webhook management — GitHub hooks API via provider base URL/token (CLI: gz git webhook).
+
+// ListWebhooks lists repository webhooks. repoID must be owner/repo.
 func (g *GitHubProvider) ListWebhooks(ctx context.Context, repoID string) ([]provider.Webhook, error) {
-	return nil, fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+	owner, repo, err := parseFullName(repoID)
+	if err != nil {
+		return nil, err
+	}
+
+	var hooks []WebhookInfo
+	if err := g.doWebhookJSON(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/hooks", owner, repo), nil, &hooks, http.StatusOK); err != nil {
+		return nil, g.FormatError("list webhooks", err)
+	}
+
+	out := make([]provider.Webhook, 0, len(hooks))
+	for i := range hooks {
+		out = append(out, webhookInfoToProvider(&hooks[i]))
+	}
+	return out, nil
 }
 
+// GetWebhook retrieves a single webhook by numeric ID.
 func (g *GitHubProvider) GetWebhook(ctx context.Context, repoID, webhookID string) (*provider.Webhook, error) {
-	return nil, fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+	owner, repo, err := parseFullName(repoID)
+	if err != nil {
+		return nil, err
+	}
+	id, err := strconv.ParseInt(webhookID, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid webhook id %q: must be numeric", webhookID)
+	}
+
+	var hook WebhookInfo
+	if err := g.doWebhookJSON(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/hooks/%d", owner, repo, id), nil, &hook, http.StatusOK); err != nil {
+		return nil, g.FormatError("get webhook", err)
+	}
+	result := webhookInfoToProvider(&hook)
+	return &result, nil
 }
 
+// CreateWebhook creates a repository webhook (GitHub "web" type).
 func (g *GitHubProvider) CreateWebhook(ctx context.Context, repoID string, webhook provider.CreateWebhookRequest) (*provider.Webhook, error) {
-	return nil, fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+	owner, repo, err := parseFullName(repoID)
+	if err != nil {
+		return nil, err
+	}
+	hookURL := webhook.Config.URL
+	if hookURL == "" {
+		return nil, fmt.Errorf("webhook URL is required")
+	}
+	if err := g.ValidateWebhookURL(ctx, hookURL); err != nil {
+		return nil, err
+	}
+	events := webhook.Events
+	if len(events) == 0 {
+		events = []string{"push"}
+	}
+	contentType := webhook.Config.ContentType
+	if contentType == "" {
+		contentType = "json"
+	}
+	insecureSSL := "0"
+	if webhook.Config.InsecureSSL {
+		insecureSSL = "1"
+	}
+
+	apiRequest := map[string]any{
+		"name":   "web",
+		"active": webhook.Active,
+		"events": events,
+		"config": map[string]any{
+			"url":          hookURL,
+			"content_type": contentType,
+			"insecure_ssl": insecureSSL,
+		},
+	}
+	if webhook.Config.Secret != "" {
+		apiRequest["config"].(map[string]any)["secret"] = webhook.Config.Secret
+	}
+
+	var hook WebhookInfo
+	if err := g.doWebhookJSON(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/hooks", owner, repo), apiRequest, &hook, http.StatusCreated); err != nil {
+		return nil, g.FormatError("create webhook", err)
+	}
+	result := webhookInfoToProvider(&hook)
+	return &result, nil
 }
 
+// UpdateWebhook patches an existing repository webhook.
 func (g *GitHubProvider) UpdateWebhook(ctx context.Context, repoID, webhookID string, updates provider.UpdateWebhookRequest) (*provider.Webhook, error) {
-	return nil, fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+	owner, repo, err := parseFullName(repoID)
+	if err != nil {
+		return nil, err
+	}
+	id, err := strconv.ParseInt(webhookID, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid webhook id %q: must be numeric", webhookID)
+	}
+
+	apiRequest := map[string]any{}
+	if updates.Events != nil {
+		apiRequest["events"] = updates.Events
+	}
+	if updates.Active != nil {
+		apiRequest["active"] = *updates.Active
+	}
+	if updates.Config != nil {
+		config := map[string]any{}
+		if updates.Config.URL != "" {
+			config["url"] = updates.Config.URL
+		}
+		if updates.Config.ContentType != "" {
+			config["content_type"] = updates.Config.ContentType
+		}
+		if updates.Config.Secret != "" {
+			config["secret"] = updates.Config.Secret
+		}
+		if updates.Config.InsecureSSL {
+			config["insecure_ssl"] = "1"
+		} else {
+			config["insecure_ssl"] = "0"
+		}
+		apiRequest["config"] = config
+	}
+
+	var hook WebhookInfo
+	if err := g.doWebhookJSON(ctx, http.MethodPatch, fmt.Sprintf("/repos/%s/%s/hooks/%d", owner, repo, id), apiRequest, &hook, http.StatusOK); err != nil {
+		return nil, g.FormatError("update webhook", err)
+	}
+	result := webhookInfoToProvider(&hook)
+	return &result, nil
 }
 
+// DeleteWebhook deletes a repository webhook by numeric ID.
 func (g *GitHubProvider) DeleteWebhook(ctx context.Context, repoID, webhookID string) error {
-	return fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+	owner, repo, err := parseFullName(repoID)
+	if err != nil {
+		return err
+	}
+	id, err := strconv.ParseInt(webhookID, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid webhook id %q: must be numeric", webhookID)
+	}
+	if err := g.doWebhookJSON(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/hooks/%d", owner, repo, id), nil, nil, http.StatusNoContent); err != nil {
+		return g.FormatError("delete webhook", err)
+	}
+	return nil
 }
 
+// TestWebhook triggers a ping delivery for a repository webhook.
 func (g *GitHubProvider) TestWebhook(ctx context.Context, repoID, webhookID string) (*provider.WebhookTestResult, error) {
-	return nil, fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+	owner, repo, err := parseFullName(repoID)
+	if err != nil {
+		return nil, err
+	}
+	id, err := strconv.ParseInt(webhookID, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid webhook id %q: must be numeric", webhookID)
+	}
+
+	start := time.Now()
+	// GitHub returns 204 No Content on success.
+	if err := g.doWebhookJSON(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/hooks/%d/tests", owner, repo, id), nil, nil, http.StatusNoContent); err != nil {
+		return &provider.WebhookTestResult{
+			Success:      false,
+			ResponseTime: time.Since(start),
+			Error:        err.Error(),
+		}, g.FormatError("test webhook", err)
+	}
+	return &provider.WebhookTestResult{
+		Success:      true,
+		StatusCode:   http.StatusNoContent,
+		ResponseTime: time.Since(start),
+	}, nil
 }
 
-func (g *GitHubProvider) ValidateWebhookURL(ctx context.Context, url string) error {
-	return fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+// ValidateWebhookURL checks that a webhook URL uses http or https.
+func (g *GitHubProvider) ValidateWebhookURL(_ context.Context, webhookURL string) error {
+	if strings.TrimSpace(webhookURL) == "" {
+		return fmt.Errorf("webhook URL cannot be empty")
+	}
+	if !strings.HasPrefix(webhookURL, "http://") && !strings.HasPrefix(webhookURL, "https://") {
+		return fmt.Errorf("webhook URL must be a valid HTTP/HTTPS URL")
+	}
+	return nil
+}
+
+// doWebhookJSON performs an authenticated JSON request against the provider API base URL.
+// Used for webhook CRUD so callers do not need webhook methods on APIClient.
+func (g *GitHubProvider) doWebhookJSON(ctx context.Context, method, path string, payload any, out any, wantStatus int) error {
+	var bodyReader io.Reader
+	if payload != nil {
+		encoded, err := json.Marshal(payload)
+		if err != nil {
+			return fmt.Errorf("failed to encode request: %w", err)
+		}
+		bodyReader = bytes.NewReader(encoded)
+	}
+
+	base := strings.TrimRight(g.GetBaseURL(), "/")
+	if base == "" {
+		base = DefaultGitHubAPIBaseURL
+	}
+	endpoint := base + "/" + strings.TrimPrefix(path, "/")
+	req, err := http.NewRequestWithContext(ctx, method, endpoint, bodyReader)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+	if token := g.GetToken(); token != "" {
+		req.Header.Set("Authorization", "token "+token)
+	}
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+	req.Header.Set("User-Agent", "gzh-cli")
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("request failed: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read response: %w", err)
+	}
+
+	if resp.StatusCode != wantStatus && !(wantStatus == http.StatusNoContent && resp.StatusCode == http.StatusOK) &&
+		!(wantStatus == http.StatusCreated && resp.StatusCode == http.StatusOK) {
+		return fmt.Errorf("API %s %s: HTTP %d - %s", method, path, resp.StatusCode, strings.TrimSpace(string(respBody)))
+	}
+
+	if out != nil && len(respBody) > 0 {
+		if err := json.Unmarshal(respBody, out); err != nil {
+			return fmt.Errorf("failed to decode response: %w", err)
+		}
+	}
+	return nil
+}
+
+func webhookInfoToProvider(w *WebhookInfo) provider.Webhook {
+	if w == nil {
+		return provider.Webhook{}
+	}
+	url := w.URL
+	if url == "" {
+		url = w.Config.URL
+	}
+	return provider.Webhook{
+		ID:     strconv.FormatInt(w.ID, 10),
+		Name:   w.Name,
+		URL:    url,
+		Events: w.Events,
+		Active: w.Active,
+		Config: provider.WebhookConfig{
+			URL:         w.Config.URL,
+			ContentType: w.Config.ContentType,
+			Secret:      w.Config.Secret,
+			InsecureSSL: w.Config.InsecureSSL,
+		},
+		CreatedAt: w.CreatedAt,
+		UpdatedAt: w.UpdatedAt,
+	}
 }
 
 // Event management methods — not in CLI surface; deferred (issue 26 phase 2+)
@@ -441,27 +725,27 @@ func (g *GitHubProvider) DeleteRelease(ctx context.Context, repoID, releaseID st
 }
 
 // ListReleaseAssets lists assets for a release.
-// not in CLI surface; deferred (issue 26 phase 2+)
+// Deferred (issue 26): multipart asset APIs are non-trivial and not on CLI surface yet.
 func (g *GitHubProvider) ListReleaseAssets(ctx context.Context, repoID, releaseID string) ([]provider.Asset, error) {
-	return nil, fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+	return nil, fmt.Errorf("list release assets not implemented: deferred (issue 26; multipart/asset APIs not on CLI surface)")
 }
 
 // UploadReleaseAsset uploads an asset to a release.
-// not in CLI surface; deferred (issue 26 phase 2+)
+// Deferred (issue 26): requires uploads.github.com host + Content-Type/size headers; not trivial.
 func (g *GitHubProvider) UploadReleaseAsset(ctx context.Context, repoID string, req provider.UploadAssetRequest) (*provider.Asset, error) {
-	return nil, fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+	return nil, fmt.Errorf("upload release asset not implemented: deferred (issue 26; multipart/asset APIs not on CLI surface)")
 }
 
 // DeleteReleaseAsset deletes a release asset.
-// not in CLI surface; deferred (issue 26 phase 2+)
+// Deferred (issue 26): no CLI command yet; implement with release asset list/upload.
 func (g *GitHubProvider) DeleteReleaseAsset(ctx context.Context, repoID, assetID string) error {
-	return fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+	return fmt.Errorf("delete release asset not implemented: deferred (issue 26; multipart/asset APIs not on CLI surface)")
 }
 
 // DownloadReleaseAsset downloads a release asset.
-// not in CLI surface; deferred (issue 26 phase 2+)
+// Deferred (issue 26): redirect/binary download path differs from JSON API.
 func (g *GitHubProvider) DownloadReleaseAsset(ctx context.Context, repoID, assetID string) ([]byte, error) {
-	return nil, fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+	return nil, fmt.Errorf("download release asset not implemented: deferred (issue 26; multipart/asset APIs not on CLI surface)")
 }
 
 // repositoryInfoToProvider maps GitHub RepositoryInfo to provider.Repository.

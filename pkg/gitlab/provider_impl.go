@@ -199,10 +199,48 @@ func (g *GitLabProvider) CreateRepository(ctx context.Context, req provider.Crea
 	return gitlabProjectToProvider(&project), nil
 }
 
-// UpdateRepository updates project settings.
-// not in CLI surface; deferred (issue 26 phase 2+)
+// UpdateRepository updates project settings via PUT /projects/:id.
+// id must be owner/repo (path with namespace).
 func (g *GitLabProvider) UpdateRepository(ctx context.Context, id string, updates provider.UpdateRepoRequest) (*provider.Repository, error) {
-	return nil, fmt.Errorf("update repository not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+	if id == "" {
+		return nil, fmt.Errorf("repository id is required")
+	}
+
+	payload := map[string]any{}
+	if updates.Name != nil {
+		payload["name"] = *updates.Name
+	}
+	if updates.Description != nil {
+		payload["description"] = *updates.Description
+	}
+	if updates.DefaultBranch != nil {
+		payload["default_branch"] = *updates.DefaultBranch
+	}
+	if updates.Archived != nil {
+		payload["archived"] = *updates.Archived
+	}
+	if updates.Private != nil {
+		if *updates.Private {
+			payload["visibility"] = "private"
+		} else {
+			payload["visibility"] = "public"
+		}
+	}
+	switch updates.Visibility {
+	case provider.VisibilityPrivate:
+		payload["visibility"] = "private"
+	case provider.VisibilityPublic:
+		payload["visibility"] = "public"
+	case provider.VisibilityInternal:
+		payload["visibility"] = "internal"
+	}
+
+	encoded := url.PathEscape(id)
+	var project gitlabProject
+	if err := g.doJSON(ctx, "PUT", "projects/"+encoded, payload, &project, http.StatusOK); err != nil {
+		return nil, g.FormatError("update repository", err)
+	}
+	return gitlabProjectToProvider(&project), nil
 }
 
 // DeleteRepository deletes a project. id is owner/repo (path with namespace).
@@ -241,10 +279,28 @@ func (g *GitLabProvider) UnarchiveRepository(ctx context.Context, id string) err
 	return nil
 }
 
-// ForkRepository forks a project.
-// not in CLI surface; deferred (issue 26 phase 2+)
+// ForkRepository forks a project via POST /projects/:id/fork.
+// id must be owner/repo (path with namespace).
 func (g *GitLabProvider) ForkRepository(ctx context.Context, id string, opts provider.ForkOptions) (*provider.Repository, error) {
-	return nil, fmt.Errorf("fork repository not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+	if id == "" {
+		return nil, fmt.Errorf("repository id is required")
+	}
+
+	payload := map[string]any{}
+	if opts.Organization != "" {
+		payload["namespace_path"] = opts.Organization
+	}
+	if opts.Name != "" {
+		payload["name"] = opts.Name
+		payload["path"] = opts.Name
+	}
+
+	encoded := url.PathEscape(id)
+	var project gitlabProject
+	if err := g.doJSON(ctx, "POST", "projects/"+encoded+"/fork", payload, &project, http.StatusCreated, http.StatusOK, http.StatusAccepted); err != nil {
+		return nil, g.FormatError("fork repository", err)
+	}
+	return gitlabProjectToProvider(&project), nil
 }
 
 // SearchRepositories searches projects via the GitLab projects API.
@@ -294,9 +350,9 @@ func (g *GitLabProvider) SearchRepositories(ctx context.Context, query provider.
 	}, nil
 }
 
-// Webhook management methods — not in CLI surface; deferred (issue 26 phase 2+)
+// Webhook management — GitHub implemented; GitLab project hooks deferred (issue 26).
 func (g *GitLabProvider) ListWebhooks(ctx context.Context, repoID string) ([]provider.Webhook, error) {
-	return nil, fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+	return nil, fmt.Errorf("webhook management not implemented for gitlab: use github provider or implement project hooks (issue 26)")
 }
 
 func (g *GitLabProvider) GetWebhook(ctx context.Context, repoID, webhookID string) (*provider.Webhook, error) {

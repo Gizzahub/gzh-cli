@@ -159,6 +159,14 @@ func (a *GitHubAPIClientAdapter) CreateRepository(ctx context.Context, owner str
 	return a.client.CreateRepository(ctx, owner, opts)
 }
 
+func (a *GitHubAPIClientAdapter) UpdateRepository(ctx context.Context, owner, repo string, opts *UpdateRepositoryOptions) (*RepositoryInfo, error) {
+	return a.client.UpdateRepository(ctx, owner, repo, opts)
+}
+
+func (a *GitHubAPIClientAdapter) ForkRepository(ctx context.Context, owner, repo string, opts *ForkRepositoryOptions) (*RepositoryInfo, error) {
+	return a.client.ForkRepository(ctx, owner, repo, opts)
+}
+
 func (a *GitHubAPIClientAdapter) DeleteRepository(ctx context.Context, owner, repo string) error {
 	return a.client.DeleteRepository(ctx, owner, repo)
 }

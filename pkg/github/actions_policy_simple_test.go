@@ -132,6 +132,14 @@ func (m *simpleAPIClient) CreateRepository(ctx context.Context, owner string, op
 	return &RepositoryInfo{Name: opts.Name, FullName: owner + "/" + opts.Name}, nil
 }
 
+func (m *simpleAPIClient) UpdateRepository(ctx context.Context, owner, repo string, opts *UpdateRepositoryOptions) (*RepositoryInfo, error) {
+	return &RepositoryInfo{Name: repo, FullName: owner + "/" + repo}, nil
+}
+
+func (m *simpleAPIClient) ForkRepository(ctx context.Context, owner, repo string, opts *ForkRepositoryOptions) (*RepositoryInfo, error) {
+	return &RepositoryInfo{Name: repo, FullName: "forker/" + repo}, nil
+}
+
 func (m *simpleAPIClient) DeleteRepository(ctx context.Context, owner, repo string) error {
 	return nil
 }

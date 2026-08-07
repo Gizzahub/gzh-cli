@@ -18,6 +18,8 @@ import (
 // mutationAPIClient is a controllable APIClient for provider mutation tests.
 type mutationAPIClient struct {
 	createFn    func(ctx context.Context, owner string, opts *CreateRepositoryOptions) (*RepositoryInfo, error)
+	updateFn    func(ctx context.Context, owner, repo string, opts *UpdateRepositoryOptions) (*RepositoryInfo, error)
+	forkFn      func(ctx context.Context, owner, repo string, opts *ForkRepositoryOptions) (*RepositoryInfo, error)
 	deleteFn    func(ctx context.Context, owner, repo string) error
 	archiveFn   func(ctx context.Context, owner, repo string) error
 	unarchiveFn func(ctx context.Context, owner, repo string) error
@@ -48,6 +50,18 @@ func (m *mutationAPIClient) CreateRepository(ctx context.Context, owner string, 
 		return m.createFn(ctx, owner, opts)
 	}
 	return nil, nil
+}
+func (m *mutationAPIClient) UpdateRepository(ctx context.Context, owner, repo string, opts *UpdateRepositoryOptions) (*RepositoryInfo, error) {
+	if m.updateFn != nil {
+		return m.updateFn(ctx, owner, repo, opts)
+	}
+	return &RepositoryInfo{Name: repo, FullName: owner + "/" + repo}, nil
+}
+func (m *mutationAPIClient) ForkRepository(ctx context.Context, owner, repo string, opts *ForkRepositoryOptions) (*RepositoryInfo, error) {
+	if m.forkFn != nil {
+		return m.forkFn(ctx, owner, repo, opts)
+	}
+	return &RepositoryInfo{Name: repo, FullName: "forker/" + repo}, nil
 }
 func (m *mutationAPIClient) DeleteRepository(ctx context.Context, owner, repo string) error {
 	if m.deleteFn != nil {
@@ -280,6 +294,210 @@ func TestGitHubAPIClient_CreateRequiresOwner(t *testing.T) {
 	_, err := c.CreateRepository(context.Background(), "", &CreateRepositoryOptions{Name: "x"})
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "owner is required")
+}
+
+func TestGitHubProvider_UpdateAndFork(t *testing.T) {
+	t.Parallel()
+
+	desc := "updated"
+	private := true
+	client := &mutationAPIClient{
+		updateFn: func(_ context.Context, owner, repo string, opts *UpdateRepositoryOptions) (*RepositoryInfo, error) {
+			assert.Equal(t, "acme", owner)
+			assert.Equal(t, "widget", repo)
+			require.NotNil(t, opts.Description)
+			assert.Equal(t, "updated", *opts.Description)
+			require.NotNil(t, opts.Private)
+			assert.True(t, *opts.Private)
+			return &RepositoryInfo{
+				Name:        "widget",
+				FullName:    "acme/widget",
+				Description: "updated",
+				Private:     true,
+			}, nil
+		},
+		forkFn: func(_ context.Context, owner, repo string, opts *ForkRepositoryOptions) (*RepositoryInfo, error) {
+			assert.Equal(t, "acme", owner)
+			assert.Equal(t, "widget", repo)
+			assert.Equal(t, "fork-org", opts.Organization)
+			assert.Equal(t, "widget-fork", opts.Name)
+			return &RepositoryInfo{
+				Name:     "widget-fork",
+				FullName: "fork-org/widget-fork",
+			}, nil
+		},
+	}
+
+	p := NewGitHubProvider(client, &noopCloneService{})
+	ctx := context.Background()
+
+	updated, err := p.UpdateRepository(ctx, "acme/widget", provider.UpdateRepoRequest{
+		Description: &desc,
+		Private:     &private,
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "acme/widget", updated.FullName)
+	assert.Equal(t, "updated", updated.Description)
+	assert.True(t, updated.Private)
+
+	forked, err := p.ForkRepository(ctx, "acme/widget", provider.ForkOptions{
+		Organization: "fork-org",
+		Name:         "widget-fork",
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "fork-org/widget-fork", forked.FullName)
+
+	_, err = p.UpdateRepository(ctx, "bad-id", provider.UpdateRepoRequest{})
+	require.Error(t, err)
+	_, err = p.ForkRepository(ctx, "bad-id", provider.ForkOptions{})
+	require.Error(t, err)
+}
+
+func TestResilientGitHubClient_UpdateAndFork_HTTP(t *testing.T) {
+	t.Parallel()
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/repos/acme/widget", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodPatch, r.Method)
+		var body UpdateRepositoryOptions
+		require.NoError(t, json.NewDecoder(r.Body).Decode(&body))
+		require.NotNil(t, body.Description)
+		assert.Equal(t, "new desc", *body.Description)
+		_ = json.NewEncoder(w).Encode(RepositoryInfo{
+			Name:        "widget",
+			FullName:    "acme/widget",
+			Description: *body.Description,
+		})
+	})
+	mux.HandleFunc("/repos/acme/widget/forks", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodPost, r.Method)
+		var body ForkRepositoryOptions
+		require.NoError(t, json.NewDecoder(r.Body).Decode(&body))
+		assert.Equal(t, "mine", body.Organization)
+		w.WriteHeader(http.StatusAccepted)
+		_ = json.NewEncoder(w).Encode(RepositoryInfo{
+			Name:     "widget",
+			FullName: "mine/widget",
+		})
+	})
+
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
+
+	client := NewResilientGitHubClientWithBaseURL("test-token", server.URL)
+	ctx := context.Background()
+
+	desc := "new desc"
+	updated, err := client.UpdateRepository(ctx, "acme", "widget", &UpdateRepositoryOptions{Description: &desc})
+	require.NoError(t, err)
+	assert.Equal(t, "new desc", updated.Description)
+
+	forked, err := client.ForkRepository(ctx, "acme", "widget", &ForkRepositoryOptions{Organization: "mine"})
+	require.NoError(t, err)
+	assert.Equal(t, "mine/widget", forked.FullName)
+}
+
+func TestGitHubProvider_Webhooks_HTTP(t *testing.T) {
+	t.Parallel()
+
+	var lastBody map[string]any
+	mux := http.NewServeMux()
+	mux.HandleFunc("/repos/acme/widget/hooks", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			_ = json.NewEncoder(w).Encode([]WebhookInfo{
+				{
+					ID:     42,
+					Name:   "web",
+					Active: true,
+					Events: []string{"push"},
+					Config: WebhookConfig{URL: "https://example.com/hook", ContentType: "json"},
+				},
+			})
+		case http.MethodPost:
+			require.NoError(t, json.NewDecoder(r.Body).Decode(&lastBody))
+			w.WriteHeader(http.StatusCreated)
+			_ = json.NewEncoder(w).Encode(WebhookInfo{
+				ID:     99,
+				Name:   "web",
+				Active: true,
+				Events: []string{"push", "pull_request"},
+				Config: WebhookConfig{URL: "https://example.com/new", ContentType: "json"},
+			})
+		default:
+			http.NotFound(w, r)
+		}
+	})
+	mux.HandleFunc("/repos/acme/widget/hooks/42", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			_ = json.NewEncoder(w).Encode(WebhookInfo{
+				ID:     42,
+				Name:   "web",
+				Active: true,
+				Events: []string{"push"},
+				Config: WebhookConfig{URL: "https://example.com/hook", ContentType: "json"},
+			})
+		case http.MethodPatch:
+			_ = json.NewEncoder(w).Encode(WebhookInfo{
+				ID:     42,
+				Name:   "web",
+				Active: false,
+				Events: []string{"push"},
+				Config: WebhookConfig{URL: "https://example.com/hook", ContentType: "json"},
+			})
+		case http.MethodDelete:
+			w.WriteHeader(http.StatusNoContent)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+	mux.HandleFunc("/repos/acme/widget/hooks/42/tests", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodPost, r.Method)
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
+
+	p := NewGitHubProviderWithBaseURL(&mutationAPIClient{}, &noopCloneService{}, server.URL)
+	p.SetToken("test-token")
+	ctx := context.Background()
+
+	hooks, err := p.ListWebhooks(ctx, "acme/widget")
+	require.NoError(t, err)
+	require.Len(t, hooks, 1)
+	assert.Equal(t, "42", hooks[0].ID)
+
+	got, err := p.GetWebhook(ctx, "acme/widget", "42")
+	require.NoError(t, err)
+	assert.Equal(t, "42", got.ID)
+	assert.Equal(t, "https://example.com/hook", got.Config.URL)
+
+	created, err := p.CreateWebhook(ctx, "acme/widget", provider.CreateWebhookRequest{
+		Active: true,
+		Events: []string{"push", "pull_request"},
+		Config: provider.WebhookConfig{URL: "https://example.com/new", ContentType: "json"},
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "99", created.ID)
+	assert.Equal(t, "web", lastBody["name"])
+
+	active := false
+	updated, err := p.UpdateWebhook(ctx, "acme/widget", "42", provider.UpdateWebhookRequest{Active: &active})
+	require.NoError(t, err)
+	assert.False(t, updated.Active)
+
+	require.NoError(t, p.DeleteWebhook(ctx, "acme/widget", "42"))
+
+	result, err := p.TestWebhook(ctx, "acme/widget", "42")
+	require.NoError(t, err)
+	assert.True(t, result.Success)
+
+	require.NoError(t, p.ValidateWebhookURL(ctx, "https://example.com/ok"))
+	require.Error(t, p.ValidateWebhookURL(ctx, "ftp://bad"))
+	_, err = p.ListWebhooks(ctx, "bad")
+	require.Error(t, err)
 }
 
 type testLogger struct{}

@@ -72,6 +72,32 @@ type CreateRepositoryOptions struct {
 	AllowAutoMerge    bool   `json:"allow_auto_merge"`
 }
 
+// UpdateRepositoryOptions holds parameters for PATCH /repos/{owner}/{repo}.
+// Pointer fields omit when nil so partial updates are sent correctly.
+type UpdateRepositoryOptions struct {
+	Name             *string `json:"name,omitempty"`
+	Description      *string `json:"description,omitempty"`
+	Homepage         *string `json:"homepage,omitempty"`
+	Private          *bool   `json:"private,omitempty"`
+	HasIssues        *bool   `json:"has_issues,omitempty"`
+	HasProjects      *bool   `json:"has_projects,omitempty"`
+	HasWiki          *bool   `json:"has_wiki,omitempty"`
+	HasDownloads     *bool   `json:"has_downloads,omitempty"`
+	DefaultBranch    *string `json:"default_branch,omitempty"`
+	AllowSquashMerge *bool   `json:"allow_squash_merge,omitempty"`
+	AllowMergeCommit *bool   `json:"allow_merge_commit,omitempty"`
+	AllowRebaseMerge *bool   `json:"allow_rebase_merge,omitempty"`
+	AllowAutoMerge   *bool   `json:"allow_auto_merge,omitempty"`
+	Archived         *bool   `json:"archived,omitempty"`
+}
+
+// ForkRepositoryOptions holds parameters for POST /repos/{owner}/{repo}/forks.
+type ForkRepositoryOptions struct {
+	Organization      string `json:"organization,omitempty"`
+	Name              string `json:"name,omitempty"`
+	DefaultBranchOnly bool   `json:"default_branch_only,omitempty"`
+}
+
 // SearchRepositoriesOptions holds parameters for searching repositories.
 type SearchRepositoriesOptions struct {
 	Sort    string
@@ -94,11 +120,13 @@ type APIClient interface {
 	ListOrganizationRepositories(ctx context.Context, org string) ([]RepositoryInfo, error)
 	GetDefaultBranch(ctx context.Context, owner, repo string) (string, error)
 
-	// Repository mutations (CLI surface: create/delete/archive/search)
+	// Repository mutations (CLI surface: create/delete/archive/search + update/fork)
 	CreateRepository(ctx context.Context, owner string, opts *CreateRepositoryOptions) (*RepositoryInfo, error)
+	UpdateRepository(ctx context.Context, owner, repo string, opts *UpdateRepositoryOptions) (*RepositoryInfo, error)
 	DeleteRepository(ctx context.Context, owner, repo string) error
 	ArchiveRepository(ctx context.Context, owner, repo string) error
 	UnarchiveRepository(ctx context.Context, owner, repo string) error
+	ForkRepository(ctx context.Context, owner, repo string, opts *ForkRepositoryOptions) (*RepositoryInfo, error)
 	SearchRepositories(ctx context.Context, query string, opts *SearchRepositoriesOptions) (*RepositorySearchResult, error)
 
 	// Authentication and rate limiting

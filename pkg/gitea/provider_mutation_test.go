@@ -140,3 +140,53 @@ func TestGiteaProvider_CreateFallsBackToUser(t *testing.T) {
 	assert.True(t, usedUserEndpoint)
 	assert.Equal(t, "alice/widget", repo.FullName)
 }
+
+func TestGiteaProvider_UpdateAndFork(t *testing.T) {
+	var updatePayload, forkPayload map[string]any
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == http.MethodPatch && r.URL.Path == "/repos/acme/widget":
+			require.NoError(t, json.NewDecoder(r.Body).Decode(&updatePayload))
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"name":        "widget",
+				"full_name":   "acme/widget",
+				"description": updatePayload["description"],
+				"private":     updatePayload["private"],
+			})
+		case r.Method == http.MethodPost && r.URL.Path == "/repos/acme/widget/forks":
+			require.NoError(t, json.NewDecoder(r.Body).Decode(&forkPayload))
+			w.WriteHeader(http.StatusCreated)
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"name":      "widget",
+				"full_name": "mine/widget",
+			})
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	t.Cleanup(server.Close)
+
+	p := NewGiteaProvider(server.URL)
+	p.SetToken("test-token")
+	ctx := context.Background()
+
+	desc := "new"
+	private := true
+	updated, err := p.UpdateRepository(ctx, "acme/widget", provider.UpdateRepoRequest{
+		Description: &desc,
+		Private:     &private,
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "acme/widget", updated.FullName)
+	assert.Equal(t, "new", updatePayload["description"])
+	assert.Equal(t, true, updatePayload["private"])
+
+	forked, err := p.ForkRepository(ctx, "acme/widget", provider.ForkOptions{Organization: "mine"})
+	require.NoError(t, err)
+	assert.Equal(t, "mine/widget", forked.FullName)
+	assert.Equal(t, "mine", forkPayload["organization"])
+
+	_, err = p.UpdateRepository(ctx, "bad", provider.UpdateRepoRequest{})
+	require.Error(t, err)
+}

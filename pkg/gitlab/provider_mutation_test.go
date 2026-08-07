@@ -124,3 +124,56 @@ func TestGitLabProvider_SearchRequiresQuery(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "search query is required")
 }
+
+func TestGitLabProvider_UpdateAndFork(t *testing.T) {
+	var updatePayload, forkPayload map[string]any
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == http.MethodPut && strings.HasPrefix(r.URL.Path, "/projects/"):
+			require.NoError(t, json.NewDecoder(r.Body).Decode(&updatePayload))
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id":                  1,
+				"name":                "widget",
+				"path_with_namespace": "acme/widget",
+				"description":         updatePayload["description"],
+				"visibility":          updatePayload["visibility"],
+			})
+		case r.Method == http.MethodPost && strings.HasSuffix(r.URL.Path, "/fork"):
+			require.NoError(t, json.NewDecoder(r.Body).Decode(&forkPayload))
+			w.WriteHeader(http.StatusCreated)
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id":                  2,
+				"name":                "widget",
+				"path_with_namespace": "mine/widget",
+				"web_url":             "https://gitlab.example/mine/widget",
+			})
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	t.Cleanup(server.Close)
+
+	p := NewGitLabProvider(server.URL)
+	p.SetToken("glpat-test")
+	ctx := context.Background()
+
+	desc := "new"
+	private := true
+	updated, err := p.UpdateRepository(ctx, "acme/widget", provider.UpdateRepoRequest{
+		Description: &desc,
+		Private:     &private,
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "acme/widget", updated.FullName)
+	assert.Equal(t, "new", updatePayload["description"])
+	assert.Equal(t, "private", updatePayload["visibility"])
+
+	forked, err := p.ForkRepository(ctx, "acme/widget", provider.ForkOptions{Organization: "mine"})
+	require.NoError(t, err)
+	assert.Equal(t, "mine/widget", forked.FullName)
+	assert.Equal(t, "mine", forkPayload["namespace_path"])
+
+	_, err = p.UpdateRepository(ctx, "", provider.UpdateRepoRequest{})
+	require.Error(t, err)
+}
