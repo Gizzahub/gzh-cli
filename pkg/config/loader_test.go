@@ -238,6 +238,130 @@ func TestGetConfigSearchPaths(t *testing.T) {
 	}
 }
 
+// TestLoadConfigOrganizationKeyAliases verifies gzh.yaml SSoT is organizations
+// while deprecated orgs/groups aliases still load (issue 32).
+func TestLoadConfigOrganizationKeyAliases(t *testing.T) {
+	tests := []struct {
+		name        string
+		content     string
+		provider    string
+		wantOrgName string
+		wantClone   string
+	}{
+		{
+			name: "canonical organizations key",
+			content: `
+version: "1.0.0"
+default_provider: github
+providers:
+  github:
+    token: "test-token"
+    organizations:
+      - name: "canonical-org"
+        clone_dir: "./repos/canonical"
+`,
+			provider:    "github",
+			wantOrgName: "canonical-org",
+			wantClone:   "./repos/canonical",
+		},
+		{
+			name: "deprecated orgs alias",
+			content: `
+version: "1.0.0"
+default_provider: github
+providers:
+  github:
+    token: "test-token"
+    orgs:
+      - name: "alias-org"
+        clone_dir: "./repos/alias"
+`,
+			provider:    "github",
+			wantOrgName: "alias-org",
+			wantClone:   "./repos/alias",
+		},
+		{
+			name: "deprecated groups alias for gitlab",
+			content: `
+version: "1.0.0"
+default_provider: gitlab
+providers:
+  gitlab:
+    token: "test-token"
+    groups:
+      - name: "alias-group"
+        clone_dir: "./repos/group"
+`,
+			provider:    "gitlab",
+			wantOrgName: "alias-group",
+			wantClone:   "./repos/group",
+		},
+		{
+			name: "organizations wins over orgs when both present",
+			content: `
+version: "1.0.0"
+providers:
+  github:
+    token: "test-token"
+    organizations:
+      - name: "canonical-wins"
+        clone_dir: "./repos/canonical"
+    orgs:
+      - name: "alias-ignored"
+        clone_dir: "./repos/ignored"
+`,
+			provider:    "github",
+			wantOrgName: "canonical-wins",
+			wantClone:   "./repos/canonical",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tmpFile, err := os.CreateTemp("", "test-org-alias-*.yaml")
+			require.NoError(t, err)
+			t.Cleanup(func() {
+				_ = os.Remove(tmpFile.Name())
+			})
+
+			_, err = tmpFile.WriteString(tt.content)
+			require.NoError(t, err)
+			require.NoError(t, tmpFile.Close())
+
+			// Unified loader path (live SSoT)
+			loader := NewUnifiedLoader()
+			result, err := loader.LoadConfigFromPath(tmpFile.Name())
+			require.NoError(t, err)
+			require.NotNil(t, result)
+			require.NotNil(t, result.Config)
+
+			provider, ok := result.Config.Providers[tt.provider]
+			require.True(t, ok, "provider %s present", tt.provider)
+			require.Len(t, provider.Organizations, 1)
+			assert.Equal(t, tt.wantOrgName, provider.Organizations[0].Name)
+			assert.Equal(t, tt.wantClone, provider.Organizations[0].CloneDir)
+			// Aliases must be cleared after normalize so re-marshal stays canonical
+			assert.Nil(t, provider.OrgsAlias)
+			assert.Nil(t, provider.GroupsAlias)
+
+			// Public LoadConfigFromFile also accepts both shapes (converts to legacy Config)
+			legacy, err := LoadConfigFromFile(tmpFile.Name())
+			require.NoError(t, err)
+			require.NotNil(t, legacy)
+			legacyProvider, ok := legacy.Providers[tt.provider]
+			require.True(t, ok)
+
+			targets := legacyProvider.Orgs
+			if tt.provider == "gitlab" {
+				targets = legacyProvider.Groups
+			}
+			require.Len(t, targets, 1)
+			assert.Equal(t, tt.wantOrgName, targets[0].Name)
+			assert.Equal(t, tt.wantClone, targets[0].CloneDir)
+		})
+	}
+}
+
 func TestValidateConfigFile(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -252,6 +376,19 @@ providers:
   github:
     token: "test"
     organizations:
+      - name: "test"
+        clone_dir: "./repos/test"
+`,
+			wantErr: false,
+		},
+		{
+			name: "valid config with orgs alias",
+			content: `
+version: "1.0.0"
+providers:
+  github:
+    token: "test"
+    orgs:
       - name: "test"
         clone_dir: "./repos/test"
 `,

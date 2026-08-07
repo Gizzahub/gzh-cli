@@ -101,14 +101,58 @@ type ProviderConfig struct {
 	// API endpoint URL (for self-hosted instances)
 	APIURL string `yaml:"api_url,omitempty" json:"api_url,omitempty" validate:"omitempty,url"`
 
-	// Organizations/groups to manage
+	// Organizations/groups to manage (canonical key for gzh.yaml).
+	// GitLab groups and GitHub/Gitea orgs share this field in the unified schema.
 	Organizations []*OrganizationConfig `yaml:"organizations,omitempty" json:"organizations,omitempty" validate:"min=1"`
+
+	// OrgsAlias is a load-time alias for Organizations (deprecated).
+	// Accepted so migration-guide users writing `orgs:` still load successfully.
+	// Prefer `organizations:`. Cleared after NormalizeOrganizationAliases.
+	OrgsAlias []*OrganizationConfig `yaml:"orgs,omitempty" json:"-"`
+
+	// GroupsAlias is a load-time alias for Organizations (deprecated).
+	// Accepted for GitLab migration examples that used `groups:`.
+	// Prefer `organizations:`. Cleared after NormalizeOrganizationAliases.
+	GroupsAlias []*OrganizationConfig `yaml:"groups,omitempty" json:"-"`
 
 	// Provider-specific settings
 	Settings *ProviderSettings `yaml:"settings,omitempty" json:"settings,omitempty"`
 
 	// Legacy support for bulk-clone.yaml format
 	Legacy *LegacyProviderConfig `yaml:"legacy,omitempty" json:"legacy,omitempty"`
+}
+
+// NormalizeOrganizationAliases copies load-time orgs/groups aliases into Organizations.
+// Canonical key is organizations; orgs and groups are accepted for compatibility only.
+// When organizations is already set, aliases are ignored and discarded.
+func (p *ProviderConfig) NormalizeOrganizationAliases() {
+	if p == nil {
+		return
+	}
+
+	if len(p.Organizations) == 0 {
+		switch {
+		case len(p.OrgsAlias) > 0:
+			p.Organizations = p.OrgsAlias
+		case len(p.GroupsAlias) > 0:
+			p.Organizations = p.GroupsAlias
+		}
+	}
+
+	// Drop aliases so re-marshal emits only the canonical key.
+	p.OrgsAlias = nil
+	p.GroupsAlias = nil
+}
+
+// NormalizeOrganizationAliases normalizes organization key aliases on every provider.
+func (c *UnifiedConfig) NormalizeOrganizationAliases() {
+	if c == nil {
+		return
+	}
+
+	for _, provider := range c.Providers {
+		provider.NormalizeOrganizationAliases()
+	}
 }
 
 // OrganizationConfig represents configuration for an organization/group.

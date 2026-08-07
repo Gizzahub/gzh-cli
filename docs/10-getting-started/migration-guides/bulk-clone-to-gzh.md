@@ -36,13 +36,13 @@ version: "1.0.0"
 
 ### Structure Changes
 
-| bulk-clone.yaml            | gzh.yaml                      | Notes                               |
-| -------------------------- | ----------------------------- | ----------------------------------- |
-| `repo_roots[]`             | `providers.{provider}.orgs[]` | More organized provider structure   |
-| `ignore_names[]`           | `exclude[]` per organization  | Per-organization exclusion patterns |
-| `default.github.root_path` | `clone_dir` per organization  | More flexible path management       |
-| `protocol`                 | Removed                       | Authentication handled via tokens   |
-| `org_name`                 | `name`                        | Simpler naming                      |
+| bulk-clone.yaml            | gzh.yaml                               | Notes                               |
+| -------------------------- | -------------------------------------- | ----------------------------------- |
+| `repo_roots[]`             | `providers.{provider}.organizations[]` | Canonical key (`orgs` is a deprecated load-time alias) |
+| `ignore_names[]`           | `exclude[]` per organization           | Per-organization exclusion patterns |
+| `default.github.root_path` | `clone_dir` per organization           | More flexible path management       |
+| `protocol`                 | Removed                                | Authentication handled via tokens   |
+| `org_name`                 | `name`                                 | Simpler naming                      |
 
 ### Authentication
 
@@ -74,9 +74,14 @@ default_provider: github
 providers:
   github:
     token: "${GITHUB_TOKEN}"
-    orgs: []
+    organizations: []
   # Add other providers as needed
 ```
+
+> **Key note:** The canonical organization list key is `organizations:`.
+> Deprecated load-time aliases `orgs:` and (for GitLab-style examples) `groups:`
+> are still accepted by the loader for compatibility, but new configs should use
+> `organizations:`.
 
 ### Step 3: Migrate Organizations
 
@@ -141,7 +146,7 @@ default_provider: github
 providers:
   github:
     token: "${GITHUB_TOKEN}"
-    orgs:
+    organizations:
       - name: "mycompany"
         clone_dir: "$HOME/work/mycompany"
         exclude: ["test-.*", ".*-archive"]
@@ -194,7 +199,7 @@ default_provider: github
 providers:
   github:
     token: "${GITHUB_TOKEN}"
-    orgs:
+    organizations:
       - name: "mycompany"
         visibility: "private"
         clone_dir: "$HOME/work/company"
@@ -209,7 +214,8 @@ providers:
 
   gitlab:
     token: "${GITLAB_TOKEN}"
-    groups:
+    # GitLab groups also use organizations: (groups: is a deprecated alias)
+    organizations:
       # Add GitLab groups as needed
       - name: "my-gitlab-group"
         visibility: "all"
@@ -247,7 +253,7 @@ version: "1.0.0"
 providers:
   github:
     token: "${GITHUB_TOKEN}"
-    orgs:
+    organizations:
       - name: "myusername"
         clone_dir: "$HOME/github"
         exclude: ["test-*"]
@@ -294,7 +300,7 @@ default_provider: github
 providers:
   github:
     token: "${GITHUB_TOKEN}"
-    orgs:
+    organizations:
       - name: "frontend-team"
         visibility: "private"
         clone_dir: "$HOME/work/frontend"
@@ -360,7 +366,7 @@ default_provider: github
 providers:
   github:
     token: "${GITHUB_ENTERPRISE_TOKEN}"
-    orgs:
+    organizations:
       - name: "company-platform"
         visibility: "private"
         clone_dir: "$HOME/work/platform"
@@ -379,7 +385,7 @@ providers:
 
   gitlab:
     token: "${GITLAB_ENTERPRISE_TOKEN}"
-    groups:
+    organizations:
       - name: "infrastructure"
         visibility: "private"
         recursive: true
@@ -504,7 +510,7 @@ repo_roots:
 # NEW: Organized by provider
 providers:
   github:
-    orgs: [...]
+    organizations: [...]
 ```
 
 ### Migration Validation

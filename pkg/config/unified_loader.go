@@ -127,6 +127,9 @@ func (l *UnifiedLoader) loadUnifiedConfig(configPath string, result *LoadResult)
 		return nil, fmt.Errorf("failed to unmarshal unified config: %w", err)
 	}
 
+	// Accept deprecated orgs:/groups: keys as aliases of organizations:.
+	config.NormalizeOrganizationAliases()
+
 	// Validate configuration
 	if err := l.validateUnifiedConfig(&config); err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrConfigInvalid, err)
