@@ -279,14 +279,11 @@ func runContinuousHealthMonitoring(ctx context.Context, _ *cli.CommonFlags, opts
 	for {
 		select {
 		case <-ctx.Done():
-			// Ctrl+C는 --continuous에서 빠져나오는 정상적인 길이다. ctx.Err()를
-			// 그대로 올리면 cobra가 이것을 사용법 오류로 보고 도움말을 통째로
-			// 찍은 뒤 종료 코드 1을 낸다 -- 이 꾸러미는 SilenceUsage를 켜지
-			// 않는다. 오래 도는 다른 명령들(ide monitor, profile continuous,
-			// dev-env status --watch)은 같은 자리에서 nil을 돌려준다.
+			// User interrupt: return ctx.Err() so apprunner maps context.Canceled
+			// to exit 130 (POSIX 128+SIGINT). Root SilenceUsage avoids usage dump.
 			logger.Info("Stopping continuous health monitoring")
 
-			return nil
+			return ctx.Err()
 		case <-ticker.C:
 			report, err := collectHealthMetrics(ctx, opts)
 			if err != nil {

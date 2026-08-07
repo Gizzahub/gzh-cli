@@ -158,8 +158,9 @@ func (o *monitorOptions) runMonitor(ctx context.Context, _ *cobra.Command, _ []s
 	for {
 		select {
 		case <-ctx.Done():
+			// Return ctx.Err() so apprunner maps context.Canceled → exit 130 (POSIX SIGINT).
 			fmt.Printf("\n🛑 Stopping IDE monitoring (reason: %v)\n", ctx.Err())
-			return nil
+			return ctx.Err()
 
 		case event, ok := <-watcher.Events:
 			if !ok {

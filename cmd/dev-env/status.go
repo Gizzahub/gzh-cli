@@ -216,13 +216,11 @@ func runWatchMode(ctx context.Context, collector *status.StatusCollector, format
 
 		select {
 		case <-ctx.Done():
-			// Ctrl+C는 감시 방식에서 빠져나오는 정상적인 길이다. 바로 위에
-			// "Press Ctrl+C to exit watch mode"라고 안내해 놓고 그렇게 했다고
-			// 오류를 돌려주면 앞뒤가 맞지 않는다. ctx.Err()를 그대로 올리면
-			// "Error: context canceled"와 사용법이 찍히고 종료 코드도 1이
-			// 된다. profile continuous도 같은 자리에서 nil을 돌려준다.
+			// User interrupt: return ctx.Err() so apprunner maps context.Canceled
+			// to exit 130 (POSIX 128+SIGINT). SilenceUsage is set at root so
+			// cobra will not dump usage on this path.
 			fmt.Println("\nExiting watch mode")
-			return nil
+			return ctx.Err()
 		case <-ticker.C:
 			// Continue loop
 		}

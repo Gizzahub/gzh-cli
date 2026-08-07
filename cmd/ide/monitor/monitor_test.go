@@ -5,6 +5,7 @@ package monitor
 
 import (
 	"context"
+	"errors"
 	"path/filepath"
 	"testing"
 	"time"
@@ -57,8 +58,9 @@ func TestRunMonitorStopsOnContextCancel(t *testing.T) {
 
 	select {
 	case err := <-done:
-		if err != nil {
-			t.Fatalf("취소로 끝날 때는 오류가 없어야 한다: %v", err)
+		// Interrupt path returns context.Canceled so apprunner can map to exit 130.
+		if !errors.Is(err, context.Canceled) {
+			t.Fatalf("취소로 끝날 때는 context.Canceled여야 한다: %v", err)
 		}
 	case <-time.After(5 * time.Second):
 		t.Fatal("취소했는데 돌아오지 않는다")
@@ -90,8 +92,9 @@ func TestCommandUsesExecutionContext(t *testing.T) {
 
 	select {
 	case err := <-done:
-		if err != nil {
-			t.Fatalf("취소로 끝날 때는 오류가 없어야 한다: %v", err)
+		// Interrupt path returns context.Canceled so apprunner can map to exit 130.
+		if !errors.Is(err, context.Canceled) {
+			t.Fatalf("취소로 끝날 때는 context.Canceled여야 한다: %v", err)
 		}
 	case <-time.After(5 * time.Second):
 		t.Fatal("실행 맥락을 취소했는데 돌아오지 않는다 -- RunE가 붙잡아 둔 맥락을 쓰고 있다")

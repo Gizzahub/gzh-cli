@@ -17,6 +17,8 @@ func main() {
 
 	if err := runner.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
+		// Interrupt (context.Canceled / Ctrl+C) → 130; other errors → 1.
+		// See internal/apprunner interrupt exit convention.
+		os.Exit(apprunner.ExitCode(err))
 	}
 }

@@ -3,6 +3,7 @@ package profile
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -222,8 +223,9 @@ func TestRunContinuousProfiling(t *testing.T) {
 	// Run continuous profiling for a very short duration
 	err := analyzer.RunContinuousProfiling(ctx, "cpu", 50*time.Millisecond, 200*time.Millisecond, false)
 
-	// Should not return an error when context is canceled
-	assert.NoError(t, err)
+	// Deadline/cancel surfaces as ctx.Err(); apprunner maps only Canceled → 130.
+	assert.Error(t, err)
+	assert.True(t, errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled))
 }
 
 func TestGetSeverityEmoji(t *testing.T) {

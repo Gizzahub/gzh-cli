@@ -272,8 +272,9 @@ func (pa *ProfileAnalyzer) RunContinuousProfiling(ctx context.Context, profileTy
 	for {
 		select {
 		case <-ctx.Done():
+			// Return ctx.Err() so apprunner maps context.Canceled → exit 130 (POSIX SIGINT).
 			fmt.Println("🛑 Continuous profiling stopped by context")
-			return nil
+			return ctx.Err()
 
 		case <-ticker.C:
 			if time.Since(startTime) > duration {
