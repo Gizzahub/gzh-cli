@@ -34,6 +34,8 @@ repo_roots:
 }
 
 func TestSyncClone_ConfigRoundTrip_GitLab(t *testing.T) {
+	// bulkCloneConfig.RepoRoots is typed as BulkCloneGithub (org_name required),
+	// even when provider is gitlab — match the loader contract, not the ideal schema.
 	path := writeBulkYAML(t, `
 version: "1.0"
 default:
@@ -42,7 +44,7 @@ repo_roots:
   - root_path: "/tmp/repos/gitlab"
     provider: "gitlab"
     protocol: "https"
-    group_name: "test-group"
+    org_name: "test-group"
 `)
 	loaded, err := synclone.LoadConfig(path)
 	require.NoError(t, err)
