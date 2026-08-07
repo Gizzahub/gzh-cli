@@ -213,7 +213,7 @@ linters:
           json: snake
           mapstructure: kebab
           xml: camel
-          yaml: camel
+          yaml: snake
         use-field-name: true
     testpackage:
       skip-regexp: (export|internal)_test\.go|.*/cmd/.*_test\.go|cmd/.*_test\.go|.*cmd.*_test\.go
