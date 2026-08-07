@@ -583,14 +583,7 @@ func (s *GitRepoTestSuite) TestArchiveCommand() {
 }
 
 // TestSearchCommand tests the repository search functionality.
-//
-// The cases below are kept as the specification for `gz git repo search`, which
-// is still a stub: newRepoSearchCmd returns "search command not yet implemented"
-// and declares no flags at all, so every case here fails on --provider. Two of
-// them used to look green only because "unknown flag" satisfied expectErr.
 func (s *GitRepoTestSuite) TestSearchCommand() {
-	s.T().Skip("gz git repo search is not implemented yet (newRepoSearchCmd is a stub)")
-
 	tests := []struct {
 		name      string
 		args      []string
