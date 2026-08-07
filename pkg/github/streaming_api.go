@@ -357,7 +357,7 @@ func (sc *StreamingClient) parseRepositoryResponse(reader io.Reader, cursor Curs
 
 // buildRepositoryURL constructs the API URL with cursor pagination.
 func (sc *StreamingClient) buildRepositoryURL(org string, cursor CursorPagination) string {
-	baseURL := fmt.Sprintf("https://api.github.com/orgs/%s/repos", org)
+	baseURL := fmt.Sprintf("%s/orgs/%s/repos", DefaultGitHubAPIBaseURL, org)
 
 	params := url.Values{}
 	params.Set("per_page", strconv.Itoa(cursor.First))

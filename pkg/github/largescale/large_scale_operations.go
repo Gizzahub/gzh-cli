@@ -13,6 +13,8 @@ import (
 
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
+
+	"github.com/gizzahub/gzh-cli/pkg/github"
 )
 
 // LargeScaleConfig holds configuration for large-scale repository operations.
@@ -185,7 +187,7 @@ func (m *LargeScaleManager) ListAllRepositories(ctx context.Context, org string)
 
 // fetchRepositoryPage fetches a single page of repositories.
 func (m *LargeScaleManager) fetchRepositoryPage(ctx context.Context, org string, page, perPage int) ([]LargeScaleRepository, bool, error) {
-	u, err := url.Parse(fmt.Sprintf("https://api.github.com/orgs/%s/repos", org))
+	u, err := url.Parse(fmt.Sprintf("%s/orgs/%s/repos", github.DefaultGitHubAPIBaseURL, org))
 	if err != nil {
 		return nil, false, err
 	}

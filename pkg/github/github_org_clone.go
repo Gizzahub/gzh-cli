@@ -52,7 +52,7 @@ type RepoInfo struct {
 // Returns the default branch name (e.g., "main", "master") or an error if the
 // repository doesn't exist, access is denied, or the API request fails.
 func GetDefaultBranch(ctx context.Context, org string, repo string) (string, error) {
-	url := fmt.Sprintf("https://api.github.com/repos/%s/%s", org, repo)
+	url := fmt.Sprintf("%s/repos/%s/%s", DefaultGitHubAPIBaseURL, org, repo)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
@@ -97,7 +97,7 @@ func ListRepos(ctx context.Context, org string) ([]RepoInfo, error) {
 	client := httpclient.GetGlobalClient("github")
 
 	for {
-		url := fmt.Sprintf("https://api.github.com/orgs/%s/repos?page=%d&per_page=%d", org, page, perPage)
+		url := fmt.Sprintf("%s/orgs/%s/repos?page=%d&per_page=%d", DefaultGitHubAPIBaseURL, org, page, perPage)
 
 		req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 		if err != nil {
