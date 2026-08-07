@@ -21,6 +21,11 @@ type AuditReport struct {
 }
 
 // AuditSummary provides high-level compliance metrics.
+//
+// Compliance (CompliantRepositories / CompliancePercentage) counts only
+// repositories with no *required* rule violations. recommended/optional
+// findings are still tallied in TotalViolations and AdvisoryFindings but do
+// not flip a repository to non-compliant.
 type AuditSummary struct {
 	TotalRepositories     int     `yaml:"totalRepositories" json:"totalRepositories"`
 	AuditedRepositories   int     `yaml:"auditedRepositories" json:"auditedRepositories"`
@@ -28,8 +33,12 @@ type AuditSummary struct {
 	CompliancePercentage  float64 `yaml:"compliancePercentage" json:"compliancePercentage"`
 	TotalPolicies         int     `yaml:"totalPolicies" json:"totalPolicies"`
 	TotalViolations       int     `yaml:"totalViolations" json:"totalViolations"`
-	TotalExceptions       int     `yaml:"totalExceptions" json:"totalExceptions"`
-	ActiveExceptions      int     `yaml:"activeExceptions" json:"activeExceptions"`
+	// AdvisoryFindings counts recommended/optional violations (non-blocking).
+	AdvisoryFindings int `yaml:"advisoryFindings" json:"advisoryFindings"`
+	// RequiredViolations counts required-level violations (blocking).
+	RequiredViolations int `yaml:"requiredViolations" json:"requiredViolations"`
+	TotalExceptions    int `yaml:"totalExceptions" json:"totalExceptions"`
+	ActiveExceptions   int `yaml:"activeExceptions" json:"activeExceptions"`
 }
 
 // PolicyAuditResult represents audit results for a specific policy.
@@ -69,9 +78,17 @@ type PolicyViolation struct {
 	Type        string `yaml:"type" json:"type"`
 	Expected    any    `yaml:"expected" json:"expected"`
 	Actual      any    `yaml:"actual,omitempty" json:"actual,omitempty"`
+	// Enforcement is the rule level: required | recommended | optional.
+	Enforcement string `yaml:"enforcement,omitempty" json:"enforcement,omitempty"`
 	Severity    string `yaml:"severity" json:"severity"`
 	Message     string `yaml:"message" json:"message"`
 	Remediation string `yaml:"remediation,omitempty" json:"remediation,omitempty"`
+}
+
+// isBlockingEnforcement reports whether a violation makes the repo non-compliant.
+// Only enforcement "required" is blocking (option A). recommended/optional are advisory.
+func isBlockingEnforcement(enforcement string) bool {
+	return strings.EqualFold(strings.TrimSpace(enforcement), "required")
 }
 
 // RunComplianceAudit performs a compliance audit against configured policies.
@@ -342,12 +359,15 @@ func getIntValue(v any) (int, bool) {
 
 // getSeverity determines severity level from enforcement.
 func getSeverity(enforcement string) string {
-	switch strings.ToLower(enforcement) {
+	switch strings.ToLower(strings.TrimSpace(enforcement)) {
 	case "required":
 		return "critical"
 	case "recommended":
 		return "medium"
+	case "optional":
+		return "low"
 	default:
+		// Unknown or empty levels are treated as advisory (low), not blocking.
 		return "low"
 	}
 }
@@ -364,7 +384,9 @@ func (ar *AuditReport) GenerateAuditSummary() string {
 	sb.WriteString(fmt.Sprintf("- Audited Repositories: %d\n", ar.Summary.AuditedRepositories))
 	sb.WriteString(fmt.Sprintf("- Compliant Repositories: %d (%.1f%%)\n",
 		ar.Summary.CompliantRepositories, ar.Summary.CompliancePercentage))
-	sb.WriteString(fmt.Sprintf("- Total Violations: %d\n", ar.Summary.TotalViolations))
+	sb.WriteString("  (compliance ignores recommended/optional findings; only required violations fail a repo)\n")
+	sb.WriteString(fmt.Sprintf("- Total Violations: %d (required: %d, advisory: %d)\n",
+		ar.Summary.TotalViolations, ar.Summary.RequiredViolations, ar.Summary.AdvisoryFindings))
 	sb.WriteString(fmt.Sprintf("- Active Exceptions: %d\n", ar.Summary.ActiveExceptions))
 
 	sb.WriteString("\n## Policy Compliance\n\n")
@@ -395,8 +417,12 @@ func (ar *AuditReport) GenerateAuditSummary() string {
 				sb.WriteString(fmt.Sprintf("### %s\n", repo.Repository))
 
 				for _, violation := range repo.Violations {
-					sb.WriteString(fmt.Sprintf("- **%s/%s**: %s\n",
-						violation.PolicyName, violation.RuleName, violation.Message))
+					level := violation.Enforcement
+					if level == "" {
+						level = violation.Severity
+					}
+					sb.WriteString(fmt.Sprintf("- **%s/%s** [%s]: %s\n",
+						violation.PolicyName, violation.RuleName, level, violation.Message))
 
 					if violation.Remediation != "" {
 						sb.WriteString(fmt.Sprintf("  - Remediation: %s\n", violation.Remediation))
@@ -408,7 +434,46 @@ func (ar *AuditReport) GenerateAuditSummary() string {
 		}
 	}
 
+	// Advisory-only repos (compliant but with recommended/optional findings)
+	advisoryRepos := 0
+	for _, repo := range ar.Repositories {
+		if repo.Compliant && hasAdvisoryViolation(repo) {
+			advisoryRepos++
+		}
+	}
+	if advisoryRepos > 0 {
+		sb.WriteString("\n## Advisory Findings (recommended/optional)\n\n")
+		sb.WriteString("These repositories are still **compliant**; findings below do not fail the audit.\n\n")
+		for _, repo := range ar.Repositories {
+			if !repo.Compliant || !hasAdvisoryViolation(repo) {
+				continue
+			}
+			sb.WriteString(fmt.Sprintf("### %s\n", repo.Repository))
+			for _, violation := range repo.Violations {
+				if isBlockingEnforcement(violation.Enforcement) {
+					continue
+				}
+				level := violation.Enforcement
+				if level == "" {
+					level = "advisory"
+				}
+				sb.WriteString(fmt.Sprintf("- **%s/%s** [%s]: %s\n",
+					violation.PolicyName, violation.RuleName, level, violation.Message))
+			}
+			sb.WriteString("\n")
+		}
+	}
+
 	return sb.String()
+}
+
+func hasAdvisoryViolation(repo RepoAuditResult) bool {
+	for _, v := range repo.Violations {
+		if !isBlockingEnforcement(v.Enforcement) {
+			return true
+		}
+	}
+	return false
 }
 
 // initializePolicyResults initializes the policy audit results structure.
@@ -504,13 +569,21 @@ func (rc *RepoConfig) updateExemptedRule(policyResults map[string]*PolicyAuditRe
 }
 
 // processRuleViolation processes a rule violation and updates the audit results.
+// Only enforcement "required" marks the repository non-compliant (option A).
 func (rc *RepoConfig) processRuleViolation(violation *PolicyViolation, policyName, ruleName string, rule PolicyRule, repoResult *RepoAuditResult, policyResults map[string]*PolicyAuditResult, repoName string) {
 	violation.PolicyName = policyName
 	violation.RuleName = ruleName
+	violation.Enforcement = strings.ToLower(strings.TrimSpace(rule.Enforcement))
+	if violation.Enforcement == "" {
+		violation.Enforcement = "optional"
+	}
 	violation.Severity = getSeverity(rule.Enforcement)
 	violation.Message = rule.Message
 
-	repoResult.Compliant = false
+	// Always record the finding; only required rules fail compliance.
+	if isBlockingEnforcement(rule.Enforcement) {
+		repoResult.Compliant = false
+	}
 	repoResult.Violations = append(repoResult.Violations, *violation)
 
 	// Update policy results
@@ -533,6 +606,13 @@ func (rc *RepoConfig) updateAuditSummary(report *AuditReport, repoResult RepoAud
 	}
 
 	report.Summary.TotalViolations += len(repoResult.Violations)
+	for _, v := range repoResult.Violations {
+		if isBlockingEnforcement(v.Enforcement) {
+			report.Summary.RequiredViolations++
+		} else {
+			report.Summary.AdvisoryFindings++
+		}
+	}
 	report.Summary.TotalExceptions += len(repoResult.Exceptions)
 	for _, exc := range repoResult.Exceptions {
 		if exc.IsExceptionActive() {

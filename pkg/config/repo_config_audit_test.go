@@ -173,6 +173,97 @@ func TestRunComplianceAudit(t *testing.T) {
 	assert.NotEmpty(t, repoResults["unprotected-repo"].Violations)
 }
 
+// TestRunComplianceAudit_RecommendedOnlyIsCompliant locks option A:
+// a repository that only violates recommended/optional rules stays Compliant
+// but still surfaces the findings (and they count as AdvisoryFindings).
+func TestRunComplianceAudit_RecommendedOnlyIsCompliant(t *testing.T) {
+	config := &RepoConfig{
+		Version:      "1.0.0",
+		Organization: "test-org",
+		Policies: map[string]*PolicyTemplate{
+			"compliance": {
+				Description: "mixed enforcement",
+				Rules: map[string]PolicyRule{
+					"license_file": {
+						Type:        "file_exists",
+						Value:       "LICENSE",
+						Enforcement: "required",
+						Message:     "LICENSE required",
+					},
+					"security_workflow": {
+						Type:        "workflow_exists",
+						Value:       ".github/workflows/security.yml",
+						Enforcement: "recommended",
+						Message:     "Security workflow recommended",
+					},
+					"changelog_file": {
+						Type:        "file_exists",
+						Value:       "CHANGELOG.md",
+						Enforcement: "optional",
+						Message:     "CHANGELOG optional",
+					},
+				},
+			},
+		},
+	}
+
+	repoStates := map[string]RepositoryState{
+		"advisory-only": {
+			Name:         "advisory-only",
+			Private:      true,
+			Files:        []string{"LICENSE", "README.md"}, // required OK; no CHANGELOG
+			Workflows:    []string{},                      // recommended fails
+			LastModified: time.Now(),
+		},
+		"required-fail": {
+			Name:         "required-fail",
+			Private:      true,
+			Files:        []string{"README.md"}, // missing LICENSE
+			Workflows:    []string{"security"},
+			LastModified: time.Now(),
+		},
+	}
+
+	report, err := config.RunComplianceAudit(repoStates)
+	require.NoError(t, err)
+
+	byName := map[string]RepoAuditResult{}
+	for _, r := range report.Repositories {
+		byName[r.Repository] = r
+	}
+
+	// recommended + optional only → still compliant
+	adv := byName["advisory-only"]
+	assert.True(t, adv.Compliant, "recommended/optional-only findings must not fail compliance")
+	assert.Len(t, adv.Violations, 2) // security_workflow + changelog_file
+	for _, v := range adv.Violations {
+		assert.False(t, isBlockingEnforcement(v.Enforcement), "advisory-only repo should only have non-required violations")
+	}
+
+	// required fail → non-compliant
+	req := byName["required-fail"]
+	assert.False(t, req.Compliant)
+	assert.NotEmpty(t, req.Violations)
+
+	assert.Equal(t, 1, report.Summary.CompliantRepositories)
+	assert.Equal(t, 50.0, report.Summary.CompliancePercentage)
+	assert.GreaterOrEqual(t, report.Summary.AdvisoryFindings, 2)
+	assert.GreaterOrEqual(t, report.Summary.RequiredViolations, 1)
+
+	summary := report.GenerateAuditSummary()
+	assert.Contains(t, summary, "Advisory Findings")
+	assert.Contains(t, summary, "advisory-only")
+}
+
+func TestIsBlockingEnforcement(t *testing.T) {
+	assert.True(t, isBlockingEnforcement("required"))
+	assert.True(t, isBlockingEnforcement("Required"))
+	assert.False(t, isBlockingEnforcement("recommended"))
+	assert.False(t, isBlockingEnforcement("optional"))
+	assert.False(t, isBlockingEnforcement(""))
+	assert.False(t, isBlockingEnforcement("unknown"))
+}
+
 func TestCheckRuleCompliance(t *testing.T) {
 	tests := []struct {
 		name            string
