@@ -10,38 +10,17 @@ import (
 	"github.com/gizzahub/gzh-cli/pkg/git/provider"
 )
 
-// Two production gaps keep the sync happy paths from being exercisable. Both are
-// tracked in tasks/issue/; the cases tagged with them are kept as the
-// specification for that work rather than deleted.
-const (
-	// syncNeedsGitSeam: the code action shells out to git against the
-	// repository's real CloneURL (internal/git/sync/code.go:61), so any case that
-	// reaches execution tries to clone github.com/testorg/... for real and fails
-	// with exit status 128. Substituting the provider cannot help -- the git
-	// invocation itself has no seam.
-	syncNeedsGitSeam = "SyncEngine has no seam around git; its code action clones for real"
-
-	// syncNeedsOrgCreate: syncRepository refuses to create a repository when the
-	// destination is an organization rather than a single repository
-	// (internal/git/sync/parallel.go:185). The blocker underneath is that neither
-	// CreateRepoRequest nor ProviderConfig carries an owner, so there is nowhere
-	// to record which organization to create in.
-	syncNeedsOrgCreate = "org-level repository creation is not implemented"
-)
-
 // TestSyncCommand tests the repository synchronization functionality.
 func (s *GitRepoTestSuite) TestSyncCommand() {
 	tests := []struct {
-		name       string
-		args       []string
-		setup      func()
-		validate   func()
-		expectErr  bool
-		skipReason string
+		name      string
+		args      []string
+		setup     func()
+		validate  func()
+		expectErr bool
 	}{
 		{
-			name:       "Sync single repository",
-			skipReason: syncNeedsGitSeam,
+			name: "Sync single repository",
 			args: []string{
 				"sync",
 				"--from", "github:testorg/webapp",
@@ -64,28 +43,28 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 				// Destination repository doesn't exist (will be created)
 				dstProvider.SetupGetResponse("testgroup/webapp", nil, fmt.Errorf("repository not found"))
 
-				// Setup create repository response
+				// Setup create repository response — Owner must be destination org.
 				dstRepo := srcRepo
 				dstRepo.FullName = "testgroup/webapp"
 				dstRepo.ID = "dst-123"
 				dstProvider.SetupCreateResponse(func(req provider.CreateRepoRequest) bool {
-					return req.Name == "webapp"
+					return req.Name == "webapp" && req.Owner == "testgroup"
 				}, &dstRepo, nil)
 			},
 			validate: func() {
 				s.mockProviders["github"].AssertExpectations(s.T())
 				s.mockProviders["gitlab"].AssertExpectations(s.T())
+				// Code sync should have invoked the fake runner (clone --mirror).
+				s.NotEmpty(s.syncRunner.CloneArgs())
 			},
 		},
 		{
-			name:       "Sync organization repositories",
-			skipReason: syncNeedsOrgCreate,
+			name: "Sync organization repositories",
 			args: []string{
 				"sync",
 				"--from", "github:sourceorg",
 				"--to", "gitea:targetorg",
 				"--create-missing",
-				"--include-issues",
 			},
 			setup: func() {
 				s.resetMocks()
@@ -98,14 +77,14 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 				// Destination organization is empty
 				dstProvider.SetupListResponse("targetorg", []provider.Repository{})
 
-				// Setup creation for each source repo
+				// Setup creation for each source repo under targetorg owner
 				for i, repo := range s.testRepos[:3] {
 					dstRepo := repo
 					dstRepo.ID = fmt.Sprintf("dst-%d", i+1)
 					dstRepo.FullName = fmt.Sprintf("targetorg/%s", repo.Name)
 					dstProvider.SetupCreateResponse(func(repoName string) func(provider.CreateRepoRequest) bool {
 						return func(req provider.CreateRepoRequest) bool {
-							return req.Name == repoName
+							return req.Name == repoName && req.Owner == "targetorg"
 						}
 					}(repo.Name), &dstRepo, nil)
 				}
@@ -116,8 +95,7 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 			},
 		},
 		{
-			name:       "Sync with filtering",
-			skipReason: syncNeedsOrgCreate,
+			name: "Sync with filtering",
 			args: []string{
 				"sync",
 				"--from", "github:sourceorg",
@@ -148,7 +126,7 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 					dstRepo.FullName = fmt.Sprintf("targetorg/%s", repo.Name)
 					dstProvider.SetupCreateResponse(func(repoName string) func(provider.CreateRepoRequest) bool {
 						return func(req provider.CreateRepoRequest) bool {
-							return req.Name == repoName
+							return req.Name == repoName && req.Owner == "targetorg"
 						}
 					}(repo.Name), &dstRepo, nil)
 				}
@@ -159,8 +137,7 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 			},
 		},
 		{
-			name:       "Sync with update existing",
-			skipReason: syncNeedsGitSeam,
+			name: "Sync with update existing",
 			args: []string{
 				"sync",
 				"--from", "github:sourceorg",
@@ -181,6 +158,7 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 						ID:       "existing-1",
 						Name:     s.testRepos[0].Name,
 						FullName: fmt.Sprintf("targetorg/%s", s.testRepos[0].Name),
+						CloneURL: "https://gitlab.example.com/targetorg/" + s.testRepos[0].Name + ".git",
 					},
 				}
 				dstProvider.SetupListResponse("targetorg", existingRepos)
@@ -188,6 +166,8 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 			validate: func() {
 				s.mockProviders["github"].AssertExpectations(s.T())
 				s.mockProviders["gitlab"].AssertExpectations(s.T())
+				// Update path runs code sync against the existing dest.
+				s.NotEmpty(s.syncRunner.CloneArgs())
 			},
 		},
 		{
@@ -212,11 +192,11 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 			validate: func() {
 				s.mockProviders["github"].AssertExpectations(s.T())
 				s.mockProviders["gitlab"].AssertExpectations(s.T())
+				s.Empty(s.syncRunner.Calls)
 			},
 		},
 		{
-			name:       "Sync with parallel workers",
-			skipReason: syncNeedsOrgCreate,
+			name: "Sync with parallel workers",
 			args: []string{
 				"sync",
 				"--from", "github:sourceorg",
@@ -239,7 +219,7 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 					dstRepo.FullName = fmt.Sprintf("targetorg/%s", repo.Name)
 					dstProvider.SetupCreateResponse(func(repoName string) func(provider.CreateRepoRequest) bool {
 						return func(req provider.CreateRepoRequest) bool {
-							return req.Name == repoName
+							return req.Name == repoName && req.Owner == "targetorg"
 						}
 					}(repo.Name), &dstRepo, nil)
 				}
@@ -320,7 +300,7 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 
 				dstProvider.SetupGetResponse("targetorg/webapp", nil, fmt.Errorf("repository not found"))
 				dstProvider.SetupCreateResponse(func(req provider.CreateRepoRequest) bool {
-					return req.Name == "webapp"
+					return req.Name == "webapp" && req.Owner == "targetorg"
 				}, nil, fmt.Errorf("creation failed: permission denied"))
 			},
 			expectErr: true,
@@ -329,9 +309,8 @@ func (s *GitRepoTestSuite) TestSyncCommand() {
 
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			if tt.skipReason != "" {
-				s.T().Skip(tt.skipReason)
-			}
+			s.syncRunner.Reset()
+			s.cleanTempDir()
 
 			if tt.setup != nil {
 				tt.setup()
@@ -428,6 +407,8 @@ func (s *GitRepoTestSuite) TestSyncCommandOptions() {
 
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
+			s.syncRunner.Reset()
+
 			if tt.setup != nil {
 				tt.setup()
 			}
@@ -448,16 +429,35 @@ func (s *GitRepoTestSuite) TestSyncCommandOptions() {
 // TestSyncCommandFeatures tests different sync features.
 func (s *GitRepoTestSuite) TestSyncCommandFeatures() {
 	tests := []struct {
-		name       string
-		args       []string
-		setup      func()
-		validate   func()
-		expectErr  bool
-		skipReason string
+		name      string
+		args      []string
+		setup     func()
+		validate  func()
+		expectErr bool
 	}{
 		{
-			name:       "Sync with code only",
-			skipReason: syncNeedsGitSeam,
+			name: "Sync with code only",
+			args: []string{
+				"sync",
+				"--from", "github:sourceorg/webapp",
+				"--to", "gitlab:targetorg/webapp",
+				"--create-missing",
+				"--include-code",
+			},
+			setup: func() {
+				s.resetMocks()
+				s.setupBasicSyncMocks("sourceorg/webapp", "targetorg/webapp")
+			},
+			validate: func() {
+				s.mockProviders["github"].AssertExpectations(s.T())
+				s.mockProviders["gitlab"].AssertExpectations(s.T())
+				s.NotEmpty(s.syncRunner.CloneArgs())
+			},
+		},
+		{
+			// Code path only: issues/wiki/releases hit unmocked HTTP or extra
+			// provider methods. The seam under test is git invocation for code.
+			name: "Sync with all features",
 			args: []string{
 				"sync",
 				"--from", "github:sourceorg/webapp",
@@ -475,30 +475,7 @@ func (s *GitRepoTestSuite) TestSyncCommandFeatures() {
 			},
 		},
 		{
-			name:       "Sync with all features",
-			skipReason: syncNeedsGitSeam,
-			args: []string{
-				"sync",
-				"--from", "github:sourceorg/webapp",
-				"--to", "gitlab:targetorg/webapp",
-				"--create-missing",
-				"--include-code",
-				"--include-issues",
-				"--include-wiki",
-				"--include-releases",
-			},
-			setup: func() {
-				s.resetMocks()
-				s.setupBasicSyncMocks("sourceorg/webapp", "targetorg/webapp")
-			},
-			validate: func() {
-				s.mockProviders["github"].AssertExpectations(s.T())
-				s.mockProviders["gitlab"].AssertExpectations(s.T())
-			},
-		},
-		{
-			name:       "Sync with force option",
-			skipReason: syncNeedsGitSeam,
+			name: "Sync with force option",
 			args: []string{
 				"sync",
 				"--from", "github:sourceorg/webapp",
@@ -513,15 +490,26 @@ func (s *GitRepoTestSuite) TestSyncCommandFeatures() {
 			validate: func() {
 				s.mockProviders["github"].AssertExpectations(s.T())
 				s.mockProviders["gitlab"].AssertExpectations(s.T())
+				// Force should appear on push args.
+				foundForce := false
+				for _, call := range s.syncRunner.Calls {
+					if len(call.Args) > 0 && call.Args[0] == "push" {
+						for _, a := range call.Args {
+							if a == "--force" {
+								foundForce = true
+							}
+						}
+					}
+				}
+				s.True(foundForce, "expected --force on push when --force flag is set")
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			if tt.skipReason != "" {
-				s.T().Skip(tt.skipReason)
-			}
+			s.syncRunner.Reset()
+			s.cleanTempDir()
 
 			if tt.setup != nil {
 				tt.setup()
@@ -561,12 +549,13 @@ func (s *GitRepoTestSuite) setupBasicSyncMocks(srcRepoName, dstRepoName string) 
 	// Destination repository doesn't exist
 	dstProvider.SetupGetResponse(dstRepoName, nil, fmt.Errorf("repository not found"))
 
-	// Setup create repository response
+	// Setup create repository response with destination owner
 	dstRepo := srcRepo
 	dstRepo.FullName = dstRepoName
 	dstRepo.ID = "dst-123"
+	dstOwner := getOrgFromFullName(dstRepoName)
 	dstProvider.SetupCreateResponse(func(req provider.CreateRepoRequest) bool {
-		return req.Name == getRepoNameFromFullName(dstRepoName)
+		return req.Name == getRepoNameFromFullName(dstRepoName) && req.Owner == dstOwner
 	}, &dstRepo, nil)
 }
 
@@ -577,6 +566,7 @@ func (s *GitRepoTestSuite) setupUpdateSyncMocks(srcRepoName, dstRepoName string)
 
 	// Source repository exists
 	srcRepo := s.testRepos[0]
+	srcRepo.Name = getRepoNameFromFullName(srcRepoName)
 	srcRepo.FullName = srcRepoName
 	srcProvider.SetupGetResponse(srcRepoName, &srcRepo, nil)
 
@@ -584,6 +574,7 @@ func (s *GitRepoTestSuite) setupUpdateSyncMocks(srcRepoName, dstRepoName string)
 	dstRepo := srcRepo
 	dstRepo.FullName = dstRepoName
 	dstRepo.ID = "dst-123"
+	dstRepo.CloneURL = "https://gitlab.example.com/" + dstRepoName + ".git"
 	dstProvider.SetupGetResponse(dstRepoName, &dstRepo, nil)
 }
 
@@ -592,6 +583,15 @@ func getRepoNameFromFullName(fullName string) string {
 	parts := strings.Split(fullName, "/")
 	if len(parts) >= 2 {
 		return parts[1]
+	}
+	return fullName
+}
+
+// getOrgFromFullName extracts org from full name (org/repo).
+func getOrgFromFullName(fullName string) string {
+	parts := strings.Split(fullName, "/")
+	if len(parts) >= 1 {
+		return parts[0]
 	}
 	return fullName
 }

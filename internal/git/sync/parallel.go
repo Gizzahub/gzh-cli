@@ -165,25 +165,32 @@ func (e *SyncEngine) syncRepository(ctx context.Context, repoSync RepoSync) erro
 			return fmt.Errorf("failed to get destination target: %w", err)
 		}
 
-		if destTarget.IsRepository() {
-			// Create single repository
-			newRepo, err := e.destination.CreateRepository(ctx, provider.CreateRepoRequest{
-				Name:        repoSync.Source.Name,
-				Description: repoSync.Source.Description,
-				Private:     repoSync.Source.Private,
-				HasIssues:   true, // Default to true, can be configured later
-				HasWiki:     true, // Default to true, can be configured later
-				Topics:      repoSync.Source.Topics,
-			})
-			if err != nil {
-				return fmt.Errorf("failed to create repository: %w", err)
-			}
-			repoSync.Destination = newRepo
-		} else {
-			// Create repository in organization
-			// TODO: Implement organization-level repository creation
-			return fmt.Errorf("organization-level repository creation not implemented")
+		if destTarget.Org == "" {
+			return fmt.Errorf("destination organization is required to create repository")
 		}
+
+		name := repoSync.Source.Name
+		if destTarget.IsRepository() && destTarget.Repo != "" {
+			name = destTarget.Repo
+		}
+
+		newRepo, err := e.destination.CreateRepository(ctx, provider.CreateRepoRequest{
+			Owner:       destTarget.Org,
+			Name:        name,
+			Description: repoSync.Source.Description,
+			Private:     repoSync.Source.Private,
+			HasIssues:   true, // Default to true, can be configured later
+			HasWiki:     true, // Default to true, can be configured later
+			Topics:      repoSync.Source.Topics,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to create repository: %w", err)
+		}
+		repoSync.Destination = newRepo
+
+		// Handlers were built when Destination was still nil and closed over that
+		// value. Rebuild so code/issues/etc. see the created repository.
+		repoSync.Actions = e.createSyncActions(repoSync.Source, repoSync.Destination)
 	}
 
 	// Execute all sync actions

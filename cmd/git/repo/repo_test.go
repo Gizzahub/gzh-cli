@@ -13,6 +13,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	gitinternal "github.com/gizzahub/gzh-cli/internal/git"
 	"github.com/gizzahub/gzh-cli/internal/git/clone"
 
 	"github.com/gizzahub/gzh-cli/internal/git/provider/mock"
@@ -31,6 +32,10 @@ type GitRepoTestSuite struct {
 	// while a test has them swapped.
 	realGetGitProvider   func(providerType, org string) (provider.GitProvider, error)
 	realGetCloneProvider func(opts *clone.CloneOptions) (provider.GitProvider, error)
+
+	// Fake git runners so clone/sync never hit the network.
+	cloneRunner *gitinternal.RecordingGitRunner
+	syncRunner  *gitinternal.RecordingGitRunner
 }
 
 // SetupSuite initializes the test suite with mock providers and test data.
@@ -71,6 +76,12 @@ func (s *GitRepoTestSuite) SetupTest() {
 	getCloneProvider = func(opts *clone.CloneOptions) (provider.GitProvider, error) {
 		return s.providerFor(opts.Provider)
 	}
+
+	// Inject recording git runners so clone/sync never dial the network.
+	s.cloneRunner = &gitinternal.RecordingGitRunner{}
+	s.syncRunner = &gitinternal.RecordingGitRunner{}
+	cloneGitRunner = s.cloneRunner
+	syncGitRunner = s.syncRunner
 }
 
 // providerFor returns the suite's mock for a provider type, so an unregistered
@@ -93,6 +104,11 @@ func (s *GitRepoTestSuite) TearDownTest() {
 	if s.realGetCloneProvider != nil {
 		getCloneProvider = s.realGetCloneProvider
 	}
+
+	cloneGitRunner = nil
+	syncGitRunner = nil
+	s.cloneRunner = nil
+	s.syncRunner = nil
 
 	if s.tempDir != "" {
 		os.RemoveAll(s.tempDir)
@@ -231,6 +247,21 @@ func (s *GitRepoTestSuite) createTestFile(path, content string) {
 func (s *GitRepoTestSuite) resetMocks() {
 	for _, mockProvider := range s.mockProviders {
 		mockProvider.Reset()
+	}
+}
+
+// cleanTempDir removes all contents of the suite temp directory so subtests
+// that share SetupTest's working dir do not see leftover clone paths.
+func (s *GitRepoTestSuite) cleanTempDir() {
+	if s.tempDir == "" {
+		return
+	}
+	entries, err := os.ReadDir(s.tempDir)
+	if err != nil {
+		return
+	}
+	for _, e := range entries {
+		_ = os.RemoveAll(filepath.Join(s.tempDir, e.Name()))
 	}
 }
 

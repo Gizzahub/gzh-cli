@@ -7,11 +7,11 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"sync"
 	"time"
 
+	gitinternal "github.com/gizzahub/gzh-cli/internal/git"
 	"github.com/gizzahub/gzh-cli/pkg/git/provider"
 )
 
@@ -21,12 +21,23 @@ type CloneExecutor struct {
 	options  *CloneOptions
 	session  *Session
 	progress *ProgressReporter
+	runner   gitinternal.GitRunner
 }
 
 // NewCloneExecutor creates a new clone executor with the given provider and options.
 func NewCloneExecutor(p provider.GitProvider, opts *CloneOptions) (*CloneExecutor, error) {
+	return NewCloneExecutorWithRunner(p, opts, gitinternal.ExecGitRunner{})
+}
+
+// NewCloneExecutorWithRunner creates a clone executor that uses the given GitRunner.
+// A nil runner defaults to ExecGitRunner.
+func NewCloneExecutorWithRunner(p provider.GitProvider, opts *CloneOptions, runner gitinternal.GitRunner) (*CloneExecutor, error) {
 	if err := opts.Validate(); err != nil {
 		return nil, fmt.Errorf("invalid options: %w", err)
+	}
+
+	if runner == nil {
+		runner = gitinternal.ExecGitRunner{}
 	}
 
 	session := NewSession(opts)
@@ -37,7 +48,16 @@ func NewCloneExecutor(p provider.GitProvider, opts *CloneOptions) (*CloneExecuto
 		options:  opts,
 		session:  session,
 		progress: progress,
+		runner:   runner,
 	}, nil
+}
+
+// SetRunner replaces the GitRunner used for all git invocations.
+func (e *CloneExecutor) SetRunner(runner gitinternal.GitRunner) {
+	if runner == nil {
+		runner = gitinternal.ExecGitRunner{}
+	}
+	e.runner = runner
 }
 
 // Execute performs the clone operation based on the configured options.
@@ -346,9 +366,8 @@ func (e *CloneExecutor) cloneNewRepository(ctx context.Context, targetPath strin
 
 	args = append(args, cloneURL, targetPath)
 
-	// Execute git clone
-	cmd := exec.CommandContext(ctx, "git", args...)
-	output, err := cmd.CombinedOutput()
+	// Execute git clone through the runner seam (injectable in tests).
+	output, err := e.runner.Run(ctx, "", args...)
 	if err != nil {
 		// Clean up partially cloned directory
 		os.RemoveAll(targetPath)
@@ -381,26 +400,11 @@ func (e *CloneExecutor) handleExistingRepository(ctx context.Context, targetPath
 
 // resetAndPull performs git reset --hard and git pull.
 func (e *CloneExecutor) resetAndPull(ctx context.Context, targetPath string, repo RepositoryInfo) error {
-	// Change to repository directory
-	originalDir, err := os.Getwd()
-	if err != nil {
-		return NewCloneError(repo.FullName, "getwd", "failed to get working directory", err)
-	}
-	defer os.Chdir(originalDir)
-
-	if err := os.Chdir(targetPath); err != nil {
-		return NewCloneError(repo.FullName, "chdir", "failed to change to repository directory", err)
-	}
-
-	// Git reset --hard
-	cmd := exec.CommandContext(ctx, "git", "reset", "--hard")
-	if output, err := cmd.CombinedOutput(); err != nil {
+	if output, err := e.runner.Run(ctx, targetPath, "reset", "--hard"); err != nil {
 		return WrapGitError(repo.FullName, "reset", err, output)
 	}
 
-	// Git pull
-	cmd = exec.CommandContext(ctx, "git", "pull")
-	if output, err := cmd.CombinedOutput(); err != nil {
+	if output, err := e.runner.Run(ctx, targetPath, "pull"); err != nil {
 		return WrapGitError(repo.FullName, "pull", err, output)
 	}
 
@@ -419,10 +423,7 @@ func (e *CloneExecutor) fetch(ctx context.Context, targetPath string, repo Repos
 
 // runGitCommand runs a git command in the specified directory.
 func (e *CloneExecutor) runGitCommand(ctx context.Context, targetPath string, repo RepositoryInfo, operation string, args []string) error {
-	cmd := exec.CommandContext(ctx, "git", args...)
-	cmd.Dir = targetPath
-
-	output, err := cmd.CombinedOutput()
+	output, err := e.runner.Run(ctx, targetPath, args...)
 	if err != nil {
 		return WrapGitError(repo.FullName, operation, err, output)
 	}

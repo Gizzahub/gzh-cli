@@ -5,8 +5,8 @@ package repo
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/stretchr/testify/mock"
 
@@ -15,19 +15,10 @@ import (
 
 // TestCloneCommand tests the clone command functionality.
 //
-// Skipped: these cases cannot verify anything as written. CloneExecutor shells
-// out to git rather than calling provider.CloneRepository, so the mocked clone
-// expectations are never reached and the fixtures' CloneURLs point at real
-// github.com paths. The directory assertions then pass vacuously, because
-// createMockCloneDirectories below creates the very directories validate()
-// checks for -- and for the dry-run case it creates the directories that case
-// asserts must NOT exist, which can only fail.
-//
-// Making these meaningful needs a seam in CloneExecutor around the git
-// invocation; the cases are kept as the specification for that work.
+// Git invocations go through the suite's RecordingGitRunner (cloneGitRunner
+// seam). Directories are created by the fake runner on successful clone, not by
+// pre-seeding the filesystem.
 func (s *GitRepoTestSuite) TestCloneCommand() {
-	s.T().Skip("CloneExecutor has no seam around git; assertions here are vacuous (see doc comment)")
-
 	tests := []struct {
 		name      string
 		args      []string
@@ -42,60 +33,49 @@ func (s *GitRepoTestSuite) TestCloneCommand() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
 				mockProvider.SetupListResponse("testorg", s.testRepos[:3])
-
-				// Setup clone operations
-				for _, repo := range s.testRepos[:3] {
-					mockProvider.On("CloneRepository", mock.Anything, repo, mock.AnythingOfType("string"), mock.Anything).Return(nil)
-				}
 			},
 			validate: func() {
-				// Check that repositories were "cloned" (directories created)
 				s.assertDirectoryExists("repos/testorg/web-app")
 				s.assertDirectoryExists("repos/testorg/api-service")
 				s.assertDirectoryExists("repos/testorg/api-gateway")
+
+				clones := s.cloneRunner.CloneArgs()
+				s.Require().Len(clones, 3)
+				joined := cloneArgsJoined(clones)
+				s.Contains(joined, "web-app")
+				s.Contains(joined, "api-service")
+				s.Contains(joined, "api-gateway")
 			},
 		},
 		{
 			name: "Clone with pattern matching",
-			args: []string{"clone", "--provider", "github", "--org", "testorg", "--match", "api-*"},
+			// Match uses regexp (not shell glob).
+			args: []string{"clone", "--provider", "github", "--org", "testorg", "--match", "^api-"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
 				mockProvider.SetupListResponse("testorg", s.testRepos)
-
-				// Only expect clones for repos matching pattern
-				for _, repo := range s.testRepos {
-					if repo.Name == "api-service" || repo.Name == "api-gateway" {
-						mockProvider.On("CloneRepository", mock.Anything, repo, mock.AnythingOfType("string"), mock.Anything).Return(nil)
-					}
-				}
 			},
 			validate: func() {
-				// Only api-* repos should be cloned
 				s.assertDirectoryExists("testorg/api-service")
 				s.assertDirectoryExists("testorg/api-gateway")
 				s.assertDirectoryNotExists("testorg/web-app")
 				s.assertDirectoryNotExists("testorg/mobile-app")
 				s.assertDirectoryNotExists("testorg/docs")
+
+				clones := s.cloneRunner.CloneArgs()
+				s.Require().Len(clones, 2)
 			},
 		},
 		{
 			name: "Clone with exclude pattern",
-			args: []string{"clone", "--provider", "github", "--org", "testorg", "--exclude", "mobile-*"},
+			args: []string{"clone", "--provider", "github", "--org", "testorg", "--exclude", "^mobile-"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
 				mockProvider.SetupListResponse("testorg", s.testRepos)
-
-				// Expect clones for all repos except mobile-*
-				for _, repo := range s.testRepos {
-					if repo.Name != "mobile-app" {
-						mockProvider.On("CloneRepository", mock.Anything, repo, mock.AnythingOfType("string"), mock.Anything).Return(nil)
-					}
-				}
 			},
 			validate: func() {
-				// All repos except mobile-app should be cloned
 				s.assertDirectoryExists("testorg/web-app")
 				s.assertDirectoryExists("testorg/api-service")
 				s.assertDirectoryExists("testorg/api-gateway")
@@ -110,7 +90,6 @@ func (s *GitRepoTestSuite) TestCloneCommand() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
 
-				// Filter to only private repos
 				privateRepos := []provider.Repository{}
 				for _, repo := range s.testRepos {
 					if repo.Private {
@@ -119,13 +98,8 @@ func (s *GitRepoTestSuite) TestCloneCommand() {
 				}
 
 				mockProvider.SetupListResponse("testorg", privateRepos)
-
-				for _, repo := range privateRepos {
-					mockProvider.On("CloneRepository", mock.Anything, repo, mock.AnythingOfType("string"), mock.Anything).Return(nil)
-				}
 			},
 			validate: func() {
-				// Only private repos should be cloned
 				s.assertDirectoryExists("testorg/api-service")    // private
 				s.assertDirectoryExists("testorg/mobile-app")     // private
 				s.assertDirectoryNotExists("testorg/web-app")     // public
@@ -140,7 +114,6 @@ func (s *GitRepoTestSuite) TestCloneCommand() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
 
-				// Filter to only Go repos
 				goRepos := []provider.Repository{}
 				for _, repo := range s.testRepos {
 					if repo.Language == "Go" {
@@ -149,13 +122,8 @@ func (s *GitRepoTestSuite) TestCloneCommand() {
 				}
 
 				mockProvider.SetupListResponse("testorg", goRepos)
-
-				for _, repo := range goRepos {
-					mockProvider.On("CloneRepository", mock.Anything, repo, mock.AnythingOfType("string"), mock.Anything).Return(nil)
-				}
 			},
 			validate: func() {
-				// Only Go repos should be cloned
 				s.assertDirectoryExists("testorg/api-service")
 				s.assertDirectoryExists("testorg/api-gateway")
 				s.assertDirectoryNotExists("testorg/web-app")    // TypeScript
@@ -165,19 +133,20 @@ func (s *GitRepoTestSuite) TestCloneCommand() {
 		},
 		{
 			name: "Clone single repository",
-			args: []string{"clone", "--provider", "github", "--org", "testorg", "--repo", "web-app"},
+			// No --repo flag on the clone command; filter with exact-name match.
+			args: []string{"clone", "--provider", "github", "--org", "testorg", "--match", "^web-app$"},
 			setup: func() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
-
-				// Setup single repo response
-				mockProvider.SetupGetResponse("testorg/web-app", &s.testRepos[0], nil)
-				mockProvider.On("CloneRepository", mock.Anything, s.testRepos[0], mock.AnythingOfType("string"), mock.Anything).Return(nil)
+				mockProvider.SetupListResponse("testorg", s.testRepos)
 			},
 			validate: func() {
-				// Only the specified repo should be cloned
 				s.assertDirectoryExists("testorg/web-app")
 				s.assertDirectoryNotExists("testorg/api-service")
+
+				clones := s.cloneRunner.CloneArgs()
+				s.Require().Len(clones, 1)
+				s.Contains(strings.Join(clones[0], " "), "web-app")
 			},
 		},
 		{
@@ -187,17 +156,12 @@ func (s *GitRepoTestSuite) TestCloneCommand() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
 				mockProvider.SetupListResponse("testorg", s.testRepos)
-
-				// Setup clone operations for all repos
-				for _, repo := range s.testRepos {
-					mockProvider.On("CloneRepository", mock.Anything, repo, mock.AnythingOfType("string"), mock.Anything).Return(nil)
-				}
 			},
 			validate: func() {
-				// All repos should be cloned
 				for _, repo := range s.testRepos {
 					s.assertDirectoryExists(filepath.Join("testorg", repo.Name))
 				}
+				s.Require().Len(s.cloneRunner.CloneArgs(), len(s.testRepos))
 			},
 		},
 		{
@@ -207,13 +171,14 @@ func (s *GitRepoTestSuite) TestCloneCommand() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
 				mockProvider.SetupListResponse("testorg", s.testRepos)
-				// No clone operations should be called in dry-run mode
 			},
 			validate: func() {
-				// No directories should be created in dry-run mode
+				// No directories and no git clone invocations in dry-run mode.
 				for _, repo := range s.testRepos {
 					s.assertDirectoryNotExists(filepath.Join("testorg", repo.Name))
 				}
+				s.Empty(s.cloneRunner.CloneArgs())
+				s.Empty(s.cloneRunner.Calls)
 			},
 		},
 		{
@@ -232,22 +197,17 @@ func (s *GitRepoTestSuite) TestCloneCommand() {
 
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			// Setup
+			s.cloneRunner.Reset()
+			s.cleanTempDir()
+
 			if tt.setup != nil {
 				tt.setup()
 			}
 
-			// Create mock directories for successful clones
-			if !tt.expectErr && tt.validate != nil {
-				s.createMockCloneDirectories(tt.args)
-			}
-
-			// Execute
 			cmd := NewGitRepoCmd()
 			cmd.SetArgs(tt.args)
 			err := cmd.Execute()
 
-			// Validate
 			if tt.expectErr {
 				s.Error(err)
 			} else {
@@ -257,7 +217,6 @@ func (s *GitRepoTestSuite) TestCloneCommand() {
 				}
 			}
 
-			// Verify mock expectations
 			for _, mockProvider := range s.mockProviders {
 				mockProvider.AssertExpectations(s.T())
 			}
@@ -265,85 +224,7 @@ func (s *GitRepoTestSuite) TestCloneCommand() {
 	}
 }
 
-/*
-// TestCloneCommandOptions tests clone command option parsing.
-// TODO: Fix cloneCmd type definition - this test is disabled due to missing cloneCmd type
-func (s *GitRepoTestSuite) TestCloneCommandOptions() {
-	testCases := []struct {
-		name        string
-		args        []string
-		expectError bool
-		checkOption func(cmd *cloneCmd) bool
-	}{
-		{
-			name: "Default options",
-			args: []string{"clone", "--provider", "github", "--org", "testorg"},
-			checkOption: func(cmd *cloneCmd) bool {
-				return cmd.Strategy == "reset" && cmd.Parallel == 1 && !cmd.DryRun
-			},
-		},
-		{
-			name: "Custom strategy",
-			args: []string{"clone", "--provider", "github", "--org", "testorg", "--strategy", "pull"},
-			checkOption: func(cmd *cloneCmd) bool {
-				return cmd.Strategy == "pull"
-			},
-		},
-		{
-			name: "Custom parallel workers",
-			args: []string{"clone", "--provider", "github", "--org", "testorg", "--parallel", "5"},
-			checkOption: func(cmd *cloneCmd) bool {
-				return cmd.Parallel == 5
-			},
-		},
-		{
-			name: "Dry run enabled",
-			args: []string{"clone", "--provider", "github", "--org", "testorg", "--dry-run"},
-			checkOption: func(cmd *cloneCmd) bool {
-				return cmd.DryRun
-			},
-		},
-		{
-			name:        "Invalid parallel count",
-			args:        []string{"clone", "--provider", "github", "--org", "testorg", "--parallel", "0"},
-			expectError: true,
-		},
-		{
-			name:        "Invalid strategy",
-			args:        []string{"clone", "--provider", "github", "--org", "testorg", "--strategy", "invalid"},
-			expectError: true,
-		},
-	}
-
-	for _, tc := range testCases {
-		s.Run(tc.name, func() {
-			// This test would require access to the internal command structure
-			// For now, we test via command execution and behavior
-			s.resetMocks()
-
-			if !tc.expectError {
-				mockProvider := s.mockProviders["github"]
-				mockProvider.SetupListResponse("testorg", s.testRepos[:1])
-				mockProvider.On("CloneRepository", mock.Anything, mock.Anything, mock.AnythingOfType("string"), mock.Anything).Return(nil)
-			}
-
-			cmd := NewGitRepoCmd()
-			cmd.SetArgs(tc.args)
-			err := cmd.Execute()
-
-			if tc.expectError {
-				s.Error(err)
-			} else {
-				s.NoError(err)
-			}
-		})
-	}
-}
-*/
-
 // TestCloneCommandErrorHandling tests error handling in clone operations.
-// NOTE: 이 테스트들은 mock provider 주입을 지원하지 않는 현재 구현에서는
-// 실제 토큰이 필요합니다. 토큰이 없으면 스킵됩니다.
 func (s *GitRepoTestSuite) TestCloneCommandErrorHandling() {
 	testCases := []struct {
 		name      string
@@ -387,11 +268,8 @@ func (s *GitRepoTestSuite) TestCloneCommandErrorHandling() {
 				s.resetMocks()
 				mockProvider := s.mockProviders["github"]
 				mockProvider.SetupListResponse("testorg", s.testRepos[:1])
-
-				// Simulate clone failure
-				mockProvider.On("CloneRepository", mock.Anything, mock.Anything, mock.AnythingOfType("string"), mock.Anything).Return(
-					fmt.Errorf("clone failed: permission denied"),
-				)
+				// Fail via the git runner seam (CloneRepository is not used by the executor).
+				s.cloneRunner.FailClone = true
 			},
 			expectErr: true,
 		},
@@ -399,6 +277,9 @@ func (s *GitRepoTestSuite) TestCloneCommandErrorHandling() {
 
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
+			s.cloneRunner.Reset()
+			s.cleanTempDir()
+
 			if tc.setup != nil {
 				tc.setup()
 			}
@@ -416,124 +297,11 @@ func (s *GitRepoTestSuite) TestCloneCommandErrorHandling() {
 	}
 }
 
-// Helper methods for clone tests
-
-// createMockCloneDirectories creates mock directories to simulate successful clones.
-func (s *GitRepoTestSuite) createMockCloneDirectories(args []string) {
-	// Parse args to determine what directories should be created
-	// This is a simplified implementation
-	org := "testorg"
-	target := "."
-
-	// Extract org and target from args
-	for i, arg := range args {
-		if arg == "--org" && i+1 < len(args) {
-			org = args[i+1]
-		}
-		if arg == "--target" && i+1 < len(args) {
-			target = args[i+1]
-		}
+// cloneArgsJoined flattens recorded clone arg slices for substring asserts.
+func cloneArgsJoined(clones [][]string) string {
+	var parts []string
+	for _, c := range clones {
+		parts = append(parts, strings.Join(c, " "))
 	}
-
-	// Create directory structure
-	orgDir := filepath.Join(s.tempDir, target, org)
-	err := os.MkdirAll(orgDir, 0o755)
-	s.Require().NoError(err)
-
-	// Create repo directories based on expected clones
-	expectedRepos := s.getExpectedCloneRepos(args)
-	for _, repo := range expectedRepos {
-		repoDir := filepath.Join(orgDir, repo.Name)
-		err := os.MkdirAll(repoDir, 0o755)
-		s.Require().NoError(err)
-
-		// Create a mock README file
-		readmeFile := filepath.Join(repoDir, "README.md")
-		content := fmt.Sprintf("# %s\n\n%s", repo.Name, repo.Description)
-		err = os.WriteFile(readmeFile, []byte(content), 0o644)
-		s.Require().NoError(err)
-	}
-}
-
-// getExpectedCloneRepos determines which repos should be cloned based on args.
-func (s *GitRepoTestSuite) getExpectedCloneRepos(args []string) []provider.Repository {
-	// Parse filtering arguments and return expected repos
-	// This is a simplified implementation for testing
-
-	allRepos := s.testRepos
-	var expectedRepos []provider.Repository
-
-	// Check for pattern matching
-	var matchPattern, excludePattern, visibility, language string
-	isDryRun := false
-
-	for i, arg := range args {
-		switch arg {
-		case "--match":
-			if i+1 < len(args) {
-				matchPattern = args[i+1]
-			}
-		case "--exclude":
-			if i+1 < len(args) {
-				excludePattern = args[i+1]
-			}
-		case "--visibility":
-			if i+1 < len(args) {
-				visibility = args[i+1]
-			}
-		case "--language":
-			if i+1 < len(args) {
-				language = args[i+1]
-			}
-		case "--dry-run":
-			isDryRun = true
-		}
-	}
-
-	// If dry run, return empty
-	if isDryRun {
-		return []provider.Repository{}
-	}
-
-	// Apply filters
-	for _, repo := range allRepos {
-		include := true
-
-		// Apply match pattern
-		if matchPattern != "" {
-			matched, _ := filepath.Match(matchPattern, repo.Name)
-			if !matched {
-				include = false
-			}
-		}
-
-		// Apply exclude pattern
-		if excludePattern != "" {
-			matched, _ := filepath.Match(excludePattern, repo.Name)
-			if matched {
-				include = false
-			}
-		}
-
-		// Apply visibility filter
-		if visibility != "" {
-			if visibility == "private" && !repo.Private {
-				include = false
-			}
-			if visibility == "public" && repo.Private {
-				include = false
-			}
-		}
-
-		// Apply language filter
-		if language != "" && repo.Language != language {
-			include = false
-		}
-
-		if include {
-			expectedRepos = append(expectedRepos, repo)
-		}
-	}
-
-	return expectedRepos
+	return strings.Join(parts, " | ")
 }

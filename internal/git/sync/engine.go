@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"path/filepath"
 
+	gitinternal "github.com/gizzahub/gzh-cli/internal/git"
 	"github.com/gizzahub/gzh-cli/pkg/git/provider"
 )
 
@@ -16,6 +17,7 @@ type SyncEngine struct {
 	source      provider.GitProvider
 	destination provider.GitProvider
 	options     SyncOptions
+	runner      gitinternal.GitRunner
 }
 
 // NewSyncEngine creates a new sync engine.
@@ -24,7 +26,25 @@ func NewSyncEngine(src, dst provider.GitProvider, opts SyncOptions) *SyncEngine 
 		source:      src,
 		destination: dst,
 		options:     opts,
+		runner:      gitinternal.ExecGitRunner{},
 	}
+}
+
+// SetRunner replaces the GitRunner used by code (and related) sync actions.
+// A nil runner restores ExecGitRunner.
+func (e *SyncEngine) SetRunner(runner gitinternal.GitRunner) {
+	if runner == nil {
+		runner = gitinternal.ExecGitRunner{}
+	}
+	e.runner = runner
+}
+
+// Runner returns the engine's GitRunner (never nil after NewSyncEngine/SetRunner).
+func (e *SyncEngine) Runner() gitinternal.GitRunner {
+	if e.runner == nil {
+		return gitinternal.ExecGitRunner{}
+	}
+	return e.runner
 }
 
 // Sync executes the synchronization process.
@@ -218,6 +238,7 @@ func (e *SyncEngine) createSyncActions(source provider.Repository, destination *
 					source:      source,
 					destination: destination,
 					options:     e.options,
+					runner:      e.Runner(),
 				}
 				return syncer.Sync(ctx)
 			},

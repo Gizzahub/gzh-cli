@@ -11,12 +11,17 @@ import (
 
 	"github.com/spf13/cobra"
 
+	gitinternal "github.com/gizzahub/gzh-cli/internal/git"
 	"github.com/gizzahub/gzh-cli/internal/git/clone"
 	"github.com/gizzahub/gzh-cli/pkg/git/provider"
 	"github.com/gizzahub/gzh-cli/pkg/gitea"
 	"github.com/gizzahub/gzh-cli/pkg/github"
 	"github.com/gizzahub/gzh-cli/pkg/gitlab"
 )
+
+// cloneGitRunner is a test seam. When non-nil, runRepoClone injects it into the
+// CloneExecutor so tests never shell out to real git / the network.
+var cloneGitRunner gitinternal.GitRunner
 
 // newRepoCloneCmd creates the git repo clone command.
 func newRepoCloneCmd() *cobra.Command {
@@ -133,8 +138,8 @@ func runRepoClone(ctx context.Context, opts *clone.CloneOptions) error {
 		return err
 	}
 
-	// Create clone executor
-	executor, err := clone.NewCloneExecutor(gitProvider, opts)
+	// Create clone executor; inject test runner when the seam is set.
+	executor, err := clone.NewCloneExecutorWithRunner(gitProvider, opts, cloneGitRunner)
 	if err != nil {
 		return fmt.Errorf("failed to create clone executor: %w", err)
 	}

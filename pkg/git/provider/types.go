@@ -117,6 +117,10 @@ type ListOptions struct {
 
 // CreateRepoRequest represents a request to create a repository.
 type CreateRepoRequest struct {
+	// Owner is the organization or user under which the repository is created.
+	// Required for org-level create; fail-fast when empty on create paths that
+	// need an explicit owner (CLI --org/--user, sync destination org).
+	Owner             string         `json:"owner,omitempty"`
 	Name              string         `json:"name"`
 	Description       string         `json:"description"`
 	Homepage          string         `json:"homepage,omitempty"`

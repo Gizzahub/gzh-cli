@@ -221,6 +221,7 @@ func (opts *CreateOptions) toCreateRequest() provider.CreateRepoRequest {
 	}
 
 	return provider.CreateRepoRequest{
+		Owner:             opts.Org,
 		Name:              opts.Name,
 		Description:       opts.Description,
 		Homepage:          opts.Homepage,

@@ -47,7 +47,7 @@ func (s *GitRepoTestSuite) TestCreateCommand() {
 				}
 
 				mockProvider.SetupCreateResponse(func(req provider.CreateRepoRequest) bool {
-					return req.Name == "newrepo" && req.Description == "Test repository" && !req.Private
+					return req.Owner == "testorg" && req.Name == "newrepo" && req.Description == "Test repository" && !req.Private
 				}, expectedRepo, nil)
 			},
 			validate: func() {
@@ -82,7 +82,7 @@ func (s *GitRepoTestSuite) TestCreateCommand() {
 				}
 
 				mockProvider.SetupCreateResponse(func(req provider.CreateRepoRequest) bool {
-					return req.Name == "privaterepo" && req.Private
+					return req.Owner == "testorg" && req.Name == "privaterepo" && req.Private
 				}, expectedRepo, nil)
 			},
 			validate: func() {
@@ -116,7 +116,7 @@ func (s *GitRepoTestSuite) TestCreateCommand() {
 				}
 
 				mockProvider.SetupCreateResponse(func(req provider.CreateRepoRequest) bool {
-					return req.Name == "fullrepo" && req.HasIssues && req.HasWiki && req.HasProjects
+					return req.Owner == "testorg" && req.Name == "fullrepo" && req.HasIssues && req.HasWiki && req.HasProjects
 				}, expectedRepo, nil)
 			},
 			validate: func() {

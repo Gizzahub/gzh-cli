@@ -7,8 +7,13 @@ import (
 	"context"
 	"fmt"
 
+	gitinternal "github.com/gizzahub/gzh-cli/internal/git"
 	"github.com/gizzahub/gzh-cli/internal/git/sync"
 )
+
+// syncGitRunner is a test seam. When non-nil, runSync injects it into the
+// SyncEngine so code sync never shells out to real git / the network.
+var syncGitRunner gitinternal.GitRunner
 
 // runSync executes the repository synchronization operation.
 func runSync(ctx context.Context, opts sync.SyncOptions) error {
@@ -39,8 +44,11 @@ func runSync(ctx context.Context, opts sync.SyncOptions) error {
 		return fmt.Errorf("failed to get destination provider: %w", err)
 	}
 
-	// Create sync engine
+	// Create sync engine; inject test runner when the seam is set.
 	engine := sync.NewSyncEngine(sourceProvider, destProvider, opts)
+	if syncGitRunner != nil {
+		engine.SetRunner(syncGitRunner)
+	}
 
 	// Execute synchronization
 	if err := engine.Sync(ctx); err != nil {
