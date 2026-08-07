@@ -3,6 +3,7 @@ module github.com/gizzahub/gzh-cli
 go 1.26
 
 require (
+	github.com/Gizzahub/gzh-cli-quality v0.1.2
 	github.com/aws/aws-sdk-go-v2 v1.41.0
 	github.com/aws/aws-sdk-go-v2/config v1.32.6
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.12
@@ -12,11 +13,11 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/daixiang0/gci v0.13.7
 	github.com/fatih/color v1.18.0
-	github.com/fsnotify/fsnotify v1.9.0
-	github.com/gizzahub/gzh-cli-dev-env v0.0.0-20260212011144-10431ad4640a
-	github.com/gizzahub/gzh-cli-gitforge v0.0.0-20260316103536-d8c4ac04eda4
-	github.com/gizzahub/gzh-cli-net-env v0.0.0-20260320035045-4748187aa80d
-	github.com/gizzahub/gzh-cli-shellforge v0.0.0-20251130104301-80571f554bbd
+	github.com/fsnotify/fsnotify v1.10.1
+	github.com/gizzahub/gzh-cli-dev-env v0.0.0-20260716162932-02e707444061
+	github.com/gizzahub/gzh-cli-gitforge v0.0.0-20260807002202-c3231f7cd795
+	github.com/gizzahub/gzh-cli-net-env v0.0.0-20260716161846-3361f665ac30
+	github.com/gizzahub/gzh-cli-shellforge v0.0.0-20260716160554-2ce77b442b09
 	github.com/go-critic/go-critic v0.13.0
 	github.com/go-playground/validator/v10 v10.30.1
 	github.com/google/go-github/v66 v66.0.0
@@ -35,12 +36,12 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/mock v0.6.0
 	go.uber.org/zap v1.27.0
-	golang.org/x/crypto v0.46.0
-	golang.org/x/oauth2 v0.34.0
-	golang.org/x/sync v0.19.0
-	golang.org/x/term v0.38.0
-	golang.org/x/text v0.32.0
-	golang.org/x/tools v0.40.0
+	golang.org/x/crypto v0.52.0
+	golang.org/x/oauth2 v0.36.0
+	golang.org/x/sync v0.20.0
+	golang.org/x/term v0.43.0
+	golang.org/x/text v0.37.0
+	golang.org/x/tools v0.44.0
 	gopkg.in/ini.v1 v1.67.0
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -48,27 +49,30 @@ require (
 )
 
 require (
-	code.gitea.io/sdk/gitea v0.22.1 // indirect
-	github.com/42wim/httpsig v1.2.3 // indirect
-	github.com/Gizzahub/gzh-cli-quality v0.1.2 // indirect
+	code.gitea.io/sdk/gitea v0.25.1 // indirect
+	github.com/42wim/httpsig v1.2.4 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aws/aws-sdk-go-v2/service/signin v1.0.4 // indirect
 	github.com/catppuccin/go v0.3.0 // indirect
-	github.com/charmbracelet/huh v0.8.0 // indirect
+	github.com/charmbracelet/huh v1.0.0 // indirect
 	github.com/charmbracelet/x/exp/strings v0.0.0-20240722160745-212f7b056ed0 // indirect
-	github.com/clipperhouse/displaywidth v0.6.0 // indirect
-	github.com/clipperhouse/stringish v0.1.1 // indirect
-	github.com/clipperhouse/uax29/v2 v2.3.0 // indirect
+	github.com/clipperhouse/displaywidth v0.11.0 // indirect
+	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
+	github.com/danieljoos/wincred v1.2.3 // indirect
+	github.com/davidmz/go-pageant v1.0.2 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/gizzahub/gzh-cli-core v0.0.0-20251230045225-725b628c716a // indirect
+	github.com/gizzahub/gzh-cli-core v0.0.0-20260805234833-84a0f3d05f5d // indirect
 	github.com/go-fed/httpsig v1.1.0 // indirect
+	github.com/godbus/dbus/v5 v5.2.2 // indirect
+	github.com/google/go-github/v88 v88.0.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.8 // indirect
-	github.com/hashicorp/go-version v1.7.0 // indirect
+	github.com/hashicorp/go-version v1.9.0 // indirect
 	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect
 	github.com/olekukonko/cat v0.0.0-20250911104152-50322a0618f6 // indirect
 	github.com/xanzy/go-gitlab v0.115.0 // indirect
-	golang.org/x/sys v0.40.0 // indirect
+	github.com/zalando/go-keyring v0.2.8 // indirect
+	golang.org/x/sys v0.45.0 // indirect
 )
 
 require (
@@ -86,10 +90,10 @@ require (
 	github.com/aws/smithy-go v1.24.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
-	github.com/charmbracelet/colorprofile v0.3.2 // indirect
-	github.com/charmbracelet/x/ansi v0.10.1 // indirect
-	github.com/charmbracelet/x/cellbuf v0.0.13 // indirect
-	github.com/charmbracelet/x/term v0.2.1 // indirect
+	github.com/charmbracelet/colorprofile v0.4.1 // indirect
+	github.com/charmbracelet/x/ansi v0.11.7 // indirect
+	github.com/charmbracelet/x/cellbuf v0.0.15 // indirect
+	github.com/charmbracelet/x/term v0.2.2 // indirect
 	github.com/chzyer/readline v1.5.1 // indirect
 	github.com/containerd/errdefs v1.0.0 // indirect
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
@@ -106,8 +110,7 @@ require (
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.12 // indirect
-	github.com/gizzahub/gzh-cli-package-manager v0.0.0-20260212011144-87819e9f1f98
-	github.com/gizzahub/gzh-cli-quality v0.1.2
+	github.com/gizzahub/gzh-cli-package-manager v0.0.0-20260716161846-77a2d2d72cb5
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
@@ -130,13 +133,13 @@ require (
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
-	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
+	github.com/lucasb-eyer/go-colorful v1.4.0 // indirect
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
 	github.com/magiconair/properties v1.8.10 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
-	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/mattn/go-isatty v0.0.22 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
-	github.com/mattn/go-runewidth v0.0.19 // indirect
+	github.com/mattn/go-runewidth v0.0.23 // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/go-archive v0.1.0 // indirect
@@ -188,23 +191,11 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
 	golang.org/x/exp/typeparams v0.0.0-20250210185358-939b2ce775ac // indirect
-	golang.org/x/mod v0.31.0 // indirect
-	golang.org/x/telemetry v0.0.0-20251203150158-8fff8a5912fc // indirect
+	golang.org/x/mod v0.35.0 // indirect
+	golang.org/x/telemetry v0.0.0-20260409153401-be6f6cb8b1fa // indirect
 	golang.org/x/time v0.14.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250707201910-8d1bb00bc6a7 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250707201910-8d1bb00bc6a7 // indirect
 	google.golang.org/grpc v1.73.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 )
-
-replace github.com/gizzahub/gzh-cli-net-env => ../gzh-cli-net-env
-
-replace github.com/gizzahub/gzh-cli-dev-env => ../gzh-cli-dev-env
-
-replace github.com/gizzahub/gzh-cli-gitforge => ../gzh-cli-gitforge
-
-replace github.com/gizzahub/gzh-cli-package-manager => ../gzh-cli-package-manager
-
-replace github.com/gizzahub/gzh-cli-quality => ../gzh-cli-quality
-
-replace github.com/gizzahub/gzh-cli-shellforge => ../gzh-cli-shellforge
