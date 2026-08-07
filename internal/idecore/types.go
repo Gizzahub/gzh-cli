@@ -4,7 +4,10 @@
 // Package idecore provides core types and interfaces for IDE detection and management
 package idecore
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 // IDE represents an IDE installation.
 type IDE struct {
@@ -26,7 +29,8 @@ type IDECache struct {
 
 // IDEDetectorInterface defines the interface for IDE detection.
 type IDEDetectorInterface interface {
-	DetectIDEs(useCache bool) ([]IDE, error)
+	// DetectIDEs scans for installed IDEs. ctx cancels the scan and bounds external commands.
+	DetectIDEs(ctx context.Context, useCache bool) ([]IDE, error)
 	FindIDEByAlias(ides []IDE, nameOrAlias string) *IDE
 }
 

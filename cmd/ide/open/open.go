@@ -4,6 +4,7 @@
 package open
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -26,7 +27,7 @@ type IDE struct {
 
 // IDEDetector interface for detecting IDEs.
 type IDEDetector interface {
-	DetectIDEs(useCache bool) ([]IDE, error)
+	DetectIDEs(ctx context.Context, useCache bool) ([]IDE, error)
 	FindIDEByAlias(ides []IDE, alias string) *IDE
 }
 
@@ -38,7 +39,10 @@ func NewIDEDetector() IDEDetector {
 // mockDetector is a simple mock implementation for now.
 type mockDetector struct{}
 
-func (d *mockDetector) DetectIDEs(useCache bool) ([]IDE, error) {
+func (d *mockDetector) DetectIDEs(ctx context.Context, useCache bool) ([]IDE, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	// Mock implementation - in reality this would detect actual IDEs
 	return []IDE{
 		{
@@ -149,9 +153,10 @@ func (o *openOptions) runOpen(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("target path does not exist: %s", resolvedPath)
 	}
 
-	// Detect IDEs
+	// Detect IDEs (ctx only for detection; IDE launch below must stay unbound so
+	// the process outlives gz — do not CommandContext the IDE executable).
 	detector := NewIDEDetector()
-	ides, err := detector.DetectIDEs(true) // Use cache for opening
+	ides, err := detector.DetectIDEs(cmd.Context(), true) // Use cache for opening
 	if err != nil {
 		return fmt.Errorf("failed to detect IDEs: %w", err)
 	}

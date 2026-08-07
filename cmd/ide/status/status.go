@@ -4,6 +4,7 @@
 package status
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -26,7 +27,7 @@ type IDE struct {
 
 // IDEDetector interface for detecting IDEs.
 type IDEDetector interface {
-	DetectIDEs(useCache bool) ([]IDE, error)
+	DetectIDEs(ctx context.Context, useCache bool) ([]IDE, error)
 }
 
 // NewIDEDetector creates a new IDE detector - placeholder implementation.
@@ -37,7 +38,10 @@ func NewIDEDetector() IDEDetector {
 // mockDetector is a simple mock implementation for now.
 type mockDetector struct{}
 
-func (d *mockDetector) DetectIDEs(useCache bool) ([]IDE, error) {
+func (d *mockDetector) DetectIDEs(ctx context.Context, useCache bool) ([]IDE, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	// Mock implementation with LastUpdated times for demonstration
 	now := time.Now()
 	return []IDE{
@@ -140,8 +144,8 @@ Examples:
 func (o *statusOptions) runStatus(cmd *cobra.Command, args []string) error {
 	detector := NewIDEDetector()
 
-	// Get IDEs (prefer cache for status command)
-	ides, err := detector.DetectIDEs(true)
+	// Get IDEs (prefer cache for status command; cmd.Context() for cancel)
+	ides, err := detector.DetectIDEs(cmd.Context(), true)
 	if err != nil {
 		return fmt.Errorf("failed to detect IDEs: %w", err)
 	}

@@ -23,6 +23,20 @@ type (
 	IDECache = idecore.IDECache
 )
 
+// defaultExecTimeout bounds each external process spawned during IDE detection.
+// Parent context cancel still wins; this only adds a per-command ceiling so a
+// hung package manager or JetBrains --version (JVM start) cannot block forever.
+const defaultExecTimeout = 8 * time.Second
+
+// withExecTimeout returns a child context with defaultExecTimeout.
+// If parent is nil, context.Background() is used (prefer callers pass a real ctx).
+func withExecTimeout(parent context.Context) (context.Context, context.CancelFunc) {
+	if parent == nil {
+		parent = context.Background()
+	}
+	return context.WithTimeout(parent, defaultExecTimeout)
+}
+
 // IDEDetector handles IDE detection logic.
 type IDEDetector struct {
 	cacheDir string
@@ -39,14 +53,14 @@ func NewIDEDetector() *IDEDetector {
 }
 
 // detectInstallMethod determines how an IDE was installed.
-func (d *IDEDetector) detectInstallMethod(execPath string) (method, installPath string) {
+func (d *IDEDetector) detectInstallMethod(ctx context.Context, execPath string) (method, installPath string) {
 	// Check if it's an AppImage launcher script
 	if method, path := d.detectAppImageLauncher(execPath); method != "" {
 		return method, path
 	}
 
 	// Check package managers
-	if method, path := d.detectPackageManager(execPath); method != "" {
+	if method, path := d.detectPackageManager(ctx, execPath); method != "" {
 		return method, path
 	}
 
@@ -150,16 +164,15 @@ func (d *IDEDetector) extractAppImageDir(line string) string {
 }
 
 // detectPackageManager checks which package manager installed the executable.
-func (d *IDEDetector) detectPackageManager(execPath string) (string, string) {
+func (d *IDEDetector) detectPackageManager(ctx context.Context, execPath string) (string, string) {
 	// Try pacman first (Arch Linux) - check if file is owned by a package
 	if d.isCommandAvailable("pacman") {
-		if pkg := d.queryPackageManager("pacman", "-Qo", execPath); pkg != "" {
+		if pkg := d.queryPackageManager(ctx, "pacman", "-Qo", execPath); pkg != "" {
 			return "pacman", pkg
 		}
 	}
 
-	// Skip snap and flatpak for now as they can be slow
-	// TODO: Add proper timeout handling for these package managers
+	// snap/flatpak omitted: historically slow without timeouts; re-add only with ctx bounds
 
 	return "", ""
 }
@@ -171,11 +184,14 @@ func (d *IDEDetector) isCommandAvailable(command string) bool {
 }
 
 // queryPackageManager queries a package manager for package info.
-func (d *IDEDetector) queryPackageManager(manager string, args ...string) string {
-	cmd := exec.CommandContext(context.Background(), manager, args...)
+// Each call is bounded by withExecTimeout(ctx) so hangs and cancel both stop the child.
+func (d *IDEDetector) queryPackageManager(ctx context.Context, manager string, args ...string) string {
+	execCtx, cancel := withExecTimeout(ctx)
+	defer cancel()
+
+	cmd := exec.CommandContext(execCtx, manager, args...)
 	cmd.Stderr = nil // Suppress error output
 
-	// Set a timeout to prevent hanging
 	output, err := cmd.Output()
 	if err != nil {
 		return ""
@@ -183,27 +199,18 @@ func (d *IDEDetector) queryPackageManager(manager string, args ...string) string
 	return strings.TrimSpace(string(output))
 }
 
-// queryFlatpak specifically handles flatpak queries
-//
-//nolint:unused // 향후 flatpak 지원을 위해 보존
-func (d *IDEDetector) queryFlatpak(appName string) string {
-	cmd := exec.CommandContext(context.Background(), "flatpak", "list", "--columns=name,application")
-	output, err := cmd.Output()
-	if err != nil {
-		return ""
-	}
-
-	lines := strings.SplitSeq(string(output), "\n")
-	for line := range lines {
-		if strings.Contains(strings.ToLower(line), strings.ToLower(appName)) {
-			return strings.TrimSpace(line)
-		}
-	}
-	return ""
-}
-
 // DetectIDEs scans the system for installed IDEs.
-func (d *IDEDetector) DetectIDEs(useCache bool) ([]IDE, error) {
+// ctx cancels the scan (e.g. Ctrl+C). Each external command also has a per-call timeout.
+// Callers that launch an IDE after detection (cmd/ide/open) must NOT attach that
+// launch to ctx — the IDE must outlive the CLI process.
+func (d *IDEDetector) DetectIDEs(ctx context.Context, useCache bool) ([]IDE, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	if useCache {
 		if ides, err := d.loadFromCache(); err == nil {
 			return ides, nil
@@ -213,22 +220,33 @@ func (d *IDEDetector) DetectIDEs(useCache bool) ([]IDE, error) {
 	var allIDEs []IDE
 
 	// Detect JetBrains IDEs
-	jetbrainsIDEs, err := d.detectJetBrainsIDEs()
-	if err == nil {
-		allIDEs = append(allIDEs, jetbrainsIDEs...)
+	jetbrainsIDEs, err := d.detectJetBrainsIDEs(ctx)
+	if err != nil {
+		return nil, err
+	}
+	allIDEs = append(allIDEs, jetbrainsIDEs...)
+
+	if err := ctx.Err(); err != nil {
+		return nil, err
 	}
 
 	// Detect VS Code family
-	vscodeIDEs, err := d.detectVSCodeFamily()
-	if err == nil {
-		allIDEs = append(allIDEs, vscodeIDEs...)
+	vscodeIDEs, err := d.detectVSCodeFamily(ctx)
+	if err != nil {
+		return nil, err
+	}
+	allIDEs = append(allIDEs, vscodeIDEs...)
+
+	if err := ctx.Err(); err != nil {
+		return nil, err
 	}
 
 	// Detect other IDEs
-	otherIDEs, err := d.detectOtherIDEs()
-	if err == nil {
-		allIDEs = append(allIDEs, otherIDEs...)
+	otherIDEs, err := d.detectOtherIDEs(ctx)
+	if err != nil {
+		return nil, err
 	}
+	allIDEs = append(allIDEs, otherIDEs...)
 
 	// Save to cache
 	if err := d.saveToCache(allIDEs); err != nil {
@@ -240,7 +258,7 @@ func (d *IDEDetector) DetectIDEs(useCache bool) ([]IDE, error) {
 }
 
 // detectJetBrainsIDEs detects JetBrains IDE installations.
-func (d *IDEDetector) detectJetBrainsIDEs() ([]IDE, error) {
+func (d *IDEDetector) detectJetBrainsIDEs(ctx context.Context) ([]IDE, error) {
 	var ides []IDE
 
 	// Check JetBrains Toolbox installations
@@ -249,6 +267,9 @@ func (d *IDEDetector) detectJetBrainsIDEs() ([]IDE, error) {
 		entries, err := os.ReadDir(toolboxPath)
 		if err == nil {
 			for _, entry := range entries {
+				if err := ctx.Err(); err != nil {
+					return nil, err
+				}
 				if !entry.IsDir() {
 					continue
 				}
@@ -256,7 +277,7 @@ func (d *IDEDetector) detectJetBrainsIDEs() ([]IDE, error) {
 				ideName := entry.Name()
 				idePath := filepath.Join(toolboxPath, ideName)
 
-				if ide := d.createJetBrainsIDE(ideName, idePath); ide != nil {
+				if ide := d.createJetBrainsIDE(ctx, ideName, idePath); ide != nil {
 					ides = append(ides, *ide)
 				}
 			}
@@ -266,8 +287,11 @@ func (d *IDEDetector) detectJetBrainsIDEs() ([]IDE, error) {
 	// Check system-wide installations
 	systemPaths := d.getJetBrainsSystemPaths()
 	for _, path := range systemPaths {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
 		if _, err := os.Stat(path); err == nil {
-			if ide := d.createJetBrainsIDE(filepath.Base(path), path); ide != nil {
+			if ide := d.createJetBrainsIDE(ctx, filepath.Base(path), path); ide != nil {
 				ides = append(ides, *ide)
 			}
 		}
@@ -277,7 +301,7 @@ func (d *IDEDetector) detectJetBrainsIDEs() ([]IDE, error) {
 }
 
 // detectVSCodeFamily detects VS Code family IDEs.
-func (d *IDEDetector) detectVSCodeFamily() ([]IDE, error) {
+func (d *IDEDetector) detectVSCodeFamily(ctx context.Context) ([]IDE, error) {
 	var ides []IDE
 
 	vscodeTypes := []struct {
@@ -293,12 +317,15 @@ func (d *IDEDetector) detectVSCodeFamily() ([]IDE, error) {
 	}
 
 	for _, vscode := range vscodeTypes {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
 		if path := d.findExecutable(vscode.executable); path != "" {
 			// Detect installation method first
-			installMethod, installPath := d.detectInstallMethod(path)
+			installMethod, installPath := d.detectInstallMethod(ctx, path)
 
 			// Enhanced version detection based on installation method
-			version := d.getEnhancedVersion(path, vscode.versionArgs, installMethod, installPath, vscode.name)
+			version := d.getEnhancedVersion(ctx, path, vscode.versionArgs, installMethod, installPath, vscode.name)
 			lastUpdated := d.getExecutableLastModified(path)
 
 			ide := IDE{
@@ -319,7 +346,7 @@ func (d *IDEDetector) detectVSCodeFamily() ([]IDE, error) {
 }
 
 // detectOtherIDEs detects other IDE installations.
-func (d *IDEDetector) detectOtherIDEs() ([]IDE, error) {
+func (d *IDEDetector) detectOtherIDEs(ctx context.Context) ([]IDE, error) {
 	var ides []IDE
 
 	otherIDEs := []struct {
@@ -335,11 +362,14 @@ func (d *IDEDetector) detectOtherIDEs() ([]IDE, error) {
 	}
 
 	for _, other := range otherIDEs {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
 		if path := d.findExecutable(other.executable); path != "" {
 			// Detect installation method
-			installMethod, installPath := d.detectInstallMethod(path)
+			installMethod, installPath := d.detectInstallMethod(ctx, path)
 
-			version := d.getExecutableVersion(path, other.versionArg)
+			version := d.getExecutableVersion(ctx, path, other.versionArg)
 			lastUpdated := d.getExecutableLastModified(path)
 
 			ide := IDE{
@@ -360,7 +390,7 @@ func (d *IDEDetector) detectOtherIDEs() ([]IDE, error) {
 }
 
 // createJetBrainsIDE creates an IDE instance for JetBrains products.
-func (d *IDEDetector) createJetBrainsIDE(ideName, idePath string) *IDE {
+func (d *IDEDetector) createJetBrainsIDE(ctx context.Context, ideName, idePath string) *IDE {
 	// Map JetBrains product names
 	jetbrainsProducts := map[string]struct {
 		displayName string
@@ -394,11 +424,11 @@ func (d *IDEDetector) createJetBrainsIDE(ideName, idePath string) *IDE {
 			}
 
 			// Get version from build.txt file first, then fallback to other methods
-			version := d.getJetBrainsVersion(idePath, execPath, ideName)
+			version := d.getJetBrainsVersion(ctx, idePath, execPath, ideName)
 			lastUpdated := d.getExecutableLastModified(execPath)
 
 			// Detect installation method
-			installMethod, installPath := d.detectInstallMethod(execPath)
+			installMethod, installPath := d.detectInstallMethod(ctx, execPath)
 
 			return &IDE{
 				Name:          product.displayName,
@@ -441,14 +471,14 @@ func (d *IDEDetector) findJetBrainsExecutable(productPath, executableName string
 }
 
 // getJetBrainsVersion gets version from multiple sources with priority.
-func (d *IDEDetector) getJetBrainsVersion(productPath, execPath, productDir string) string {
+func (d *IDEDetector) getJetBrainsVersion(ctx context.Context, productPath, execPath, productDir string) string {
 	// 1. Try to read from build.txt file (most accurate)
 	if version := d.getJetBrainsVersionFromBuildFile(productPath); version != "unknown" {
 		return version
 	}
 
 	// 2. Try to get version from executable --version command
-	if version := d.getJetBrainsVersionFromCommand(execPath); version != "unknown" {
+	if version := d.getJetBrainsVersionFromCommand(ctx, execPath); version != "unknown" {
 		return version
 	}
 
@@ -475,8 +505,12 @@ func (d *IDEDetector) getJetBrainsVersionFromBuildFile(productPath string) strin
 }
 
 // getJetBrainsVersionFromCommand gets version from executable --version command.
-func (d *IDEDetector) getJetBrainsVersionFromCommand(execPath string) string {
-	cmd := exec.CommandContext(context.Background(), execPath, "--version")
+// JetBrains --version often starts a JVM; always bound with withExecTimeout.
+func (d *IDEDetector) getJetBrainsVersionFromCommand(ctx context.Context, execPath string) string {
+	execCtx, cancel := withExecTimeout(ctx)
+	defer cancel()
+
+	cmd := exec.CommandContext(execCtx, execPath, "--version")
 	cmd.Stderr = nil // Suppress warnings
 
 	output, err := cmd.Output()
@@ -640,33 +674,18 @@ func (d *IDEDetector) findExecutable(name string) string {
 }
 
 // getEnhancedVersion gets version using installation method-specific strategies.
-func (d *IDEDetector) getEnhancedVersion(execPath string, versionArgs []string, installMethod, installPath, appName string) string {
+func (d *IDEDetector) getEnhancedVersion(ctx context.Context, execPath string, versionArgs []string, installMethod, installPath, appName string) string {
 	// Try standard version detection first
-	version := d.getVSCodeFamilyVersion(execPath, versionArgs)
+	version := d.getVSCodeFamilyVersion(ctx, execPath, versionArgs)
 	if version != "unknown" && version != "" {
 		return version
 	}
 
 	// If standard detection failed, try method-specific approaches
-	if installMethod == "appimage" { // singleCaseSwitch 수정: if 문으로 변경
+	if installMethod == "appimage" {
 		if appImageVersion := d.getAppImageVersion(installPath, appName); appImageVersion != "unknown" {
 			return appImageVersion
 		}
-		// Temporarily disable package manager version detection
-		/*
-			case "pacman":
-				if pkgVersion := d.getPackageManagerVersion("pacman", "-Q", appName); pkgVersion != "unknown" {
-					return pkgVersion
-				}
-			case "snap":
-				if snapVersion := d.getPackageManagerVersion("snap", "list", appName); snapVersion != "unknown" {
-					return snapVersion
-				}
-			case "flatpak":
-				if flatpakVersion := d.getFlatpakVersion(appName); flatpakVersion != "unknown" {
-					return flatpakVersion
-				}
-		*/
 	}
 
 	return "unknown"
@@ -773,67 +792,10 @@ func (d *IDEDetector) compareVersions(v1, v2 string) int {
 	return 0
 }
 
-// getPackageManagerVersion gets version from package managers
-//
-//nolint:unused // 패키지 매니저 버전 조회용으로 보존
-func (d *IDEDetector) getPackageManagerVersion(manager, _, packageName string) string {
-	var cmd *exec.Cmd
-
-	switch manager {
-	case "pacman":
-		cmd = exec.Command("pacman", "-Q", packageName)
-	case "snap":
-		cmd = exec.Command("snap", "list", packageName)
-	default:
-		return "unknown"
-	}
-
-	output, err := cmd.Output()
-	if err != nil {
-		return "unknown"
-	}
-
-	// Parse the output for version information
-	lines := strings.Split(string(output), "\n")
-	if len(lines) > 0 {
-		line := strings.TrimSpace(lines[0])
-		// For pacman: "cursor 0.42.3-1"
-		// For snap: "cursor 0.42.3 123 latest/stable"
-		parts := strings.Fields(line)
-		if len(parts) >= 2 {
-			return parts[1]
-		}
-	}
-
-	return "unknown"
-}
-
-// getFlatpakVersion gets version from flatpak
-//
-//nolint:unused // flatpak 버전 조회용으로 보존
-func (d *IDEDetector) getFlatpakVersion(appName string) string {
-	cmd := exec.Command("flatpak", "list", "--columns=name,version")
-	output, err := cmd.Output()
-	if err != nil {
-		return "unknown"
-	}
-
-	lines := strings.SplitSeq(string(output), "\n")
-	for line := range lines {
-		if strings.Contains(strings.ToLower(line), strings.ToLower(appName)) {
-			parts := strings.Fields(line)
-			if len(parts) >= 2 {
-				return parts[1]
-			}
-		}
-	}
-	return "unknown"
-}
-
 // getVSCodeFamilyVersion gets version for VS Code family with multiple version arguments.
-func (d *IDEDetector) getVSCodeFamilyVersion(execPath string, versionArgs []string) string {
+func (d *IDEDetector) getVSCodeFamilyVersion(ctx context.Context, execPath string, versionArgs []string) string {
 	for _, arg := range versionArgs {
-		if version := d.getExecutableVersion(execPath, arg); version != "unknown" && version != "" {
+		if version := d.getExecutableVersion(ctx, execPath, arg); version != "unknown" && version != "" {
 			// For VS Code family, extract just the version number
 			return d.parseVSCodeVersion(version)
 		}
@@ -865,8 +827,12 @@ func (d *IDEDetector) parseVSCodeVersion(output string) string {
 }
 
 // getExecutableVersion gets version information from an executable.
-func (d *IDEDetector) getExecutableVersion(execPath, versionArg string) string {
-	cmd := exec.Command(execPath, versionArg)
+// Bounded by withExecTimeout so a hung binary cannot block detection.
+func (d *IDEDetector) getExecutableVersion(ctx context.Context, execPath, versionArg string) string {
+	execCtx, cancel := withExecTimeout(ctx)
+	defer cancel()
+
+	cmd := exec.CommandContext(execCtx, execPath, versionArg)
 	cmd.Stderr = nil // Suppress error output
 
 	output, err := cmd.Output()

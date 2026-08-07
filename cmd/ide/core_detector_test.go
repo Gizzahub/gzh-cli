@@ -4,11 +4,15 @@
 package ide
 
 import (
+	"context"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewIDEDetector(t *testing.T) {
@@ -361,16 +365,17 @@ func TestGetAppImageVersion(t *testing.T) {
 
 func TestDetectInstallMethod(t *testing.T) {
 	detector := NewIDEDetector()
+	ctx := context.Background()
 
 	// Test JetBrains Toolbox path
 	toolboxPath := "/home/user/.local/share/JetBrains/Toolbox/apps/PyCharm-P/bin/pycharm.sh"
-	method, path := detector.detectInstallMethod(toolboxPath)
+	method, path := detector.detectInstallMethod(ctx, toolboxPath)
 	assert.Equal(t, "toolbox", method)
 	assert.Equal(t, toolboxPath, path)
 
 	// Test regular binary (use a path that's not in pacman packages)
 	binaryPath := "/tmp/fake-binary"
-	method, path = detector.detectInstallMethod(binaryPath)
+	method, path = detector.detectInstallMethod(ctx, binaryPath)
 	assert.Equal(t, "direct", method)
 	assert.Equal(t, binaryPath, path)
 
@@ -399,4 +404,51 @@ func TestCompareVersions(t *testing.T) {
 			assert.Equal(t, tt.expected, result)
 		})
 	}
+}
+
+// TestDetectIDEs_CanceledContextReturnsWithoutHang ensures an already-canceled
+// context aborts detection immediately (issue 45).
+func TestDetectIDEs_CanceledContextReturnsWithoutHang(t *testing.T) {
+	detector := NewIDEDetector()
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	done := make(chan error, 1)
+	go func() {
+		_, err := detector.DetectIDEs(ctx, false)
+		done <- err
+	}()
+
+	select {
+	case err := <-done:
+		require.ErrorIs(t, err, context.Canceled)
+	case <-time.After(2 * time.Second):
+		t.Fatal("DetectIDEs hung despite canceled context")
+	}
+}
+
+// TestGetExecutableVersion_HonorsTimeout bounds a hanging binary with the
+// per-command timeout (issue 45).
+func TestGetExecutableVersion_HonorsTimeout(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("sleep script path is POSIX")
+	}
+
+	dir := t.TempDir()
+	script := filepath.Join(dir, "hang.sh")
+	// Ignore signals so CommandContext kill is what stops it; sleep long enough
+	// that only the timeout path finishes the test quickly.
+	require.NoError(t, os.WriteFile(script, []byte("#!/bin/sh\nsleep 60\n"), 0o755))
+
+	detector := NewIDEDetector()
+	// Short parent deadline still cancels the child via CommandContext.
+	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	defer cancel()
+
+	start := time.Now()
+	version := detector.getExecutableVersion(ctx, script, "--version")
+	elapsed := time.Since(start)
+
+	assert.Equal(t, "unknown", version)
+	assert.Less(t, elapsed, 5*time.Second, "timed-out exec should not hang")
 }

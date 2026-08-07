@@ -4,6 +4,7 @@
 package scan
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -22,7 +23,7 @@ type IDE struct {
 
 // IDEDetector interface for detecting IDEs.
 type IDEDetector interface {
-	DetectIDEs(useCache bool) ([]IDE, error)
+	DetectIDEs(ctx context.Context, useCache bool) ([]IDE, error)
 }
 
 // NewIDEDetector creates a new IDE detector - placeholder implementation.
@@ -33,7 +34,10 @@ func NewIDEDetector() IDEDetector {
 // mockDetector is a simple mock implementation for now.
 type mockDetector struct{}
 
-func (d *mockDetector) DetectIDEs(useCache bool) ([]IDE, error) {
+func (d *mockDetector) DetectIDEs(ctx context.Context, useCache bool) ([]IDE, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	// Mock implementation - in reality this would detect actual IDEs
 	return []IDE{
 		{
@@ -122,8 +126,8 @@ func (o *scanOptions) runScan(cmd *cobra.Command, args []string) error {
 	}
 	fmt.Println()
 
-	// Detect IDEs
-	ides, err := detector.DetectIDEs(!o.refresh)
+	// Detect IDEs (cmd.Context() so Ctrl+C cancels scan)
+	ides, err := detector.DetectIDEs(cmd.Context(), !o.refresh)
 	if err != nil {
 		return fmt.Errorf("failed to detect IDEs: %w", err)
 	}

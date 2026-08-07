@@ -281,7 +281,7 @@ func TestMockDetector(t *testing.T) {
 	detector := NewIDEDetector()
 
 	// Test DetectIDEs
-	ides, err := detector.DetectIDEs(true)
+	ides, err := detector.DetectIDEs(t.Context(), true)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, ides, "Should return some mock IDEs")
 
