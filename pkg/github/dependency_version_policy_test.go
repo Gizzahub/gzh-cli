@@ -413,7 +413,8 @@ func TestDependencyVersionPolicyManager_AnalyzeDependencyVersionUpdate(t *testin
 			ecosystem:       "npm",
 			expectedAllowed: true,
 			expectedAction:  "approve",
-			expectedReason:  "Security improvements",
+			// Security impact is not implemented; must not invent "Security improvements".
+			expectedReason: "Update meets all policy requirements",
 		},
 		{
 			name:            "blocked major update",
