@@ -1,309 +1,217 @@
+// Copyright (c) 2025 Gizzahub
+// SPDX-License-Identifier: MIT
+
 //nolint:testpackage // White-box testing needed for internal function access
 package scenarios
 
 import (
-	"strings"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"testing"
 
 	"github.com/gizzahub/gzh-cli/test/e2e/helpers"
 )
 
-func TestConfig_Init_E2E(t *testing.T) {
-	env := helpers.NewTestEnvironment(t)
-	defer env.Cleanup()
-
-	// Test configuration initialization
-	result := env.RunCommand("config", "init")
-
-	assertions := helpers.NewCLIAssertions(t, result)
-	assertions.Success().OutputContains("Configuration initialized")
-
-	// Verify configuration file was created
-	env.AssertFileExists("bulk-clone.yaml")
-
-	// Validate the generated configuration
-	config := helpers.NewConfigAssertions(t, env, "bulk-clone.yaml")
-	config.ValidYAML().
-		HasField("version").
-		HasField("providers")
-}
-
-func TestConfig_InitWithProvider_E2E(t *testing.T) {
-	env := helpers.NewTestEnvironment(t)
-	defer env.Cleanup()
-
-	// Test initialization with specific provider
-	result := env.RunCommand("config", "init", "--provider", "github")
-
-	assertions := helpers.NewCLIAssertions(t, result)
-	assertions.Success()
-
-	// Verify GitHub provider configuration
-	config := helpers.NewConfigAssertions(t, env, "bulk-clone.yaml")
-	config.ValidYAML().
-		HasField("providers.github").
-		HasField("providers.github.token")
-}
-
-func TestConfig_Validate_E2E(t *testing.T) {
-	env := helpers.NewTestEnvironment(t)
-	defer env.Cleanup()
-
-	// Create valid configuration
-	validConfig := `
-version: "1.0.0"
-default_provider: github
-providers:
-  github:
-    token: "${GITHUB_TOKEN}"
-    orgs:
-      - name: "test-org"
-        visibility: "public"
-        strategy: "reset"
-        clone_dir: "./repos"
+// Valid modern synclone config (repo_roots schema used by `synclone validate`).
+const modernSyncloneConfig = `
+version: "1.0"
+default:
+  protocol: https
+repo_roots:
+  - root_path: "./repos"
+    provider: "github"
+    protocol: "https"
+    org_name: "test-org"
+ignore_names:
+  - "^temp.*"
 `
-	env.WriteConfig("config.yaml", validConfig)
 
-	// Test validation
-	result := env.RunCommand("config", "validate", "--config", "config.yaml")
+// Providers/organizations format accepted by `synclone config validate` (YAML syntax only).
+const organizationsConfig = `
+version: "1.0.0"
+global:
+  clone_base_dir: ${HOME}/repos
+  default_strategy: pull
+providers:
+  github:
+    organizations:
+      - name: test-org
+        clone_dir: ${HOME}/repos/test-org
+`
 
-	assertions := helpers.NewCLIAssertions(t, result)
-	assertions.Success().OutputContains("valid")
-}
-
-func TestConfig_ValidateAll_E2E(t *testing.T) {
+func TestSyncloneConfig_ValidateYAML_E2E(t *testing.T) {
 	env := helpers.NewTestEnvironment(t)
 	defer env.Cleanup()
 
-	// Create multiple configuration files
-	configs := map[string]string{
-		"github-config.yaml": `
-version: "1.0.0"
-providers:
-  github:
-    token: "test"
-    orgs: [{name: "test-org"}]
-`,
-		"gitlab-config.yaml": `
-version: "1.0.0"
-providers:
-  gitlab:
-    token: "test"
-    groups: [{name: "test-group"}]
-`,
+	env.WriteConfig("valid.yaml", organizationsConfig)
+
+	result := env.RunCommand("synclone", "config", "validate", "--file", "valid.yaml")
+
+	helpers.NewCLIAssertions(t, result).
+		Success().
+		OutputContains("valid")
+}
+
+func TestSyncloneConfig_ValidateSchema_E2E(t *testing.T) {
+	env := helpers.NewTestEnvironment(t)
+	defer env.Cleanup()
+
+	env.WriteConfig("schema-valid.yaml", modernSyncloneConfig)
+
+	// Full schema validation lives on `synclone validate` (not bare `config`).
+	result := env.RunCommand("synclone", "validate", "--config", "schema-valid.yaml")
+
+	helpers.NewCLIAssertions(t, result).
+		Success().
+		OutputContains("Configuration is valid")
+}
+
+func TestSyncloneConfig_ValidateInvalidYAML_E2E(t *testing.T) {
+	env := helpers.NewTestEnvironment(t)
+	defer env.Cleanup()
+
+	env.WriteConfig("broken.yaml", "version: [\n")
+
+	result := env.RunCommand("synclone", "config", "validate", "--file", "broken.yaml")
+
+	helpers.NewCLIAssertions(t, result).
+		Failure().
+		OutputContains("invalid YAML")
+}
+
+func TestSyncloneConfig_ValidateMissingFile_E2E(t *testing.T) {
+	env := helpers.NewTestEnvironment(t)
+	defer env.Cleanup()
+
+	result := env.RunCommand("synclone", "config", "validate", "--file", "does-not-exist.yaml")
+
+	helpers.NewCLIAssertions(t, result).Failure()
+}
+
+func TestSyncloneConfig_ValidateSchemaRejectsBadProtocol_E2E(t *testing.T) {
+	env := helpers.NewTestEnvironment(t)
+	defer env.Cleanup()
+
+	env.WriteConfig("bad-protocol.yaml", `
+version: "1.0"
+default:
+  protocol: not-a-protocol
+repo_roots:
+  - root_path: "./repos"
+    provider: "github"
+    protocol: "https"
+    org_name: "test-org"
+`)
+
+	result := env.RunCommand("synclone", "validate", "--config", "bad-protocol.yaml")
+
+	helpers.NewCLIAssertions(t, result).Failure()
+}
+
+func TestSyncloneConfig_GenerateTemplateList_E2E(t *testing.T) {
+	env := helpers.NewTestEnvironment(t)
+	defer env.Cleanup()
+
+	result := env.RunCommand("synclone", "config", "generate", "template", "--list-templates")
+
+	helpers.NewCLIAssertions(t, result).
+		Success().
+		OutputContains("minimal")
+}
+
+func TestSyncloneConfig_GenerateTemplateMinimal_E2E(t *testing.T) {
+	env := helpers.NewTestEnvironment(t)
+	defer env.Cleanup()
+
+	result := env.RunCommand(
+		"synclone", "config", "generate", "template",
+		"--template", "minimal",
+		"--var", "GitHubOrg=e2e-org",
+		"--output", "from-template.yaml",
+	)
+
+	helpers.NewCLIAssertions(t, result).
+		Success().
+		OutputContains("generated")
+
+	env.AssertFileExists("from-template.yaml")
+	config := helpers.NewConfigAssertions(t, env, "from-template.yaml")
+	config.ValidYAML().HasField("version").HasField("providers")
+}
+
+func TestSyncloneConfig_GenerateDiscover_E2E(t *testing.T) {
+	env := helpers.NewTestEnvironment(t)
+	defer env.Cleanup()
+
+	// Discover needs a real git repo with a remote, not a stub .git dir.
+	createRealGitRepo(t, env.WorkDir, "org1/repo1", "https://github.com/e2e-org/repo1.git")
+
+	result := env.RunCommand(
+		"synclone", "config", "generate", "discover",
+		"--path", ".",
+		"--output", "discovered.yaml",
+	)
+
+	helpers.NewCLIAssertions(t, result).
+		Success().
+		OutputContains("Found")
+
+	env.AssertFileExists("discovered.yaml")
+	config := helpers.NewConfigAssertions(t, env, "discovered.yaml")
+	config.ValidYAML().HasField("version").HasField("providers")
+}
+
+func TestSyncloneConfig_GenerateHelp_E2E(t *testing.T) {
+	env := helpers.NewTestEnvironment(t)
+	defer env.Cleanup()
+
+	result := env.RunCommand("synclone", "config", "--help")
+
+	helpers.NewCLIAssertions(t, result).
+		Success().
+		OutputContains("generate").
+		OutputContains("validate").
+		OutputContains("convert")
+}
+
+func TestSyncloneConfig_TopLevelConfigAbsent_E2E(t *testing.T) {
+	env := helpers.NewTestEnvironment(t)
+	defer env.Cleanup()
+
+	// Bare `gz config` was removed; document current surface: unknown command.
+	result := env.RunCommand("config", "--help")
+
+	helpers.NewCLIAssertions(t, result).
+		Failure().
+		OutputContains("unknown command")
+}
+
+// createRealGitRepo initializes a git repository with a remote for discovery tests.
+func createRealGitRepo(t *testing.T, workDir, relativePath, remoteURL string) {
+	t.Helper()
+
+	repoPath := filepath.Join(workDir, relativePath)
+	if err := os.MkdirAll(repoPath, 0o750); err != nil {
+		t.Fatalf("mkdir repo: %v", err)
 	}
 
-	for filename, content := range configs {
-		env.WriteConfig(filename, content)
-	}
-
-	// Test validate all configurations
-	result := env.RunCommand("config", "validate", "--all")
-
-	assertions := helpers.NewCLIAssertions(t, result)
-	assertions.Success().
-		OutputContains("github-config.yaml").
-		OutputContains("gitlab-config.yaml")
-}
-
-func TestConfig_Show_E2E(t *testing.T) {
-	env := helpers.NewTestEnvironment(t)
-	defer env.Cleanup()
-
-	// Create configuration
-	config := `
-version: "1.0.0"
-default_provider: github
-providers:
-  github:
-    token: "masked-token"
-    orgs:
-      - name: "example-org"
-`
-	env.WriteConfig("config.yaml", config)
-
-	// Test show configuration
-	result := env.RunCommand("config", "show", "--config", "config.yaml")
-
-	assertions := helpers.NewCLIAssertions(t, result)
-	assertions.Success().
-		OutputContains("example-org").
-		OutputNotContains("masked-token") // Tokens should be masked
-}
-
-func TestConfig_Profile_E2E(t *testing.T) {
-	env := helpers.NewTestEnvironment(t)
-	defer env.Cleanup()
-
-	// Create configuration directory
-	env.CreateConfigDir()
-
-	// Test profile creation
-	result := env.RunCommand("config", "profile", "create", "work", "--provider", "github")
-
-	assertions := helpers.NewCLIAssertions(t, result)
-	if result.ExitCode == 0 {
-		assertions.Success().OutputContains("Profile created")
-
-		// Verify profile configuration
-		env.AssertFileExists(".config/gzh-manager/profiles/work.yaml")
-	}
-
-	// Test profile listing
-	result = env.RunCommand("config", "profile", "list")
-
-	assertions = helpers.NewCLIAssertions(t, result)
-	if result.ExitCode == 0 {
-		assertions.Success()
-	}
-}
-
-func TestConfig_Watch_E2E(t *testing.T) {
-	env := helpers.NewTestEnvironment(t)
-	defer env.Cleanup()
-
-	// Create configuration
-	config := `
-version: "1.0.0"
-providers:
-  github:
-    token: "test"
-    orgs: [{name: "watch-org"}]
-`
-	env.WriteConfig("config.yaml", config)
-
-	// Test watch command (this would typically run in background)
-	result := env.RunCommand("config", "watch", "--config", "config.yaml", "--timeout", "1s")
-
-	assertions := helpers.NewCLIAssertions(t, result)
-	// Watch command might timeout, which is expected
-	assertions.OutputContains("config.yaml")
-}
-
-func TestConfig_ErrorHandling_E2E(t *testing.T) {
-	env := helpers.NewTestEnvironment(t)
-	defer env.Cleanup()
-
-	// Test with non-existent file
-	result := env.RunCommand("config", "validate", "--config", "non-existent.yaml")
-
-	assertions := helpers.NewCLIAssertions(t, result)
-	assertions.Failure().OutputContains("not found")
-
-	// Test with invalid YAML
-	invalidConfig := `
-version: "1.0.0"
-providers:
-  github:
-    invalid_yaml: [
-`
-	env.WriteConfig("invalid.yaml", invalidConfig)
-
-	result = env.RunCommand("config", "validate", "--config", "invalid.yaml")
-
-	assertions = helpers.NewCLIAssertions(t, result)
-	assertions.Failure()
-}
-
-func TestConfig_SchemaValidation_E2E(t *testing.T) {
-	env := helpers.NewTestEnvironment(t)
-	defer env.Cleanup()
-
-	// Test with invalid schema
-	invalidSchema := `
-version: "invalid-version"
-providers:
-  unknown-provider:
-    invalid_field: "test"
-`
-	env.WriteConfig("invalid-schema.yaml", invalidSchema)
-
-	result := env.RunCommand("config", "validate", "--config", "invalid-schema.yaml")
-
-	assertions := helpers.NewCLIAssertions(t, result)
-	assertions.Failure().OutputContains("invalid")
-}
-
-func TestConfig_EnvironmentOverrides_E2E(t *testing.T) {
-	env := helpers.NewTestEnvironment(t)
-	defer env.Cleanup()
-
-	// Set configuration via environment
-	env.SetEnv("GZ_PROVIDER", "github")
-	env.SetEnv("GZ_TOKEN", "env-token")
-	env.SetEnv("GZ_ORG", "env-org")
-
-	// Test that environment variables are recognized
-	result := env.RunCommand("config", "show", "--env")
-
-	assertions := helpers.NewCLIAssertions(t, result)
-	if result.ExitCode == 0 {
-		assertions.Success().
-			OutputContains("github").
-			OutputContains("env-org")
-	}
-}
-
-func TestConfig_ConfigPath_E2E(t *testing.T) {
-	env := helpers.NewTestEnvironment(t)
-	defer env.Cleanup()
-
-	// Test custom configuration path
-	customDir := "custom-config"
-	env.CreateDir(customDir)
-
-	config := `
-version: "1.0.0"
-providers:
-  github:
-    token: "test"
-    orgs: [{name: "custom-org"}]
-`
-	env.WriteConfig(customDir+"/custom.yaml", config)
-
-	// Set custom config path
-	env.SetEnv("GZ_CONFIG_PATH", env.GetWorkPath(customDir+"/custom.yaml"))
-
-	result := env.RunCommand("config", "validate")
-
-	assertions := helpers.NewCLIAssertions(t, result)
-	assertions.Success()
-}
-
-func TestConfig_Backup_E2E(t *testing.T) {
-	env := helpers.NewTestEnvironment(t)
-	defer env.Cleanup()
-
-	// Create configuration
-	config := `
-version: "1.0.0"
-providers:
-  github:
-    token: "backup-test"
-    orgs: [{name: "backup-org"}]
-`
-	env.WriteConfig("config.yaml", config)
-
-	// Test configuration backup
-	result := env.RunCommand("config", "backup", "--config", "config.yaml")
-
-	if result.ExitCode == 0 {
-		assertions := helpers.NewCLIAssertions(t, result)
-		assertions.Success().OutputContains("backup")
-
-		// Verify backup file was created (filename would include timestamp)
-		files := env.ListFiles(".")
-		backupFound := false
-
-		for _, file := range files {
-			if strings.Contains(file, "config") && strings.Contains(file, "backup") {
-				backupFound = true
-				break
-			}
-		}
-
-		if backupFound {
-			t.Log("Backup file created successfully")
+	runGit := func(args ...string) {
+		t.Helper()
+		cmd := exec.Command("git", args...)
+		cmd.Dir = repoPath
+		cmd.Env = append(os.Environ(),
+			"GIT_CONFIG_NOSYSTEM=1",
+			"GIT_AUTHOR_NAME=e2e",
+			"GIT_AUTHOR_EMAIL=e2e@example.com",
+			"GIT_COMMITTER_NAME=e2e",
+			"GIT_COMMITTER_EMAIL=e2e@example.com",
+		)
+		if out, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("git %v failed: %v\n%s", args, err, out)
 		}
 	}
+
+	runGit("init")
+	runGit("remote", "add", "origin", remoteURL)
 }

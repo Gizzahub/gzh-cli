@@ -1,354 +1,152 @@
+// Copyright (c) 2025 Gizzahub
+// SPDX-License-Identifier: MIT
+
 //nolint:testpackage // White-box testing needed for internal function access
 package scenarios
 
 import (
-	"context"
-	"strings"
+	"os"
+	"path/filepath"
+	"runtime"
 	"testing"
-	"time"
 
 	"github.com/gizzahub/gzh-cli/test/e2e/helpers"
 )
 
-const ideSettingsPath = ".config/JetBrains/IntelliJIdea2024.1"
+func TestIDE_HelpAndUsage_E2E(t *testing.T) {
+	env := helpers.NewTestEnvironment(t)
+	defer env.Cleanup()
+
+	result := env.RunCommand("ide", "--help")
+	helpers.NewCLIAssertions(t, result).
+		Success().
+		OutputContains("ide").
+		OutputContains("monitor").
+		OutputContains("list").
+		OutputContains("fix-sync").
+		OutputContains("scan").
+		OutputContains("status")
+
+	for _, subcmd := range []string{"monitor", "list", "fix-sync", "scan", "status", "open"} {
+		result = env.RunCommand("ide", subcmd, "--help")
+		helpers.NewCLIAssertions(t, result).
+			Success().
+			OutputContains(subcmd)
+	}
+}
 
 func TestIDE_List_E2E(t *testing.T) {
 	env := helpers.NewTestEnvironment(t)
 	defer env.Cleanup()
 
-	// Test listing IDE installations
+	// Create a mock JetBrains product dir under the platform-specific path
+	// that `ide list` actually scans (HOME is isolated by TestEnvironment).
+	createMockJetBrainsProduct(t, env)
+
 	result := env.RunCommand("ide", "list")
+	helpers.NewCLIAssertions(t, result).Success()
 
-	assertions := helpers.NewCLIAssertions(t, result)
-	assertions.Success().OutputContains("JetBrains")
+	// On isolated HOME with mock product, should report the product or at least
+	// a deterministic empty-state message — never crash.
+	if result.Output == "" {
+		t.Fatal("ide list produced empty output")
+	}
 }
 
-func TestIDE_Monitor_E2E(t *testing.T) {
+func TestIDE_Scan_E2E(t *testing.T) {
 	env := helpers.NewTestEnvironment(t)
 	defer env.Cleanup()
 
-	// Create mock IDE settings directory
-	env.CreateDir(ideSettingsPath)
-
-	// Create mock settings files
-	settingsFiles := []string{
-		"options/filetypes.xml",
-		"options/colors.xml",
-		"options/keymap.xml",
-	}
-
-	for _, file := range settingsFiles {
-		content := `<?xml version="1.0" encoding="UTF-8"?>
-<application>
-  <component name="TestComponent">
-    <option name="test" value="true" />
-  </component>
-</application>`
-		env.CreateFile(ideSettingsPath+"/"+file, content)
-	}
-
-	// Test monitoring command with short timeout
-	result := env.RunCommand("ide", "monitor", "--timeout", "2s", "--verbose")
-
-	assertions := helpers.NewCLIAssertions(t, result)
-	// Monitor command should start successfully, might timeout which is expected
-	assertions.OutputContains("monitor")
+	result := env.RunCommand("ide", "scan")
+	helpers.NewCLIAssertions(t, result).
+		Success().
+		OutputContains("IDE")
 }
 
-func TestIDE_MonitorDaemon_E2E(t *testing.T) {
+func TestIDE_Status_E2E(t *testing.T) {
 	env := helpers.NewTestEnvironment(t)
 	defer env.Cleanup()
 
-	// Create IDE settings directory
-	env.CreateDir(ideSettingsPath)
-
-	// Test daemon mode (background process)
-	ctx := context.Background()
-	cmd, err := env.CLI.RunAsync(ctx, "ide", "monitor", "--daemon", "--pid-file", "ide-monitor.pid")
-	if err != nil {
-		t.Skipf("Daemon mode not available: %v", err)
-		return
-	}
-
-	// Give the daemon a moment to start
-	time.Sleep(100 * time.Millisecond)
-
-	// Check if daemon started
-	if cmd.Process != nil {
-		// Verify PID file was created
-		env.AssertFileExists("ide-monitor.pid")
-
-		// Stop the daemon
-		if err := cmd.Process.Kill(); err != nil {
-			t.Logf("Warning: failed to kill process: %v", err)
-		}
-		if err := cmd.Wait(); err != nil {
-			t.Logf("Warning: process wait failed: %v", err)
-		}
-	}
+	result := env.RunCommand("ide", "status")
+	helpers.NewCLIAssertions(t, result).
+		Success().
+		OutputContains("IDE")
 }
 
 func TestIDE_FixSync_E2E(t *testing.T) {
 	env := helpers.NewTestEnvironment(t)
 	defer env.Cleanup()
 
-	// Create problematic settings file (filetypes.xml with duplicates)
-	env.CreateDir(ideSettingsPath + "/options")
-
-	problematicContent := `<?xml version="1.0" encoding="UTF-8"?>
-<application>
-  <component name="FileTypeManager">
-    <mapping ext="txt" type="PLAIN_TEXT" />
-    <mapping ext="js" type="JavaScript" />
-    <mapping ext="txt" type="PLAIN_TEXT" />
-    <mapping ext="py" type="Python" />
-  </component>
-</application>`
-
-	env.CreateFile(ideSettingsPath+"/options/filetypes.xml", problematicContent)
-
-	// Test fix-sync command
-	result := env.RunCommand("ide", "fix-sync", "--target", ideSettingsPath)
-
-	assertions := helpers.NewCLIAssertions(t, result)
-	if result.ExitCode == 0 {
-		assertions.Success().OutputContains("fix")
-
-		// Verify duplicates were removed
-		fixedContent := env.ReadFile(ideSettingsPath + "/options/filetypes.xml")
-		lines := strings.Split(fixedContent, "\n")
-		txtMappings := 0
-
-		for _, line := range lines {
-			if strings.Contains(line, `ext="txt"`) {
-				txtMappings++
-			}
-		}
-
-		if txtMappings <= 1 {
-			t.Log("Duplicate mappings were successfully removed")
-		}
+	// fix-sync takes --product, not --target.
+	result := env.RunCommand("ide", "fix-sync", "--product", "NonexistentProduct2024.1")
+	// Empty install set is success with a clear message; must not be unknown-flag.
+	helpers.NewCLIAssertions(t, result).OutputNotContains("unknown flag")
+	if result.ExitCode != 0 && result.ExitCode != 1 {
+		t.Fatalf("unexpected exit code %d\nOutput: %s", result.ExitCode, result.Output)
 	}
 }
 
-func TestIDE_MultipleIDEs_E2E(t *testing.T) {
+func TestIDE_MonitorFlags_E2E(t *testing.T) {
 	env := helpers.NewTestEnvironment(t)
 	defer env.Cleanup()
 
-	// Create settings for multiple IDE versions
-	ides := []string{
-		"IntelliJIdea2024.1",
-		"PyCharm2024.1",
-		"WebStorm2024.1",
-		"GoLand2024.1",
-	}
+	// Document current flag surface: --watch-dir exists, --target does not.
+	result := env.RunCommand("ide", "monitor", "--help")
+	helpers.NewCLIAssertions(t, result).
+		Success().
+		OutputContains("--watch-dir").
+		OutputNotContains("--target")
 
-	for _, ide := range ides {
-		ideDir := ".config/JetBrains/" + ide
-		env.CreateDir(ideDir + "/options")
-
-		settingsContent := `<?xml version="1.0" encoding="UTF-8"?>
-<application>
-  <component name="` + ide + `Component">
-    <option name="version" value="2024.1" />
-  </component>
-</application>`
-
-		env.CreateFile(ideDir+"/options/ide.xml", settingsContent)
-	}
-
-	// Test listing multiple IDEs
-	result := env.RunCommand("ide", "list")
-
-	assertions := helpers.NewCLIAssertions(t, result)
-	assertions.Success()
-
-	// Check that all IDEs are detected
-	for _, ide := range ides {
-		if strings.Contains(result.Output, ide) || strings.Contains(result.Output, strings.Replace(ide, "2024.1", "", 1)) {
-			t.Logf("IDE %s detected", ide)
-		}
-	}
+	// Reject legacy --target so regressions of the flag name are visible.
+	result = env.RunCommand("ide", "monitor", "--target", "/tmp")
+	helpers.NewCLIAssertions(t, result).
+		Failure().
+		OutputContains("unknown flag")
 }
 
-func TestIDE_SettingsBackup_E2E(t *testing.T) {
+func TestIDE_RemovedCommandsAbsent_E2E(t *testing.T) {
 	env := helpers.NewTestEnvironment(t)
 	defer env.Cleanup()
 
-	// Create IDE settings
-	env.CreateDir(ideSettingsPath + "/options")
-
-	originalContent := `<?xml version="1.0" encoding="UTF-8"?>
-<application>
-  <component name="BackupTest">
-    <option name="original" value="true" />
-  </component>
-</application>`
-
-	env.CreateFile(ideSettingsPath+"/options/test.xml", originalContent)
-
-	// Test backup command
-	result := env.RunCommand("ide", "backup", "--target", ideSettingsPath)
-
-	if result.ExitCode == 0 {
-		assertions := helpers.NewCLIAssertions(t, result)
-		assertions.Success().OutputContains("backup")
-
-		// Verify backup directory was created
-		backupFiles := env.ListFiles(".")
-		backupFound := false
-
-		for _, file := range backupFiles {
-			if strings.Contains(file, "backup") && strings.Contains(file, ".xml") {
-				backupFound = true
-				break
-			}
-		}
-
-		if backupFound {
-			t.Log("Settings backup created successfully")
-		}
-	}
-}
-
-func TestIDE_SettingsRestore_E2E(t *testing.T) {
-	env := helpers.NewTestEnvironment(t)
-	defer env.Cleanup()
-
-	// Create IDE settings and backup
-	env.CreateDir(ideSettingsPath + "/options")
-
-	originalContent := `<?xml version="1.0" encoding="UTF-8"?>
-<application>
-  <component name="RestoreTest">
-    <option name="original" value="true" />
-  </component>
-</application>`
-
-	env.CreateFile(ideSettingsPath+"/options/test.xml", originalContent)
-
-	// Create backup directory and file
-	backupDir := "ide-backup-" + time.Now().Format("20060102150405")
-	env.CreateDir(backupDir)
-	env.CopyFile(ideSettingsPath+"/options/test.xml", backupDir+"/test.xml")
-
-	// Modify original file
-	modifiedContent := `<?xml version="1.0" encoding="UTF-8"?>
-<application>
-  <component name="RestoreTest">
-    <option name="modified" value="true" />
-  </component>
-</application>`
-
-	env.CreateFile(ideSettingsPath+"/options/test.xml", modifiedContent)
-
-	// Test restore command
-	result := env.RunCommand("ide", "restore", "--backup", backupDir, "--target", ideSettingsPath)
-
-	if result.ExitCode == 0 {
-		assertions := helpers.NewCLIAssertions(t, result)
-		assertions.Success().OutputContains("restore")
-
-		// Verify original content was restored
-		restoredContent := env.ReadFile(ideSettingsPath + "/options/test.xml")
-		if strings.Contains(restoredContent, "original") && !strings.Contains(restoredContent, "modified") {
-			t.Log("Settings restored successfully")
-		}
-	}
-}
-
-func TestIDE_ConfigurationValidation_E2E(t *testing.T) {
-	env := helpers.NewTestEnvironment(t)
-	defer env.Cleanup()
-
-	// Create IDE configuration
-	ideConfig := `
-monitor:
-  watch_dirs:
-    - "~/.config/JetBrains"
-  exclude_patterns:
-    - "*.tmp"
-    - "*.log"
-  sync_check: true
-  auto_fix: true
-`
-	env.WriteConfig("ide-config.yaml", ideConfig)
-
-	// Test configuration validation
-	result := env.RunCommand("ide", "validate", "--config", "ide-config.yaml")
-
-	if result.ExitCode == 0 {
-		assertions := helpers.NewCLIAssertions(t, result)
-		assertions.Success().OutputContains("valid")
-	}
-}
-
-func TestIDE_ErrorHandling_E2E(t *testing.T) {
-	env := helpers.NewTestEnvironment(t)
-	defer env.Cleanup()
-
-	// Test with non-existent IDE directory
-	result := env.RunCommand("ide", "monitor", "--target", "non-existent-dir")
-
-	assertions := helpers.NewCLIAssertions(t, result)
-	assertions.Failure().OutputContains("not found")
-
-	// Test with invalid configuration
-	invalidConfig := `
-monitor:
-  invalid_option: true
-  watch_dirs: [
-`
-	env.WriteConfig("invalid-ide-config.yaml", invalidConfig)
-
-	result = env.RunCommand("ide", "validate", "--config", "invalid-ide-config.yaml")
-
-	assertions = helpers.NewCLIAssertions(t, result)
-	assertions.Failure()
-}
-
-func TestIDE_LogOutput_E2E(t *testing.T) {
-	env := helpers.NewTestEnvironment(t)
-	defer env.Cleanup()
-
-	// Create IDE settings directory
-	env.CreateDir(ideSettingsPath)
-
-	// Test with logging enabled
-	result := env.RunCommand("ide", "monitor", "--timeout", "1s", "--log-file", "ide-monitor.log", "--verbose")
-
-	// Check if log file was created
-	if result.ExitCode == 0 || result.ExitCode == 1 { // Timeout is expected
-		env.AssertFileExists("ide-monitor.log")
-
-		logContent := env.ReadFile("ide-monitor.log")
-		if strings.Contains(logContent, "monitor") || strings.Contains(logContent, "IDE") {
-			t.Log("Log file contains expected content")
-		}
-	}
-}
-
-func TestIDE_HelpAndUsage_E2E(t *testing.T) {
-	env := helpers.NewTestEnvironment(t)
-	defer env.Cleanup()
-
-	// Test IDE help
+	// backup/validate/restore are not shipped. Parent `ide` has no RunE, so
+	// cobra prints help for unknown args with exit 0 — assert the surface
+	// does not advertise those names as Available Commands.
 	result := env.RunCommand("ide", "--help")
+	helpers.NewCLIAssertions(t, result).
+		Success().
+		OutputContains("Available Commands:").
+		OutputNotContains("backup").
+		OutputNotContains("validate").
+		OutputNotContains("restore")
+}
 
-	assertions := helpers.NewCLIAssertions(t, result)
-	assertions.Success().
-		OutputContains("ide").
-		OutputContains("monitor").
-		OutputContains("list").
-		OutputContains("fix-sync")
+func createMockJetBrainsProduct(t *testing.T, env *helpers.TestEnvironment) {
+	t.Helper()
 
-	// Test subcommand help
-	subcommands := []string{"monitor", "list", "fix-sync"}
+	var rel string
+	switch runtime.GOOS {
+	case "darwin":
+		rel = "Library/Application Support/JetBrains/IntelliJIdea2024.1/options"
+	case "linux":
+		rel = ".config/JetBrains/IntelliJIdea2024.1/options"
+	case "windows":
+		rel = "AppData/Roaming/JetBrains/IntelliJIdea2024.1/options"
+	default:
+		t.Skipf("unsupported GOOS for JetBrains mock path: %s", runtime.GOOS)
+	}
 
-	for _, subcmd := range subcommands {
-		result = env.RunCommand("ide", subcmd, "--help")
+	content := `<?xml version="1.0" encoding="UTF-8"?>
+<application>
+  <component name="TestComponent">
+    <option name="test" value="true" />
+  </component>
+</application>`
 
-		assertions = helpers.NewCLIAssertions(t, result)
-		assertions.Success().OutputContains(subcmd)
+	path := env.GetHomePath(filepath.Join(rel, "ide.xml"))
+	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
+		t.Fatalf("mkdir jetbrains mock: %v", err)
+	}
+	if err := os.WriteFile(path, []byte(content), 0o600); err != nil {
+		t.Fatalf("write jetbrains mock: %v", err)
 	}
 }
