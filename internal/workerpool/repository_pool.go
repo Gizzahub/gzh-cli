@@ -6,6 +6,7 @@ package workerpool
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 )
 
@@ -77,6 +78,13 @@ type RepositoryWorkerPool struct {
 	results    chan RepositoryResult
 	ctx        context.Context
 	cancel     context.CancelFunc
+
+	// collectorWg는 collectResults 세 개를 센다. 이들이 다 끝난 뒤에야
+	// results를 닫을 수 있다. 안 그러면 닫힌 채널에 보내다 panic이 난다.
+	collectorWg sync.WaitGroup
+	// stopOnce가 없으면 Stop을 두 번 부를 때 close(results)에서 panic이 난다.
+	// 안쪽 Pool.Stop은 started 깃발로 이미 막고 있는데 여기만 빠져 있었다.
+	stopOnce sync.Once
 }
 
 // NewRepositoryWorkerPool creates a new repository worker pool.
@@ -132,6 +140,8 @@ func (rp *RepositoryWorkerPool) Start() error {
 	}
 
 	// Start result collectors
+	rp.collectorWg.Add(3)
+
 	go rp.collectResults(rp.clonePool.Results(), "clone")
 	go rp.collectResults(rp.updatePool.Results(), "update")
 	go rp.collectResults(rp.configPool.Results(), "config")
@@ -141,11 +151,22 @@ func (rp *RepositoryWorkerPool) Start() error {
 
 // Stop gracefully shuts down all worker pools.
 func (rp *RepositoryWorkerPool) Stop() {
-	rp.cancel()
-	rp.clonePool.Stop()
-	rp.updatePool.Stop()
-	rp.configPool.Stop()
-	close(rp.results)
+	rp.stopOnce.Do(func() {
+		// 맥락을 먼저 끊는다. 그래야 results를 아무도 안 비우는 상황에서도
+		// collectResults가 보내기에서 빠져나온다.
+		rp.cancel()
+
+		rp.clonePool.Stop()
+		rp.updatePool.Stop()
+		rp.configPool.Stop()
+
+		// 안쪽 results 채널이 닫혔으니 collectResults의 range가 끝난다.
+		// 세 고루틴이 다 나간 것을 확인하고 닫아야 한다 -- rp.cancel()만으로는
+		// 부족하다. select의 두 갈래가 동시에 준비되면 Go가 아무 쪽이나 고르니,
+		// Done()이 열린 뒤에도 results로 한 번 더 보낼 수 있다.
+		rp.collectorWg.Wait()
+		close(rp.results)
+	})
 }
 
 // SubmitJob submits a repository job to the appropriate worker pool.
@@ -207,6 +228,8 @@ func (rp *RepositoryWorkerPool) ProcessRepositories(ctx context.Context,
 
 // collectResults collects results from a worker pool and forwards them.
 func (rp *RepositoryWorkerPool) collectResults(resultsChan <-chan Result[RepositoryJob], poolType string) {
+	defer rp.collectorWg.Done()
+
 	for result := range resultsChan {
 		repoResult := RepositoryResult{
 			Job:     result.Data,

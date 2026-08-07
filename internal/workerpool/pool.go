@@ -136,14 +136,22 @@ func (p *Pool[T]) Stop() {
 	// Signal shutdown and close job channel
 	close(p.jobs)
 
+	// 기다리기 전에 맥락을 끊는다. 순서를 뒤집으면 Stop이 영영 안 끝난다.
+	//
+	// 일꾼은 결과를 select로 보낸다(worker의 p.results <- result 대 p.ctx.Done()).
+	// results 버퍼가 차고 아무도 비우지 않으면 두 갈래가 다 막히는데,
+	// 예전에는 p.cancel()이 wg.Wait() 뒤에 있어서 Done()이 영원히 안 열렸다.
+	// 일꾼은 보내기에서 멈추고 wg.Wait()는 그 일꾼을 기다린다.
+	//
+	// RepositoryWorkerPool.Stop이 바로 그 상황을 만든다. 결과를 비우던
+	// collectResults를 rp.cancel()로 먼저 죽이고 이 함수를 부른다.
+	p.cancel()
+
 	// Wait for all workers to finish
 	p.wg.Wait()
 
 	// Close results channel
 	close(p.results)
-
-	// Cancel context
-	p.cancel()
 
 	p.started = false
 }
