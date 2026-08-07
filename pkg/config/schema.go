@@ -6,7 +6,7 @@ package config
 // Config represents the top-level gzh.yaml configuration.
 type Config struct {
 	Version         string              `yaml:"version" json:"version"`
-	DefaultProvider string              `yaml:"default_provider,omitempty" json:"default_provider,omitempty"` //nolint:tagliatelle // YAML compatibility required
+	DefaultProvider string              `yaml:"default_provider,omitempty" json:"default_provider,omitempty"`
 	Providers       map[string]Provider `yaml:"providers,omitempty" json:"providers,omitempty"`
 }
 
@@ -24,7 +24,7 @@ type GitTarget struct {
 	Recursive  bool     `yaml:"recursive,omitempty" json:"recursive,omitempty"`   // For GitLab subgroups
 	Flatten    bool     `yaml:"flatten,omitempty" json:"flatten,omitempty"`       // Flatten directory structure
 	Match      string   `yaml:"match,omitempty" json:"match,omitempty"`           // Regex pattern filter
-	CloneDir   string   `yaml:"clone_dir,omitempty" json:"clone_dir,omitempty"`   //nolint:tagliatelle // YAML compatibility required for target directory
+	CloneDir   string   `yaml:"clone_dir,omitempty" json:"clone_dir,omitempty"`
 	Exclude    []string `yaml:"exclude,omitempty" json:"exclude,omitempty"`       // Repos to exclude
 	Strategy   string   `yaml:"strategy,omitempty" json:"strategy,omitempty"`     // reset, pull, fetch
 }

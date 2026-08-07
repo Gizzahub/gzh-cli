@@ -21,8 +21,8 @@ type RepoConfig struct {
 	Templates     map[string]*RepoTemplate   `yaml:"templates,omitempty"`
 	Repositories  *RepoTargets               `yaml:"repositories,omitempty"`
 	Policies      map[string]*PolicyTemplate `yaml:"policies,omitempty"`       // Individual policies to include
-	PolicyGroups  map[string]*PolicyGroup    `yaml:"policy_groups,omitempty"`  //nolint:tagliatelle // Policy group configurations; YAML compatibility required
-	PolicyPresets map[string]*PolicyPreset   `yaml:"policy_presets,omitempty"` //nolint:tagliatelle // Predefined policy sets (SOC2, ISO27001, etc.); YAML compatibility required
+	PolicyGroups  map[string]*PolicyGroup    `yaml:"policy_groups,omitempty"`  // Policy group configurations; YAML compatibility required
+	PolicyPresets map[string]*PolicyPreset   `yaml:"policy_presets,omitempty"` // Predefined policy sets (SOC2, ISO27001, etc.); YAML compatibility required
 }
 
 // RepoDefaults represents default settings for all repositories.
@@ -41,7 +41,7 @@ type RepoTemplate struct {
 	Security      *SecuritySettings   `yaml:"security,omitempty"`
 	Permissions   *PermissionSettings `yaml:"permissions,omitempty"`
 	Topics        []string            `yaml:"topics,omitempty"`
-	RequiredFiles []RequiredFile      `yaml:"required_files,omitempty"` //nolint:tagliatelle // YAML compatibility required
+	RequiredFiles []RequiredFile      `yaml:"required_files,omitempty"`
 	Webhooks      []WebhookConfig     `yaml:"webhooks,omitempty"`
 	Environments  []EnvironmentConfig `yaml:"environments,omitempty"`
 }
@@ -53,21 +53,21 @@ type RepoTemplate struct {
 // 써 왔는데 필드 타입이 []string이라 파싱 자체가 실패했다.
 type EnvironmentConfig struct {
 	Name            string                      `yaml:"name"`
-	ProtectionRules *EnvironmentProtectionRules `yaml:"protection_rules,omitempty"` //nolint:tagliatelle // YAML compatibility required
+	ProtectionRules *EnvironmentProtectionRules `yaml:"protection_rules,omitempty"`
 }
 
 // EnvironmentProtectionRules represents deployment protection for an environment.
 type EnvironmentProtectionRules struct {
-	RequiredReviewers      []string                `yaml:"required_reviewers,omitempty"`       //nolint:tagliatelle // YAML compatibility required
-	WaitTimer              int                     `yaml:"wait_timer,omitempty"`               //nolint:tagliatelle // YAML compatibility required
-	PreventSelfReview      *bool                   `yaml:"prevent_self_review,omitempty"`      //nolint:tagliatelle // YAML compatibility required
-	DeploymentBranchPolicy *DeploymentBranchPolicy `yaml:"deployment_branch_policy,omitempty"` //nolint:tagliatelle // YAML compatibility required
+	RequiredReviewers      []string                `yaml:"required_reviewers,omitempty"`
+	WaitTimer              int                     `yaml:"wait_timer,omitempty"`
+	PreventSelfReview      *bool                   `yaml:"prevent_self_review,omitempty"`
+	DeploymentBranchPolicy *DeploymentBranchPolicy `yaml:"deployment_branch_policy,omitempty"`
 }
 
 // DeploymentBranchPolicy restricts which branches may deploy to an environment.
 type DeploymentBranchPolicy struct {
-	ProtectedBranches    *bool    `yaml:"protected_branches,omitempty"`     //nolint:tagliatelle // YAML compatibility required
-	CustomBranchPolicies []string `yaml:"custom_branch_policies,omitempty"` //nolint:tagliatelle // YAML compatibility required
+	ProtectedBranches    *bool    `yaml:"protected_branches,omitempty"`
+	CustomBranchPolicies []string `yaml:"custom_branch_policies,omitempty"`
 }
 
 // RequiredFile represents a file a template provisions in the repository.
@@ -125,56 +125,56 @@ type RepoSettings struct {
 	Archived    *bool    `yaml:"archived,omitempty"`
 
 	// Features
-	HasIssues      *bool `yaml:"has_issues,omitempty"`      //nolint:tagliatelle // YAML compatibility required
-	HasProjects    *bool `yaml:"has_projects,omitempty"`    //nolint:tagliatelle // YAML compatibility required
-	HasWiki        *bool `yaml:"has_wiki,omitempty"`        //nolint:tagliatelle // YAML compatibility required
-	HasDownloads   *bool `yaml:"has_downloads,omitempty"`   //nolint:tagliatelle // YAML compatibility required
-	HasDiscussions *bool `yaml:"has_discussions,omitempty"` //nolint:tagliatelle // YAML compatibility required
-	HasPages       *bool `yaml:"has_pages,omitempty"`       //nolint:tagliatelle // YAML compatibility required
+	HasIssues      *bool `yaml:"has_issues,omitempty"`
+	HasProjects    *bool `yaml:"has_projects,omitempty"`
+	HasWiki        *bool `yaml:"has_wiki,omitempty"`
+	HasDownloads   *bool `yaml:"has_downloads,omitempty"`
+	HasDiscussions *bool `yaml:"has_discussions,omitempty"`
+	HasPages       *bool `yaml:"has_pages,omitempty"`
 
 	// Merge settings
-	AllowSquashMerge    *bool `yaml:"allow_squash_merge,omitempty"`     //nolint:tagliatelle // YAML compatibility required
-	AllowMergeCommit    *bool `yaml:"allow_merge_commit,omitempty"`     //nolint:tagliatelle // YAML compatibility required
-	AllowRebaseMerge    *bool `yaml:"allow_rebase_merge,omitempty"`     //nolint:tagliatelle // YAML compatibility required
-	AllowAutoMerge      *bool `yaml:"allow_auto_merge,omitempty"`       //nolint:tagliatelle // YAML compatibility required
-	DeleteBranchOnMerge *bool `yaml:"delete_branch_on_merge,omitempty"` //nolint:tagliatelle // YAML compatibility required
+	AllowSquashMerge    *bool `yaml:"allow_squash_merge,omitempty"`
+	AllowMergeCommit    *bool `yaml:"allow_merge_commit,omitempty"`
+	AllowRebaseMerge    *bool `yaml:"allow_rebase_merge,omitempty"`
+	AllowAutoMerge      *bool `yaml:"allow_auto_merge,omitempty"`
+	DeleteBranchOnMerge *bool `yaml:"delete_branch_on_merge,omitempty"`
 
 	// Advanced settings
-	AllowForking             *bool `yaml:"allow_forking,omitempty"`               //nolint:tagliatelle // YAML compatibility required
-	WebCommitSignoffRequired *bool `yaml:"web_commit_signoff_required,omitempty"` //nolint:tagliatelle // YAML compatibility required
+	AllowForking             *bool `yaml:"allow_forking,omitempty"`
+	WebCommitSignoffRequired *bool `yaml:"web_commit_signoff_required,omitempty"`
 
 	// Default branch
-	DefaultBranch *string `yaml:"default_branch,omitempty"` //nolint:tagliatelle // YAML compatibility required
+	DefaultBranch *string `yaml:"default_branch,omitempty"`
 }
 
 // SecuritySettings represents security-related settings.
 type SecuritySettings struct {
-	VulnerabilityAlerts           *bool                            `yaml:"vulnerability_alerts,omitempty"`            //nolint:tagliatelle // YAML compatibility required
-	AutomatedSecurityFixes        *bool                            `yaml:"automated_security_fixes,omitempty"`        //nolint:tagliatelle // YAML compatibility required
-	SecurityAdvisories            *bool                            `yaml:"security_advisories,omitempty"`             //nolint:tagliatelle // YAML compatibility required
-	PrivateVulnerabilityReporting *bool                            `yaml:"private_vulnerability_reporting,omitempty"` //nolint:tagliatelle // YAML compatibility required
-	SecretScanning                *bool                            `yaml:"secret_scanning,omitempty"`                 //nolint:tagliatelle // YAML compatibility required
-	SecretScanningPushProtection  *bool                            `yaml:"secret_scanning_push_protection,omitempty"` //nolint:tagliatelle // YAML compatibility required
-	BranchProtection              map[string]*BranchProtectionRule `yaml:"branch_protection,omitempty"`               //nolint:tagliatelle // YAML compatibility required
+	VulnerabilityAlerts           *bool                            `yaml:"vulnerability_alerts,omitempty"`
+	AutomatedSecurityFixes        *bool                            `yaml:"automated_security_fixes,omitempty"`
+	SecurityAdvisories            *bool                            `yaml:"security_advisories,omitempty"`
+	PrivateVulnerabilityReporting *bool                            `yaml:"private_vulnerability_reporting,omitempty"`
+	SecretScanning                *bool                            `yaml:"secret_scanning,omitempty"`
+	SecretScanningPushProtection  *bool                            `yaml:"secret_scanning_push_protection,omitempty"`
+	BranchProtection              map[string]*BranchProtectionRule `yaml:"branch_protection,omitempty"`
 	Webhooks                      []WebhookConfig                  `yaml:"webhooks,omitempty"`
 }
 
 // BranchProtectionRule represents branch protection settings.
 type BranchProtectionRule struct {
-	RequiredReviews               *int                       `yaml:"required_reviews,omitempty"`                //nolint:tagliatelle // YAML compatibility required
-	DismissStaleReviews           *bool                      `yaml:"dismiss_stale_reviews,omitempty"`           //nolint:tagliatelle // YAML compatibility required
-	RequireCodeOwnerReviews       *bool                      `yaml:"require_code_owner_reviews,omitempty"`      //nolint:tagliatelle // YAML compatibility required
-	RequiredStatusChecks          []string                   `yaml:"required_status_checks,omitempty"`          //nolint:tagliatelle // YAML compatibility required
-	StrictStatusChecks            *bool                      `yaml:"strict_status_checks,omitempty"`            //nolint:tagliatelle // YAML compatibility required
-	RestrictPushes                *bool                      `yaml:"restrict_pushes,omitempty"`                 //nolint:tagliatelle // YAML compatibility required
-	AllowedUsers                  []string                   `yaml:"allowed_users,omitempty"`                   //nolint:tagliatelle // YAML compatibility required
-	AllowedTeams                  []string                   `yaml:"allowed_teams,omitempty"`                   //nolint:tagliatelle // YAML compatibility required
-	RequireUpToDateBranch         *bool                      `yaml:"require_up_to_date_branch,omitempty"`       //nolint:tagliatelle // YAML compatibility required
-	EnforceAdmins                 *bool                      `yaml:"enforce_admins,omitempty"`                  //nolint:tagliatelle // YAML compatibility required
-	RequireConversationResolution *bool                      `yaml:"require_conversation_resolution,omitempty"` //nolint:tagliatelle // YAML compatibility required
-	AllowForcePushes              *bool                      `yaml:"allow_force_pushes,omitempty"`              //nolint:tagliatelle // YAML compatibility required
-	AllowDeletions                *bool                      `yaml:"allow_deletions,omitempty"`                 //nolint:tagliatelle // YAML compatibility required
-	DeploymentProtectionRules     []DeploymentProtectionRule `yaml:"deployment_protection_rules,omitempty"`     //nolint:tagliatelle // YAML compatibility required
+	RequiredReviews               *int                       `yaml:"required_reviews,omitempty"`
+	DismissStaleReviews           *bool                      `yaml:"dismiss_stale_reviews,omitempty"`
+	RequireCodeOwnerReviews       *bool                      `yaml:"require_code_owner_reviews,omitempty"`
+	RequiredStatusChecks          []string                   `yaml:"required_status_checks,omitempty"`
+	StrictStatusChecks            *bool                      `yaml:"strict_status_checks,omitempty"`
+	RestrictPushes                *bool                      `yaml:"restrict_pushes,omitempty"`
+	AllowedUsers                  []string                   `yaml:"allowed_users,omitempty"`
+	AllowedTeams                  []string                   `yaml:"allowed_teams,omitempty"`
+	RequireUpToDateBranch         *bool                      `yaml:"require_up_to_date_branch,omitempty"`
+	EnforceAdmins                 *bool                      `yaml:"enforce_admins,omitempty"`
+	RequireConversationResolution *bool                      `yaml:"require_conversation_resolution,omitempty"`
+	AllowForcePushes              *bool                      `yaml:"allow_force_pushes,omitempty"`
+	AllowDeletions                *bool                      `yaml:"allow_deletions,omitempty"`
+	DeploymentProtectionRules     []DeploymentProtectionRule `yaml:"deployment_protection_rules,omitempty"`
 }
 
 // DeploymentProtectionRule represents deployment protection settings.
@@ -187,14 +187,14 @@ type WebhookConfig struct {
 	URL         string   `yaml:"url"`
 	Events      []string `yaml:"events"`
 	Active      *bool    `yaml:"active,omitempty"`
-	ContentType string   `yaml:"content_type,omitempty"` //nolint:tagliatelle // YAML compatibility required
+	ContentType string   `yaml:"content_type,omitempty"`
 	Secret      string   `yaml:"secret,omitempty"`
 }
 
 // PermissionSettings represents permission-related settings.
 type PermissionSettings struct {
-	TeamPermissions map[string]string `yaml:"team_permissions,omitempty"` //nolint:tagliatelle // YAML compatibility required
-	UserPermissions map[string]string `yaml:"user_permissions,omitempty"` //nolint:tagliatelle // YAML compatibility required
+	TeamPermissions map[string]string `yaml:"team_permissions,omitempty"`
+	UserPermissions map[string]string `yaml:"user_permissions,omitempty"`
 }
 
 // PolicyTemplate represents a reusable policy configuration.
@@ -219,9 +219,9 @@ type PolicyException struct {
 	PolicyName   string   `yaml:"policy"`
 	RuleName     string   `yaml:"rule"`
 	Reason       string   `yaml:"reason"`
-	ApprovedBy   string   `yaml:"approved_by"`             //nolint:tagliatelle // YAML compatibility required
-	ApprovalDate string   `yaml:"approval_date,omitempty"` //nolint:tagliatelle // YAML compatibility required
-	ExpiresAt    string   `yaml:"expires_at,omitempty"`    //nolint:tagliatelle // YAML compatibility required
+	ApprovedBy   string   `yaml:"approved_by"`
+	ApprovalDate string   `yaml:"approval_date,omitempty"`
+	ExpiresAt    string   `yaml:"expires_at,omitempty"`
 	Conditions   []string `yaml:"conditions,omitempty"`
 }
 

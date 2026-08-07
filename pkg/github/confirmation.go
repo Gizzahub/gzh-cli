@@ -1,4 +1,4 @@
-//nolint:tagliatelle // GitHub API response formatting may require specific JSON field naming conventions
+// GitHub API response formatting may require specific JSON field naming conventions
 package github
 
 import (

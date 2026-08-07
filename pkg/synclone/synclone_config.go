@@ -32,7 +32,7 @@ type bulkCloneDefault struct {
 // 버려졌다 -- yaml.Unmarshal은 모르는 키를 오류로 보지 않고 그냥 지나치므로
 // 아무 데도 흔적이 남지 않았다. tagliatelle은 yaml 태그를 camel로 요구하지만
 // 그건 린터 설정이 실제 파일 형식과 어긋난 것이다(tasks/issue/33).
-type bulkCloneDefaultGithub struct { //nolint:tagliatelle // 설정 파일 형식이 snake_case다
+type bulkCloneDefaultGithub struct { // 설정 파일 형식이 snake_case다
 	RootPath string `yaml:"root_path"`
 	Provider string `yaml:"provider"`
 	Protocol string `yaml:"protocol"`
@@ -40,7 +40,7 @@ type bulkCloneDefaultGithub struct { //nolint:tagliatelle // 설정 파일 형�
 }
 
 // bulkCloneDefaultGitlab defines default GitLab-specific configuration.
-type bulkCloneDefaultGitlab struct { //nolint:tagliatelle // 설정 파일 형식이 snake_case다
+type bulkCloneDefaultGitlab struct { // 설정 파일 형식이 snake_case다
 	RootPath  string `yaml:"root_path"`
 	Provider  string `yaml:"provider"`
 	URL       string `yaml:"url"`
@@ -51,7 +51,7 @@ type bulkCloneDefaultGitlab struct { //nolint:tagliatelle // 설정 파일 형�
 
 // BulkCloneGithub represents GitHub bulk clone configuration.
 //
-//nolint:revive,tagliatelle // Type name maintained for clarity; 설정 파일 형식이 snake_case다
+//nolint:revive // Type name maintained for clarity; 설정 파일 형식이 snake_case다
 type BulkCloneGithub struct {
 	RootPath string `yaml:"root_path" validate:"required"`
 	Provider string `yaml:"provider" validate:"required"`
@@ -61,7 +61,7 @@ type BulkCloneGithub struct {
 
 // BulkCloneGitlab represents GitLab bulk clone configuration.
 //
-//nolint:revive,tagliatelle // Type name maintained for clarity; 설정 파일 형식이 snake_case다
+//nolint:revive // Type name maintained for clarity; 설정 파일 형식이 snake_case다
 type BulkCloneGitlab struct {
 	RootPath  string `yaml:"root_path" validate:"required"`
 	Provider  string `yaml:"provider" validate:"required"`
@@ -71,7 +71,7 @@ type BulkCloneGitlab struct {
 	GroupName string `yaml:"group_name" validate:"required"`
 }
 
-//nolint:tagliatelle // 설정 파일 형식이 snake_case다
+// 설정 파일 형식이 snake_case다
 type bulkCloneConfig struct {
 	Version           string           `yaml:"version"`
 	Default           bulkCloneDefault `yaml:"default"`

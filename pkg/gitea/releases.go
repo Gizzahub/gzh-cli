@@ -18,7 +18,7 @@ import (
 )
 
 // giteaRelease represents a Gitea release from the API.
-// nolint:tagliatelle // External API format - must match Gitea JSON output
+// External API format - must match Gitea JSON output
 type giteaRelease struct {
 	ID           int64        `json:"id"`
 	TagName      string       `json:"tag_name"`

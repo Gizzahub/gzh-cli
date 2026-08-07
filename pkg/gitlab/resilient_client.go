@@ -144,7 +144,7 @@ func (c *ResilientGitLabClient) hasNextPage(headers http.Header) bool {
 }
 
 // ProjectInfo represents GitLab project information.
-// nolint:tagliatelle // External API format - must match GitLab JSON output
+// External API format - must match GitLab JSON output
 type ProjectInfo struct {
 	ID                int    `json:"id"`
 	Name              string `json:"name"`
@@ -261,7 +261,7 @@ func (c *ResilientGitLabClient) getGroupPage(ctx context.Context, page, perPage 
 }
 
 // APIGroupInfo represents GitLab group information from API.
-// nolint:tagliatelle // External API format - must match GitLab JSON output
+// External API format - must match GitLab JSON output
 type APIGroupInfo struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`

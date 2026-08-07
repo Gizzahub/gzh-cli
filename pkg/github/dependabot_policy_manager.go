@@ -1,4 +1,4 @@
-//nolint:tagliatelle // Dependabot policy configuration may require specific JSON field naming conventions
+// Dependabot policy configuration may require specific JSON field naming conventions
 package github
 
 import (

@@ -26,7 +26,7 @@ var (
 
 // GitLabRepoInfo represents GitLab project information returned by the GitLab API.
 // It contains essential project metadata used during clone operations.
-// nolint:tagliatelle // External API format - must match GitLab JSON output
+// External API format - must match GitLab JSON output
 type GitLabRepoInfo struct {
 	// DefaultBranch is the name of the project's default branch (e.g., "main", "master")
 	DefaultBranch string `json:"default_branch"`

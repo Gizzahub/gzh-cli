@@ -18,7 +18,7 @@ import (
 )
 
 // gitlabRelease represents a GitLab release from the API.
-// nolint:tagliatelle // External API format - must match GitLab JSON output
+// External API format - must match GitLab JSON output
 type gitlabRelease struct {
 	Name        string       `json:"name"`
 	TagName     string       `json:"tag_name"`

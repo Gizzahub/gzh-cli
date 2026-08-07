@@ -1,4 +1,4 @@
-//nolint:tagliatelle // Dependabot configuration may require specific YAML/JSON field naming conventions
+// Dependabot configuration may require specific YAML/JSON field naming conventions
 package github
 
 import (
