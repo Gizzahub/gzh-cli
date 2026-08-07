@@ -479,3 +479,66 @@ providers:
 
 	// Test completed - GetConfiguredProviders method not available in current implementation
 }
+
+// StopWatching과 파일 변경이 겹쳐도 터지지 않아야 한다.
+//
+// 예전 watchLoop는 자물쇠 없이 s.watcher를 매 바퀴 다시 읽었고,
+// handleConfigChange는 s.watchCallback을 검사한 뒤 자물쇠 밖에서 불렀다.
+// StopWatching이 그 둘을 자물쇠 아래에서 nil로 만든다. 겹치면 nil
+// 역참조이거나 nil 함수 호출이다. -race 없이도 터질 수 있다.
+func TestConfigService_StopWatchingRacesWithFileChanges(t *testing.T) {
+	tempDir := t.TempDir()
+	configPath := filepath.Join(tempDir, "gzh.yaml")
+
+	content := `version: "1.0.0"
+default_provider: github
+providers:
+  github:
+    token: "${GITHUB_TOKEN}"
+    organizations:
+      - name: "race-test-org"
+        clone_dir: "~/repos/race-test"
+`
+	require.NoError(t, os.WriteFile(configPath, []byte(content), 0o600))
+
+	service, err := NewConfigService(&ConfigServiceOptions{
+		Environment:  env.NewMockEnvironment(map[string]string{"GITHUB_TOKEN": "test-token"}),
+		AutoMigrate:  false,
+		WatchEnabled: true,
+		SearchPaths:  []string{tempDir},
+		ConfigName:   "gzh",
+		ConfigTypes:  []string{"yaml"},
+	})
+	require.NoError(t, err)
+
+	ctx, cancel := context.WithTimeout(t.Context(), 20*time.Second)
+	defer cancel()
+
+	_, err = service.LoadConfiguration(ctx, configPath)
+	require.NoError(t, err)
+
+	err = service.WatchConfiguration(ctx, func(*config.UnifiedConfig) {})
+	require.NoError(t, err)
+
+	// 파일을 계속 건드려서 watchLoop가 s.watcher와 s.watchCallback을
+	// 쉬지 않고 지나가게 만든다.
+	writing := make(chan struct{})
+
+	go func() {
+		defer close(writing)
+
+		for range 40 {
+			_ = os.WriteFile(configPath, []byte(content), 0o600)
+			time.Sleep(5 * time.Millisecond)
+		}
+	}()
+
+	time.Sleep(30 * time.Millisecond)
+
+	// 반복문이 도는 한가운데서 세운다.
+	service.StopWatching()
+	// 두 번 불러도 멀쩡해야 한다.
+	service.StopWatching()
+
+	<-writing
+}

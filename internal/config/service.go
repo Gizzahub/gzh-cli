@@ -331,27 +331,45 @@ func (s *DefaultConfigService) WatchConfiguration(ctx context.Context, callback 
 	}
 
 	// Start watching in a goroutine
-	go s.watchLoop(ctx)
+	//
+	// watcher를 인자로 넘긴다. 고루틴 안에서 s.watcher를 다시 읽으면
+	// StopWatching이 nil로 바꾸는 순간 nil 역참조로 터진다.
+	go s.watchLoop(ctx, watcher)
 
 	return nil
 }
 
 // watchLoop handles file system events.
-func (s *DefaultConfigService) watchLoop(ctx context.Context) {
+//
+// watcher는 s.watcher를 다시 읽지 않으려고 받는다. 이 반복문은 자물쇠를
+// 쥐지 않은 채 도는데, StopWatching은 자물쇠 아래에서 s.watcher를 nil로
+// 만든다. 필드를 계속 들여다보면 그 둘이 경합한다.
+func (s *DefaultConfigService) watchLoop(ctx context.Context, watcher *fsnotify.Watcher) {
 	defer func() {
-		if s.watcher != nil {
-			if err := s.watcher.Close(); err != nil {
-				// Log error but don't fail the operation
-				fmt.Printf("Warning: failed to close watcher during shutdown: %v\n", err)
-			}
+		s.mu.Lock()
+		defer s.mu.Unlock()
+
+		// StopWatching이 먼저 닫았으면 s.watcher는 이미 nil이거나 다른
+		// watcher다. 그때는 손대지 않는다 -- 예전에는 양쪽이 같은 watcher를
+		// 두 번 닫았고, 검사 자체가 자물쇠 밖이라 경합이기도 했다.
+		if s.watcher != watcher {
+			return
 		}
+
+		if err := watcher.Close(); err != nil {
+			// Log error but don't fail the operation
+			fmt.Printf("Warning: failed to close watcher during shutdown: %v\n", err)
+		}
+
+		s.watcher = nil
+		s.watchCallback = nil
 	}()
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case event, ok := <-s.watcher.Events:
+		case event, ok := <-watcher.Events:
 			if !ok {
 				return
 			}
@@ -359,7 +377,7 @@ func (s *DefaultConfigService) watchLoop(ctx context.Context) {
 			if event.Op&fsnotify.Write == fsnotify.Write {
 				s.handleConfigChange(ctx)
 			}
-		case err, ok := <-s.watcher.Errors:
+		case err, ok := <-watcher.Errors:
 			if !ok {
 				return
 			}
@@ -375,20 +393,33 @@ func (s *DefaultConfigService) handleConfigChange(ctx context.Context) {
 	time.Sleep(100 * time.Millisecond)
 
 	err := s.ReloadConfiguration(ctx)
+
+	// 자물쇠 아래에서 지역 변수로 받아 둔다. 예전에는 nil 검사와 호출
+	// 사이가 열려 있어서, 그 틈에 StopWatching이 watchCallback을 nil로
+	// 만들면 nil 함수를 부르며 죽었다. 읽기 자체도 경합이었다.
+	//
+	// 부르는 것은 자물쇠 밖에서 한다. 콜백은 남의 코드라 무엇을 할지
+	// 모르고, 자물쇠를 쥔 채 넘기면 그 안에서 이 서비스를 건드리는 순간
+	// 교착한다.
+	s.mu.RLock()
+	callback := s.watchCallback
+	cfg := s.config
+	s.mu.RUnlock()
+
 	if err != nil {
 		// Log error but continue watching - configuration might be temporarily invalid during editing
 		fmt.Printf("⚠️  Configuration reload failed: %v\n", err)
 		// Still call callback with current config so watchers know about the attempt
-		if s.watchCallback != nil && s.config != nil {
-			s.watchCallback(s.config)
+		if callback != nil && cfg != nil {
+			callback(cfg)
 		}
 
 		return
 	}
 
 	// Configuration reloaded successfully
-	if s.watchCallback != nil {
-		s.watchCallback(s.config)
+	if callback != nil {
+		callback(cfg)
 	}
 }
 
