@@ -12,18 +12,11 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 
 	"github.com/gizzahub/gzh-cli/pkg/github"
-)
-
-const (
-	outputFormatJSON = "json"
-	outputFormatYAML = "yaml"
 )
 
 // NewEventCmd creates a new event command.
@@ -159,14 +152,16 @@ without waiting for actual GitHub events.`,
 	return eventCmd
 }
 
-func runEventServer(_ *cobra.Command, _ []string, host string, port int, secret string) error {
-	_ = context.Background() // ctx unused in mock implementation
+// errEventStorageNotImplemented is returned by list/get/metrics until real storage exists.
+var errEventStorageNotImplemented = fmt.Errorf("event storage is not implemented")
 
+func runEventServer(_ *cobra.Command, _ []string, host string, port int, secret string) error {
 	logger := getLogger()
 	logger.Info("Starting GitHub webhook server", "host", host, "port", port)
+	logger.Warn("event storage is a no-op: received events are not persisted; list/get/metrics will fail")
 
-	// Create storage implementation (would be real implementation)
-	storage := &mockEventStorage{}
+	// Storage is intentionally a no-op: events are processed but not retained.
+	storage := &noopEventStorage{}
 
 	// Create event processor
 	processor := github.NewEventProcessor(storage, logger)
@@ -184,6 +179,7 @@ func runEventServer(_ *cobra.Command, _ []string, host string, port int, secret 
 			return
 		}
 
+		// Processor metrics cover in-process handling only (not durable storage).
 		metrics := processor.GetMetrics()
 
 		w.Header().Set("Content-Type", "application/json")
@@ -205,167 +201,21 @@ func runEventServer(_ *cobra.Command, _ []string, host string, port int, secret 
 	fmt.Printf("Webhook endpoint: http://%s/webhook\n", addr)
 	fmt.Printf("Health check: http://%s/health\n", addr)
 	fmt.Printf("Metrics: http://%s/metrics\n", addr)
+	fmt.Printf("Warning: event storage is not implemented; events are not persisted\n")
 
 	return srv.ListenAndServe()
 }
 
-func runEventList(_ *cobra.Command, _ []string, org, repo, eventType, action, sender, since, until string, limit, offset int, outputFormat string) error {
-	_ = context.Background() // ctx unused in mock implementation
-	_ = getLogger()          // logger unused in mock implementation
-	_ = limit                // limit unused in mock implementation
-	_ = offset               // offset unused in mock implementation
-
-	// Create storage implementation (unused in mock)
-	_ = &mockEventStorage{}
-
-	// Build event filter (currently unused in mock implementation)
-	_ = org    // Unused in current implementation
-	_ = repo   // Unused in current implementation
-	_ = sender // Unused in current implementation
-
-	if eventType != "" {
-		// filter.EventTypes = []github.EventType{github.EventType(eventType)}  // Unused field removed
-		_ = eventType // Unused in current implementation
-	}
-
-	if action != "" {
-		// filter.Actions = []github.EventAction{github.EventAction(action)}  // Unused field removed
-		_ = action // Unused in current implementation
-	}
-
-	// Parse time filters (validate format but not currently used in implementation)
-	if since != "" {
-		if _, err := time.Parse(time.RFC3339, since); err != nil {
-			return fmt.Errorf("invalid since time format: %w", err)
-		}
-		// TODO: Use parsed since time when implementing time filtering
-	}
-
-	if until != "" {
-		if _, err := time.Parse(time.RFC3339, until); err != nil {
-			return fmt.Errorf("invalid until time format: %w", err)
-		}
-		// TODO: Use parsed until time when implementing time filtering
-	}
-
-	// Mock events for demonstration
-	events := []*github.GitHubEvent{
-		{
-			ID:           "event-1",
-			Type:         "push",
-			Action:       "created",
-			Organization: "testorg",
-			Repository:   "testrepo",
-			Sender:       "user1",
-			Timestamp:    time.Now().Add(-1 * time.Hour),
-		},
-		{
-			ID:           "event-2",
-			Type:         "pull_request",
-			Action:       "opened",
-			Organization: "testorg",
-			Repository:   "testrepo",
-			Sender:       "user2",
-			Timestamp:    time.Now().Add(-30 * time.Minute),
-		},
-	}
-
-	// Output events
-	switch outputFormat {
-	case "json":
-		return outputJSON(events)
-	case "yaml":
-		return outputYAML(events)
-	default:
-		return outputEventTable(events)
-	}
+func runEventList(_ *cobra.Command, _ []string, _, _, _, _, _, _, _ string, _, _ int, _ string) error {
+	return errEventStorageNotImplemented
 }
 
-func runEventGet(_ *cobra.Command, args []string, outputFormat string) error {
-	eventID := args[0]
-	_ = context.Background() // ctx unused in mock implementation
-	_ = getLogger()          // logger unused in mock implementation
-	_ = &mockEventStorage{}  // storage unused in mock implementation
-
-	// Mock event for demonstration
-	event := &github.GitHubEvent{
-		ID:           eventID,
-		Type:         "push",
-		Action:       "created",
-		Organization: "testorg",
-		Repository:   "testrepo",
-		Sender:       "testuser",
-		Timestamp:    time.Now(),
-		Payload: map[string]any{
-			"ref": "refs/heads/main",
-			"commits": []any{
-				map[string]any{
-					"id":      "abc123",
-					"message": "Test commit",
-					"author": map[string]any{
-						"name":  "Test User",
-						"email": "test@example.com",
-					},
-				},
-			},
-		},
-		Headers: map[string]string{
-			"X-GitHub-Event":    "push",
-			"X-GitHub-Delivery": eventID,
-		},
-		Signature: "sha256=example-signature",
-	}
-
-	switch outputFormat {
-	case outputFormatYAML:
-		return outputYAML(event)
-	default:
-		return outputJSON(event)
-	}
+func runEventGet(_ *cobra.Command, _ []string, _ string) error {
+	return errEventStorageNotImplemented
 }
 
-func runEventMetrics(_ *cobra.Command, _ []string, outputFormat string) error {
-	_ = context.Background() // ctx unused in mock implementation
-	logger := getLogger()
-
-	// Create storage implementation (unused in mock)
-	_ = &mockEventStorage{}
-	_ = logger // logger unused in mock implementation
-
-	// Mock metrics for demonstration
-	metrics := &github.EventMetrics{
-		TotalEventsReceived:  1250,
-		TotalEventsProcessed: 1248,
-		TotalEventsFailed:    2,
-		EventsByType: map[string]int64{
-			"push":         450,
-			"pull_request": 320,
-			"issues":       200,
-			"release":      150,
-			"workflow_run": 130,
-		},
-		EventsByOrganization: map[string]int64{
-			"org1": 600,
-			"org2": 400,
-			"org3": 250,
-		},
-		AverageProcessingTime: 125 * time.Millisecond,
-		LastEventAt:           time.Now().Add(-5 * time.Minute),
-		HandlersStatus: map[string]string{
-			"push":         "active",
-			"pull_request": "active",
-			"issues":       "active",
-		},
-	}
-
-	switch outputFormat {
-	case outputFormatJSON:
-		return outputJSON(metrics)
-	case outputFormatYAML:
-		return outputYAML(metrics)
-	default:
-		return outputMetricsTable(metrics)
-	}
+func runEventMetrics(_ *cobra.Command, _ []string, _ string) error {
+	return errEventStorageNotImplemented
 }
 
 func runEventTest(cmd *cobra.Command, _ []string, eventType, action, payload string, port int) error {
@@ -453,69 +303,6 @@ func runEventTest(cmd *cobra.Command, _ []string, eventType, action, payload str
 	return nil
 }
 
-// Output helper functions.
-func outputEventTable(events []*github.GitHubEvent) error {
-	fmt.Printf("%-20s %-15s %-12s %-15s %-15s %-20s\n",
-		"EVENT ID", "TYPE", "ACTION", "ORGANIZATION", "REPOSITORY", "TIMESTAMP")
-	fmt.Println(strings.Repeat("-", 100))
-
-	for _, event := range events {
-		timestamp := event.Timestamp.Format("2006-01-02 15:04:05")
-		fmt.Printf("%-20s %-15s %-12s %-15s %-15s %-20s\n",
-			truncate(event.ID, 20),
-			truncate(event.Type, 15),
-			truncate(event.Action, 12),
-			truncate(event.Organization, 15),
-			truncate(event.Repository, 15),
-			timestamp)
-	}
-
-	fmt.Printf("\nTotal: %d events\n", len(events))
-
-	return nil
-}
-
-func outputMetricsTable(metrics *github.EventMetrics) error {
-	fmt.Println("GitHub Event Processing Metrics")
-	fmt.Println(strings.Repeat("=", 50))
-	fmt.Printf("Total Events Received:  %d\n", metrics.TotalEventsReceived)
-	fmt.Printf("Total Events Processed: %d\n", metrics.TotalEventsProcessed)
-	fmt.Printf("Total Events Failed:    %d\n", metrics.TotalEventsFailed)
-	fmt.Printf("Average Processing Time: %v\n", metrics.AverageProcessingTime)
-	fmt.Printf("Last Event At:          %s\n", metrics.LastEventAt.Format(time.RFC3339))
-
-	fmt.Println("\nEvents by Type:")
-	fmt.Println(strings.Repeat("-", 30))
-
-	for eventType, count := range metrics.EventsByType {
-		fmt.Printf("  %-15s %d\n", eventType, count)
-	}
-
-	fmt.Println("\nEvents by Organization:")
-	fmt.Println(strings.Repeat("-", 30))
-
-	for org, count := range metrics.EventsByOrganization {
-		fmt.Printf("  %-15s %d\n", org, count)
-	}
-
-	fmt.Println("\nHandler Status:")
-	fmt.Println(strings.Repeat("-", 30))
-
-	for handler, status := range metrics.HandlersStatus {
-		fmt.Printf("  %-15s %s\n", handler, status)
-	}
-
-	return nil
-}
-
-func truncate(s string, maxLen int) string {
-	if len(s) <= maxLen {
-		return s
-	}
-
-	return s[:maxLen-3] + "..."
-}
-
 // getLogger returns a logger that implements the github.Logger interface.
 func getLogger() github.Logger {
 	return &simpleLogger{}
@@ -549,49 +336,26 @@ func formatMessage(msg string, args ...any) string {
 	return fmt.Sprintf("%s %v", msg, args)
 }
 
-// outputJSON marshals the data to JSON and prints it.
-func outputJSON(data any) error {
-	jsonData, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		return fmt.Errorf("failed to marshal JSON: %w", err)
-	}
+// noopEventStorage accepts events but does not persist them.
+// list/get/metrics CLI commands fail-fast until a real backend exists.
+type noopEventStorage struct{}
 
-	fmt.Println(string(jsonData))
-
+func (m *noopEventStorage) StoreEvent(_ context.Context, _ *github.GitHubEvent) error {
 	return nil
 }
 
-// outputYAML marshals the data to YAML and prints it.
-func outputYAML(data any) error {
-	yamlData, err := yaml.Marshal(data)
-	if err != nil {
-		return fmt.Errorf("failed to marshal YAML: %w", err)
-	}
-
-	fmt.Println(string(yamlData))
-
-	return nil
+func (m *noopEventStorage) GetEvent(_ context.Context, eventID string) (*github.GitHubEvent, error) {
+	return nil, fmt.Errorf("%w: %s", errEventStorageNotImplemented, eventID)
 }
 
-// Mock storage implementation for CLI demonstration.
-type mockEventStorage struct{}
-
-func (m *mockEventStorage) StoreEvent(ctx context.Context, event *github.GitHubEvent) error {
-	return nil
+func (m *noopEventStorage) ListEvents(_ context.Context, _ *github.EventFilter, _, _ int) ([]*github.GitHubEvent, error) {
+	return nil, errEventStorageNotImplemented
 }
 
-func (m *mockEventStorage) GetEvent(ctx context.Context, eventID string) (*github.GitHubEvent, error) {
-	return nil, fmt.Errorf("event not found: %s", eventID)
+func (m *noopEventStorage) DeleteEvent(_ context.Context, _ string) error {
+	return errEventStorageNotImplemented
 }
 
-func (m *mockEventStorage) ListEvents(ctx context.Context, filter *github.EventFilter, limit, offset int) ([]*github.GitHubEvent, error) {
-	return []*github.GitHubEvent{}, nil
-}
-
-func (m *mockEventStorage) DeleteEvent(ctx context.Context, eventID string) error {
-	return nil
-}
-
-func (m *mockEventStorage) CountEvents(ctx context.Context, filter *github.EventFilter) (int, error) {
-	return 0, nil
+func (m *noopEventStorage) CountEvents(_ context.Context, _ *github.EventFilter) (int, error) {
+	return 0, errEventStorageNotImplemented
 }
