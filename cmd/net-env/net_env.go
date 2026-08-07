@@ -6,55 +6,12 @@ package netenv
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/gizzahub/gzh-cli/cmd/net-env/actions"
-	"github.com/gizzahub/gzh-cli/cmd/net-env/cloud"
-	"github.com/gizzahub/gzh-cli/cmd/net-env/profile"
-	"github.com/gizzahub/gzh-cli/cmd/net-env/status"
-	"github.com/gizzahub/gzh-cli/cmd/net-env/tui"
 	"github.com/gizzahub/gzh-cli/internal/app"
 )
 
+// NewNetEnvCmd returns the network environment command tree.
+// Implementation is provided by gzh-cli-net-env (status, watch, profile).
 func NewNetEnvCmd(appCtx *app.AppContext) *cobra.Command {
 	_ = appCtx
-
-	// Use library-based implementation instead of legacy local implementation
-	// The gzh-cli-net-env library provides:
-	// - status: Display network status dashboard
-	// - watch: Continuously monitor network changes
-	// - profile: List and show profile configurations
-	//
-	// To switch back to the legacy implementation, comment out the return below
-	// and uncomment the _legacyNetEnvCmd() call instead.
 	return LibraryNetEnvCmd()
-
-	// Legacy implementation (commented out for now)
-	// return _legacyNetEnvCmd()
-}
-
-// _legacyNetEnvCmd returns the legacy net-env command implementation.
-// This is kept for reference and can be re-enabled if needed.
-// Prefer the library-based implementation (LibraryNetEnvCmd) for new features.
-func _legacyNetEnvCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "net-env",
-		Short: "Manage network environment transitions",
-		Long: `Manage network environment transitions on-demand.
-
-This command helps you manage network configurations when
-switching between different network environments. It provides:
-- Network configuration switching (VPN, DNS, proxy, hosts)
-- Network status verification
-- Container environment management
-- Network performance monitoring`,
-		SilenceUsage: true,
-	}
-
-	// Add organized subcommand packages (working packages first)
-	cmd.AddCommand(tui.NewCmd())     // Interactive TUI dashboard
-	cmd.AddCommand(status.NewCmd())  // Network status (unified command)
-	cmd.AddCommand(profile.NewCmd()) // Profile management + quick actions
-	cmd.AddCommand(actions.NewCmd()) // Network configuration actions
-	cmd.AddCommand(cloud.NewCmd())   // Cloud provider management
-
-	return cmd
 }
