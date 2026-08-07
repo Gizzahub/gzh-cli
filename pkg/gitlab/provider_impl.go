@@ -4,10 +4,17 @@
 package gitlab
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
+	"github.com/gizzahub/gzh-cli/internal/httpclient"
 	"github.com/gizzahub/gzh-cli/pkg/git/provider"
 )
 
@@ -43,6 +50,8 @@ func (g *GitLabProvider) Authenticate(ctx context.Context, creds provider.Creden
 	switch creds.Type {
 	case provider.CredentialTypeToken:
 		g.SetToken(creds.Token)
+		// Keep package-level token in sync for List/Clone helpers that use addAuthHeader.
+		SetToken(creds.Token)
 		return nil
 	default:
 		return g.FormatError("authenticate", fmt.Errorf("unsupported credential type: %s", creds.Type))
@@ -144,83 +153,195 @@ func (g *GitLabProvider) CloneRepository(ctx context.Context, repo provider.Repo
 	return Clone(ctx, target, owner, repoName, opts.Strategy)
 }
 
-// Placeholder implementations for other required methods
+// CreateRepository creates a project under req.Owner (group/namespace).
+// Owner is required — fail-fast when empty.
 func (g *GitLabProvider) CreateRepository(ctx context.Context, req provider.CreateRepoRequest) (*provider.Repository, error) {
-	return nil, fmt.Errorf("create repository not implemented")
+	if req.Owner == "" {
+		return nil, fmt.Errorf("owner is required for create repository")
+	}
+	if req.Name == "" {
+		return nil, fmt.Errorf("name is required for create repository")
+	}
+
+	namespaceID, err := g.resolveNamespaceID(ctx, req.Owner)
+	if err != nil {
+		return nil, g.FormatError("create repository", err)
+	}
+
+	visibility := "public"
+	if req.Private {
+		visibility = "private"
+	}
+	switch req.Visibility {
+	case provider.VisibilityPrivate:
+		visibility = "private"
+	case provider.VisibilityPublic:
+		visibility = "public"
+	case provider.VisibilityInternal:
+		visibility = "internal"
+	}
+
+	payload := map[string]any{
+		"name":                   req.Name,
+		"description":            req.Description,
+		"visibility":             visibility,
+		"initialize_with_readme": req.AutoInit,
+		"namespace_id":           namespaceID,
+	}
+	if req.DefaultBranch != "" {
+		payload["default_branch"] = req.DefaultBranch
+	}
+
+	var project gitlabProject
+	if err := g.doJSON(ctx, "POST", "projects", payload, &project, http.StatusCreated, http.StatusOK); err != nil {
+		return nil, g.FormatError("create repository", err)
+	}
+	return gitlabProjectToProvider(&project), nil
 }
 
+// UpdateRepository updates project settings.
+// not in CLI surface; deferred (issue 26 phase 2+)
 func (g *GitLabProvider) UpdateRepository(ctx context.Context, id string, updates provider.UpdateRepoRequest) (*provider.Repository, error) {
-	return nil, fmt.Errorf("update repository not implemented")
+	return nil, fmt.Errorf("update repository not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
+// DeleteRepository deletes a project. id is owner/repo (path with namespace).
 func (g *GitLabProvider) DeleteRepository(ctx context.Context, id string) error {
-	return fmt.Errorf("delete repository not implemented")
+	if id == "" {
+		return fmt.Errorf("repository id is required")
+	}
+	encoded := url.PathEscape(id)
+	if err := g.doJSON(ctx, "DELETE", "projects/"+encoded, nil, nil, http.StatusAccepted, http.StatusNoContent, http.StatusOK); err != nil {
+		return g.FormatError("delete repository", err)
+	}
+	return nil
 }
 
+// ArchiveRepository archives a project. id is owner/repo.
 func (g *GitLabProvider) ArchiveRepository(ctx context.Context, id string) error {
-	return fmt.Errorf("archive repository not implemented")
+	if id == "" {
+		return fmt.Errorf("repository id is required")
+	}
+	encoded := url.PathEscape(id)
+	if err := g.doJSON(ctx, "POST", "projects/"+encoded+"/archive", nil, nil, http.StatusCreated, http.StatusOK); err != nil {
+		return g.FormatError("archive repository", err)
+	}
+	return nil
 }
 
+// UnarchiveRepository unarchives a project. id is owner/repo.
 func (g *GitLabProvider) UnarchiveRepository(ctx context.Context, id string) error {
-	return fmt.Errorf("unarchive repository not implemented")
+	if id == "" {
+		return fmt.Errorf("repository id is required")
+	}
+	encoded := url.PathEscape(id)
+	if err := g.doJSON(ctx, "POST", "projects/"+encoded+"/unarchive", nil, nil, http.StatusCreated, http.StatusOK); err != nil {
+		return g.FormatError("unarchive repository", err)
+	}
+	return nil
 }
 
+// ForkRepository forks a project.
+// not in CLI surface; deferred (issue 26 phase 2+)
 func (g *GitLabProvider) ForkRepository(ctx context.Context, id string, opts provider.ForkOptions) (*provider.Repository, error) {
-	return nil, fmt.Errorf("fork repository not implemented")
+	return nil, fmt.Errorf("fork repository not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
+// SearchRepositories searches projects via the GitLab projects API.
 func (g *GitLabProvider) SearchRepositories(ctx context.Context, query provider.SearchQuery) (*provider.SearchResult, error) {
-	return nil, fmt.Errorf("search repositories not implemented")
+	q := query.Query
+	if q == "" {
+		return nil, fmt.Errorf("search query is required")
+	}
+
+	page := query.Page
+	if page <= 0 {
+		page = 1
+	}
+	perPage := query.PerPage
+	if perPage <= 0 {
+		perPage = 30
+	}
+
+	params := url.Values{}
+	params.Set("search", q)
+	params.Set("page", fmt.Sprintf("%d", page))
+	params.Set("per_page", fmt.Sprintf("%d", perPage))
+	if query.Order != "" {
+		params.Set("sort", query.Order)
+	}
+	if query.Organization != "" {
+		params.Set("namespace_path", query.Organization)
+	}
+
+	var projects []gitlabProject
+	if err := g.doJSON(ctx, "GET", "projects?"+params.Encode(), nil, &projects, http.StatusOK); err != nil {
+		return nil, g.FormatError("search repositories", err)
+	}
+
+	repos := make([]provider.Repository, 0, len(projects))
+	for i := range projects {
+		repos = append(repos, *gitlabProjectToProvider(&projects[i]))
+	}
+
+	return &provider.SearchResult{
+		TotalCount:   len(repos),
+		Repositories: repos,
+		Page:         page,
+		PerPage:      perPage,
+		HasNext:      len(repos) == perPage,
+		HasPrev:      page > 1,
+	}, nil
 }
 
-// Webhook management methods (placeholder implementations)
+// Webhook management methods — not in CLI surface; deferred (issue 26 phase 2+)
 func (g *GitLabProvider) ListWebhooks(ctx context.Context, repoID string) ([]provider.Webhook, error) {
-	return nil, fmt.Errorf("webhook management not implemented")
+	return nil, fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 func (g *GitLabProvider) GetWebhook(ctx context.Context, repoID, webhookID string) (*provider.Webhook, error) {
-	return nil, fmt.Errorf("webhook management not implemented")
+	return nil, fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 func (g *GitLabProvider) CreateWebhook(ctx context.Context, repoID string, webhook provider.CreateWebhookRequest) (*provider.Webhook, error) {
-	return nil, fmt.Errorf("webhook management not implemented")
+	return nil, fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 func (g *GitLabProvider) UpdateWebhook(ctx context.Context, repoID, webhookID string, updates provider.UpdateWebhookRequest) (*provider.Webhook, error) {
-	return nil, fmt.Errorf("webhook management not implemented")
+	return nil, fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 func (g *GitLabProvider) DeleteWebhook(ctx context.Context, repoID, webhookID string) error {
-	return fmt.Errorf("webhook management not implemented")
+	return fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 func (g *GitLabProvider) TestWebhook(ctx context.Context, repoID, webhookID string) (*provider.WebhookTestResult, error) {
-	return nil, fmt.Errorf("webhook management not implemented")
+	return nil, fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 func (g *GitLabProvider) ValidateWebhookURL(ctx context.Context, url string) error {
-	return fmt.Errorf("webhook management not implemented")
+	return fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
-// Event management methods (placeholder implementations)
+// Event management methods — not in CLI surface; deferred (issue 26 phase 2+)
 func (g *GitLabProvider) ListEvents(ctx context.Context, opts provider.EventListOptions) ([]provider.Event, error) {
-	return nil, fmt.Errorf("event management not implemented")
+	return nil, fmt.Errorf("event management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 func (g *GitLabProvider) GetEvent(ctx context.Context, eventID string) (*provider.Event, error) {
-	return nil, fmt.Errorf("event management not implemented")
+	return nil, fmt.Errorf("event management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 func (g *GitLabProvider) ProcessEvent(ctx context.Context, event provider.Event) error {
-	return fmt.Errorf("event management not implemented")
+	return fmt.Errorf("event management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 func (g *GitLabProvider) RegisterEventHandler(eventType string, handler provider.EventHandler) error {
-	return fmt.Errorf("event management not implemented")
+	return fmt.Errorf("event management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 func (g *GitLabProvider) StreamEvents(ctx context.Context, opts provider.StreamOptions) (<-chan provider.Event, error) {
-	return nil, fmt.Errorf("event streaming not implemented")
+	return nil, fmt.Errorf("event streaming not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 // Health and monitoring methods
@@ -324,24 +445,143 @@ func (g *GitLabProvider) ListReleaseAssets(ctx context.Context, repoID, releaseI
 }
 
 // UploadReleaseAsset uploads an asset to a release.
+// not in CLI surface; deferred (issue 26 phase 2+)
 func (g *GitLabProvider) UploadReleaseAsset(ctx context.Context, repoID string, req provider.UploadAssetRequest) (*provider.Asset, error) {
-	// GitLab uses release links for assets - not direct file upload
-	// TODO: Implement GitLab release link creation
-	return nil, fmt.Errorf("GitLab release asset upload not implemented - use release links API")
+	return nil, fmt.Errorf("GitLab release asset upload not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 // DeleteReleaseAsset deletes a release asset.
+// not in CLI surface; deferred (issue 26 phase 2+)
 func (g *GitLabProvider) DeleteReleaseAsset(ctx context.Context, repoID, assetID string) error {
-	// GitLab uses release links - need to implement link deletion
-	// TODO: Implement GitLab release link deletion
-	return fmt.Errorf("GitLab release asset deletion not implemented - use release links API")
+	return fmt.Errorf("GitLab release asset deletion not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 // DownloadReleaseAsset downloads a release asset.
+// not in CLI surface; deferred (issue 26 phase 2+)
 func (g *GitLabProvider) DownloadReleaseAsset(ctx context.Context, repoID, assetID string) ([]byte, error) {
-	// GitLab release assets are accessible via URL, not direct download API
-	// TODO: Implement direct download if needed
-	return nil, fmt.Errorf("GitLab release asset download not implemented - use asset URL directly")
+	return nil, fmt.Errorf("GitLab release asset download not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+}
+
+// gitlabProject is the subset of GitLab project JSON used by mutation APIs.
+type gitlabProject struct {
+	ID                int    `json:"id"`
+	Name              string `json:"name"`
+	PathWithNamespace string `json:"path_with_namespace"`
+	Description       string `json:"description"`
+	DefaultBranch     string `json:"default_branch"`
+	HTTPURLToRepo     string `json:"http_url_to_repo"`
+	SSHURLToRepo      string `json:"ssh_url_to_repo"`
+	WebURL            string `json:"web_url"`
+	Visibility        string `json:"visibility"`
+	Archived          bool   `json:"archived"`
+}
+
+func gitlabProjectToProvider(p *gitlabProject) *provider.Repository {
+	if p == nil {
+		return nil
+	}
+	fullName := p.PathWithNamespace
+	if fullName == "" {
+		fullName = p.Name
+	}
+	return &provider.Repository{
+		ID:            fullName,
+		Name:          p.Name,
+		FullName:      fullName,
+		Description:   p.Description,
+		DefaultBranch: p.DefaultBranch,
+		CloneURL:      p.HTTPURLToRepo,
+		SSHURL:        p.SSHURLToRepo,
+		HTMLURL:       p.WebURL,
+		Private:       p.Visibility == "private",
+		Archived:      p.Archived,
+		ProviderType:  "gitlab",
+	}
+}
+
+// resolveNamespaceID looks up a GitLab namespace (group or user) by path.
+func (g *GitLabProvider) resolveNamespaceID(ctx context.Context, owner string) (int, error) {
+	var ns struct {
+		ID int `json:"id"`
+	}
+	path := "namespaces/" + url.PathEscape(owner)
+	if err := g.doJSON(ctx, "GET", path, nil, &ns, http.StatusOK); err != nil {
+		return 0, fmt.Errorf("failed to resolve namespace %q: %w", owner, err)
+	}
+	if ns.ID == 0 {
+		return 0, fmt.Errorf("namespace %q not found", owner)
+	}
+	return ns.ID, nil
+}
+
+// apiBase returns the provider API base URL (instance-configured).
+func (g *GitLabProvider) apiBase() string {
+	base := strings.TrimRight(g.GetBaseURL(), "/")
+	if base == "" {
+		base = getBaseAPIURL()
+	}
+	return base
+}
+
+// doJSON performs an authenticated JSON request against this provider's base URL.
+// Any of wantStatuses is treated as success.
+// endpoint may include PathEscape'd segments (projects/acme%2Frepo) and query strings.
+// url.Parse preserves %2F via RawPath so GitLab receives a single project path segment.
+func (g *GitLabProvider) doJSON(ctx context.Context, method, endpoint string, payload any, out any, wantStatuses ...int) error {
+	var bodyReader io.Reader
+	if payload != nil {
+		encoded, err := json.Marshal(payload)
+		if err != nil {
+			return fmt.Errorf("failed to encode request: %w", err)
+		}
+		bodyReader = bytes.NewReader(encoded)
+	}
+
+	fullURL := strings.TrimRight(g.apiBase(), "/") + "/" + strings.TrimPrefix(endpoint, "/")
+	req, err := http.NewRequestWithContext(ctx, method, fullURL, bodyReader)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	token := g.GetToken()
+	if token == "" {
+		token = configuredToken
+	}
+	if token != "" {
+		req.Header.Set("PRIVATE-TOKEN", token)
+	}
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	client := httpclient.GetGlobalClient("gitlab")
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("request failed: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read response: %w", err)
+	}
+
+	ok := false
+	for _, want := range wantStatuses {
+		if resp.StatusCode == want {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("API %s %s: HTTP %d - %s", method, endpoint, resp.StatusCode, strings.TrimSpace(string(respBody)))
+	}
+	if out != nil && len(respBody) > 0 {
+		if err := json.Unmarshal(respBody, out); err != nil {
+			return fmt.Errorf("failed to decode response: %w", err)
+		}
+	}
+	return nil
 }
 
 // splitFullName splits "owner/repo" into ["owner", "repo"]

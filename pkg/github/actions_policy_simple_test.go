@@ -128,6 +128,26 @@ func (m *simpleAPIClient) UpdateRepositoryConfiguration(ctx context.Context, own
 	return nil
 }
 
+func (m *simpleAPIClient) CreateRepository(ctx context.Context, owner string, opts *CreateRepositoryOptions) (*RepositoryInfo, error) {
+	return &RepositoryInfo{Name: opts.Name, FullName: owner + "/" + opts.Name}, nil
+}
+
+func (m *simpleAPIClient) DeleteRepository(ctx context.Context, owner, repo string) error {
+	return nil
+}
+
+func (m *simpleAPIClient) ArchiveRepository(ctx context.Context, owner, repo string) error {
+	return nil
+}
+
+func (m *simpleAPIClient) UnarchiveRepository(ctx context.Context, owner, repo string) error {
+	return nil
+}
+
+func (m *simpleAPIClient) SearchRepositories(ctx context.Context, query string, opts *SearchRepositoriesOptions) (*RepositorySearchResult, error) {
+	return &RepositorySearchResult{}, nil
+}
+
 func TestActionsPolicy_ManagerCreation(t *testing.T) {
 	logger := &simpleLogger{}
 	apiClient := &simpleAPIClient{}

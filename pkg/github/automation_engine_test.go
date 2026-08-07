@@ -65,6 +65,37 @@ func (m *mockAPIClient) UpdateRepositoryConfiguration(ctx context.Context, owner
 	return args.Error(0)
 }
 
+func (m *mockAPIClient) CreateRepository(ctx context.Context, owner string, opts *CreateRepositoryOptions) (*RepositoryInfo, error) {
+	args := m.Called(ctx, owner, opts)
+	if info, ok := args.Get(0).(*RepositoryInfo); ok {
+		return info, args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+func (m *mockAPIClient) DeleteRepository(ctx context.Context, owner, repo string) error {
+	args := m.Called(ctx, owner, repo)
+	return args.Error(0)
+}
+
+func (m *mockAPIClient) ArchiveRepository(ctx context.Context, owner, repo string) error {
+	args := m.Called(ctx, owner, repo)
+	return args.Error(0)
+}
+
+func (m *mockAPIClient) UnarchiveRepository(ctx context.Context, owner, repo string) error {
+	args := m.Called(ctx, owner, repo)
+	return args.Error(0)
+}
+
+func (m *mockAPIClient) SearchRepositories(ctx context.Context, query string, opts *SearchRepositoriesOptions) (*RepositorySearchResult, error) {
+	args := m.Called(ctx, query, opts)
+	if result, ok := args.Get(0).(*RepositorySearchResult); ok {
+		return result, args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
 type mockEventProcessor struct {
 	mock.Mock
 }

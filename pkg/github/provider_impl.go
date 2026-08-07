@@ -156,33 +156,82 @@ func (g *GitHubProvider) GetRepository(ctx context.Context, id string) (*provide
 	}, nil
 }
 
-// CreateRepository creates a new repository.
+// CreateRepository creates a new repository under req.Owner (org or user).
+// Owner is required — fail-fast when empty (CLI --org / sync destination).
 func (g *GitHubProvider) CreateRepository(ctx context.Context, req provider.CreateRepoRequest) (*provider.Repository, error) {
-	// GitHub doesn't have a direct create repo API in the current interface
-	// This would need to be implemented with the GitHub API client
-	return nil, fmt.Errorf("create repository not implemented")
+	if req.Owner == "" {
+		return nil, fmt.Errorf("owner is required for create repository")
+	}
+	if req.Name == "" {
+		return nil, fmt.Errorf("name is required for create repository")
+	}
+
+	opts := &CreateRepositoryOptions{
+		Name:              req.Name,
+		Description:       req.Description,
+		Homepage:          req.Homepage,
+		Private:           req.Private,
+		HasIssues:         req.HasIssues,
+		HasProjects:       req.HasProjects,
+		HasWiki:           req.HasWiki,
+		HasDownloads:      req.HasDownloads,
+		AutoInit:          req.AutoInit,
+		GitignoreTemplate: req.GitignoreTemplate,
+		LicenseTemplate:   req.LicenseTemplate,
+		DefaultBranch:     req.DefaultBranch,
+		AllowSquashMerge:  req.AllowSquashMerge,
+		AllowMergeCommit:  req.AllowMergeCommit,
+		AllowRebaseMerge:  req.AllowRebaseMerge,
+		AllowAutoMerge:    req.AllowAutoMerge,
+	}
+
+	info, err := g.client.CreateRepository(ctx, req.Owner, opts)
+	if err != nil {
+		return nil, g.FormatError("create repository", err)
+	}
+	return repositoryInfoToProvider(info), nil
 }
 
 // UpdateRepository updates repository settings.
+// not in CLI surface; deferred (issue 26 phase 2+)
 func (g *GitHubProvider) UpdateRepository(ctx context.Context, id string, updates provider.UpdateRepoRequest) (*provider.Repository, error) {
-	// This would need to be implemented with the GitHub API client
-	return nil, fmt.Errorf("update repository not implemented")
+	return nil, fmt.Errorf("update repository not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
-// DeleteRepository deletes a repository.
+// DeleteRepository deletes a repository. id is owner/repo or full name.
 func (g *GitHubProvider) DeleteRepository(ctx context.Context, id string) error {
-	// This would need to be implemented with the GitHub API client
-	return fmt.Errorf("delete repository not implemented")
+	owner, repo, err := parseFullName(id)
+	if err != nil {
+		return err
+	}
+	if err := g.client.DeleteRepository(ctx, owner, repo); err != nil {
+		return g.FormatError("delete repository", err)
+	}
+	return nil
 }
 
-// ArchiveRepository archives a repository.
+// ArchiveRepository archives a repository. id is owner/repo or full name.
 func (g *GitHubProvider) ArchiveRepository(ctx context.Context, id string) error {
-	return fmt.Errorf("archive repository not implemented")
+	owner, repo, err := parseFullName(id)
+	if err != nil {
+		return err
+	}
+	if err := g.client.ArchiveRepository(ctx, owner, repo); err != nil {
+		return g.FormatError("archive repository", err)
+	}
+	return nil
 }
 
-// UnarchiveRepository unarchives a repository.
+// UnarchiveRepository unarchives a repository. id is owner/repo or full name.
 func (g *GitHubProvider) UnarchiveRepository(ctx context.Context, id string) error {
-	return fmt.Errorf("unarchive repository not implemented")
+	owner, repo, err := parseFullName(id)
+	if err != nil {
+		return err
+	}
+	if err := g.client.UnarchiveRepository(ctx, owner, repo); err != nil {
+		return g.FormatError("unarchive repository", err)
+	}
+	return nil
 }
 
 // CloneRepository clones a repository to the target path.
@@ -209,63 +258,102 @@ func (g *GitHubProvider) CloneRepository(ctx context.Context, repo provider.Repo
 }
 
 // ForkRepository creates a fork of a repository.
+// not in CLI surface; deferred (issue 26 phase 2+)
 func (g *GitHubProvider) ForkRepository(ctx context.Context, id string, opts provider.ForkOptions) (*provider.Repository, error) {
-	return nil, fmt.Errorf("fork repository not implemented")
+	return nil, fmt.Errorf("fork repository not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
-// SearchRepositories searches for repositories.
+// SearchRepositories searches for repositories via the GitHub search API.
 func (g *GitHubProvider) SearchRepositories(ctx context.Context, query provider.SearchQuery) (*provider.SearchResult, error) {
-	return nil, fmt.Errorf("search repositories not implemented")
+	q := buildGitHubSearchQuery(query)
+	if q == "" {
+		return nil, fmt.Errorf("search query is required")
+	}
+
+	opts := &SearchRepositoriesOptions{
+		Sort:    query.Sort,
+		Order:   query.Order,
+		Page:    query.Page,
+		PerPage: query.PerPage,
+	}
+	result, err := g.client.SearchRepositories(ctx, q, opts)
+	if err != nil {
+		return nil, g.FormatError("search repositories", err)
+	}
+
+	repos := make([]provider.Repository, 0, len(result.Repositories))
+	for i := range result.Repositories {
+		repos = append(repos, *repositoryInfoToProvider(&result.Repositories[i]))
+	}
+
+	page := query.Page
+	if page <= 0 {
+		page = 1
+	}
+	perPage := query.PerPage
+	if perPage <= 0 {
+		perPage = 30
+	}
+
+	return &provider.SearchResult{
+		TotalCount:        result.TotalCount,
+		IncompleteResults: result.IncompleteResults,
+		Repositories:      repos,
+		Page:              page,
+		PerPage:           perPage,
+		HasNext:           page*perPage < result.TotalCount,
+		HasPrev:           page > 1,
+	}, nil
 }
 
-// Webhook management methods (placeholder implementations)
+// Webhook management methods — not in CLI surface; deferred (issue 26 phase 2+)
 func (g *GitHubProvider) ListWebhooks(ctx context.Context, repoID string) ([]provider.Webhook, error) {
-	return nil, fmt.Errorf("webhook management not implemented")
+	return nil, fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 func (g *GitHubProvider) GetWebhook(ctx context.Context, repoID, webhookID string) (*provider.Webhook, error) {
-	return nil, fmt.Errorf("webhook management not implemented")
+	return nil, fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 func (g *GitHubProvider) CreateWebhook(ctx context.Context, repoID string, webhook provider.CreateWebhookRequest) (*provider.Webhook, error) {
-	return nil, fmt.Errorf("webhook management not implemented")
+	return nil, fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 func (g *GitHubProvider) UpdateWebhook(ctx context.Context, repoID, webhookID string, updates provider.UpdateWebhookRequest) (*provider.Webhook, error) {
-	return nil, fmt.Errorf("webhook management not implemented")
+	return nil, fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 func (g *GitHubProvider) DeleteWebhook(ctx context.Context, repoID, webhookID string) error {
-	return fmt.Errorf("webhook management not implemented")
+	return fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 func (g *GitHubProvider) TestWebhook(ctx context.Context, repoID, webhookID string) (*provider.WebhookTestResult, error) {
-	return nil, fmt.Errorf("webhook management not implemented")
+	return nil, fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 func (g *GitHubProvider) ValidateWebhookURL(ctx context.Context, url string) error {
-	return fmt.Errorf("webhook management not implemented")
+	return fmt.Errorf("webhook management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
-// Event management methods (placeholder implementations)
+// Event management methods — not in CLI surface; deferred (issue 26 phase 2+)
 func (g *GitHubProvider) ListEvents(ctx context.Context, opts provider.EventListOptions) ([]provider.Event, error) {
-	return nil, fmt.Errorf("event management not implemented")
+	return nil, fmt.Errorf("event management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 func (g *GitHubProvider) GetEvent(ctx context.Context, eventID string) (*provider.Event, error) {
-	return nil, fmt.Errorf("event management not implemented")
+	return nil, fmt.Errorf("event management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 func (g *GitHubProvider) ProcessEvent(ctx context.Context, event provider.Event) error {
-	return fmt.Errorf("event management not implemented")
+	return fmt.Errorf("event management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 func (g *GitHubProvider) RegisterEventHandler(eventType string, handler provider.EventHandler) error {
-	return fmt.Errorf("event management not implemented")
+	return fmt.Errorf("event management not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 func (g *GitHubProvider) StreamEvents(ctx context.Context, opts provider.StreamOptions) (<-chan provider.Event, error) {
-	return nil, fmt.Errorf("event streaming not implemented")
+	return nil, fmt.Errorf("event streaming not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 // Health and monitoring methods
@@ -353,23 +441,94 @@ func (g *GitHubProvider) DeleteRelease(ctx context.Context, repoID, releaseID st
 }
 
 // ListReleaseAssets lists assets for a release.
+// not in CLI surface; deferred (issue 26 phase 2+)
 func (g *GitHubProvider) ListReleaseAssets(ctx context.Context, repoID, releaseID string) ([]provider.Asset, error) {
-	return nil, fmt.Errorf("not implemented")
+	return nil, fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 // UploadReleaseAsset uploads an asset to a release.
+// not in CLI surface; deferred (issue 26 phase 2+)
 func (g *GitHubProvider) UploadReleaseAsset(ctx context.Context, repoID string, req provider.UploadAssetRequest) (*provider.Asset, error) {
-	return nil, fmt.Errorf("not implemented")
+	return nil, fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 // DeleteReleaseAsset deletes a release asset.
+// not in CLI surface; deferred (issue 26 phase 2+)
 func (g *GitHubProvider) DeleteReleaseAsset(ctx context.Context, repoID, assetID string) error {
-	return fmt.Errorf("not implemented")
+	return fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
 }
 
 // DownloadReleaseAsset downloads a release asset.
+// not in CLI surface; deferred (issue 26 phase 2+)
 func (g *GitHubProvider) DownloadReleaseAsset(ctx context.Context, repoID, assetID string) ([]byte, error) {
-	return nil, fmt.Errorf("not implemented")
+	return nil, fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)")
+}
+
+// repositoryInfoToProvider maps GitHub RepositoryInfo to provider.Repository.
+func repositoryInfoToProvider(info *RepositoryInfo) *provider.Repository {
+	if info == nil {
+		return nil
+	}
+	return &provider.Repository{
+		ID:            info.FullName,
+		Name:          info.Name,
+		FullName:      info.FullName,
+		Description:   info.Description,
+		DefaultBranch: info.DefaultBranch,
+		CloneURL:      info.CloneURL,
+		SSHURL:        info.SSHURL,
+		HTMLURL:       info.HTMLURL,
+		Private:       info.Private,
+		Archived:      info.Archived,
+		CreatedAt:     info.CreatedAt,
+		UpdatedAt:     info.UpdatedAt,
+		Language:      info.Language,
+		Size:          int64(info.Size),
+		Topics:        info.Topics,
+		ProviderType:  "github",
+	}
+}
+
+// buildGitHubSearchQuery composes a GitHub search q= string from SearchQuery fields.
+func buildGitHubSearchQuery(query provider.SearchQuery) string {
+	parts := make([]string, 0, 8)
+	if query.Query != "" {
+		parts = append(parts, query.Query)
+	}
+	if query.User != "" {
+		parts = append(parts, "user:"+query.User)
+	}
+	if query.Organization != "" {
+		parts = append(parts, "org:"+query.Organization)
+	}
+	if query.Language != "" {
+		parts = append(parts, "language:"+query.Language)
+	}
+	if query.Topic != "" {
+		parts = append(parts, "topic:"+query.Topic)
+	}
+	if query.Fork != nil {
+		if *query.Fork {
+			parts = append(parts, "fork:true")
+		} else {
+			parts = append(parts, "fork:false")
+		}
+	}
+	if query.Archived != nil {
+		if *query.Archived {
+			parts = append(parts, "archived:true")
+		} else {
+			parts = append(parts, "archived:false")
+		}
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	result := parts[0]
+	for i := 1; i < len(parts); i++ {
+		result += " " + parts[i]
+	}
+	return result
 }
 
 // parseFullName parses owner/repo from full name

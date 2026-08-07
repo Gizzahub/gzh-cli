@@ -1,10 +1,16 @@
 package github
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"net/url"
 	"slices"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -143,6 +149,163 @@ func (c *GitHubAPIClient) UpdateRepositoryConfiguration(ctx context.Context, own
 
 	// Implementation would use c.httpClient
 	return nil
+}
+
+// CreateRepository implements APIClient interface.
+func (c *GitHubAPIClient) CreateRepository(ctx context.Context, owner string, opts *CreateRepositoryOptions) (*RepositoryInfo, error) {
+	if owner == "" {
+		return nil, fmt.Errorf("owner is required")
+	}
+	if opts == nil || opts.Name == "" {
+		return nil, fmt.Errorf("repository name is required")
+	}
+	c.logger.Debug("Creating repository", "owner", owner, "name", opts.Name)
+
+	// Prefer org endpoint; fall back to authenticated user endpoint.
+	info, err := c.doJSONRequest(ctx, http.MethodPost, fmt.Sprintf("/orgs/%s/repos", owner), opts, http.StatusCreated)
+	if err == nil {
+		var repo RepositoryInfo
+		if decErr := json.Unmarshal(info, &repo); decErr != nil {
+			return nil, fmt.Errorf("failed to decode create repository response: %w", decErr)
+		}
+		return &repo, nil
+	}
+	if !strings.Contains(err.Error(), "404") {
+		return nil, err
+	}
+
+	body, err := c.doJSONRequest(ctx, http.MethodPost, "/user/repos", opts, http.StatusCreated)
+	if err != nil {
+		return nil, err
+	}
+	var repo RepositoryInfo
+	if err := json.Unmarshal(body, &repo); err != nil {
+		return nil, fmt.Errorf("failed to decode create repository response: %w", err)
+	}
+	return &repo, nil
+}
+
+// DeleteRepository implements APIClient interface.
+func (c *GitHubAPIClient) DeleteRepository(ctx context.Context, owner, repo string) error {
+	if owner == "" || repo == "" {
+		return fmt.Errorf("owner and repo are required")
+	}
+	c.logger.Debug("Deleting repository", "owner", owner, "repo", repo)
+	_, err := c.doJSONRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s", owner, repo), nil, http.StatusNoContent)
+	return err
+}
+
+// ArchiveRepository implements APIClient interface.
+func (c *GitHubAPIClient) ArchiveRepository(ctx context.Context, owner, repo string) error {
+	return c.setRepositoryArchived(ctx, owner, repo, true)
+}
+
+// UnarchiveRepository implements APIClient interface.
+func (c *GitHubAPIClient) UnarchiveRepository(ctx context.Context, owner, repo string) error {
+	return c.setRepositoryArchived(ctx, owner, repo, false)
+}
+
+func (c *GitHubAPIClient) setRepositoryArchived(ctx context.Context, owner, repo string, archived bool) error {
+	if owner == "" || repo == "" {
+		return fmt.Errorf("owner and repo are required")
+	}
+	c.logger.Debug("Setting repository archived state", "owner", owner, "repo", repo, "archived", archived)
+	_, err := c.doJSONRequest(ctx, http.MethodPatch, fmt.Sprintf("/repos/%s/%s", owner, repo), map[string]bool{"archived": archived}, http.StatusOK)
+	return err
+}
+
+// SearchRepositories implements APIClient interface.
+func (c *GitHubAPIClient) SearchRepositories(ctx context.Context, query string, opts *SearchRepositoriesOptions) (*RepositorySearchResult, error) {
+	if query == "" {
+		return nil, fmt.Errorf("search query is required")
+	}
+	if opts == nil {
+		opts = &SearchRepositoriesOptions{}
+	}
+	c.logger.Debug("Searching repositories", "query", query)
+
+	page := opts.Page
+	if page <= 0 {
+		page = 1
+	}
+	perPage := opts.PerPage
+	if perPage <= 0 {
+		perPage = 30
+	}
+
+	params := url.Values{}
+	params.Set("q", query)
+	params.Set("page", strconv.Itoa(page))
+	params.Set("per_page", strconv.Itoa(perPage))
+	if opts.Sort != "" {
+		params.Set("sort", opts.Sort)
+	}
+	if opts.Order != "" {
+		params.Set("order", opts.Order)
+	}
+
+	body, err := c.doJSONRequest(ctx, http.MethodGet, "/search/repositories?"+params.Encode(), nil, http.StatusOK)
+	if err != nil {
+		return nil, err
+	}
+	var result RepositorySearchResult
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("failed to decode search response: %w", err)
+	}
+	return &result, nil
+}
+
+// doJSONRequest performs an authenticated JSON request against the configured base URL.
+// acceptedStatus is the primary success code; StatusOK is also accepted when primary is NoContent/Created.
+func (c *GitHubAPIClient) doJSONRequest(ctx context.Context, method, path string, payload any, acceptedStatus int) ([]byte, error) {
+	var bodyReader io.Reader
+	if payload != nil {
+		encoded, err := json.Marshal(payload)
+		if err != nil {
+			return nil, fmt.Errorf("failed to encode request body: %w", err)
+		}
+		bodyReader = bytes.NewReader(encoded)
+	}
+
+	endpoint := strings.TrimRight(c.config.BaseURL, "/") + "/" + strings.TrimPrefix(path, "/")
+	req, err := http.NewRequestWithContext(ctx, method, endpoint, bodyReader)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+	if c.config.Token != "" {
+		req.Header.Set("Authorization", "token "+c.config.Token)
+	}
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+	if c.config.UserAgent != "" {
+		req.Header.Set("User-Agent", c.config.UserAgent)
+	} else {
+		req.Header.Set("User-Agent", "gzh-cli")
+	}
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	var resp *http.Response
+	if c.httpClient != nil {
+		resp, err = c.httpClient.Do(req)
+	} else {
+		resp, err = http.DefaultClient.Do(req)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("request failed: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response: %w", err)
+	}
+
+	if resp.StatusCode != acceptedStatus && resp.StatusCode != http.StatusOK {
+		// Surface status so callers can branch (e.g. org 404 → user create).
+		return nil, fmt.Errorf("API %s %s: HTTP %d - %s", method, path, resp.StatusCode, resp.Status)
+	}
+	return respBody, nil
 }
 
 // GitHubCloneService implements the CloneService interface.

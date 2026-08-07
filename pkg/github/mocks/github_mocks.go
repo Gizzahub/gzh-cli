@@ -261,6 +261,78 @@ func (mr *MockAPIClientMockRecorder) UpdateRepositoryConfiguration(ctx, owner, r
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRepositoryConfiguration", reflect.TypeOf((*MockAPIClient)(nil).UpdateRepositoryConfiguration), ctx, owner, repo, config)
 }
 
+// CreateRepository mocks base method.
+func (m *MockAPIClient) CreateRepository(ctx context.Context, owner string, opts *github.CreateRepositoryOptions) (*github.RepositoryInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateRepository", ctx, owner, opts)
+	ret0, _ := ret[0].(*github.RepositoryInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateRepository indicates an expected call of CreateRepository.
+func (mr *MockAPIClientMockRecorder) CreateRepository(ctx, owner, opts any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRepository", reflect.TypeOf((*MockAPIClient)(nil).CreateRepository), ctx, owner, opts)
+}
+
+// DeleteRepository mocks base method.
+func (m *MockAPIClient) DeleteRepository(ctx context.Context, owner, repo string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteRepository", ctx, owner, repo)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteRepository indicates an expected call of DeleteRepository.
+func (mr *MockAPIClientMockRecorder) DeleteRepository(ctx, owner, repo any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRepository", reflect.TypeOf((*MockAPIClient)(nil).DeleteRepository), ctx, owner, repo)
+}
+
+// ArchiveRepository mocks base method.
+func (m *MockAPIClient) ArchiveRepository(ctx context.Context, owner, repo string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ArchiveRepository", ctx, owner, repo)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ArchiveRepository indicates an expected call of ArchiveRepository.
+func (mr *MockAPIClientMockRecorder) ArchiveRepository(ctx, owner, repo any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ArchiveRepository", reflect.TypeOf((*MockAPIClient)(nil).ArchiveRepository), ctx, owner, repo)
+}
+
+// UnarchiveRepository mocks base method.
+func (m *MockAPIClient) UnarchiveRepository(ctx context.Context, owner, repo string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UnarchiveRepository", ctx, owner, repo)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UnarchiveRepository indicates an expected call of UnarchiveRepository.
+func (mr *MockAPIClientMockRecorder) UnarchiveRepository(ctx, owner, repo any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnarchiveRepository", reflect.TypeOf((*MockAPIClient)(nil).UnarchiveRepository), ctx, owner, repo)
+}
+
+// SearchRepositories mocks base method.
+func (m *MockAPIClient) SearchRepositories(ctx context.Context, query string, opts *github.SearchRepositoriesOptions) (*github.RepositorySearchResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchRepositories", ctx, query, opts)
+	ret0, _ := ret[0].(*github.RepositorySearchResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchRepositories indicates an expected call of SearchRepositories.
+func (mr *MockAPIClientMockRecorder) SearchRepositories(ctx, query, opts any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchRepositories", reflect.TypeOf((*MockAPIClient)(nil).SearchRepositories), ctx, query, opts)
+}
+
 // MockCloneService is a mock of CloneService interface.
 type MockCloneService struct {
 	ctrl     *gomock.Controller

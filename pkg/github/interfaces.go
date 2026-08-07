@@ -52,12 +52,54 @@ type RepositoryInfo struct {
 	IsTemplate    bool      `json:"is_template"`
 }
 
+// CreateRepositoryOptions holds parameters for creating a GitHub repository.
+type CreateRepositoryOptions struct {
+	Name              string `json:"name"`
+	Description       string `json:"description,omitempty"`
+	Homepage          string `json:"homepage,omitempty"`
+	Private           bool   `json:"private"`
+	HasIssues         bool   `json:"has_issues"`
+	HasProjects       bool   `json:"has_projects"`
+	HasWiki           bool   `json:"has_wiki"`
+	HasDownloads      bool   `json:"has_downloads"`
+	AutoInit          bool   `json:"auto_init"`
+	GitignoreTemplate string `json:"gitignore_template,omitempty"`
+	LicenseTemplate   string `json:"license_template,omitempty"`
+	DefaultBranch     string `json:"default_branch,omitempty"`
+	AllowSquashMerge  bool   `json:"allow_squash_merge"`
+	AllowMergeCommit  bool   `json:"allow_merge_commit"`
+	AllowRebaseMerge  bool   `json:"allow_rebase_merge"`
+	AllowAutoMerge    bool   `json:"allow_auto_merge"`
+}
+
+// SearchRepositoriesOptions holds parameters for searching repositories.
+type SearchRepositoriesOptions struct {
+	Sort    string
+	Order   string
+	Page    int
+	PerPage int
+}
+
+// RepositorySearchResult holds GitHub repository search results.
+type RepositorySearchResult struct {
+	TotalCount        int              `json:"total_count"`
+	IncompleteResults bool             `json:"incomplete_results"`
+	Repositories      []RepositoryInfo `json:"items"`
+}
+
 // APIClient defines the interface for GitHub API operations.
 type APIClient interface {
 	// Repository operations
 	GetRepository(ctx context.Context, owner, repo string) (*RepositoryInfo, error)
 	ListOrganizationRepositories(ctx context.Context, org string) ([]RepositoryInfo, error)
 	GetDefaultBranch(ctx context.Context, owner, repo string) (string, error)
+
+	// Repository mutations (CLI surface: create/delete/archive/search)
+	CreateRepository(ctx context.Context, owner string, opts *CreateRepositoryOptions) (*RepositoryInfo, error)
+	DeleteRepository(ctx context.Context, owner, repo string) error
+	ArchiveRepository(ctx context.Context, owner, repo string) error
+	UnarchiveRepository(ctx context.Context, owner, repo string) error
+	SearchRepositories(ctx context.Context, query string, opts *SearchRepositoriesOptions) (*RepositorySearchResult, error)
 
 	// Authentication and rate limiting
 	SetToken(ctx context.Context, token string) error

@@ -151,8 +151,28 @@ func (a *GitHubAPIClientAdapter) GetDefaultBranch(ctx context.Context, owner, re
 }
 
 func (a *GitHubAPIClientAdapter) SetToken(ctx context.Context, token string) error {
-	// ResilientGitHubClient doesn't have SetToken method, token is set during construction
+	a.client.SetToken(token)
 	return nil
+}
+
+func (a *GitHubAPIClientAdapter) CreateRepository(ctx context.Context, owner string, opts *CreateRepositoryOptions) (*RepositoryInfo, error) {
+	return a.client.CreateRepository(ctx, owner, opts)
+}
+
+func (a *GitHubAPIClientAdapter) DeleteRepository(ctx context.Context, owner, repo string) error {
+	return a.client.DeleteRepository(ctx, owner, repo)
+}
+
+func (a *GitHubAPIClientAdapter) ArchiveRepository(ctx context.Context, owner, repo string) error {
+	return a.client.ArchiveRepository(ctx, owner, repo)
+}
+
+func (a *GitHubAPIClientAdapter) UnarchiveRepository(ctx context.Context, owner, repo string) error {
+	return a.client.UnarchiveRepository(ctx, owner, repo)
+}
+
+func (a *GitHubAPIClientAdapter) SearchRepositories(ctx context.Context, query string, opts *SearchRepositoriesOptions) (*RepositorySearchResult, error) {
+	return a.client.SearchRepositories(ctx, query, opts)
 }
 
 func (a *GitHubAPIClientAdapter) GetRateLimit(ctx context.Context) (*RateLimit, error) {

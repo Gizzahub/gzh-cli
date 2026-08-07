@@ -4,11 +4,18 @@
 package gitea
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/gizzahub/gzh-cli/internal/httpclient"
 	"github.com/gizzahub/gzh-cli/pkg/git/provider"
 )
 
@@ -42,6 +49,8 @@ func (g *GiteaProvider) Authenticate(ctx context.Context, creds provider.Credent
 	switch creds.Type {
 	case provider.CredentialTypeToken:
 		g.SetToken(creds.Token)
+		// Keep package-level token in sync for List/Clone helpers that use addAuthHeader.
+		SetToken(creds.Token)
 		return nil
 	default:
 		return g.FormatError("authenticate", fmt.Errorf("unsupported credential type: %s", creds.Type))
@@ -148,89 +157,197 @@ func (g *GiteaProvider) CloneRepository(ctx context.Context, repo provider.Repos
 	return nil
 }
 
-// Placeholder implementations for other required methods
+// CreateRepository creates a repository under req.Owner (org preferred, user fallback).
+// Owner is required — fail-fast when empty.
 func (g *GiteaProvider) CreateRepository(ctx context.Context, req provider.CreateRepoRequest) (*provider.Repository, error) {
-	return nil, g.FormatError("create repository", fmt.Errorf("not implemented"))
+	if req.Owner == "" {
+		return nil, g.FormatError("create repository", fmt.Errorf("owner is required"))
+	}
+	if req.Name == "" {
+		return nil, g.FormatError("create repository", fmt.Errorf("name is required"))
+	}
+
+	payload := map[string]any{
+		"name":          req.Name,
+		"description":   req.Description,
+		"private":       req.Private,
+		"auto_init":     req.AutoInit,
+		"default_branch": req.DefaultBranch,
+		"has_issues":    req.HasIssues,
+		"has_wiki":      req.HasWiki,
+		"has_projects":  req.HasProjects,
+	}
+
+	var repo giteaRepo
+	// Prefer org endpoint; fall back to user repos when owner is not an org.
+	err := g.doJSON(ctx, "POST", fmt.Sprintf("orgs/%s/repos", url.PathEscape(req.Owner)), payload, &repo, http.StatusCreated, http.StatusOK)
+	if err != nil {
+		if !strings.Contains(err.Error(), "404") {
+			return nil, g.FormatError("create repository", err)
+		}
+		if err2 := g.doJSON(ctx, "POST", "user/repos", payload, &repo, http.StatusCreated, http.StatusOK); err2 != nil {
+			return nil, g.FormatError("create repository", err)
+		}
+	}
+	return giteaRepoToProvider(&repo), nil
 }
 
+// UpdateRepository updates repository settings.
+// not in CLI surface; deferred (issue 26 phase 2+)
 func (g *GiteaProvider) UpdateRepository(ctx context.Context, id string, updates provider.UpdateRepoRequest) (*provider.Repository, error) {
-	return nil, g.FormatError("update repository", fmt.Errorf("not implemented"))
+	return nil, g.FormatError("update repository", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
 }
 
+// DeleteRepository deletes a repository. id is owner/repo.
 func (g *GiteaProvider) DeleteRepository(ctx context.Context, id string) error {
-	return g.FormatError("delete repository", fmt.Errorf("not implemented"))
+	owner, repo, err := parseOwnerRepo(id)
+	if err != nil {
+		return g.FormatError("delete repository", err)
+	}
+	path := fmt.Sprintf("repos/%s/%s", url.PathEscape(owner), url.PathEscape(repo))
+	if err := g.doJSON(ctx, "DELETE", path, nil, nil, http.StatusNoContent, http.StatusOK); err != nil {
+		return g.FormatError("delete repository", err)
+	}
+	return nil
 }
 
+// ArchiveRepository archives a repository. id is owner/repo.
 func (g *GiteaProvider) ArchiveRepository(ctx context.Context, id string) error {
-	return g.FormatError("archive repository", fmt.Errorf("not implemented"))
+	return g.setArchived(ctx, id, true)
 }
 
+// UnarchiveRepository unarchives a repository. id is owner/repo.
 func (g *GiteaProvider) UnarchiveRepository(ctx context.Context, id string) error {
-	return g.FormatError("unarchive repository", fmt.Errorf("not implemented"))
+	return g.setArchived(ctx, id, false)
 }
 
+func (g *GiteaProvider) setArchived(ctx context.Context, id string, archived bool) error {
+	owner, repo, err := parseOwnerRepo(id)
+	if err != nil {
+		return g.FormatError("archive repository", err)
+	}
+	path := fmt.Sprintf("repos/%s/%s", url.PathEscape(owner), url.PathEscape(repo))
+	payload := map[string]bool{"archived": archived}
+	op := "unarchive repository"
+	if archived {
+		op = "archive repository"
+	}
+	if err := g.doJSON(ctx, "PATCH", path, payload, nil, http.StatusOK); err != nil {
+		return g.FormatError(op, err)
+	}
+	return nil
+}
+
+// ForkRepository forks a repository.
+// not in CLI surface; deferred (issue 26 phase 2+)
 func (g *GiteaProvider) ForkRepository(ctx context.Context, id string, opts provider.ForkOptions) (*provider.Repository, error) {
-	return nil, g.FormatError("fork repository", fmt.Errorf("not implemented"))
+	return nil, g.FormatError("fork repository", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
 }
 
+// SearchRepositories searches repositories via the Gitea search API.
 func (g *GiteaProvider) SearchRepositories(ctx context.Context, query provider.SearchQuery) (*provider.SearchResult, error) {
-	return nil, g.FormatError("search repositories", fmt.Errorf("not implemented"))
+	q := query.Query
+	if q == "" {
+		return nil, g.FormatError("search repositories", fmt.Errorf("search query is required"))
+	}
+
+	page := query.Page
+	if page <= 0 {
+		page = 1
+	}
+	perPage := query.PerPage
+	if perPage <= 0 {
+		perPage = 30
+	}
+
+	params := url.Values{}
+	params.Set("q", q)
+	params.Set("page", fmt.Sprintf("%d", page))
+	params.Set("limit", fmt.Sprintf("%d", perPage))
+	if query.User != "" {
+		params.Set("user", query.User)
+	}
+	if query.Topic != "" {
+		params.Set("topic", "true")
+	}
+
+	var result struct {
+		OK   bool        `json:"ok"`
+		Data []giteaRepo `json:"data"`
+	}
+	if err := g.doJSON(ctx, "GET", "repos/search?"+params.Encode(), nil, &result, http.StatusOK); err != nil {
+		return nil, g.FormatError("search repositories", err)
+	}
+
+	repos := make([]provider.Repository, 0, len(result.Data))
+	for i := range result.Data {
+		repos = append(repos, *giteaRepoToProvider(&result.Data[i]))
+	}
+
+	return &provider.SearchResult{
+		TotalCount:   len(repos),
+		Repositories: repos,
+		Page:         page,
+		PerPage:      perPage,
+		HasNext:      len(repos) == perPage,
+		HasPrev:      page > 1,
+	}, nil
 }
 
-// Webhook management methods (placeholder implementations)
+// Webhook management methods — not in CLI surface; deferred (issue 26 phase 2+)
 func (g *GiteaProvider) ListWebhooks(ctx context.Context, repoID string) ([]provider.Webhook, error) {
-	return nil, g.FormatError("list webhooks", fmt.Errorf("not implemented"))
+	return nil, g.FormatError("list webhooks", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
 }
 
 func (g *GiteaProvider) GetWebhook(ctx context.Context, repoID, webhookID string) (*provider.Webhook, error) {
-	return nil, g.FormatError("get webhook", fmt.Errorf("not implemented"))
+	return nil, g.FormatError("get webhook", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
 }
 
 func (g *GiteaProvider) CreateWebhook(ctx context.Context, repoID string, webhook provider.CreateWebhookRequest) (*provider.Webhook, error) {
 	if err := g.helpers.ValidateWebhookRequest(repoID, "", webhook.Config.URL); err != nil {
 		return nil, g.FormatError("create webhook", err)
 	}
-	return nil, g.FormatError("create webhook", fmt.Errorf("not implemented"))
+	return nil, g.FormatError("create webhook", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
 }
 
 func (g *GiteaProvider) UpdateWebhook(ctx context.Context, repoID, webhookID string, updates provider.UpdateWebhookRequest) (*provider.Webhook, error) {
-	return nil, g.FormatError("update webhook", fmt.Errorf("not implemented"))
+	return nil, g.FormatError("update webhook", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
 }
 
 func (g *GiteaProvider) DeleteWebhook(ctx context.Context, repoID, webhookID string) error {
-	return g.FormatError("delete webhook", fmt.Errorf("not implemented"))
+	return g.FormatError("delete webhook", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
 }
 
 func (g *GiteaProvider) TestWebhook(ctx context.Context, repoID, webhookID string) (*provider.WebhookTestResult, error) {
-	return nil, g.FormatError("test webhook", fmt.Errorf("not implemented"))
+	return nil, g.FormatError("test webhook", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
 }
 
 func (g *GiteaProvider) ValidateWebhookURL(ctx context.Context, url string) error {
 	if err := g.helpers.ValidateWebhookRequest("", "", url); err != nil {
 		return g.FormatError("validate webhook URL", err)
 	}
-	return g.FormatError("validate webhook URL", fmt.Errorf("not implemented"))
+	return g.FormatError("validate webhook URL", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
 }
 
-// Event management methods (placeholder implementations)
+// Event management methods — not in CLI surface; deferred (issue 26 phase 2+)
 func (g *GiteaProvider) ListEvents(ctx context.Context, opts provider.EventListOptions) ([]provider.Event, error) {
-	return nil, g.FormatError("list events", fmt.Errorf("not implemented"))
+	return nil, g.FormatError("list events", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
 }
 
 func (g *GiteaProvider) GetEvent(ctx context.Context, eventID string) (*provider.Event, error) {
-	return nil, g.FormatError("get event", fmt.Errorf("not implemented"))
+	return nil, g.FormatError("get event", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
 }
 
 func (g *GiteaProvider) ProcessEvent(ctx context.Context, event provider.Event) error {
-	return g.FormatError("process event", fmt.Errorf("not implemented"))
+	return g.FormatError("process event", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
 }
 
 func (g *GiteaProvider) RegisterEventHandler(eventType string, handler provider.EventHandler) error {
-	return g.FormatError("register event handler", fmt.Errorf("not implemented"))
+	return g.FormatError("register event handler", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
 }
 
 func (g *GiteaProvider) StreamEvents(ctx context.Context, opts provider.StreamOptions) (<-chan provider.Event, error) {
-	return nil, g.FormatError("stream events", fmt.Errorf("not implemented"))
+	return nil, g.FormatError("stream events", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
 }
 
 // Health and monitoring methods
@@ -370,10 +487,116 @@ func (g *GiteaProvider) ListReleaseAssets(ctx context.Context, repoID, releaseID
 }
 
 // UploadReleaseAsset uploads an asset to a release.
+// not in CLI surface; deferred (issue 26 phase 2+)
 func (g *GiteaProvider) UploadReleaseAsset(ctx context.Context, repoID string, req provider.UploadAssetRequest) (*provider.Asset, error) {
-	// Gitea asset upload requires multipart form - not yet implemented
-	// TODO: Implement Gitea release asset upload
-	return nil, g.FormatError("upload release asset", fmt.Errorf("not implemented"))
+	return nil, g.FormatError("upload release asset", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
+}
+
+// giteaRepo is the subset of Gitea repository JSON used by mutation APIs.
+type giteaRepo struct {
+	ID            int64  `json:"id"`
+	Name          string `json:"name"`
+	FullName      string `json:"full_name"`
+	Description   string `json:"description"`
+	DefaultBranch string `json:"default_branch"`
+	CloneURL      string `json:"clone_url"`
+	SSHURL        string `json:"ssh_url"`
+	HTMLURL       string `json:"html_url"`
+	Private       bool   `json:"private"`
+	Archived      bool   `json:"archived"`
+}
+
+func giteaRepoToProvider(r *giteaRepo) *provider.Repository {
+	if r == nil {
+		return nil
+	}
+	return &provider.Repository{
+		ID:            r.FullName,
+		Name:          r.Name,
+		FullName:      r.FullName,
+		Description:   r.Description,
+		DefaultBranch: r.DefaultBranch,
+		CloneURL:      r.CloneURL,
+		SSHURL:        r.SSHURL,
+		HTMLURL:       r.HTMLURL,
+		Private:       r.Private,
+		Archived:      r.Archived,
+		ProviderType:  "gitea",
+	}
+}
+
+func parseOwnerRepo(id string) (owner, repo string, err error) {
+	parts := strings.Split(strings.Trim(id, "/"), "/")
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return "", "", fmt.Errorf("invalid repository id %q (expected owner/repo)", id)
+	}
+	return parts[0], parts[1], nil
+}
+
+func (g *GiteaProvider) apiBase() string {
+	base := strings.TrimRight(g.GetBaseURL(), "/")
+	if base == "" {
+		base = "https://gitea.com/api/v1"
+	}
+	return base
+}
+
+// doJSON performs an authenticated JSON request against this provider's base URL.
+func (g *GiteaProvider) doJSON(ctx context.Context, method, endpoint string, payload any, out any, wantStatuses ...int) error {
+	var bodyReader io.Reader
+	if payload != nil {
+		encoded, err := json.Marshal(payload)
+		if err != nil {
+			return fmt.Errorf("failed to encode request: %w", err)
+		}
+		bodyReader = bytes.NewReader(encoded)
+	}
+
+	fullURL := g.apiBase() + "/" + strings.TrimPrefix(endpoint, "/")
+	req, err := http.NewRequestWithContext(ctx, method, fullURL, bodyReader)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	token := g.GetToken()
+	if token == "" {
+		token = configuredToken
+	}
+	if token != "" {
+		req.Header.Set("Authorization", "token "+token)
+	}
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	client := httpclient.GetGlobalClient("gitea")
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("request failed: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read response: %w", err)
+	}
+
+	ok := false
+	for _, want := range wantStatuses {
+		if resp.StatusCode == want {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("API %s %s: HTTP %d - %s", method, endpoint, resp.StatusCode, strings.TrimSpace(string(respBody)))
+	}
+	if out != nil && len(respBody) > 0 {
+		if err := json.Unmarshal(respBody, out); err != nil {
+			return fmt.Errorf("failed to decode response: %w", err)
+		}
+	}
+	return nil
 }
 
 // DeleteReleaseAsset deletes a release asset.

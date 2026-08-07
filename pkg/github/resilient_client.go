@@ -1,10 +1,12 @@
 package github
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -295,4 +297,177 @@ func (c *ResilientGitHubClient) SetToken(token string) {
 // Empty baseURL falls back to DefaultGitHubAPIBaseURL.
 func (c *ResilientGitHubClient) SetBaseURL(baseURL string) {
 	c.baseURL = ResolveGitHubAPIBaseURL(baseURL)
+}
+
+// CreateRepository creates a repository under the given owner (org preferred, user fallback).
+func (c *ResilientGitHubClient) CreateRepository(ctx context.Context, owner string, opts *CreateRepositoryOptions) (*RepositoryInfo, error) {
+	if owner == "" {
+		return nil, fmt.Errorf("owner is required")
+	}
+	if opts == nil || opts.Name == "" {
+		return nil, fmt.Errorf("repository name is required")
+	}
+
+	// Prefer org endpoint; fall back to user endpoint when owner is a user namespace.
+	info, err := c.doCreateRepository(ctx, fmt.Sprintf("%s/orgs/%s/repos", c.baseURL, owner), opts)
+	if err == nil {
+		return info, nil
+	}
+	// 404 from org endpoint typically means owner is not an organization.
+	if !strings.Contains(err.Error(), "not found (404)") {
+		return nil, err
+	}
+	return c.doCreateRepository(ctx, fmt.Sprintf("%s/user/repos", c.baseURL), opts)
+}
+
+func (c *ResilientGitHubClient) doCreateRepository(ctx context.Context, endpoint string, opts *CreateRepositoryOptions) (*RepositoryInfo, error) {
+	body, err := json.Marshal(opts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode create repository request: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+	c.prepareRequest(req)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create repository: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
+		return nil, c.handleAPIError(resp, "failed to create repository")
+	}
+
+	var info RepositoryInfo
+	if err := json.NewDecoder(resp.Body).Decode(&info); err != nil {
+		return nil, fmt.Errorf("failed to decode create repository response: %w", err)
+	}
+	return &info, nil
+}
+
+// DeleteRepository deletes a repository identified by owner/repo.
+func (c *ResilientGitHubClient) DeleteRepository(ctx context.Context, owner, repo string) error {
+	if owner == "" || repo == "" {
+		return fmt.Errorf("owner and repo are required")
+	}
+
+	url := fmt.Sprintf("%s/repos/%s/%s", c.baseURL, owner, repo)
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+	c.prepareRequest(req)
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to delete repository: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
+		return c.handleAPIError(resp, "failed to delete repository")
+	}
+	return nil
+}
+
+// ArchiveRepository archives a repository.
+func (c *ResilientGitHubClient) ArchiveRepository(ctx context.Context, owner, repo string) error {
+	return c.setRepositoryArchived(ctx, owner, repo, true)
+}
+
+// UnarchiveRepository unarchives a repository.
+func (c *ResilientGitHubClient) UnarchiveRepository(ctx context.Context, owner, repo string) error {
+	return c.setRepositoryArchived(ctx, owner, repo, false)
+}
+
+func (c *ResilientGitHubClient) setRepositoryArchived(ctx context.Context, owner, repo string, archived bool) error {
+	if owner == "" || repo == "" {
+		return fmt.Errorf("owner and repo are required")
+	}
+
+	body, err := json.Marshal(map[string]bool{"archived": archived})
+	if err != nil {
+		return fmt.Errorf("failed to encode archive request: %w", err)
+	}
+
+	endpoint := fmt.Sprintf("%s/repos/%s/%s", c.baseURL, owner, repo)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPatch, endpoint, bytes.NewReader(body))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+	c.prepareRequest(req)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to update repository archive state: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		op := "failed to unarchive repository"
+		if archived {
+			op = "failed to archive repository"
+		}
+		return c.handleAPIError(resp, op)
+	}
+	return nil
+}
+
+// SearchRepositories searches repositories via the GitHub search API.
+func (c *ResilientGitHubClient) SearchRepositories(ctx context.Context, query string, opts *SearchRepositoriesOptions) (*RepositorySearchResult, error) {
+	if query == "" {
+		return nil, fmt.Errorf("search query is required")
+	}
+	if opts == nil {
+		opts = &SearchRepositoriesOptions{}
+	}
+
+	page := opts.Page
+	if page <= 0 {
+		page = 1
+	}
+	perPage := opts.PerPage
+	if perPage <= 0 {
+		perPage = 30
+	}
+
+	params := url.Values{}
+	params.Set("q", query)
+	params.Set("page", strconv.Itoa(page))
+	params.Set("per_page", strconv.Itoa(perPage))
+	if opts.Sort != "" {
+		params.Set("sort", opts.Sort)
+	}
+	if opts.Order != "" {
+		params.Set("order", opts.Order)
+	}
+
+	endpoint := fmt.Sprintf("%s/search/repositories?%s", c.baseURL, params.Encode())
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+	c.prepareRequest(req)
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to search repositories: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, c.handleAPIError(resp, "failed to search repositories")
+	}
+
+	var result RepositorySearchResult
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode search response: %w", err)
+	}
+	return &result, nil
 }
