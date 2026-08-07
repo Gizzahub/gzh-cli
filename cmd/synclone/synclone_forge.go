@@ -12,6 +12,8 @@ package synclone
 import (
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 
@@ -44,6 +46,12 @@ type forgeOptions struct {
 	UseSSH          bool
 	CleanupOrphans  bool
 	IsUser          bool
+	// Metadata filters (parity with legacy github/gitlab paths)
+	Language      string
+	MinStars      int
+	MaxStars      int
+	IncludeTopics []string
+	ExcludeTopics []string
 }
 
 // newSyncCloneForgeCmd creates the forge subcommand for synclone.
@@ -76,7 +84,13 @@ Examples:
   gz synclone forge --provider gitlab --org mygroup --target ./repos --base-url https://gitlab.company.com
 
   # Sync user repositories instead of organization
-  gz synclone forge --provider github --org username --target ./repos --user`,
+  gz synclone forge --provider github --org username --target ./repos --user
+
+  # Filter by language and stars
+  gz synclone forge --provider github --org myorg --target ./repos --language Go --min-stars 10
+
+  # Filter by topics (AND for include; any match excludes)
+  gz synclone forge --provider github --org myorg --target ./repos --topics cli,tools --exclude-topics archived`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runForgeSync(cmd, opts)
 		},
@@ -107,6 +121,13 @@ Examples:
 	cmd.Flags().BoolVar(&opts.UseSSH, "ssh", false, "Use SSH URLs for cloning")
 	cmd.Flags().BoolVar(&opts.CleanupOrphans, "cleanup-orphans", false, "Delete directories not in organization")
 
+	// Metadata filters (legacy github parity)
+	cmd.Flags().StringVar(&opts.Language, "language", "", "Filter by primary language (comma-separated, e.g. Go,Python)")
+	cmd.Flags().IntVar(&opts.MinStars, "min-stars", 0, "Minimum number of stars")
+	cmd.Flags().IntVar(&opts.MaxStars, "max-stars", 0, "Maximum number of stars (0 = no limit)")
+	cmd.Flags().StringSliceVar(&opts.IncludeTopics, "topics", nil, "Include only repositories with all of these topics")
+	cmd.Flags().StringSliceVar(&opts.ExcludeTopics, "exclude-topics", nil, "Exclude repositories that have any of these topics")
+
 	// Required flags
 	_ = cmd.MarkFlagRequired("provider")
 	_ = cmd.MarkFlagRequired("org")
@@ -117,12 +138,23 @@ Examples:
 
 func runForgeSync(cmd *cobra.Command, opts *forgeOptions) error {
 	ctx := cmd.Context()
+	out := cmd.OutOrStdout()
 
-	// Create provider
+	if opts.Resume && opts.StateFile == "" {
+		return fmt.Errorf("resume requested but no --state-file provided")
+	}
+
+	// Ensure target exists before plan/gzh.yaml write
+	if err := os.MkdirAll(opts.TargetPath, 0o755); err != nil {
+		return fmt.Errorf("failed to create target directory: %w", err)
+	}
+
+	// Create provider (optionally wrap with client-side topic filter)
 	forgeProvider, err := createForgeProvider(opts)
 	if err != nil {
 		return fmt.Errorf("failed to create provider: %w", err)
 	}
+	forgeProvider = wrapTopicFilter(forgeProvider, opts.IncludeTopics, opts.ExcludeTopics)
 
 	// Parse strategy
 	strategy, err := reposync.ParseStrategy(opts.Strategy)
@@ -130,12 +162,79 @@ func runForgeSync(cmd *cobra.Command, opts *forgeOptions) error {
 		return fmt.Errorf("invalid strategy: %w", err)
 	}
 
-	// Create ForgePlanner
+	// Create ForgePlanner with metadata filters
+	plannerConfig := buildForgePlannerConfig(opts)
+	planner := reposync.NewForgePlanner(forgeProvider, plannerConfig)
+
+	// Build plan request
+	planReq := reposync.PlanRequest{
+		Options: reposync.PlanOptions{
+			DefaultStrategy: strategy,
+			CleanupOrphans:  opts.CleanupOrphans,
+		},
+	}
+	if opts.CleanupOrphans {
+		planReq.Options.Roots = []string{opts.TargetPath}
+	}
+
+	// Plan first so we can write/reuse gzh.yaml from the filtered list
+	plan, err := planner.Plan(ctx, planReq)
+	if err != nil {
+		return fmt.Errorf("forge plan failed: %w", err)
+	}
+
+	if err := ensureForgeGzhYaml(out, opts, plan); err != nil {
+		return err
+	}
+
+	// Build run options and state
+	runOpts := reposync.RunOptions{
+		Parallel:   opts.Parallel,
+		MaxRetries: opts.MaxRetries,
+		Resume:     opts.Resume,
+		DryRun:     opts.DryRun,
+	}
+
+	progress := consoleProgressSink{Out: out}
+
+	var state reposync.StateStore
+	if opts.StateFile != "" {
+		state = reposync.NewFileStateStore(opts.StateFile)
+	} else {
+		state = reposync.NewInMemoryStateStore()
+	}
+
+	if opts.Resume {
+		prev, loadErr := state.Load(ctx)
+		if loadErr != nil {
+			return fmt.Errorf("load state: %w", loadErr)
+		}
+		if len(prev.Items) > 0 {
+			plan = filterCompletedForgePlan(plan, prev)
+		}
+	}
+
+	executor := reposync.GitExecutor{}
+	result, err := executor.Execute(ctx, plan, runOpts, progress, state)
+	if err != nil {
+		return fmt.Errorf("forge sync failed: %w", err)
+	}
+
+	fmt.Fprintf(out, "\nSync completed: %d succeeded, %d failed, %d skipped\n",
+		len(result.Succeeded), len(result.Failed), len(result.Skipped))
+
+	return nil
+}
+
+// buildForgePlannerConfig maps CLI options onto ForgePlannerConfig, including
+// language/stars filters supported by the gitforge planner.
+func buildForgePlannerConfig(opts *forgeOptions) reposync.ForgePlannerConfig {
 	cloneProto := "https"
 	if opts.UseSSH {
 		cloneProto = "ssh"
 	}
-	plannerConfig := reposync.ForgePlannerConfig{
+
+	cfg := reposync.ForgePlannerConfig{
 		TargetPath:      opts.TargetPath,
 		Organization:    opts.Organization,
 		IsUser:          opts.IsUser,
@@ -145,60 +244,55 @@ func runForgeSync(cmd *cobra.Command, opts *forgeOptions) error {
 		CloneProto:      cloneProto,
 	}
 
-	planner := reposync.NewForgePlanner(forgeProvider, plannerConfig)
+	meta := buildForgeMetadataFilter(opts.Language, opts.MinStars, opts.MaxStars, opts.IncludeTopics, opts.ExcludeTopics)
+	applyMetadataToPlannerConfig(&cfg, meta)
+	return cfg
+}
 
-	// Create orchestrator with ForgePlanner
-	executor := reposync.GitExecutor{}
-	orchestrator := reposync.NewOrchestrator(planner, executor, nil)
+// ensureForgeGzhYaml reuses an existing matching gzh.yaml or writes one from the plan.
+func ensureForgeGzhYaml(out io.Writer, opts *forgeOptions, plan reposync.Plan) error {
+	gzhPath := filepath.Join(opts.TargetPath, "gzh.yaml")
 
-	// Build plan request
-	planReq := reposync.PlanRequest{
-		Options: reposync.PlanOptions{
-			DefaultStrategy: strategy,
-			CleanupOrphans:  opts.CleanupOrphans,
-		},
+	if repos, ok, err := TryReuseForgeGzhYaml(opts.TargetPath, opts.Organization, opts.Provider); err != nil {
+		return fmt.Errorf("failed to load gzh.yaml: %w", err)
+	} else if ok {
+		fmt.Fprintf(out, "📄 Reusing existing gzh.yaml (%d repositories) at %s\n", len(repos), gzhPath)
+		return nil
 	}
 
-	if opts.CleanupOrphans {
-		planReq.Options.Roots = []string{opts.TargetPath}
+	repos := GzhReposFromPlan(plan)
+	if err := WriteForgeGzhYaml(GzhYamlWriteOptions{
+		TargetPath:     opts.TargetPath,
+		Organization:   opts.Organization,
+		Provider:       opts.Provider,
+		CleanupOrphans: opts.CleanupOrphans,
+	}, repos); err != nil {
+		return fmt.Errorf("failed to generate gzh.yaml: %w", err)
 	}
 
-	// Build run options
-	runOpts := reposync.RunOptions{
-		Parallel:   opts.Parallel,
-		MaxRetries: opts.MaxRetries,
-		Resume:     opts.Resume,
-		DryRun:     opts.DryRun,
-	}
-
-	if opts.Resume && opts.StateFile == "" {
-		return fmt.Errorf("resume requested but no --state-file provided")
-	}
-
-	// Progress and state
-	progress := consoleProgressSink{Out: cmd.OutOrStdout()}
-
-	var state reposync.StateStore
-	if opts.StateFile != "" {
-		state = reposync.NewFileStateStore(opts.StateFile)
-	}
-
-	// Run
-	result, err := orchestrator.Run(ctx, reposync.RunRequest{
-		PlanRequest: planReq,
-		RunOptions:  runOpts,
-		Progress:    progress,
-		State:       state,
-	})
-	if err != nil {
-		return fmt.Errorf("forge sync failed: %w", err)
-	}
-
-	// Print summary
-	fmt.Fprintf(cmd.OutOrStdout(), "\nSync completed: %d succeeded, %d failed, %d skipped\n",
-		len(result.Succeeded), len(result.Failed), len(result.Skipped))
-
+	fmt.Fprintf(out, "📝 Generated gzh.yaml with %d repositories\n", len(repos))
 	return nil
+}
+
+// filterCompletedForgePlan drops actions already marked done in prior state.
+func filterCompletedForgePlan(plan reposync.Plan, previous reposync.RunState) reposync.Plan {
+	if len(previous.Items) == 0 {
+		return plan
+	}
+
+	done := make(map[string]reposync.RunStatus, len(previous.Items))
+	for _, item := range previous.Items {
+		done[item.Repo.TargetPath] = item.Status
+	}
+
+	var remaining []reposync.Action
+	for _, action := range plan.Actions {
+		status, ok := done[action.Repo.TargetPath]
+		if !ok || status != reposync.RunStatusDone {
+			remaining = append(remaining, action)
+		}
+	}
+	return reposync.Plan{Actions: remaining}
 }
 
 // createForgeProvider creates the appropriate provider based on options.
