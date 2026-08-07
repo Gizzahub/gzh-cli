@@ -861,11 +861,21 @@ func (dvm *DependencyVersionPolicyManager) performCompatibilityAnalysis(policy *
 }
 
 func (dvm *DependencyVersionPolicyManager) analyzeSecurityImpact(dependencyName, currentVersion, proposedVersion, ecosystem string) (*SecurityImpactAnalysis, error) {
+	// Security advisory lookup is not implemented. Return an explicit
+	// "not analyzed" result rather than fabricating CVE IDs or scores.
+	// Callers must not treat this as evidence of security improvement.
+	_ = dependencyName
+	_ = currentVersion
+	_ = proposedVersion
+	_ = ecosystem
+
 	return &SecurityImpactAnalysis{
-		SecurityImprovements: true,
-		VulnerabilitiesFixed: []string{"CVE-2024-example"},
+		SecurityImprovements: false,
+		VulnerabilitiesFixed: make([]string, 0),
 		NewVulnerabilities:   make([]string, 0),
-		SecurityScore:        85.5,
+		SecurityScore:        0,
+		ChecksSkipped:        true,
+		Reason:               "security impact analysis is not implemented",
 	}, nil
 }
 
@@ -915,7 +925,9 @@ func (dvm *DependencyVersionPolicyManager) determineRecommendedAction(analysis *
 		}
 	}
 
-	if analysis.SecurityImpact.SecurityImprovements {
+	// Only treat security improvements as an approval reason when analysis
+	// actually ran. Skipped/unimplemented analysis must not invent a reason.
+	if !analysis.SecurityImpact.ChecksSkipped && analysis.SecurityImpact.SecurityImprovements {
 		return RecommendedAction{
 			Action: "approve",
 			Reason: "Security improvements detected",
@@ -994,6 +1006,11 @@ type SecurityImpactAnalysis struct {
 	NewVulnerabilities   []string `json:"new_vulnerabilities"`
 	SecurityScore        float64  `json:"security_score"`
 	RiskLevel            string   `json:"risk_level"`
+	// ChecksSkipped is true when analysis did not run (e.g. not implemented).
+	// When true, SecurityImprovements/VulnerabilitiesFixed/SecurityScore must
+	// not be treated as measured results.
+	ChecksSkipped bool   `json:"checks_skipped"`
+	Reason        string `json:"reason,omitempty"`
 }
 
 type BreakingChangeAnalysisResult struct {

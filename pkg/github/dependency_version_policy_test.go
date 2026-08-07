@@ -1123,3 +1123,49 @@ func createTestDependencyVersionPolicy() *DependencyVersionPolicy {
 		},
 	}
 }
+
+func TestAnalyzeSecurityImpact_NoFabricatedCVEs(t *testing.T) {
+	manager := createTestDependencyVersionPolicyManager()
+
+	impact, err := manager.analyzeSecurityImpact("lodash", "4.17.20", "4.17.21", "npm")
+	require.NoError(t, err)
+	require.NotNil(t, impact)
+
+	// Must not invent CVE identifiers, scores, or improvement claims.
+	assert.True(t, impact.ChecksSkipped, "analysis must report itself as skipped")
+	assert.NotEmpty(t, impact.Reason)
+	assert.False(t, impact.SecurityImprovements)
+	assert.Empty(t, impact.VulnerabilitiesFixed)
+	assert.Empty(t, impact.NewVulnerabilities)
+	assert.Zero(t, impact.SecurityScore)
+
+	for _, cve := range impact.VulnerabilitiesFixed {
+		assert.NotContains(t, cve, "example", "must not contain fabricated CVE placeholders")
+		assert.NotEqual(t, "CVE-2024-example", cve)
+	}
+	assert.NotContains(t, impact.Reason, "CVE-2024-example")
+}
+
+func TestDetermineRecommendedAction_DoesNotUseSkippedSecurityImpact(t *testing.T) {
+	manager := createTestDependencyVersionPolicyManager()
+
+	analysis := &DependencyVersionAnalysis{
+		VersionConstraintCheck: VersionConstraintCheckResult{Allowed: true},
+		BreakingChangeAnalysis: BreakingChangeAnalysisResult{HasBreakingChanges: false},
+		ApprovalWorkflow:       ApprovalWorkflow{Required: false},
+		SecurityImpact: SecurityImpactAnalysis{
+			// Fabricated-looking values that must be ignored when skipped.
+			SecurityImprovements: true,
+			VulnerabilitiesFixed: []string{"CVE-2024-example"},
+			SecurityScore:        85.5,
+			ChecksSkipped:        true,
+			Reason:               "security impact analysis is not implemented",
+		},
+	}
+
+	action := manager.determineRecommendedAction(analysis)
+	assert.Equal(t, "approve", action.Action)
+	assert.NotContains(t, action.Reason, "Security improvements")
+	assert.NotContains(t, action.Reason, "CVE-2024-example")
+	assert.Equal(t, "Update meets all policy requirements", action.Reason)
+}
