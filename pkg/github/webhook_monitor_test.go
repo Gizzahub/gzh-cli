@@ -411,8 +411,12 @@ func TestWebhookMonitor_Integration(t *testing.T) {
 	require.NoError(t, err)
 
 	// Add test webhook
+	//
+	// 여기서는 map에 직접 넣으면 안 된다. Start가 monitorLoop를 띄운
+	// 뒤라서 그쪽이 wm.mu 아래에서 같은 map을 읽고 있다. -race로 잡힌다.
+	// 다른 시험과 benchmark는 monitor를 시작하지 않으므로 직접 넣어도 된다.
 	webhook := createTestWebhookStatus()
-	monitor.webhooks[webhook.ID] = webhook
+	monitor.AddWebhook(webhook)
 
 	// Wait for a monitoring cycle
 	time.Sleep(2 * time.Second)

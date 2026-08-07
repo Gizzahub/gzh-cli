@@ -388,6 +388,13 @@ func (wm *WebhookMonitor) alertProcessor(ctx context.Context) {
 	}
 }
 
+// updateMetrics는 wm.webhooks를 훑어 지표를 다시 센다.
+//
+// 자물쇠가 둘이다. 여기서 잠그는 wm.metrics.mu는 metrics만 지킨다.
+// wm.webhooks는 wm.mu가 지키므로 **부르는 쪽이 wm.mu를 쥐고 있어야 한다**.
+// 지금 부르는 곳은 performHealthChecks 하나뿐이고 그쪽이 쥐고 있다.
+// 여기서 다른 자물쇠를 눈에 띄게 잠그고 있어서 혼자 다 지키는 것처럼
+// 보이기 쉬워 적어 둔다.
 func (wm *WebhookMonitor) updateMetrics() {
 	wm.metrics.mu.Lock()
 	defer wm.metrics.mu.Unlock()
