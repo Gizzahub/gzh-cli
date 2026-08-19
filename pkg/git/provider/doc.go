@@ -11,7 +11,6 @@
 //   - GitProvider: Main interface implemented by all providers
 //   - RepositoryManager: Interface for repository lifecycle operations
 //   - WebhookManager: Interface for webhook management
-//   - EventManager: Interface for event handling
 //   - ProviderFactory: Factory for creating provider instances
 //   - ProviderRegistry: Registry with caching and lifecycle management
 //

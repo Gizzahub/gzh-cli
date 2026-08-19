@@ -376,7 +376,9 @@ const (
 	ConditionTypeEcosystem  ConditionType = "ecosystem"
 )
 
-// Security-specific action types (extending ActionType from automation_rule.go).
+// ActionType names a security-policy action.
+type ActionType string
+
 const (
 	ActionTypeSecurityApprove      ActionType = "security_approve"
 	ActionTypeSecurityMerge        ActionType = "security_merge"

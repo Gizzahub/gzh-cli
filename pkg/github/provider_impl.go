@@ -619,28 +619,6 @@ func webhookInfoToProvider(w *WebhookInfo) provider.Webhook {
 	}
 }
 
-// Event management methods are not a gzh-cli product surface. A laptop CLI
-// cannot receive forge webhooks, and timeline APIs are not exposed here.
-func (g *GitHubProvider) ListEvents(ctx context.Context, opts provider.EventListOptions) ([]provider.Event, error) {
-	return nil, fmt.Errorf("forge event receive/timeline is not a gzh-cli command")
-}
-
-func (g *GitHubProvider) GetEvent(ctx context.Context, eventID string) (*provider.Event, error) {
-	return nil, fmt.Errorf("forge event receive/timeline is not a gzh-cli command")
-}
-
-func (g *GitHubProvider) ProcessEvent(ctx context.Context, event provider.Event) error {
-	return fmt.Errorf("forge event receive/timeline is not a gzh-cli command")
-}
-
-func (g *GitHubProvider) RegisterEventHandler(eventType string, handler provider.EventHandler) error {
-	return fmt.Errorf("forge event receive/timeline is not a gzh-cli command")
-}
-
-func (g *GitHubProvider) StreamEvents(ctx context.Context, opts provider.StreamOptions) (<-chan provider.Event, error) {
-	return nil, fmt.Errorf("forge event receive/timeline is not a gzh-cli command")
-}
-
 // Health and monitoring methods
 func (g *GitHubProvider) HealthCheck(ctx context.Context) (*provider.HealthStatus, error) {
 	startTime := time.Now()

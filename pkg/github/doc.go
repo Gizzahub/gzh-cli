@@ -6,8 +6,8 @@
 //   - Repository cloning and synchronization
 //   - Organization and team management
 //   - GitHub Actions policy validation and enforcement
-//   - Webhook handling and event processing
-//   - Pull request and issue automation
+//   - Webhook registration on the GitHub API
+//   - Pull request and issue helpers
 //   - Release management
 //   - Dependency version policy enforcement
 //

@@ -265,22 +265,7 @@ type UpdateWebhookRequest struct {
 	Active *bool          `json:"active,omitempty"`
 }
 
-// Event represents a platform event.
-type Event struct {
-	ID         string         `json:"id"`
-	Type       string         `json:"type"`
-	Actor      Actor          `json:"actor"`
-	Repository Repository     `json:"repository"`
-	Payload    map[string]any `json:"payload"`
-	Public     bool           `json:"public"`
-	CreatedAt  time.Time      `json:"created_at"`
-
-	// Provider-specific data
-	ProviderType string         `json:"provider_type"`
-	ProviderData map[string]any `json:"provider_data"`
-}
-
-// Actor represents the user who triggered an event.
+// Actor represents a user identity on a forge.
 type Actor struct {
 	ID        string `json:"id"`
 	Login     string `json:"login"`
@@ -290,14 +275,4 @@ type Actor struct {
 	HTMLURL   string `json:"html_url"`
 }
 
-// EventListOptions defines options for listing events.
-type EventListOptions struct {
-	Repository   string    `json:"repository,omitempty"`
-	Organization string    `json:"organization,omitempty"`
-	User         string    `json:"user,omitempty"`
-	EventType    string    `json:"event_type,omitempty"`
-	Since        time.Time `json:"since,omitempty"`
-	Until        time.Time `json:"until,omitempty"`
-	Page         int       `json:"page,omitempty"`
-	PerPage      int       `json:"per_page,omitempty"`
-}
+

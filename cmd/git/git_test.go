@@ -45,6 +45,6 @@ func TestNewGitWebhookCmd(t *testing.T) {
 
 	require.NotNil(t, cmd)
 	require.Equal(t, "webhook", cmd.Use)
-	require.Contains(t, cmd.Short, "Webhook management")
+	require.Contains(t, cmd.Short, "Webhook registration")
 	require.NotEmpty(t, cmd.Short)
 }

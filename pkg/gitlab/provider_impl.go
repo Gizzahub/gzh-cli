@@ -484,27 +484,6 @@ func gitlabHookToProvider(h *gitlabProjectHook) provider.Webhook {
 	}
 }
 
-// Event management methods are not a gzh-cli product surface.
-func (g *GitLabProvider) ListEvents(ctx context.Context, opts provider.EventListOptions) ([]provider.Event, error) {
-	return nil, fmt.Errorf("forge event receive/timeline is not a gzh-cli command")
-}
-
-func (g *GitLabProvider) GetEvent(ctx context.Context, eventID string) (*provider.Event, error) {
-	return nil, fmt.Errorf("forge event receive/timeline is not a gzh-cli command")
-}
-
-func (g *GitLabProvider) ProcessEvent(ctx context.Context, event provider.Event) error {
-	return fmt.Errorf("forge event receive/timeline is not a gzh-cli command")
-}
-
-func (g *GitLabProvider) RegisterEventHandler(eventType string, handler provider.EventHandler) error {
-	return fmt.Errorf("forge event receive/timeline is not a gzh-cli command")
-}
-
-func (g *GitLabProvider) StreamEvents(ctx context.Context, opts provider.StreamOptions) (<-chan provider.Event, error) {
-	return nil, fmt.Errorf("forge event receive/timeline is not a gzh-cli command")
-}
-
 // Health and monitoring methods
 func (g *GitLabProvider) HealthCheck(ctx context.Context) (*provider.HealthStatus, error) {
 	startTime := time.Now()

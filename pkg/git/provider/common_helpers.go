@@ -108,7 +108,6 @@ func (h *CommonHelpers) StandardizeCapabilities(providerType string) []Capabilit
 	base := []Capability{
 		CapabilityRepositories,
 		CapabilityWebhooks,
-		CapabilityEvents,
 		CapabilityIssues,
 		CapabilityWiki,
 		CapabilityProjects,

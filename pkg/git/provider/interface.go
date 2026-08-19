@@ -30,9 +30,6 @@ type GitProvider interface {
 	// Webhook management (if supported)
 	WebhookManager
 
-	// Event management (if supported)
-	EventManager
-
 	// Health and monitoring
 	HealthChecker
 }
@@ -89,20 +86,6 @@ type WebhookManager interface {
 	ValidateWebhookURL(ctx context.Context, url string) error
 }
 
-// EventManager defines event-related operations.
-type EventManager interface {
-	// Event querying
-	ListEvents(ctx context.Context, opts EventListOptions) ([]Event, error)
-	GetEvent(ctx context.Context, eventID string) (*Event, error)
-
-	// Event handling
-	ProcessEvent(ctx context.Context, event Event) error
-	RegisterEventHandler(eventType string, handler EventHandler) error
-
-	// Event streaming (if supported)
-	StreamEvents(ctx context.Context, opts StreamOptions) (<-chan Event, error)
-}
-
 // HealthChecker defines health monitoring operations.
 type HealthChecker interface {
 	// Health status
@@ -113,16 +96,12 @@ type HealthChecker interface {
 	GetMetrics(ctx context.Context) (*ProviderMetrics, error)
 }
 
-// EventHandler is a function that processes events.
-type EventHandler func(ctx context.Context, event Event) error
-
 // Capability represents a feature that a provider supports.
 type Capability string
 
 const (
 	CapabilityRepositories     Capability = "repositories"
 	CapabilityWebhooks         Capability = "webhooks"
-	CapabilityEvents           Capability = "events"
 	CapabilityIssues           Capability = "issues"
 	CapabilityPullRequests     Capability = "pull_requests"
 	CapabilityMergeRequests    Capability = "merge_requests"
@@ -210,13 +189,6 @@ type ProviderMetrics struct {
 	LastError      string        `json:"last_error,omitempty"`
 	LastErrorTime  time.Time     `json:"last_error_time,omitempty"`
 	CollectedAt    time.Time     `json:"collected_at"`
-}
-
-// StreamOptions defines options for event streaming.
-type StreamOptions struct {
-	EventTypes []string       `json:"event_types,omitempty"`
-	Filters    map[string]any `json:"filters,omitempty"`
-	BufferSize int            `json:"buffer_size,omitempty"`
 }
 
 // WebhookTestResult represents the result of a webhook test.

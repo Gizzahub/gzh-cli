@@ -515,27 +515,6 @@ func giteaHookToProvider(h *giteaHook) provider.Webhook {
 	}
 }
 
-// Event management methods are not a gzh-cli product surface.
-func (g *GiteaProvider) ListEvents(ctx context.Context, opts provider.EventListOptions) ([]provider.Event, error) {
-	return nil, g.FormatError("list events", fmt.Errorf("forge event receive/timeline is not a gzh-cli command"))
-}
-
-func (g *GiteaProvider) GetEvent(ctx context.Context, eventID string) (*provider.Event, error) {
-	return nil, g.FormatError("get event", fmt.Errorf("forge event receive/timeline is not a gzh-cli command"))
-}
-
-func (g *GiteaProvider) ProcessEvent(ctx context.Context, event provider.Event) error {
-	return g.FormatError("process event", fmt.Errorf("forge event receive/timeline is not a gzh-cli command"))
-}
-
-func (g *GiteaProvider) RegisterEventHandler(eventType string, handler provider.EventHandler) error {
-	return g.FormatError("register event handler", fmt.Errorf("forge event receive/timeline is not a gzh-cli command"))
-}
-
-func (g *GiteaProvider) StreamEvents(ctx context.Context, opts provider.StreamOptions) (<-chan provider.Event, error) {
-	return nil, g.FormatError("stream events", fmt.Errorf("forge event receive/timeline is not a gzh-cli command"))
-}
-
 // Health and monitoring methods
 func (g *GiteaProvider) HealthCheck(ctx context.Context) (*provider.HealthStatus, error) {
 	// Use base provider health check first

@@ -77,7 +77,7 @@ func newGitWebhookCmd() *cobra.Command {
 	// Create a wrapper command that delegates to repo-config webhook
 	cmd := &cobra.Command{
 		Use:   "webhook",
-		Short: "Webhook management and automation",
+		Short: "Webhook registration on the forge",
 		Long: `Manage repository and organization webhooks across Git platforms.
 
 This command registers and manages webhook configurations on the forge.

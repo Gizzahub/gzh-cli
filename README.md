@@ -85,7 +85,7 @@ ______________________________________________________________________
 gz [command] [subcommand] [flags]
 
 # 주요 명령어
-git         # Git 플랫폼 통합 (repo, webhook, event)
+git         # Git 플랫폼 통합 (repo, webhook)
 ide         # IDE 모니터링 및 관리
 quality     # 코드 품질 도구 (포매팅 + 린팅)
 profile     # 성능 프로파일링

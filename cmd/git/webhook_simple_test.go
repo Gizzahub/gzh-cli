@@ -13,7 +13,7 @@ func TestNewWebhookCmd(t *testing.T) {
 
 	assert.NotNil(t, cmd)
 	assert.Equal(t, "webhook", cmd.Use)
-	assert.Contains(t, cmd.Short, "Webhook management")
+	assert.Contains(t, cmd.Short, "Webhook registration")
 	assert.Contains(t, cmd.Long, "Manage repository and organization webhooks")
 
 	// Check that subcommands are added

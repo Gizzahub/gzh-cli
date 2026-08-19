@@ -20,7 +20,6 @@ type Provider struct {
 	name         string
 	repos        []provider.Repository
 	webhooks     map[string][]provider.Webhook
-	events       []provider.Event
 	capabilities []provider.Capability
 }
 
@@ -30,11 +29,9 @@ func NewProvider(name string) *Provider {
 		name:     name,
 		repos:    []provider.Repository{},
 		webhooks: make(map[string][]provider.Webhook),
-		events:   []provider.Event{},
 		capabilities: []provider.Capability{
 			provider.CapabilityRepositories,
 			provider.CapabilityWebhooks,
-			provider.CapabilityEvents,
 			provider.CapabilityIssues,
 			provider.CapabilityWiki,
 			provider.CapabilityReleases,
@@ -228,47 +225,6 @@ func (m *Provider) ValidateWebhookURL(ctx context.Context, url string) error {
 	return args.Error(0)
 }
 
-// Event management
-
-// ListEvents lists events.
-func (m *Provider) ListEvents(ctx context.Context, opts provider.EventListOptions) ([]provider.Event, error) {
-	args := m.Called(ctx, opts)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).([]provider.Event), args.Error(1)
-}
-
-// GetEvent gets a specific event.
-func (m *Provider) GetEvent(ctx context.Context, eventID string) (*provider.Event, error) {
-	args := m.Called(ctx, eventID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*provider.Event), args.Error(1)
-}
-
-// ProcessEvent processes an event.
-func (m *Provider) ProcessEvent(ctx context.Context, event provider.Event) error {
-	args := m.Called(ctx, event)
-	return args.Error(0)
-}
-
-// RegisterEventHandler registers an event handler.
-func (m *Provider) RegisterEventHandler(eventType string, handler provider.EventHandler) error {
-	args := m.Called(eventType, handler)
-	return args.Error(0)
-}
-
-// StreamEvents streams events.
-func (m *Provider) StreamEvents(ctx context.Context, opts provider.StreamOptions) (<-chan provider.Event, error) {
-	args := m.Called(ctx, opts)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(<-chan provider.Event), args.Error(1)
-}
-
 // Release management
 
 // ListReleases lists releases for a repository.
@@ -437,7 +393,6 @@ func (m *Provider) Reset() {
 	m.Mock = mock.Mock{}
 	m.repos = []provider.Repository{}
 	m.webhooks = make(map[string][]provider.Webhook)
-	m.events = []provider.Event{}
 }
 
 // FilterRepos filters repositories based on options (helper for tests).

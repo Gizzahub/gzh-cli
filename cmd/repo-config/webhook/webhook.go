@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Gizzahub
 // SPDX-License-Identifier: MIT
 
+// Package webhook registers and manages forge webhook configurations.
 package webhook
 
 import (
@@ -8,7 +9,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/google/go-github/v66/github"
 	"github.com/spf13/cobra"
@@ -88,7 +88,6 @@ Examples:
 	cmd.AddCommand(newWebhookDeleteCmd())
 	cmd.AddCommand(newWebhookGetCmd())
 	cmd.AddCommand(newWebhookBulkCmd())
-	cmd.AddCommand(newWebhookAutomationCmd())
 
 	return cmd
 }
@@ -597,64 +596,6 @@ Examples:
 	return cmd
 }
 
-// newWebhookAutomationCmd creates the webhook automation command.
-func newWebhookAutomationCmd() *cobra.Command {
-	flags := &WebhookFlags{}
-
-	var (
-		ruleFile  string
-		action    string
-		enable    bool
-		disable   bool
-		listRules bool
-	)
-
-	cmd := &cobra.Command{
-		Use:   "automation",
-		Short: "Webhook automation and rule management",
-		Long: `Manage webhook automation rules and policies.
-
-This command provides advanced webhook automation capabilities including:
-
-- Rule-based webhook management
-- Event-driven webhook creation/updates
-- Policy enforcement for webhook standards
-- Automated webhook lifecycle management
-
-Automation Features:
-- Template-based webhook deployment
-- Event-driven webhook creation
-- Compliance monitoring and enforcement
-- Automated webhook health checks
-- Integration with CI/CD pipelines
-
-Rule Types:
-- Repository creation triggers
-- Compliance policy enforcement
-- Security requirement automation
-- Integration management rules
-
-Examples:
-  gz repo-config webhook automation --list-rules                    # List all rules
-  gz repo-config webhook automation --action deploy --rule security # Deploy security rule
-  gz repo-config webhook automation --enable --rule compliance      # Enable compliance rule
-  gz repo-config webhook automation --disable --rule legacy         # Disable legacy rule`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return runWebhookAutomationCommand(*flags, ruleFile, action, enable, disable, listRules)
-		},
-	}
-
-	addWebhookFlags(cmd, flags)
-	cmd.Flags().StringVar(&ruleFile, "rule", "", "Automation rule name or file")
-	cmd.Flags().StringVar(&action, "action", "", "Automation action (deploy, validate, test)")
-	cmd.Flags().BoolVar(&enable, "enable", false, "Enable automation rule")
-	cmd.Flags().BoolVar(&disable, "disable", false, "Disable automation rule")
-	cmd.Flags().BoolVar(&listRules, "list-rules", false, "List available automation rules")
-
-	return cmd
-}
-
-// runWebhookBulkCommand executes bulk webhook operations.
 func runWebhookBulkCommand(flags WebhookFlags, operation, configFile string, parallelJobs int, dryRun bool) error {
 	if flags.Organization == "" {
 		return fmt.Errorf("organization is required (use --org flag)")
@@ -684,46 +625,6 @@ func runWebhookBulkCommand(flags WebhookFlags, operation, configFile string, par
 	default:
 		return fmt.Errorf("unsupported operation: %s (supported: create, update, delete, sync)", operation)
 	}
-}
-
-// runWebhookAutomationCommand executes webhook automation operations.
-func runWebhookAutomationCommand(flags WebhookFlags, ruleFile, action string, enable, disable, listRules bool) error {
-	fmt.Printf("🤖 Webhook Automation\n")
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-
-	if listRules {
-		return listAutomationRules()
-	}
-
-	if flags.Organization == "" {
-		return fmt.Errorf("organization is required (use --org flag)")
-	}
-
-	fmt.Printf("Organization: %s\n", flags.Organization)
-
-	if ruleFile != "" {
-		fmt.Printf("Rule: %s\n", ruleFile)
-	}
-
-	fmt.Println()
-
-	if enable && disable {
-		return fmt.Errorf("cannot enable and disable simultaneously")
-	}
-
-	if enable {
-		return enableAutomationRule(flags, ruleFile)
-	}
-
-	if disable {
-		return disableAutomationRule(flags, ruleFile)
-	}
-
-	if action != "" {
-		return executeAutomationAction(flags, ruleFile, action)
-	}
-
-	return fmt.Errorf("no automation action specified (use --enable, --disable, --action, or --list-rules)")
 }
 
 // Helper functions for bulk operations
@@ -788,66 +689,3 @@ func runBulkSyncWebhooks(_ WebhookFlags, configFile string, parallelJobs int, dr
 	return nil
 }
 
-// Helper functions for automation
-
-func listAutomationRules() error {
-	fmt.Println("📋 Available Automation Rules:")
-	fmt.Println()
-
-	rules := []struct {
-		Name        string
-		Description string
-		Status      string
-	}{
-		{"security", "Enforce security webhook requirements", "enabled"},
-		{"compliance", "Monitor compliance webhook deployment", "enabled"},
-		{"ci-cd", "Automate CI/CD webhook setup", "disabled"},
-		{"monitoring", "Deploy monitoring webhooks", "enabled"},
-		{"legacy", "Legacy webhook migration", "disabled"},
-	}
-
-	fmt.Printf("%-15s %-10s %s\n", "RULE", "STATUS", "DESCRIPTION")
-	fmt.Println(strings.Repeat("─", 70))
-
-	for _, rule := range rules {
-		status := "🟢 Enabled"
-		if rule.Status == "disabled" {
-			status = "🔴 Disabled"
-		}
-
-		fmt.Printf("%-15s %-10s %s\n", rule.Name, status, rule.Description)
-	}
-
-	return nil
-}
-
-func enableAutomationRule(flags WebhookFlags, ruleName string) error {
-	fmt.Printf("✅ Enabling automation rule: %s\n", ruleName)
-	fmt.Printf("Rule '%s' is now active for organization: %s\n", ruleName, flags.Organization)
-
-	return nil
-}
-
-func disableAutomationRule(flags WebhookFlags, ruleName string) error {
-	fmt.Printf("🔴 Disabling automation rule: %s\n", ruleName)
-	fmt.Printf("Rule '%s' is now inactive for organization: %s\n", ruleName, flags.Organization)
-
-	return nil
-}
-
-func executeAutomationAction(flags WebhookFlags, ruleName, action string) error {
-	fmt.Printf("🚀 Executing automation action: %s for rule: %s\n", action, ruleName)
-
-	switch action {
-	case "deploy":
-		fmt.Printf("📦 Deploying rule '%s' across organization: %s\n", ruleName, flags.Organization)
-	case "validate":
-		fmt.Printf("✅ Validating rule '%s' configuration\n", ruleName)
-	case "test":
-		fmt.Printf("🧪 Testing rule '%s' execution\n", ruleName)
-	default:
-		return fmt.Errorf("unsupported action: %s (supported: deploy, validate, test)", action)
-	}
-
-	return nil
-}
