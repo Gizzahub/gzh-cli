@@ -515,25 +515,25 @@ func giteaHookToProvider(h *giteaHook) provider.Webhook {
 	}
 }
 
-// Event management methods — not in CLI surface; deferred (issue 26 phase 2+)
+// Event management methods are not a gzh-cli product surface.
 func (g *GiteaProvider) ListEvents(ctx context.Context, opts provider.EventListOptions) ([]provider.Event, error) {
-	return nil, g.FormatError("list events", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
+	return nil, g.FormatError("list events", fmt.Errorf("forge event receive/timeline is not a gzh-cli command"))
 }
 
 func (g *GiteaProvider) GetEvent(ctx context.Context, eventID string) (*provider.Event, error) {
-	return nil, g.FormatError("get event", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
+	return nil, g.FormatError("get event", fmt.Errorf("forge event receive/timeline is not a gzh-cli command"))
 }
 
 func (g *GiteaProvider) ProcessEvent(ctx context.Context, event provider.Event) error {
-	return g.FormatError("process event", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
+	return g.FormatError("process event", fmt.Errorf("forge event receive/timeline is not a gzh-cli command"))
 }
 
 func (g *GiteaProvider) RegisterEventHandler(eventType string, handler provider.EventHandler) error {
-	return g.FormatError("register event handler", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
+	return g.FormatError("register event handler", fmt.Errorf("forge event receive/timeline is not a gzh-cli command"))
 }
 
 func (g *GiteaProvider) StreamEvents(ctx context.Context, opts provider.StreamOptions) (<-chan provider.Event, error) {
-	return nil, g.FormatError("stream events", fmt.Errorf("not implemented: not in CLI surface; deferred (issue 26 phase 2+)"))
+	return nil, g.FormatError("stream events", fmt.Errorf("forge event receive/timeline is not a gzh-cli command"))
 }
 
 // Health and monitoring methods

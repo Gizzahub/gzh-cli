@@ -6,7 +6,6 @@ package git
 import (
 	"github.com/spf13/cobra"
 
-	eventpkg "github.com/gizzahub/gzh-cli/cmd/git/event"
 	repopkg "github.com/gizzahub/gzh-cli/cmd/git/repo"
 	webhookpkg "github.com/gizzahub/gzh-cli/cmd/git/webhook"
 	repoconfig "github.com/gizzahub/gzh-cli/cmd/repo-config"
@@ -18,26 +17,27 @@ func NewGitCmd(appCtx *app.AppContext) *cobra.Command {
 	_ = appCtx
 	cmd := &cobra.Command{
 		Use:   "git",
-		Short: "🔗 통합 Git 플랫폼 관리 도구 (config, webhook, event)",
+		Short: "🔗 통합 Git 플랫폼 관리 도구 (config, webhook)",
 		Long: `Unified Git platform management tools for GitHub, GitLab, Gitea, and Gogs.
 
-This command provides comprehensive Git platform management capabilities including:
-- Repository configuration management
-- Webhook management and automation
-- Event processing and monitoring
+This command provides Git platform management including:
+- Repository lifecycle and configuration
+- Webhook registration on the forge (CRUD)
 - Cross-platform operations
+
+This CLI does not receive or process forge webhooks. Register a publicly
+reachable URL (GitHub Actions, Slack, your own service). GitHub cannot
+POST to localhost or a laptop without a public address.
 
 Available Resources:
   repo       Repository lifecycle management (clone, create, sync, etc.)
   config     Repository configuration management
-  webhook    Webhook management and automation
-  event      Event processing and monitoring
+  webhook    Webhook registration on GitHub/GitLab/Gitea
 
 Examples:
   gz git repo clone --provider github --org myorg --target ./repos
   gz git config audit --org myorg --framework SOC2
-  gz git webhook create --org myorg --repo myrepo --url https://example.com/webhook
-  gz git event server --port 8080 --secret mysecret`,
+  gz git webhook create --org myorg --repo myrepo --url https://example.com/webhook`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return cmd.Help()
 		},
@@ -47,7 +47,6 @@ Examples:
 	cmd.AddCommand(repopkg.NewGitRepoCmd())
 	cmd.AddCommand(newGitConfigCmd(appCtx))
 	cmd.AddCommand(newGitWebhookCmd())
-	cmd.AddCommand(newGitEventCmd())
 
 	return cmd
 }
@@ -81,16 +80,13 @@ func newGitWebhookCmd() *cobra.Command {
 		Short: "Webhook management and automation",
 		Long: `Manage repository and organization webhooks across Git platforms.
 
-This command provides comprehensive webhook management capabilities including:
-- Individual webhook CRUD operations
-- Bulk webhook management across organizations
-- Event-based automation and rules engine
-- Webhook health monitoring and compliance
+This command registers and manages webhook configurations on the forge.
+It does not run a local receiver. The --url must be reachable from the
+hosting site (not localhost).
 
 Examples:
   gz git webhook create --org myorg --repo myrepo --url https://example.com/webhook
-  gz git webhook bulk create --org myorg --config webhooks.yaml
-  gz git webhook automation --action deploy --rule security`,
+  gz git webhook bulk create --org myorg --config webhooks.yaml`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return cmd.Help()
 		},
@@ -104,28 +100,4 @@ Examples:
 	}
 
 	return cmd
-}
-
-// newGitEventCmd creates the git event command.
-func newGitEventCmd() *cobra.Command {
-	// Use existing event implementation from event package
-	eventCmd := eventpkg.NewEventCmd()
-
-	// Update command metadata for git context
-	eventCmd.Use = "event"
-	eventCmd.Short = "Event processing and monitoring"
-	eventCmd.Long = `Manage GitHub events, run webhook servers, and monitor event processing.
-
-This command provides comprehensive event management capabilities including:
-- Running webhook servers to receive GitHub events
-- Querying and filtering stored events
-- Managing event handlers and processors
-- Monitoring event processing metrics
-
-Examples:
-  gz git event server --port 8080 --secret mysecret
-  gz git event list --org myorg --type push --limit 50
-  gz git event metrics --output json`
-
-	return eventCmd
 }

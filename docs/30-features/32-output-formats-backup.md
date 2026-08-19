@@ -339,16 +339,6 @@ gz git webhook bulk create --org myorg --config webhooks.yaml --output json
 gz git webhook monitor --org myorg --follow --output json
 ```
 
-#### Event Processing
-
-```bash
-# Real-time event monitoring
-gz git event list --org myorg --follow --output json
-
-# Event metrics and analytics
-gz git event metrics --org myorg --period 7d --output dashboard
-```
-
 ## Quality Tool Enhancements
 
 ### Advanced Quality Analysis
@@ -432,7 +422,6 @@ quality-check:
 ```bash
 # Export metrics for Prometheus
 gz net-env metrics --output prometheus --port 9090
-gz git event metrics --output prometheus --endpoint /metrics
 ```
 
 #### Dashboard Generation

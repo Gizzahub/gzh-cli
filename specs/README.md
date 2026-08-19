@@ -129,7 +129,7 @@ specs/
 
 ## 📊 CLI 명세 현황
 
-### ✅ 완료된 명령어 (24개 UC)
+### ✅ 완료된 명령어 (23개 UC)
 
 | 명령어      | UC 수 | 상태 | 비고                          |
 | ----------- | ----- | ---- | ----------------------------- |
@@ -144,7 +144,6 @@ specs/
 | net-env     | 3     | ✅   | 네트워크 전환, 상태, 프로필   |
 | repo-config | 2     | ✅   | 설정 적용, 검증               |
 | git webhook | 3     | ✅   | 웹훅 생성, 목록, 삭제         |
-| git event   | 1     | ✅   | Git 이벤트 처리               |
 | profile     | 1     | ✅   | Go 애플리케이션 프로파일링    |
 
 ### 🚧 작성 예정 명령어
@@ -177,10 +176,10 @@ specs/
 ### ✅ 전체 CLI 스펙 완료
 
 - ✅ Phase 1: dev-env, net-env 명령어 (6개 UC)
-- ✅ Phase 2: repo-config, git webhook, git event, profile 명령어 (7개 UC)
+- ✅ Phase 2: repo-config, git webhook, profile 명령어 (6개 UC)
 - ✅ 기존 명령어: synclone, git repo, quality, doctor, pm, ide, version (13개 UC)
 
-**총 24개 UC 스펙 완료** - 모든 주요 CLI 명령어 커버
+**총 23개 UC 스펙** — `gz git event` 로컬 수신은 제품 표면에서 제거했다.
 
 ### Phase 3 (다음 단계)
 

@@ -18,7 +18,7 @@ func TestNewGitCmd(t *testing.T) {
 
 	// 서브커맨드 확인
 	subcommands := cmd.Commands()
-	require.GreaterOrEqual(t, len(subcommands), 4) // repo, config, webhook, event
+	require.GreaterOrEqual(t, len(subcommands), 3) // repo, config, webhook
 
 	// 서브커맨드 존재 확인
 	subcommandNames := make(map[string]bool)
@@ -29,7 +29,7 @@ func TestNewGitCmd(t *testing.T) {
 	require.True(t, subcommandNames["repo"], "repo subcommand should exist")
 	require.True(t, subcommandNames["config"], "config subcommand should exist")
 	require.True(t, subcommandNames["webhook"], "webhook subcommand should exist")
-	require.True(t, subcommandNames["event"], "event subcommand should exist")
+	require.False(t, subcommandNames["event"], "local event receiver is not a CLI surface")
 }
 
 func TestNewGitConfigCmd(t *testing.T) {
@@ -37,14 +37,6 @@ func TestNewGitConfigCmd(t *testing.T) {
 
 	require.Equal(t, "config", cmd.Use)
 	require.Contains(t, cmd.Short, "Repository configuration")
-	require.NotEmpty(t, cmd.Long)
-}
-
-func TestNewGitEventCmd(t *testing.T) {
-	cmd := newGitEventCmd()
-
-	require.Equal(t, "event", cmd.Use)
-	require.Contains(t, cmd.Short, "Event processing")
 	require.NotEmpty(t, cmd.Long)
 }
 

@@ -348,98 +348,6 @@ func TestEventProcessor_UnregisterEventHandler(t *testing.T) {
 	assert.NotContains(t, impl.handlers, EventTypePush)
 }
 
-func TestEventWebhookServer_HandleWebhook(t *testing.T) {
-	mockStorage := &mockEventStorage{}
-	mockLogger := &mockLogger{}
-
-	processor := NewEventProcessor(mockStorage, mockLogger)
-	server := NewEventWebhookServer(processor, "", mockLogger)
-
-	payload := map[string]any{
-		"action": "opened",
-		"repository": map[string]any{
-			"name": "testrepo",
-			"owner": map[string]any{
-				"login": "testorg",
-			},
-		},
-	}
-
-	req := createTestWebhookRequest("push", "test-123", payload)
-	w := httptest.NewRecorder()
-
-	mockStorage.On("StoreEvent", mock.Anything, mock.AnythingOfType("*github.GitHubEvent")).Return(nil)
-
-	server.HandleWebhook(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	assert.Contains(t, w.Header().Get("Content-Type"), "application/json")
-
-	var response map[string]any
-
-	err := json.Unmarshal(w.Body.Bytes(), &response)
-	assert.NoError(t, err)
-	assert.Equal(t, "success", response["status"])
-	assert.Equal(t, "test-123", response["event_id"])
-
-	mockStorage.AssertExpectations(t)
-}
-
-func TestEventWebhookServer_HandleWebhook_MethodNotAllowed(t *testing.T) {
-	mockStorage := &mockEventStorage{}
-	mockLogger := &mockLogger{}
-
-	processor := NewEventProcessor(mockStorage, mockLogger)
-	server := NewEventWebhookServer(processor, "", mockLogger)
-
-	req := httptest.NewRequest("GET", "/webhook", nil)
-	w := httptest.NewRecorder()
-
-	server.HandleWebhook(w, req)
-
-	assert.Equal(t, http.StatusMethodNotAllowed, w.Code)
-}
-
-func TestEventWebhookServer_HandleWebhook_InvalidSignature(t *testing.T) {
-	mockStorage := &mockEventStorage{}
-	mockLogger := &mockLogger{}
-
-	processor := NewEventProcessor(mockStorage, mockLogger)
-	server := NewEventWebhookServer(processor, "test-secret", mockLogger)
-
-	payload := map[string]any{"test": "data"}
-	req := createTestWebhookRequest("push", "test-123", payload)
-
-	w := httptest.NewRecorder()
-
-	server.HandleWebhook(w, req)
-
-	assert.Equal(t, http.StatusUnauthorized, w.Code)
-}
-
-func TestEventWebhookServer_GetHealthCheck(t *testing.T) {
-	mockStorage := &mockEventStorage{}
-	mockLogger := &mockLogger{}
-
-	processor := NewEventProcessor(mockStorage, mockLogger)
-	server := NewEventWebhookServer(processor, "", mockLogger)
-
-	req := httptest.NewRequest("GET", "/health", nil)
-	w := httptest.NewRecorder()
-
-	server.GetHealthCheck(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	assert.Contains(t, w.Header().Get("Content-Type"), "application/json")
-
-	var response map[string]any
-
-	err := json.Unmarshal(w.Body.Bytes(), &response)
-	assert.NoError(t, err)
-	assert.Equal(t, "healthy", response["status"])
-	assert.Equal(t, "github-event-processor", response["service"])
-}
-
 func TestEventFilter(t *testing.T) {
 	filter := &EventFilter{
 		Organization: "testorg",
@@ -607,14 +515,6 @@ func ExampleEventProcessor() {
 	// Register the handler for push events
 	_ = processor.RegisterEventHandler(EventTypePush, handler) //nolint:errcheck // Test setup
 
-	// Create a webhook server
-	server := NewEventWebhookServer(processor, "webhook-secret", logger)
-
-	// Use the server to handle webhook requests
-	_ = server
-
-	// 예시가 아무것도 찍지 않는데 기대값만 "Example completed"로 적혀 있어서
-	// 늘 실패했다. 실제로 무엇이 엮였는지 찍는다.
 	fmt.Printf("handler registered for %s events\n", EventTypePush)
 
 	// Output: handler registered for push events

@@ -7,7 +7,7 @@
 - [개요](#%EA%B0%9C%EC%9A%94)
 - [기본 웹훅 관리](#%EA%B8%B0%EB%B3%B8-%EC%9B%B9%ED%9B%85-%EA%B4%80%EB%A6%AC)
 - [대량 웹훅 작업](#%EB%8C%80%EB%9F%89-%EC%9B%B9%ED%9B%85-%EC%9E%91%EC%97%85)
-- [이벤트 기반 자동화](#%EC%9D%B4%EB%B2%A4%ED%8A%B8-%EA%B8%B0%EB%B0%98-%EC%9E%90%EB%8F%99%ED%99%94)
+- [수신 범위](#수신-범위)
 - [설정 파일 참조](#%EC%84%A4%EC%A0%95-%ED%8C%8C%EC%9D%BC-%EC%B0%B8%EC%A1%B0)
 - [고급 사용법](#%EA%B3%A0%EA%B8%89-%EC%82%AC%EC%9A%A9%EB%B2%95)
 - [문제 해결](#%EB%AC%B8%EC%A0%9C-%ED%95%B4%EA%B2%B0)
@@ -18,14 +18,14 @@ gzh-cli는 GitHub 리포지토리의 웹훅을 효율적으로 관리하는 포�
 
 - **개별 웹훅 관리**: 특정 리포지토리의 웹훅 CRUD 작업
 - **대량 웹훅 작업**: 조직 전체 리포지토리에 웹훅 일괄 적용
-- **이벤트 기반 자동화**: GitHub 이벤트에 따른 자동화 규칙 엔진
+
+이 CLI는 웹훅 **URL을 forge에 등록**한다. 이벤트를 받아 처리하는 수신 서버가 아니다.
 
 ### 주요 특징
 
 - ✅ **완전한 CRUD 지원**: 웹훅 생성, 조회, 수정, 삭제
 - ✅ **병렬 처리**: 대량 작업 시 최대 50개 동시 처리
 - ✅ **패턴 매칭**: 리포지토리 이름 패턴으로 대상 선택
-- ✅ **실시간 자동화**: GitHub 이벤트 기반 액션 실행
 - ✅ **설정 파일 지원**: YAML 기반 구성 관리
 - ✅ **Dry-run 모드**: 실제 실행 전 미리보기
 
@@ -211,199 +211,14 @@ targets:
     - legacy-app
 ```
 
-## 이벤트 기반 자동화
+## 수신 범위
 
-### 자동화 엔진 설정
+`gz git webhook`은 forge에 웹훅 URL을 등록·조회·삭제한다.
 
-자동화 규칙을 정의하는 YAML 파일을 생성합니다:
-
-```yaml
-# webhook-automation-rules.yaml
-version: "1.0"
-
-global:
-  enabled: true
-  default_timeout: "30s"
-  max_concurrency: 10
-  notification_urls:
-    slack: "${SLACK_WEBHOOK_URL}"
-
-rules:
-  # PR 크기별 자동 라벨링
-  - id: "auto-label-pr-size"
-    name: "Auto-label Pull Request Size"
-    enabled: true
-    priority: 100
-    conditions:
-      - type: "event_type"
-        operator: "equals"
-        value: "pull_request.opened"
-    actions:
-      - type: "add_label"
-        parameters:
-          labels:
-            - "needs-review"
-
-  # 첫 기여자 환영 메시지
-  - id: "welcome-first-time-contributor"
-    name: "Welcome First-Time Contributors"
-    enabled: true
-    priority: 90
-    conditions:
-      - type: "event_type"
-        operator: "in"
-        value: ["pull_request.opened", "issues.opened"]
-    actions:
-      - type: "create_comment"
-        parameters:
-          body: |
-            Welcome @{{sender.login}}! 👋
-            Thank you for your contribution!
-```
-
-### 자동화 엔진 실행
-
-```bash
-# 웹훅 서버 시작 (포트 8080)
-gz repo-config webhook automation server \
-  --config webhook-automation-rules.yaml \
-  --port 8080
-
-# 특정 포트에서 서버 시작
-gz repo-config webhook automation server \
-  --config webhook-automation-rules.yaml \
-  --port 9000 \
-  --host 0.0.0.0
-
-# 백그라운드에서 실행
-gz repo-config webhook automation server \
-  --config webhook-automation-rules.yaml \
-  --daemon
-
-# 설정 검증
-gz repo-config webhook automation validate \
-  --config webhook-automation-rules.yaml
-
-# 테스트 이벤트 실행
-gz repo-config webhook automation test \
-  --config webhook-automation-rules.yaml \
-  --event-type pull_request.opened
-
-# 예제 설정 생성
-gz repo-config webhook automation example > automation-rules.yaml
-```
-
-### 지원되는 액션 타입
-
-#### 1. 라벨 관리
-
-```yaml
-- type: "add_label"
-  parameters:
-    labels:
-      - "bug"
-      - "enhancement"
-```
-
-#### 2. 이슈 생성
-
-```yaml
-- type: "create_issue"
-  parameters:
-    title: "New issue: {{payload.title}}"
-    body: "Description: {{payload.description}}"
-    labels:
-      - "auto-created"
-    assignees:
-      - "maintainer"
-```
-
-#### 3. 댓글 생성
-
-```yaml
-- type: "create_comment"
-  parameters:
-    body: |
-      Thank you for your contribution!
-      A maintainer will review this soon.
-```
-
-#### 4. PR 머지
-
-```yaml
-- type: "merge_pr"
-  parameters:
-    merge_method: "squash" # merge, squash, rebase
-    commit_title: "Auto-merge: {{payload.title}}"
-```
-
-#### 5. 알림 전송
-
-```yaml
-- type: "notification"
-  parameters:
-    type: "slack" # slack, discord, teams
-    message: "New PR opened: {{payload.title}}"
-    async: true
-```
-
-#### 6. 워크플로우 실행
-
-```yaml
-- type: "run_workflow"
-  parameters:
-    workflow_id: "ci.yml"
-    ref: "main"
-    inputs:
-      environment: "production"
-```
-
-### 조건 표현식
-
-#### 이벤트 타입
-
-```yaml
-conditions:
-  - type: "event_type"
-    operator: "equals"
-    value: "pull_request.opened"
-
-  - type: "event_type"
-    operator: "in"
-    value: ["push", "pull_request"]
-
-  - type: "event_type"
-    operator: "matches"
-    value: "workflow_run.*"
-```
-
-#### 페이로드 조건
-
-```yaml
-conditions:
-  - type: "payload"
-    field: "pull_request.base.ref"
-    operator: "equals"
-    value: "main"
-
-  - type: "sender"
-    field: "login"
-    operator: "equals"
-    value: "dependabot[bot]"
-```
-
-#### 복합 조건
-
-```yaml
-conditions:
-  - type: "event_type"
-    operator: "equals"
-    value: "pull_request.opened"
-  - type: "payload"
-    field: "pull_request.draft"
-    operator: "equals"
-    value: false
-```
+이 CLI는 웹훅을 수신하지 않는다. GitHub/GitLab/Gitea는 등록된 URL로 POST하므로
+그 URL은 인터넷에서 열려 있어야 한다. 노트북의 `localhost`나 사설 IP로는
+배달되지 않는다. 수신기는 GitHub Actions, Slack, 자체 공개 서비스처럼
+이 CLI 밖의 시스템이다.
 
 ## 설정 파일 참조
 
@@ -716,7 +531,7 @@ rules:
 
 ## 결론
 
-gzh-cli의 웹훅 관리 기능은 GitHub 리포지토리의 자동화를 위한 강력하고 유연한 도구입니다. 개별 웹훅 관리부터 조직 전체의 대량 작업, 그리고 이벤트 기반 자동화까지 포괄적인 기능을 제공하여 개발 워크플로우를 크게 개선할 수 있습니다.
+gzh-cli의 웹훅 관리는 forge에 웹훅을 등록하는 CRUD 도구다. 이벤트 수신·실시간 자동화는 이 CLI의 범위가 아니다.
 
 더 자세한 정보는 다음 문서를 참조하세요:
 

@@ -106,11 +106,10 @@ gzh-cli-gitforge으로 이전하지 않고 gzh-cli에 유지합니다.
 **의존성**: GitHub API
 **기능**: GitHub webhook 생성/관리
 
-#### 7. event 처리
+#### 7. event 처리 (제거됨)
 
-**디렉토리**: `cmd/git/event/`
-**의존성**: GitHub API
-**기능**: GitHub event 처리
+로컬 웹훅 수신(`gz git event`)은 노트북 CLI 제품 표면이 아니라서 제거했다.
+웹훅 URL 등록은 `cmd/git/webhook/`만 유지한다.
 
 ______________________________________________________________________
 

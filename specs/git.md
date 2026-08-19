@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `gz git` command provides a unified interface for managing Git platforms (GitHub, GitLab, Gitea, Gogs), consolidating repository management, webhook operations, event processing, and cross-platform synchronization into a single, cohesive command structure.
+The `gz git` command provides a unified interface for managing Git platforms (GitHub, GitLab, Gitea, Gogs), consolidating repository management, webhook registration, and cross-platform synchronization. It does not receive forge webhooks or run a local event server.
 
 ## Purpose
 
@@ -28,8 +28,7 @@ gz git <subcommand> [options]
 | Subcommand | Purpose                                  | Implementation Status     |
 | ---------- | ---------------------------------------- | ------------------------- |
 | `repo`     | Repository lifecycle and sync management | ✅ Implemented (Enhanced) |
-| `webhook`  | Webhook management and automation        | ✅ Implemented            |
-| `event`    | Event processing and monitoring          | ✅ Implemented            |
+| `webhook`  | Webhook registration on the forge        | ✅ Implemented            |
 
 ### Command Hierarchy
 
@@ -42,18 +41,12 @@ gz git
       archive        # Archive repository
       list           # List repositories
       sync           # Cross-platform synchronization (NEW)
-   webhook          # Webhook management
+   webhook          # Webhook registration on the forge
       create        # Create webhooks
       list          # List webhooks
       update        # Update webhook configuration
       delete        # Delete webhooks
       bulk          # Bulk webhook operations
-   event            # Event processing
-      server        # Run webhook event server
-      list          # List received events
-      get           # Get specific event details
-      metrics       # Event processing metrics
-      test          # Test event handling
 ```
 
 ## Subcommand Specifications
@@ -255,28 +248,11 @@ Delete a webhook.
 gz git webhook delete --org <org> --repo <repo> --id <webhook-id>
 ```
 
-### 3. Event Processing (`gz git event`)
+### 3. Out of scope: local event receive
 
-**Purpose**: Process and handle Git platform events.
-
-**Description**: Run event servers, process webhooks, and manage event-driven automation.
-
-#### Subcommands
-
-##### `gz git event server`
-
-Run a webhook event server.
-
-```bash
-gz git event server --port <port> [--handler <handler>]
-```
-
-**Options**:
-
-- `--port` - Server port (default: 8080)
-- `--handler` - Event handler script or command
-- `--secret` - Webhook secret for validation
-- `--log-level` - Logging level
+`gz git event` (local webhook server, in-memory list/metrics) is not a product
+surface. A laptop CLI has no public URL; GitHub cannot POST to it. Register
+webhook URLs that point at a reachable service instead.
 
 ## Architecture Changes (2025-08)
 
@@ -296,11 +272,8 @@ cmd/git/
 │   ├── repo_list.go
 │   ├── repo_sync.go    # NEW: Cross-platform sync
 │   └── adapter.go      # Platform adapters
-├── webhook/            # Webhook subcommands
-│   ├── webhook.go
-│   └── adapter.go
-└── event/              # Event subcommands
-    ├── event.go
+└── webhook/            # Webhook subcommands
+    ├── webhook.go
     └── adapter.go
 ```
 
@@ -373,7 +346,7 @@ gz git repo sync --from github:myorg --to local:~/repos
 
 - Repository operations: `cmd/git/repo/*_test.go`
 - Webhook management: `cmd/git/webhook/*_test.go`
-- Event processing: `cmd/git/event/*_test.go`
+- Webhook CRUD tests: `cmd/git/webhook/*_test.go`
 
 ### Integration Tests
 
