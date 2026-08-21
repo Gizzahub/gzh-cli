@@ -284,7 +284,7 @@ func (c *StandardRepoCreator) createMergeCommits(ctx context.Context, repoPath s
 
 	// Clean up temporary branch (ignore error if branch doesn't exist)
 	if err := c.runGitCommand(ctx, repoPath, "branch", "-d", "temp-feature"); err != nil {
-		// Branch may not exist, which is fine for cleanup
+		_ = err // branch may already be gone
 	}
 
 	return nil

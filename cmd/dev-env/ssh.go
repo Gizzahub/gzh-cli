@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newSshCmd() *cobra.Command {
+func newSSHCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "ssh",
 		Short: "Manage SSH configuration files with includes and keys",

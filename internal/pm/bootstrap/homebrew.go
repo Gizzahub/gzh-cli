@@ -93,7 +93,7 @@ func (h *HomebrewBootstrapper) Install(ctx context.Context, force bool) error {
 	h.logger.Info("Installing Homebrew", "platform", runtime.GOOS, "force", force)
 
 	if !h.IsSupported() {
-		return fmt.Errorf("Homebrew is not supported on %s", runtime.GOOS)
+		return fmt.Errorf("homebrew is not supported on %s", runtime.GOOS)
 	}
 
 	// Check if already installed and not forcing

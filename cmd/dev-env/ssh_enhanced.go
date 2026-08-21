@@ -327,7 +327,7 @@ func (c *EnhancedSSHCommand) LoadEnhancedConfig(opts *EnhancedSSHOptions) error 
 	// Load keys
 	keysDir := filepath.Join(configDir, "keys")
 	if _, err := os.Stat(keysDir); err == nil {
-		sshKeysDir := filepath.Join(filepath.Dir(opts.ConfigPath))
+		sshKeysDir := filepath.Dir(opts.ConfigPath)
 		entries, err := os.ReadDir(keysDir)
 		if err == nil {
 			for _, entry := range entries {

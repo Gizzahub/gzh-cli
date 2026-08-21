@@ -408,7 +408,7 @@ func runContainerDiagnostics(ctx context.Context, flags *cli.CommonFlags, opts c
 
 	// Check if Docker is available
 	if !isDockerAvailable(ctx) {
-		return fmt.Errorf("Docker is not available or not running")
+		return fmt.Errorf("docker is not available or not running")
 	}
 
 	// Run diagnostics

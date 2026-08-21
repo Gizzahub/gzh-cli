@@ -440,7 +440,7 @@ func (rc *RepoConfig) ValidateTemplateOverrides() []string {
 
 // checkTemplateConflicts identifies potential conflicts between derived and base templates.
 func checkTemplateConflicts(templateName string, derived, base *RepoTemplate) []string { //nolint:gocognit // Comprehensive template conflict analysis across security, branch protection, and workflow settings
-	var conflicts []string
+	conflicts := make([]string, 0, 8)
 
 	// Check security settings conflicts
 	conflicts = append(conflicts, checkSecurityConflicts(templateName, derived, base)...)

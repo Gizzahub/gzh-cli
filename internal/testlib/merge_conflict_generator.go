@@ -411,7 +411,7 @@ func (mcg *MergeConflictGenerator) createConflictingBranches(ctx context.Context
 
 	// Reset to before the base branch changes
 	if err := mcg.runGitCommand(ctx, repoPath, "reset", "--hard", "HEAD~1"); err != nil {
-		// If this fails, continue anyway
+		_ = err // continue if the branch has no parent commit
 	}
 
 	// Modify files on conflicting branch

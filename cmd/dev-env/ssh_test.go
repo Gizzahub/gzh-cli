@@ -19,7 +19,7 @@ func TestDefaultSshOptions(t *testing.T) {
 }
 
 func TestNewSshCmd(t *testing.T) {
-	cmd := newSshCmd() // 함수명은 newSshCmd
+	cmd := newSSHCmd()
 
 	assert.Equal(t, "ssh", cmd.Use)
 	// Short spells the protocol in caps; Use is the lowercase one.

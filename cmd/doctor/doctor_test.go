@@ -1329,6 +1329,7 @@ func TestBenchmarkStructures(t *testing.T) {
 		assert.Greater(t, env.NumCPU, 0)
 		assert.GreaterOrEqual(t, env.NumGoroutines, 0)
 		assert.Greater(t, env.MemoryLimit, uint64(0))
+		assert.Equal(t, "test build", env.BuildInfo)
 	})
 
 	t.Run("BenchmarkReport structure", func(t *testing.T) {

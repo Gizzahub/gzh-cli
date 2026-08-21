@@ -140,7 +140,7 @@ func (l *StructuredLogger) LogPerformance(operation string, duration time.Durati
 	msg := fmt.Sprintf("Operation '%s' completed in %v (Memory: %.2f MB)", operation, duration, memoryMB)
 
 	if len(metrics) > 0 {
-		var metricParts []string
+		metricParts := make([]string, 0, len(metrics))
 		for k, v := range metrics {
 			metricParts = append(metricParts, fmt.Sprintf("%s=%v", k, v))
 		}

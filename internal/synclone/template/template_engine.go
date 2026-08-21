@@ -54,7 +54,7 @@ func (te *TemplateEngine) ListTemplates() ([]string, error) {
 
 	err := filepath.Walk(te.TemplateDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return nil // Skip errors
+			return nil //nolint:nilerr // skip unreadable entries
 		}
 
 		if !info.IsDir() && (strings.HasSuffix(path, ".yaml") || strings.HasSuffix(path, ".yml")) {

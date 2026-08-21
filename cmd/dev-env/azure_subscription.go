@@ -403,10 +403,9 @@ func (m *AzureSubscriptionManager) loadSubscriptions() error {
 
 	output, err := cmd.Output()
 	if err != nil {
-		// If Azure CLI is not available or not authenticated, return empty list
-		// This allows the manager to work even without Azure CLI installed
+		// Azure CLI missing or unauthenticated is a valid empty inventory.
 		m.subscriptions = make(map[string]*AzureSubscription)
-		return nil
+		return nil //nolint:nilerr // empty inventory when az is unavailable
 	}
 
 	var subscriptions []struct {

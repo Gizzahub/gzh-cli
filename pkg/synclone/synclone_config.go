@@ -71,7 +71,7 @@ type BulkCloneGitlab struct {
 	GroupName string `yaml:"group_name" validate:"required"`
 }
 
-// 설정 파일 형식이 snake_case다
+// 설정 파일 형식이 snake_case다.
 type bulkCloneConfig struct {
 	Version           string           `yaml:"version"`
 	Default           bulkCloneDefault `yaml:"default"`

@@ -305,9 +305,7 @@ func (ams *AsdfMultiSynchronizer) getCurrentToolVersion(ctx context.Context, too
 func (ams *AsdfMultiSynchronizer) synchronizeNodejs(ctx context.Context, policy SyncPolicy) error {
 	ams.logger.Info("Synchronizing Node.js and npm via asdf")
 
-	switch policy.Strategy {
-	case syncActionLatest:
-		// Install latest Node.js version
+	if policy.Strategy == syncActionLatest {
 		cmd := exec.CommandContext(ctx, "asdf", "install", "nodejs", syncActionLatest)
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("failed to install latest Node.js: %w", err)

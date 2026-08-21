@@ -73,10 +73,7 @@ func runTUI(cmd *cobra.Command, args []string) error {
 	// Create TUI model
 	model := tui.NewModel(ctx)
 
-	// Configure tea options
-	var opts []tea.ProgramOption
-	// Enable alt screen for both verbose and normal operation
-	opts = append(opts, tea.WithAltScreen())
+	opts := []tea.ProgramOption{tea.WithAltScreen()}
 
 	// Create and run the TUI program
 	p := tea.NewProgram(model, opts...)

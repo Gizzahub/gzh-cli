@@ -128,7 +128,7 @@ func (s brewSource) ListBins(ctx context.Context) ([]BinEntry, error) {
 	}
 	out, err := exec.CommandContext(ctx, "brew", "--prefix").Output()
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 	prefix := strings.TrimSpace(string(out))
 	bins := []BinEntry{}
@@ -149,9 +149,8 @@ type asdfSource struct{}
 
 func (s asdfSource) Name() string { return "asdf" }
 func (s asdfSource) ListBins(ctx context.Context) ([]BinEntry, error) {
-	// asdf 미설치 시 빈 결과
-	if err := exec.CommandContext(ctx, "asdf", "--version").Run(); err != nil {
-		return nil, nil
+	if exec.CommandContext(ctx, "asdf", "--version").Run() != nil {
+		return []BinEntry{}, nil //nolint:nilerr // asdf missing is a valid empty source
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -179,11 +178,7 @@ type pipSource struct{}
 
 func (s pipSource) Name() string { return "pip" }
 func (s pipSource) ListBins(ctx context.Context) ([]BinEntry, error) {
-	// 우선순위: pip -> pip3 -> python3 user base
-	if exec.CommandContext(ctx, "pip", "--version").Run() == nil {
-		// pip가 설치되어 있어도 scripts 경로를 안정적으로 찾기 어려움 → PATH를 통해 병합되므로 넘어간다
-	}
-	// python3 사용자 base/bin 추정
+	// pip 설치 여부는 PATH 병합으로 처리한다. scripts 경로는 python3로 찾는다.
 	out, err := exec.CommandContext(ctx, "python3", "-c", "import sysconfig; print(sysconfig.get_path('scripts'))").Output()
 	if err == nil {
 		dir := strings.TrimSpace(string(out))

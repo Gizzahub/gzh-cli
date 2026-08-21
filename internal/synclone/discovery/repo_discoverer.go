@@ -357,21 +357,18 @@ func (rd *RepoDiscoverer) getRemoteURL(ctx context.Context, repoPath string) (st
 		}
 
 		remotes := strings.Fields(strings.TrimSpace(string(remoteOutput)))
-		if len(remotes) > 0 {
-			// Validate remote name to prevent injection
-			remoteName := remotes[0]
-			if !isValidRemoteName(remoteName) {
-				return "", fmt.Errorf("invalid remote name: %s", remoteName)
-			}
-			// Get URL for first remote
-			// #nosec G204 - remoteName is validated for safety
-			cmd = exec.CommandContext(ctx, "git", "-C", repoPath, "remote", "get-url", remoteName)
-			output, err = cmd.Output()
-			if err != nil {
-				return "", fmt.Errorf("failed to get remote URL: %w", err)
-			}
-		} else {
+		if len(remotes) == 0 {
 			return "", fmt.Errorf("no remotes found")
+		}
+		remoteName := remotes[0]
+		if !isValidRemoteName(remoteName) {
+			return "", fmt.Errorf("invalid remote name: %s", remoteName)
+		}
+		// #nosec G204 - remoteName is validated for safety
+		cmd = exec.CommandContext(ctx, "git", "-C", repoPath, "remote", "get-url", remoteName)
+		output, err = cmd.Output()
+		if err != nil {
+			return "", fmt.Errorf("failed to get remote URL: %w", err)
 		}
 	}
 
