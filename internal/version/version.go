@@ -7,4 +7,4 @@ package version
 
 // Version is the current gzh-cli version.
 // bump-version 타겟이 sed로 직접 수정합니다.
-var Version = "0.1.0"
+var Version = "0.1.1"
