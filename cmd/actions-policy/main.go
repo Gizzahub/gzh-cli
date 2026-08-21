@@ -716,6 +716,8 @@ func (l *consoleLogger) Error(msg string, args ...any) {
 // Simple API client for CLI.
 type simpleAPIClient struct{}
 
+var _ github.APIClient = (*simpleAPIClient)(nil)
+
 func (m *simpleAPIClient) GetRepository(ctx context.Context, owner, repo string) (*github.RepositoryInfo, error) {
 	return &github.RepositoryInfo{}, nil
 }
@@ -740,4 +742,32 @@ func (m *simpleAPIClient) GetRepositoryConfiguration(ctx context.Context, owner,
 
 func (m *simpleAPIClient) UpdateRepositoryConfiguration(ctx context.Context, owner, repo string, config *github.RepositoryConfig) error {
 	return nil
+}
+
+func (m *simpleAPIClient) CreateRepository(ctx context.Context, owner string, opts *github.CreateRepositoryOptions) (*github.RepositoryInfo, error) {
+	return &github.RepositoryInfo{Name: opts.Name, FullName: owner + "/" + opts.Name}, nil
+}
+
+func (m *simpleAPIClient) UpdateRepository(ctx context.Context, owner, repo string, opts *github.UpdateRepositoryOptions) (*github.RepositoryInfo, error) {
+	return &github.RepositoryInfo{Name: repo, FullName: owner + "/" + repo}, nil
+}
+
+func (m *simpleAPIClient) ForkRepository(ctx context.Context, owner, repo string, opts *github.ForkRepositoryOptions) (*github.RepositoryInfo, error) {
+	return &github.RepositoryInfo{Name: repo, FullName: "forker/" + repo}, nil
+}
+
+func (m *simpleAPIClient) DeleteRepository(ctx context.Context, owner, repo string) error {
+	return nil
+}
+
+func (m *simpleAPIClient) ArchiveRepository(ctx context.Context, owner, repo string) error {
+	return nil
+}
+
+func (m *simpleAPIClient) UnarchiveRepository(ctx context.Context, owner, repo string) error {
+	return nil
+}
+
+func (m *simpleAPIClient) SearchRepositories(ctx context.Context, query string, opts *github.SearchRepositoriesOptions) (*github.RepositorySearchResult, error) {
+	return &github.RepositorySearchResult{}, nil
 }
