@@ -188,9 +188,10 @@ func TestSyncClone_ProgressTracking(t *testing.T) {
 				summary := tracker.GetSummary()
 				assert.NotEmpty(t, summary)
 
-				// Test duration tracking
+				// Test duration tracking. Immediate state transitions can be
+				// reported as zero on Windows' coarse clock.
 				duration := tracker.GetDuration()
-				assert.Greater(t, duration, time.Duration(0))
+				assert.GreaterOrEqual(t, duration, time.Duration(0))
 
 				t.Logf("Mode: %s, Progress: %.1f%%, Summary: %s", dm.mode, progressPercent, summary)
 			})

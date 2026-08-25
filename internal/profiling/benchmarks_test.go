@@ -49,7 +49,8 @@ func TestBenchmarkSuite_RunBenchmark_NilOptions(t *testing.T) {
 	assert.True(t, executed)
 	assert.Equal(t, "test-benchmark", result.Name)
 	assert.Equal(t, 1000, result.Operations) // Default iterations
-	assert.Greater(t, result.Duration, time.Duration(0))
+	// A no-op benchmark can complete within Windows' clock resolution.
+	assert.GreaterOrEqual(t, result.Duration, time.Duration(0))
 }
 
 func TestBenchmarkSuite_RunBenchmark_CustomOptions(t *testing.T) {

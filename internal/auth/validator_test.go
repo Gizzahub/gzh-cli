@@ -157,7 +157,9 @@ func TestValidator_ValidateToken_BasicValidation(t *testing.T) {
 	assert.False(t, result.Valid)
 	assert.NotEmpty(t, result.Errors)
 	assert.Contains(t, result.Errors[0], "Token format validation failed")
-	assert.NotZero(t, result.Duration)
+	// Windows can report zero elapsed time for this immediately rejected input.
+	// The result still records a valid, non-negative duration on every platform.
+	assert.GreaterOrEqual(t, result.Duration, time.Duration(0))
 	assert.NotZero(t, result.Timestamp)
 }
 
