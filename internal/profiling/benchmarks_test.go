@@ -55,7 +55,7 @@ func TestBenchmarkSuite_RunBenchmark_NilOptions(t *testing.T) {
 	assert.GreaterOrEqual(t, result.Duration, time.Duration(0))
 }
 
-func TestBenchmarkThroughput_ZeroDurationIsFiniteAndJSONMarshalable(t *testing.T) {
+func TestBenchmarkThroughput_ZeroDurationIsUnmeasurableAndJSONMarshalable(t *testing.T) {
 	nsPerOp, opsPerSec := benchmarkThroughput(1000, 0)
 
 	assert.Zero(t, nsPerOp)
@@ -70,7 +70,9 @@ func TestBenchmarkThroughput_ZeroDurationIsFiniteAndJSONMarshalable(t *testing.T
 		OpsPerSec:  opsPerSec,
 	})
 	require.NoError(t, err)
-	assert.Contains(t, string(encoded), `"ops_per_sec":0`)
+	var decoded BenchmarkResult
+	require.NoError(t, json.Unmarshal(encoded, &decoded))
+	assert.Zero(t, decoded.OpsPerSec)
 }
 
 func TestBenchmarkThroughput_PositiveDuration(t *testing.T) {

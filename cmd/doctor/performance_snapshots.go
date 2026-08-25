@@ -275,6 +275,9 @@ func (sm *SnapshotManager) performComparison(analysis *SnapshotAnalysis, options
 
 	for name, currentBench := range currentMap {
 		if baselineBench, exists := baselineMap[name]; exists {
+			if !hasMeasurableThroughput(currentBench) || !hasMeasurableThroughput(baselineBench) {
+				continue
+			}
 			changePercent := calculatePerformanceChange(currentBench, baselineBench)
 			totalChange += changePercent
 			changeCount++
@@ -365,7 +368,7 @@ func (sm *SnapshotManager) analyzeBenchmarkTrend(benchmarkName string, snapshots
 	// Extract data points for this benchmark
 	for _, snapshot := range snapshots {
 		for _, bench := range snapshot.Benchmarks {
-			if bench.Name == benchmarkName {
+			if bench.Name == benchmarkName && hasMeasurableThroughput(bench) {
 				dataPoint := TrendDataPoint{
 					Timestamp:   snapshot.Timestamp,
 					OpsPerSec:   bench.OpsPerSec,
@@ -506,7 +509,7 @@ func environmentEqual(env1, env2 BenchmarkEnvironment) bool {
 }
 
 func calculatePerformanceChange(current, baseline profiling.BenchmarkResult) float64 {
-	if baseline.OpsPerSec == 0 {
+	if !hasMeasurableThroughput(current) || !hasMeasurableThroughput(baseline) {
 		return 0
 	}
 	return ((current.OpsPerSec - baseline.OpsPerSec) / baseline.OpsPerSec) * 100

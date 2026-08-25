@@ -1296,10 +1296,15 @@ func TestBenchmarkUtilityFunctions(t *testing.T) {
 
 		// Test with report containing benchmarks (using empty benchmarks for structure test)
 		report := &BenchmarkReport{
-			Benchmarks: make([]profiling.BenchmarkResult, 3),
+			Benchmarks: []profiling.BenchmarkResult{
+				{OpsPerSec: 100},
+				{Operations: 1000, Duration: 0, OpsPerSec: 0},
+				{OpsPerSec: 300},
+			},
 		}
 		generateBenchmarkSummary(report)
 		assert.Equal(t, 3, report.Summary.TotalBenchmarks)
+		assert.Equal(t, 200.0, report.Summary.AverageOpsPerSec)
 	})
 
 	t.Run("getGitCommit", func(t *testing.T) {
@@ -1837,6 +1842,27 @@ func TestPerformanceSnapshotUtilities(t *testing.T) {
 
 		change = calculatePerformanceChange(currentResult, zeroBaseline)
 		assert.Equal(t, 0.0, change)
+	})
+
+	t.Run("compareResults excludes unmeasurable throughput", func(t *testing.T) {
+		report := &BenchmarkReport{}
+		currentResult := profiling.BenchmarkResult{
+			Name:       "clock-floor",
+			Operations: 1000,
+			Duration:   0,
+			OpsPerSec:  0,
+		}
+		baselineResult := profiling.BenchmarkResult{
+			Name:       "clock-floor",
+			Operations: 1000,
+			Duration:   time.Second,
+			OpsPerSec:  1000,
+		}
+
+		compareResults(currentResult, baselineResult, 5, report)
+
+		assert.Empty(t, report.Regressions)
+		assert.Empty(t, report.Improvements)
 	})
 
 	t.Run("calculateSeverity", func(t *testing.T) {

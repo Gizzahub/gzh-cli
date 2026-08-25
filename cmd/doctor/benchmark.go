@@ -444,8 +444,8 @@ func compareAgainstBaseline(report *BenchmarkReport, baselineFile string, thresh
 }
 
 func compareResults(current, baseline profiling.BenchmarkResult, threshold float64, report *BenchmarkReport) {
-	if baseline.OpsPerSec == 0 {
-		return // Skip comparison if baseline has no ops/sec data
+	if !hasMeasurableThroughput(current) || !hasMeasurableThroughput(baseline) {
+		return
 	}
 
 	changePercent := ((current.OpsPerSec - baseline.OpsPerSec) / baseline.OpsPerSec) * 100
@@ -514,16 +514,22 @@ func generateBenchmarkSummary(report *BenchmarkReport) {
 	}
 
 	var totalOpsPerSec float64
+	measurableBenchmarks := 0
 	var totalMemory uint64
 	var totalDuration time.Duration
 
 	for _, result := range report.Benchmarks {
-		totalOpsPerSec += result.OpsPerSec
+		if hasMeasurableThroughput(result) {
+			totalOpsPerSec += result.OpsPerSec
+			measurableBenchmarks++
+		}
 		totalMemory += result.MemoryAfter - result.MemoryBefore
 		totalDuration += result.Duration
 	}
 
-	report.Summary.AverageOpsPerSec = totalOpsPerSec / float64(report.Summary.TotalBenchmarks)
+	if measurableBenchmarks > 0 {
+		report.Summary.AverageOpsPerSec = totalOpsPerSec / float64(measurableBenchmarks)
+	}
 	report.Summary.TotalMemoryUsage = totalMemory
 	report.Summary.TotalDuration = totalDuration
 
@@ -541,6 +547,10 @@ func generateBenchmarkSummary(report *BenchmarkReport) {
 	}
 
 	report.Summary.PerformanceScore = baseScore
+}
+
+func hasMeasurableThroughput(result profiling.BenchmarkResult) bool {
+	return result.OpsPerSec > 0
 }
 
 func generateBenchmarkRecommendations(report *BenchmarkReport) {
