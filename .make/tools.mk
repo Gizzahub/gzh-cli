@@ -10,13 +10,18 @@ GOLANGCI_LINT_RELEASE_VERSION := $(patsubst v%,%,$(GOLANGCI_LINT_VERSION))
 GOLANGCI_LINT_DIR := $(CURDIR)/bin/tools
 GOLANGCI_LINT := $(GOLANGCI_LINT_DIR)/golangci-lint$(shell go env GOEXE)
 GOLANGCI_LINT_RUN_FLAGS := --allow-serial-runners
+GOSEC_VERSION := v2.28.0
+GOSEC_MODULE := github.com/securego/gosec/v2
+GOSEC_INSTALL := $(GOSEC_MODULE)/cmd/gosec@$(GOSEC_VERSION)
+GOSEC_DIR := $(CURDIR)/bin/tools
+GOSEC := $(GOSEC_DIR)/gosec$(shell go env GOEXE)
 
 # ==============================================================================
 # Core Tool Installation
 # ==============================================================================
 
 .PHONY: install-tools install-format-tools install-analysis-tools install-goreleaser
-.PHONY: install-golangci-lint install-pre-commit-tools install-docs-tools
+.PHONY: install-golangci-lint install-gosec install-pre-commit-tools install-docs-tools
 
 install-tools: install-format-tools install-analysis-tools install-golangci-lint install-goreleaser ## install all development tools
 	@echo -e "$(GREEN)✅ All development tools installed!$(RESET)"
@@ -27,13 +32,12 @@ install-format-tools: ## install advanced formatting tools
 	@which gci > /dev/null || (echo "Installing gci..." && go install github.com/daixiang0/gci@latest)
 	@echo -e "$(GREEN)✅ All formatting tools installed!$(RESET)"
 
-install-analysis-tools: ## install code analysis tools
+install-analysis-tools: install-gosec ## install code analysis tools
 	@echo -e "$(CYAN)Installing code analysis tools...$(RESET)"
 	@command -v gocyclo >/dev/null 2>&1 || { echo "Installing gocyclo..." && go install github.com/fzipp/gocyclo/cmd/gocyclo@latest; }
 	@command -v ineffassign >/dev/null 2>&1 || { echo "Installing ineffassign..." && go install github.com/gordonklaus/ineffassign@latest; }
 	@command -v dupl >/dev/null 2>&1 || { echo "Installing dupl..." && go install github.com/mibk/dupl@latest; }
 	@command -v staticcheck >/dev/null 2>&1 || { echo "Installing staticcheck..." && go install honnef.co/go/tools/cmd/staticcheck@latest; }
-	@command -v gosec >/dev/null 2>&1 || { echo "Installing gosec..." && go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest; }
 	@echo -e "$(GREEN)✅ All analysis tools installed!$(RESET)"
 
 install-golangci-lint: ## install the pinned golangci-lint v2 release
@@ -45,6 +49,20 @@ install-golangci-lint: ## install the pinned golangci-lint v2 release
 	fi
 	@"$(GOLANGCI_LINT)" version --short 2>/dev/null | grep -qxF "$(GOLANGCI_LINT_RELEASE_VERSION)" || { \
 		echo "golangci-lint installation did not produce $(GOLANGCI_LINT_VERSION): $(GOLANGCI_LINT)" >&2; \
+		exit 1; \
+	}
+
+install-gosec: ## install the pinned gosec release
+	@echo -e "$(CYAN)Ensuring gosec $(GOSEC_VERSION)...$(RESET)"
+	@mkdir -p "$(GOSEC_DIR)"
+	@if [ ! -x "$(GOSEC)" ] || ! go version -m "$(GOSEC)" 2>/dev/null | \
+		awk '$$1 == "mod" && $$2 == "$(GOSEC_MODULE)" && $$3 == "$(GOSEC_VERSION)" { found = 1 } END { exit !found }'; then \
+		echo "Installing gosec $(GOSEC_VERSION) to $(GOSEC)..."; \
+		GOBIN="$(GOSEC_DIR)" go install $(GOSEC_INSTALL); \
+	fi
+	@go version -m "$(GOSEC)" 2>/dev/null | \
+		awk '$$1 == "mod" && $$2 == "$(GOSEC_MODULE)" && $$3 == "$(GOSEC_VERSION)" { found = 1 } END { exit !found }' || { \
+		echo "gosec installation did not produce $(GOSEC_MODULE) $(GOSEC_VERSION): $(GOSEC)" >&2; \
 		exit 1; \
 	}
 
@@ -138,9 +156,8 @@ install-docs-tools: ## install documentation tools
 
 .PHONY: install-security-tools
 
-install-security-tools: ## install security analysis tools
+install-security-tools: install-gosec ## install security analysis tools
 	@echo -e "$(CYAN)Installing security tools...$(RESET)"
-	@command -v gosec >/dev/null 2>&1 || { echo "Installing gosec..." && go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest; }
 	@echo -e "$(GREEN)✅ Security tools installed!$(RESET)"
 
 # ==============================================================================
@@ -179,7 +196,7 @@ tools-status: ## show installed tool status
 	@printf "  %-20s " "staticcheck:"; staticcheck -version 2>/dev/null || echo -e "$(RED)Not installed$(RESET)"
 	@echo ""
 	@echo -e "$(GREEN)🛡️  Security Tools:$(RESET)"
-	@printf "  %-20s " "gosec:"; gosec -version 2>/dev/null || echo -e "$(RED)Not installed$(RESET)"
+	@printf "  %-20s " "gosec:"; "$(GOSEC)" -version 2>/dev/null || echo -e "$(RED)Not installed$(RESET)"
 	@echo ""
 	@echo -e "$(GREEN)🎭 Mock Tools:$(RESET)"
 	@printf "  %-20s " "mockgen:"; mockgen --version 2>/dev/null || echo -e "$(RED)Not installed$(RESET)"
