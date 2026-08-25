@@ -11,7 +11,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/pkg/sftp"
@@ -356,7 +355,7 @@ func (installer *SSHKeyInstaller) createKeyAuth(privateKeyPath string) (ssh.Auth
 // readPassword reads password from stdin without echoing.
 func (installer *SSHKeyInstaller) readPassword() (string, error) {
 	// Check if stdin is a terminal
-	fd := int(syscall.Stdin)
+	fd := int(os.Stdin.Fd())
 	if term.IsTerminal(fd) {
 		// Read password without echoing
 		password, err := term.ReadPassword(fd)
