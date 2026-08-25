@@ -11,7 +11,16 @@ import (
 )
 
 func TestPprofServeMuxOwnsOnlyPprofRoutes(t *testing.T) {
-	mux := newPprofServeMux()
+	assertPprofServeMuxContract(t, newPprofServeMux())
+}
+
+func TestPprofServeMuxSupportsGo121CompatibilityMode(t *testing.T) {
+	t.Setenv("GODEBUG", "httpmuxgo121=1")
+	assertPprofServeMuxContract(t, newPprofServeMux())
+}
+
+func assertPprofServeMuxContract(t *testing.T, mux *http.ServeMux) {
+	t.Helper()
 
 	for _, path := range []string{
 		"/debug/pprof/",
@@ -31,6 +40,9 @@ func TestPprofServeMuxOwnsOnlyPprofRoutes(t *testing.T) {
 		mux.ServeHTTP(postResponse, postRequest)
 		if postResponse.Code != http.StatusMethodNotAllowed {
 			t.Errorf("POST %s status = %d, want %d", path, postResponse.Code, http.StatusMethodNotAllowed)
+		}
+		if allow := postResponse.Header().Get("Allow"); allow != "GET, HEAD" {
+			t.Errorf("POST %s Allow = %q, want %q", path, allow, "GET, HEAD")
 		}
 	}
 

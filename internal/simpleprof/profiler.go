@@ -81,12 +81,23 @@ func (p *SimpleProfiler) StartHTTPServer(port int) error {
 
 func newPprofServeMux() *http.ServeMux {
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /debug/pprof/", httppprof.Index)
-	mux.HandleFunc("GET /debug/pprof/cmdline", httppprof.Cmdline)
-	mux.HandleFunc("GET /debug/pprof/profile", httppprof.Profile)
-	mux.HandleFunc("GET /debug/pprof/symbol", httppprof.Symbol)
-	mux.HandleFunc("GET /debug/pprof/trace", httppprof.Trace)
+	mux.HandleFunc("/debug/pprof/", pprofGETHandler(httppprof.Index))
+	mux.HandleFunc("/debug/pprof/cmdline", pprofGETHandler(httppprof.Cmdline))
+	mux.HandleFunc("/debug/pprof/profile", pprofGETHandler(httppprof.Profile))
+	mux.HandleFunc("/debug/pprof/symbol", pprofGETHandler(httppprof.Symbol))
+	mux.HandleFunc("/debug/pprof/trace", pprofGETHandler(httppprof.Trace))
 	return mux
+}
+
+func pprofGETHandler(handler http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet && r.Method != http.MethodHead {
+			w.Header().Set("Allow", "GET, HEAD")
+			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+			return
+		}
+		handler(w, r)
+	}
 }
 
 // StopHTTPServer stops the pprof HTTP server.
