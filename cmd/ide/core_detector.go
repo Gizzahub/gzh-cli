@@ -189,7 +189,7 @@ func (d *IDEDetector) queryPackageManager(ctx context.Context, manager string, a
 	execCtx, cancel := withExecTimeout(ctx)
 	defer cancel()
 
-	cmd := exec.CommandContext(execCtx, manager, args...)
+	cmd := commandContext(execCtx, manager, args...)
 	cmd.Stderr = nil // Suppress error output
 
 	output, err := cmd.Output()
@@ -510,7 +510,7 @@ func (d *IDEDetector) getJetBrainsVersionFromCommand(ctx context.Context, execPa
 	execCtx, cancel := withExecTimeout(ctx)
 	defer cancel()
 
-	cmd := exec.CommandContext(execCtx, execPath, "--version")
+	cmd := commandContext(execCtx, execPath, "--version")
 	cmd.Stderr = nil // Suppress warnings
 
 	output, err := cmd.Output()
@@ -832,7 +832,7 @@ func (d *IDEDetector) getExecutableVersion(ctx context.Context, execPath, versio
 	execCtx, cancel := withExecTimeout(ctx)
 	defer cancel()
 
-	cmd := exec.CommandContext(execCtx, execPath, versionArg)
+	cmd := commandContext(execCtx, execPath, versionArg)
 	cmd.Stderr = nil // Suppress error output
 
 	output, err := cmd.Output()
