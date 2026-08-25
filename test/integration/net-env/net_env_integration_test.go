@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gizzahub/gzh-cli/test/integration/internal/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -29,7 +30,7 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
-	binaryPath := filepath.Join(tmpDir, "gz")
+	binaryPath := testutil.ExecutablePath(tmpDir, "gz")
 	projectRoot, err := findProjectRoot()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "find project root: %v\n", err)

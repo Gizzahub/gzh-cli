@@ -10,11 +10,11 @@ import (
 	"context"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/gizzahub/gzh-cli/test/integration/internal/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -72,7 +72,7 @@ func buildPMExternalBinary(t *testing.T) string {
 	require.NoError(t, err)
 
 	tmpDir := t.TempDir()
-	binaryPath := filepath.Join(tmpDir, "gz-pm")
+	binaryPath := testutil.ExecutablePath(tmpDir, "gz-pm")
 
 	cmd := exec.Command("go", "build", "-tags", "pm_external", "-o", binaryPath, "./cmd/gz")
 	cmd.Dir = projectRoot

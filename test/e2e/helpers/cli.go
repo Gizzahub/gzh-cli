@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -175,7 +176,7 @@ func (c *CLIExecutor) RunAsync(ctx context.Context, args ...string) (*exec.Cmd, 
 
 // BuildBinary builds the gz binary for testing.
 func BuildBinary(ctx context.Context, projectRoot string) (string, error) {
-	binaryPath := filepath.Join(projectRoot, "gz")
+	binaryPath := executablePath(projectRoot, "gz")
 
 	// 만들 꾸러미를 짚어 준다. 예전에는 인자가 없어서 go build가 저장소
 	// 뿌리를 만들려 했는데 거기에는 .go 파일이 하나도 없다. main은
@@ -197,6 +198,18 @@ func BuildBinary(ctx context.Context, projectRoot string) (string, error) {
 	}
 
 	return binaryPath, nil
+}
+
+func executablePath(dir, name string) string {
+	return executablePathForGOOS(dir, name, runtime.GOOS)
+}
+
+func executablePathForGOOS(dir, name, goos string) string {
+	if goos == "windows" {
+		name += ".exe"
+	}
+
+	return filepath.Join(dir, name)
 }
 
 // FindProjectRoot finds the project root directory.
