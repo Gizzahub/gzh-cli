@@ -177,6 +177,7 @@ func TestActionsPolicyEnforcer_EnforcePolicy(t *testing.T) {
 	assert.Equal(t, "test-policy", result.PolicyID)
 	assert.Equal(t, "testorg", result.Organization)
 	assert.Equal(t, "testrepo", result.Repository)
+	assert.True(t, result.Success)
 	assert.NotEmpty(t, result.ValidationResult)
 	// Windows' monotonic clock can report no elapsed time for this in-memory
 	// operation. The timestamp and enforcement result above establish that the
