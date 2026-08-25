@@ -178,7 +178,7 @@ func TestExpandPath(t *testing.T) {
 		{
 			name:     "no expansion needed",
 			input:    "/absolute/path",
-			expected: "/absolute/path",
+			expected: filepath.FromSlash("/absolute/path"),
 		},
 		{
 			name:     "empty path",

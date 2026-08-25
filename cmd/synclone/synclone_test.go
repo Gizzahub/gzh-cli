@@ -41,16 +41,18 @@ func TestBulkCloneConfigSupport(t *testing.T) {
 default:
   protocol: https
   github:
-    root_path: "%s/github-repos"
+    root_path: '%s/github-repos'
     org_name: "test-default-org"
 repo_roots:
-  - root_path: "%s/my-repos"
+  - root_path: '%s/my-repos'
     provider: "github"
     protocol: "https"
     org_name: "my-test-org"
 `
 	configPath := filepath.Join(tempDir, "test-config.yaml")
-	formattedConfig := fmt.Sprintf(configContent, filepath.ToSlash(tempDir), filepath.ToSlash(tempDir))
+	// YAML double quotes interpret backslashes as escapes. Single quotes preserve
+	// native Windows paths exactly as users provide them.
+	formattedConfig := fmt.Sprintf(configContent, tempDir, tempDir)
 	err := os.WriteFile(configPath, []byte(formattedConfig), 0o600)
 	require.NoError(t, err)
 
@@ -82,12 +84,12 @@ repo_roots:
 default:
   protocol: https
   gitlab:
-    root_path: "%s/gitlab-repos"
+    root_path: '%s/gitlab-repos'
     group_name: "test-group"
     recursive: true
 `
 		gitlabConfigPath := filepath.Join(tempDir, "gitlab-config.yaml")
-		formattedGitlabConfig := fmt.Sprintf(gitlabConfig, filepath.ToSlash(tempDir))
+		formattedGitlabConfig := fmt.Sprintf(gitlabConfig, tempDir)
 		err := os.WriteFile(gitlabConfigPath, []byte(formattedGitlabConfig), 0o600)
 		require.NoError(t, err)
 

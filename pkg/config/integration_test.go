@@ -362,7 +362,7 @@ func TestIntegration_DirectoryStructure(t *testing.T) {
 
 	normalResolver := NewDirectoryResolver(normalTarget)
 	normalPath := normalResolver.ResolveRepositoryPath("test-repo")
-	expectedNormalPath := "/repos/github/normal-org/test-repo"
+	expectedNormalPath := filepath.FromSlash("/repos/github/normal-org/test-repo")
 	assert.Equal(t, expectedNormalPath, normalPath)
 
 	// Test flattened directory structure
@@ -373,7 +373,7 @@ func TestIntegration_DirectoryStructure(t *testing.T) {
 
 	flatResolver := NewDirectoryResolver(flatTarget)
 	flatPath := flatResolver.ResolveRepositoryPath("test-repo")
-	expectedFlatPath := "/repos/github-flat/test-repo"
+	expectedFlatPath := filepath.FromSlash("/repos/github-flat/test-repo")
 	assert.Equal(t, expectedFlatPath, flatPath)
 
 	// Test directory structure analysis

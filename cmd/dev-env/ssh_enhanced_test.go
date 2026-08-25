@@ -156,12 +156,12 @@ Host test.com
 		}
 		assert.Equal(t, 6, keyFiles) // 3 private + 3 public keys
 
-		// Verify file permissions
+		// Verify file permissions where the platform exposes POSIX mode bits.
 		if info, err := os.Stat(filepath.Join(targetSSHDir, "id_rsa")); err == nil {
-			assert.Equal(t, os.FileMode(0o600), info.Mode().Perm())
+			assertPrivateMode(t, info, 0o600)
 		}
 		if info, err := os.Stat(filepath.Join(targetSSHDir, "id_rsa.pub")); err == nil {
-			assert.Equal(t, os.FileMode(0o644), info.Mode().Perm())
+			assertPrivateMode(t, info, 0o644)
 		}
 	})
 
