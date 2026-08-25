@@ -181,6 +181,38 @@ type metricsOptions struct {
 	onlyIssues     bool
 }
 
+type projectRootReader struct {
+	projectPath string
+	root        *os.Root
+}
+
+func openProjectRootReader(projectPath string) (*projectRootReader, error) {
+	root, err := os.OpenRoot(projectPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open project root: %w", err)
+	}
+
+	return &projectRootReader{projectPath: projectPath, root: root}, nil
+}
+
+func (r *projectRootReader) Close() error {
+	return r.root.Close()
+}
+
+func (r *projectRootReader) ReadFile(path string) ([]byte, error) {
+	relativePath, err := filepath.Rel(r.projectPath, path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to resolve project-relative path %q: %w", path, err)
+	}
+
+	content, err := r.root.ReadFile(relativePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read project file %q: %w", relativePath, err)
+	}
+
+	return content, nil
+}
+
 func runQualityMetricsAnalysis(ctx context.Context, flags *cli.CommonFlags, opts metricsOptions) error {
 	logger := logger.NewSimpleLogger("doctor-metrics")
 
@@ -199,8 +231,15 @@ func runQualityMetricsAnalysis(ctx context.Context, flags *cli.CommonFlags, opts
 		FileAnalysis: make([]FileQualityInfo, 0),
 	}
 
+	// 분석 root를 한 번 고정해 walker callback의 경로가 바뀌어도 root 밖으로 나가지 못하게 한다.
+	projectFiles, err := openProjectRootReader(opts.projectPath)
+	if err != nil {
+		return err
+	}
+	defer projectFiles.Close()
+
 	// Collect basic project metrics
-	if err := collectProjectMetrics(report, opts); err != nil {
+	if err := collectProjectMetrics(report, opts, projectFiles); err != nil {
 		logger.Warn("Failed to collect basic metrics", "error", err)
 	}
 
@@ -216,14 +255,14 @@ func runQualityMetricsAnalysis(ctx context.Context, flags *cli.CommonFlags, opts
 
 	// Analyze code complexity
 	if !opts.skipComplexity {
-		if err := collectComplexityMetrics(report, opts); err != nil {
+		if err := collectComplexityMetrics(report, opts, projectFiles); err != nil {
 			logger.Warn("Failed to collect complexity metrics", "error", err)
 		}
 	}
 
 	// Perform detailed file analysis
 	if opts.detailedReport {
-		if err := collectFileAnalysis(report, opts); err != nil {
+		if err := collectFileAnalysis(report, opts, projectFiles); err != nil {
 			logger.Warn("Failed to collect file analysis", "error", err)
 		}
 	}
@@ -251,7 +290,7 @@ func runQualityMetricsAnalysis(ctx context.Context, flags *cli.CommonFlags, opts
 	}
 }
 
-func collectProjectMetrics(report *CodeQualityReport, opts metricsOptions) error {
+func collectProjectMetrics(report *CodeQualityReport, opts metricsOptions, projectFiles *projectRootReader) error {
 	// Count Go files and lines
 	var totalFiles, totalLines, codeLines, commentLines int
 
@@ -273,7 +312,7 @@ func collectProjectMetrics(report *CodeQualityReport, opts metricsOptions) error
 		totalFiles++
 
 		// Count lines in file
-		content, err := os.ReadFile(path)
+		content, err := projectFiles.ReadFile(path)
 		if err != nil {
 			return err
 		}
@@ -427,7 +466,7 @@ func collectCoverageMetrics(ctx context.Context, report *CodeQualityReport, opts
 	return nil
 }
 
-func collectComplexityMetrics(report *CodeQualityReport, opts metricsOptions) error {
+func collectComplexityMetrics(report *CodeQualityReport, opts metricsOptions, projectFiles *projectRootReader) error {
 	// Use gocyclo or similar tool to analyze complexity
 	// For now, implement a simple complexity estimation
 	var totalComplexity, functionCount int
@@ -445,7 +484,7 @@ func collectComplexityMetrics(report *CodeQualityReport, opts metricsOptions) er
 			return nil
 		}
 
-		content, err := os.ReadFile(path)
+		content, err := projectFiles.ReadFile(path)
 		if err != nil {
 			return err
 		}
@@ -484,7 +523,7 @@ func collectComplexityMetrics(report *CodeQualityReport, opts metricsOptions) er
 	return nil
 }
 
-func collectFileAnalysis(report *CodeQualityReport, opts metricsOptions) error {
+func collectFileAnalysis(report *CodeQualityReport, opts metricsOptions, projectFiles *projectRootReader) error {
 	err := filepath.Walk(opts.projectPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil || !strings.HasSuffix(path, ".go") {
 			return err
@@ -498,7 +537,7 @@ func collectFileAnalysis(report *CodeQualityReport, opts metricsOptions) error {
 			return nil
 		}
 
-		content, err := os.ReadFile(path)
+		content, err := projectFiles.ReadFile(path)
 		if err != nil {
 			return err
 		}

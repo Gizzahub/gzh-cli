@@ -1384,8 +1384,8 @@ func saveDiagnosticsResults(diagnostics *ContainerDiagnostics, filename string) 
 }
 
 // WriteFile writes data to a file with specified permissions.
-func WriteFile(filename string, data []byte, perm int) error {
-	return os.WriteFile(filename, data, os.FileMode(perm))
+func WriteFile(filename string, data []byte, perm os.FileMode) error {
+	return os.WriteFile(filename, data, perm)
 }
 
 func displayContainerDiagnostics(diagnostics *ContainerDiagnostics, _ containerOptions) error {
