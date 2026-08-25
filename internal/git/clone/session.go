@@ -10,11 +10,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 )
 
 // Session represents a clone operation session for resumability.
 type Session struct {
+	mu           sync.RWMutex
 	ID           string                       `json:"id"`
 	StartedAt    time.Time                    `json:"started_at"`
 	UpdatedAt    time.Time                    `json:"updated_at"`
@@ -81,6 +83,9 @@ func (s *Session) Load(sessionID string) error {
 		return fmt.Errorf("failed to read session file: %w", err)
 	}
 
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	if err := json.Unmarshal(data, s); err != nil {
 		return fmt.Errorf("failed to unmarshal session data: %w", err)
 	}
@@ -90,8 +95,11 @@ func (s *Session) Load(sessionID string) error {
 
 // Save saves the session to disk.
 func (s *Session) Save() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	s.UpdatedAt = time.Now()
-	s.updateStatistics()
+	s.updateStatisticsLocked()
 
 	data, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
@@ -108,6 +116,9 @@ func (s *Session) Save() error {
 
 // AddRepository adds a repository to the session.
 func (s *Session) AddRepository(repoName string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	if s.Repositories == nil {
 		s.Repositories = make(map[string]*RepositoryStatus)
 	}
@@ -121,6 +132,9 @@ func (s *Session) AddRepository(repoName string) {
 
 // MarkStarted marks a repository as started.
 func (s *Session) MarkStarted(repoName string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	if status, exists := s.Repositories[repoName]; exists {
 		status.Status = "cloning"
 		status.StartedAt = time.Now()
@@ -131,6 +145,9 @@ func (s *Session) MarkStarted(repoName string) {
 
 // MarkCompleted marks a repository as completed.
 func (s *Session) MarkCompleted(repoName string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	if status, exists := s.Repositories[repoName]; exists {
 		status.Status = "completed"
 		status.CompletedAt = time.Now()
@@ -140,6 +157,9 @@ func (s *Session) MarkCompleted(repoName string) {
 
 // MarkFailed marks a repository as failed.
 func (s *Session) MarkFailed(repoName string, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	if status, exists := s.Repositories[repoName]; exists {
 		status.Status = "failed"
 		status.Error = err.Error()
@@ -149,6 +169,9 @@ func (s *Session) MarkFailed(repoName string, err error) {
 
 // IsCompleted checks if a repository is completed.
 func (s *Session) IsCompleted(repoName string) bool {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	if status, exists := s.Repositories[repoName]; exists {
 		return status.Status == "completed"
 	}
@@ -157,6 +180,9 @@ func (s *Session) IsCompleted(repoName string) bool {
 
 // IsFailed checks if a repository is failed.
 func (s *Session) IsFailed(repoName string) bool {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	if status, exists := s.Repositories[repoName]; exists {
 		return status.Status == "failed"
 	}
@@ -165,14 +191,21 @@ func (s *Session) IsFailed(repoName string) bool {
 
 // GetStatus returns the status of a repository.
 func (s *Session) GetStatus(repoName string) *RepositoryStatus {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	if status, exists := s.Repositories[repoName]; exists {
-		return status
+		statusCopy := *status
+		return &statusCopy
 	}
 	return nil
 }
 
 // GetCompletedRepositories returns a list of completed repositories.
 func (s *Session) GetCompletedRepositories() []string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	var completed []string
 	for repoName, status := range s.Repositories {
 		if status.Status == "completed" {
@@ -184,6 +217,9 @@ func (s *Session) GetCompletedRepositories() []string {
 
 // GetFailedRepositories returns a list of failed repositories.
 func (s *Session) GetFailedRepositories() []string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	var failed []string
 	for repoName, status := range s.Repositories {
 		if status.Status == "failed" {
@@ -195,6 +231,9 @@ func (s *Session) GetFailedRepositories() []string {
 
 // GetPendingRepositories returns a list of pending repositories.
 func (s *Session) GetPendingRepositories() []string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	var pending []string
 	for repoName, status := range s.Repositories {
 		if status.Status == "pending" {
@@ -206,15 +245,22 @@ func (s *Session) GetPendingRepositories() []string {
 
 // GetProgress returns the current progress as a percentage.
 func (s *Session) GetProgress() float64 {
-	if s.Statistics.TotalRepositories == 0 {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	if s.Statistics == nil || s.Statistics.TotalRepositories == 0 {
 		return 0.0
 	}
 	completed := s.Statistics.CompletedCount + s.Statistics.FailedCount
 	return float64(completed) / float64(s.Statistics.TotalRepositories) * 100.0
 }
 
-// updateStatistics updates the session statistics.
-func (s *Session) updateStatistics() {
+// updateStatisticsLocked updates session statistics while s.mu is held for writing.
+func (s *Session) updateStatisticsLocked() {
+	if s.Statistics == nil {
+		s.Statistics = &SessionStatistics{}
+	}
+
 	s.Statistics.TotalRepositories = len(s.Repositories)
 	s.Statistics.CompletedCount = 0
 	s.Statistics.FailedCount = 0
@@ -243,12 +289,18 @@ func (s *Session) Delete() error {
 
 // GetDuration returns the duration since the session started.
 func (s *Session) GetDuration() time.Duration {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	return time.Since(s.StartedAt)
 }
 
 // IsActive checks if the session is active (has pending or in-progress repositories).
 func (s *Session) IsActive() bool {
-	s.updateStatistics()
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.updateStatisticsLocked()
 	return s.Statistics.PendingCount > 0 || s.Statistics.InProgressCount > 0
 }
 
@@ -344,7 +396,10 @@ func LoadSessionInfo(sessionID string) (*SessionInfo, error) {
 		return nil, fmt.Errorf("failed to unmarshal session data: %w", err)
 	}
 
-	session.updateStatistics()
+	session.mu.Lock()
+	session.updateStatisticsLocked()
+	statistics := *session.Statistics
+	session.mu.Unlock()
 
 	return &SessionInfo{
 		ID:           session.ID,
@@ -353,7 +408,7 @@ func LoadSessionInfo(sessionID string) (*SessionInfo, error) {
 		Provider:     session.Options.Provider,
 		Organization: session.Options.Org,
 		Target:       session.Options.Target,
-		Statistics:   session.Statistics,
+		Statistics:   &statistics,
 	}, nil
 }
 
