@@ -356,7 +356,7 @@ func (installer *SSHKeyInstaller) createKeyAuth(privateKeyPath string) (ssh.Auth
 // readPassword reads password from stdin without echoing.
 func (installer *SSHKeyInstaller) readPassword() (string, error) {
 	// Check if stdin is a terminal
-	fd := syscall.Stdin
+	fd := int(syscall.Stdin)
 	if term.IsTerminal(fd) {
 		// Read password without echoing
 		password, err := term.ReadPassword(fd)
