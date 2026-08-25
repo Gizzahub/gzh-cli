@@ -136,71 +136,89 @@ fmt-diff: ## format only changed files (fast, for pre-commit)
 
 lint-check: install-golangci-lint ## check lint issues without fixing (exit code reflects status)
 	@echo -e "$(CYAN)Running golangci-lint...$(RESET)"
-	"$(GOLANGCI_LINT)" run -c .golangci.yml
+	"$(GOLANGCI_LINT)" run $(GOLANGCI_LINT_RUN_FLAGS) -c .golangci.yml
 
 lint: lint-check ## alias for lint-check
 
 lint-fix: install-golangci-lint ## run golangci-lint with auto-fix
 	@echo -e "$(CYAN)Running golangci-lint with auto-fix...$(RESET)"
-	"$(GOLANGCI_LINT)" run -c .golangci.yml --fix
+	"$(GOLANGCI_LINT)" run $(GOLANGCI_LINT_RUN_FLAGS) -c .golangci.yml --fix
 
 lint-new: install-golangci-lint ## run golangci-lint on new code only
 	@echo -e "$(CYAN)Running golangci-lint on new code only...$(RESET)"
-	"$(GOLANGCI_LINT)" run -c .golangci.yml --new-from-rev=HEAD~
+	"$(GOLANGCI_LINT)" run $(GOLANGCI_LINT_RUN_FLAGS) -c .golangci.yml --new-from-rev=HEAD~
 
 lint-ci: install-golangci-lint ## run golangci-lint for CI
 	@echo -e "$(CYAN)Running golangci-lint for CI...$(RESET)"
-	"$(GOLANGCI_LINT)" run -c .golangci.yml --output.text.path=stdout --output.text.colors=false
+	"$(GOLANGCI_LINT)" run $(GOLANGCI_LINT_RUN_FLAGS) -c .golangci.yml --output.text.path=stdout --output.text.colors=false
 
 lint-count: install-golangci-lint ## count total lint issues without fixing
 	@echo -e "$(CYAN)Counting lint issues...$(RESET)"
-	@ISSUES=$$("$(GOLANGCI_LINT)" run -c .golangci.yml --max-issues-per-linter=0 --max-same-issues=0 --output.text.path=stdout --output.text.colors=false 2>/dev/null | grep -E "^[^[:space:]].*\\([^)]+\\)$$" | wc -l); \
+	@set -e; \
+	OUTPUT=$$(mktemp); \
+	trap 'rm -f "$$OUTPUT"' EXIT; \
+	"$(GOLANGCI_LINT)" run $(GOLANGCI_LINT_RUN_FLAGS) -c .golangci.yml --issues-exit-code=0 --max-issues-per-linter=0 --max-same-issues=0 --output.text.path=stdout --output.text.colors=false >"$$OUTPUT"; \
+	ISSUES=$$(grep -E "^[^[:space:]].*\\([^)]+\\)$$" "$$OUTPUT" | wc -l); \
 	echo -e "$(YELLOW)Total lint issues: $$ISSUES$(RESET)"
 
 lint-summary: install-golangci-lint ## show lint issues summary by linter
 	@echo -e "$(CYAN)Lint issues summary:$(RESET)"
-	@"$(GOLANGCI_LINT)" run -c .golangci.yml --max-issues-per-linter=0 --max-same-issues=0 --output.text.path=stdout --output.text.colors=false 2>/dev/null | \
-	grep -E "^[^[:space:]].*\\([^)]+\\)$$" | sed 's/.*(\\([^)]*\\))$$/\\1/' | sort | uniq -c | sort -nr | \
+	@set -e; \
+	OUTPUT=$$(mktemp); \
+	trap 'rm -f "$$OUTPUT"' EXIT; \
+	"$(GOLANGCI_LINT)" run $(GOLANGCI_LINT_RUN_FLAGS) -c .golangci.yml --issues-exit-code=0 --max-issues-per-linter=0 --max-same-issues=0 --output.text.path=stdout --output.text.colors=false >"$$OUTPUT"; \
+	grep -E "^[^[:space:]].*\\([^)]+\\)$$" "$$OUTPUT" | sed 's/.*(\\([^)]*\\))$$/\\1/' | sort | uniq -c | sort -nr | \
 	awk '{printf "  $(YELLOW)%-15s$(RESET) %d issues\\n", $$2, $$1}'
 
 lint-stats: install-golangci-lint ## show detailed lint statistics with golangci-lint built-in stats
 	@echo -e "$(CYAN)=== Lint Statistics ===$(RESET)"
-	@"$(GOLANGCI_LINT)" run -c .golangci.yml --show-stats --max-issues-per-linter=0 --max-same-issues=0
+	@"$(GOLANGCI_LINT)" run $(GOLANGCI_LINT_RUN_FLAGS) -c .golangci.yml --show-stats --max-issues-per-linter=0 --max-same-issues=0
 
 lint-status: install-golangci-lint ## comprehensive lint status report
 	@echo -e "$(BLUE)🔍 Comprehensive Lint Status Report$(RESET)"
 	@echo -e "$(BLUE)==================================$(RESET)"
 	@echo ""
 	@echo -e "$(GREEN)📊 Quick Stats:$(RESET)"
-	@TOTAL=$$("$(GOLANGCI_LINT)" run -c .golangci.yml --max-issues-per-linter=0 --max-same-issues=0 --output.text.path=stdout --output.text.colors=false 2>/dev/null | grep -E "^[^[:space:]].*\\([^)]+\\)$$" | wc -l); \
-	ERRORS=$$("$(GOLANGCI_LINT)" run -c .golangci.yml --max-issues-per-linter=0 --max-same-issues=0 --show-stats=false --output.text.path=stderr --output.json.path=stdout 2>/dev/null | jq -r '.Issues[]? | select(.Severity=="error") | .Severity' 2>/dev/null | wc -l || echo "0"); \
-	WARNINGS=$$("$(GOLANGCI_LINT)" run -c .golangci.yml --max-issues-per-linter=0 --max-same-issues=0 --show-stats=false --output.text.path=stderr --output.json.path=stdout 2>/dev/null | jq -r '.Issues[]? | select(.Severity=="warning") | .Severity' 2>/dev/null | wc -l || echo "0"); \
+	@set -e; \
+	TEXT_OUTPUT=$$(mktemp); JSON_OUTPUT=$$(mktemp); \
+	trap 'rm -f "$$TEXT_OUTPUT" "$$JSON_OUTPUT"' EXIT; \
+	"$(GOLANGCI_LINT)" run $(GOLANGCI_LINT_RUN_FLAGS) -c .golangci.yml --issues-exit-code=0 --max-issues-per-linter=0 --max-same-issues=0 --output.text.path=stdout --output.text.colors=false >"$$TEXT_OUTPUT"; \
+	"$(GOLANGCI_LINT)" run $(GOLANGCI_LINT_RUN_FLAGS) -c .golangci.yml --issues-exit-code=0 --max-issues-per-linter=0 --max-same-issues=0 --show-stats=false --output.text.path=stderr --output.json.path="$$JSON_OUTPUT" >/dev/null; \
+	jq -e '.Issues | type == "array"' "$$JSON_OUTPUT" >/dev/null; \
+	TOTAL=$$(grep -E "^[^[:space:]].*\\([^)]+\\)$$" "$$TEXT_OUTPUT" | wc -l); \
+	ERRORS=$$(jq '[.Issues[]? | select(.Severity=="error")] | length' "$$JSON_OUTPUT"); \
+	WARNINGS=$$(jq '[.Issues[]? | select(.Severity=="warning")] | length' "$$JSON_OUTPUT"); \
 	echo "  $(YELLOW)Total Issues: $$TOTAL$(RESET)"; \
 	echo "  $(RED)Errors: $$ERRORS$(RESET)"; \
-	echo "  $(YELLOW)Warnings: $$WARNINGS$(RESET)"
-	@echo ""
-	@echo -e "$(GREEN)🏷️  Top 10 Linters:$(RESET)"
-	@"$(GOLANGCI_LINT)" run -c .golangci.yml --max-issues-per-linter=0 --max-same-issues=0 --output.text.path=stdout --output.text.colors=false 2>/dev/null | \
-	grep -E "^[^[:space:]].*\\([^)]+\\)$$" | sed 's/.*(\\([^)]*\\))$$/\\1/' | sort | uniq -c | sort -nr | head -10 | \
-	awk '{printf "  $(CYAN)%-15s$(RESET) %d issues\\n", $$2, $$1}'
-	@echo ""
-	@echo -e "$(GREEN)📁 Most Problematic Files:$(RESET)"
-	@"$(GOLANGCI_LINT)" run -c .golangci.yml --max-issues-per-linter=0 --max-same-issues=0 --output.text.path=stdout --output.text.colors=false 2>/dev/null | \
-	grep -E "^[^[:space:]].*\\([^)]+\\)$$" | sed 's/^\\([^:]*\\):.*/\\1/' | sort | uniq -c | sort -nr | head -5 | \
+	echo "  $(YELLOW)Warnings: $$WARNINGS$(RESET)"; \
+	echo ""; \
+	echo -e "$(GREEN)🏷️  Top 10 Linters:$(RESET)"; \
+	grep -E "^[^[:space:]].*\\([^)]+\\)$$" "$$TEXT_OUTPUT" | sed 's/.*(\\([^)]*\\))$$/\\1/' | sort | uniq -c | sort -nr | head -10 | \
+	awk '{printf "  $(CYAN)%-15s$(RESET) %d issues\\n", $$2, $$1}'; \
+	echo ""; \
+	echo -e "$(GREEN)📁 Most Problematic Files:$(RESET)"; \
+	grep -E "^[^[:space:]].*\\([^)]+\\)$$" "$$TEXT_OUTPUT" | sed 's/^\\([^:]*\\):.*/\\1/' | sort | uniq -c | sort -nr | head -5 | \
 	awk '{printf "  $(MAGENTA)%-40s$(RESET) %d issues\\n", $$2, $$1}'
 
 lint-diff: install-golangci-lint ## lint only changed files (fast, for pre-commit)
 	@echo -e "$(CYAN)🔍 Linting changed files only...$(RESET)"
 	@CHANGED_FILES=$$(git diff --name-only --diff-filter=d HEAD | grep '\.go$$' || true); \
 	if [ -n "$$CHANGED_FILES" ]; then \
-		echo "$$CHANGED_FILES" | tr '\n' ' ' | xargs -r "$(GOLANGCI_LINT)" run -c .golangci.yml --new-from-rev=HEAD~1 || echo -e "$(YELLOW)⚠️  Some issues found in changed files$(RESET)"; \
+		echo "$$CHANGED_FILES" | tr '\n' ' ' | xargs -r "$(GOLANGCI_LINT)" run $(GOLANGCI_LINT_RUN_FLAGS) -c .golangci.yml --new-from-rev=HEAD~1 || echo -e "$(YELLOW)⚠️  Some issues found in changed files$(RESET)"; \
 	else \
 		echo -e "$(YELLOW)No Go files changed$(RESET)"; \
 	fi
 
 lint-json: install-golangci-lint ## export lint results to JSON for further analysis
 	@echo -e "$(CYAN)Exporting lint results to lint-report.json...$(RESET)"
-	@"$(GOLANGCI_LINT)" run -c .golangci.yml --max-issues-per-linter=0 --max-same-issues=0 --output.text.path=stderr --output.json.path=lint-report.json 2>/dev/null || true
+	@set -e; \
+	REPORT=$$(mktemp .lint-report.json.XXXXXX); \
+	trap 'rm -f "$$REPORT"' EXIT; \
+	"$(GOLANGCI_LINT)" run $(GOLANGCI_LINT_RUN_FLAGS) -c .golangci.yml --issues-exit-code=0 --max-issues-per-linter=0 --max-same-issues=0 --output.text.path=stderr --output.json.path="$$REPORT" >/dev/null; \
+	test -s "$$REPORT"; \
+	if command -v jq >/dev/null 2>&1; then jq -e '.Issues | type == "array"' "$$REPORT" >/dev/null; fi; \
+	mv "$$REPORT" lint-report.json; \
+	trap - EXIT
 	@echo -e "$(GREEN)✅ Report saved to lint-report.json$(RESET)"
 	@if command -v jq >/dev/null 2>&1; then \
 		echo ""; \
