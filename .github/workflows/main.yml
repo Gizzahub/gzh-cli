@@ -7,7 +7,15 @@ on:
       - '**/*.go'
       - 'go.mod'
       - 'go.sum'
+      - 'go.work'
+      - '.golangci.yml'
+      - '.gosec.yaml'
+      - '.make/**'
       - '.github/workflows/main.yml'
+      - 'cmd/**/AGENTS.md'
+      - 'cmd/AGENTS_COMMON.md'
+      - 'examples/synclone/synclone-example.yaml'
+      - 'scripts/check-agents.sh'
       - 'Makefile'
   pull_request:
     branches: [master, main, develop]
@@ -15,7 +23,15 @@ on:
       - '**/*.go'
       - 'go.mod'
       - 'go.sum'
+      - 'go.work'
+      - '.golangci.yml'
+      - '.gosec.yaml'
+      - '.make/**'
       - '.github/workflows/main.yml'
+      - 'cmd/**/AGENTS.md'
+      - 'cmd/AGENTS_COMMON.md'
+      - 'examples/synclone/synclone-example.yaml'
+      - 'scripts/check-agents.sh'
       - 'Makefile'
 
 permissions:
