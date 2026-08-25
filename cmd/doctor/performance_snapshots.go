@@ -117,20 +117,15 @@ func (sm *SnapshotManager) CreateSnapshot(ctx context.Context, benchmarks []prof
 		return nil, fmt.Errorf("failed to create snapshot directory: %w", err)
 	}
 
+	environment := getBenchmarkEnvironment(ctx)
 	snapshot := &PerformanceSnapshot{
 		ID:          generateSnapshotID(),
 		Timestamp:   time.Now(),
-		Environment: getBenchmarkEnvironment(),
+		Environment: environment,
 		Benchmarks:  benchmarks,
 		Metadata:    metadata,
-	}
-
-	// Add git information if available
-	if commit, err := getGitCommit(); err == nil {
-		snapshot.GitCommit = commit
-	}
-	if branch, err := getGitBranch(); err == nil {
-		snapshot.GitBranch = branch
+		GitCommit:   environment.GitCommit,
+		GitBranch:   environment.GitBranch,
 	}
 
 	// Save snapshot to disk

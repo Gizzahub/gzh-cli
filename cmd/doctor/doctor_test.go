@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -14,6 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/gizzahub/gzh-cli/internal/profiling"
+	"github.com/gizzahub/gzh-cli/internal/testlib"
 )
 
 func TestDoctorCmdCreation(t *testing.T) {
@@ -1250,7 +1252,7 @@ func TestCommandExecuteAndFlags(t *testing.T) {
 
 func TestBenchmarkUtilityFunctions(t *testing.T) {
 	t.Run("getBenchmarkEnvironment", func(t *testing.T) {
-		env := getBenchmarkEnvironment()
+		env := getBenchmarkEnvironment(context.Background())
 
 		// Verify required fields are populated
 		assert.NotEmpty(t, env.Platform)
@@ -1307,16 +1309,43 @@ func TestBenchmarkUtilityFunctions(t *testing.T) {
 		assert.Equal(t, 200.0, report.Summary.AverageOpsPerSec)
 	})
 
-	t.Run("getGitCommit", func(t *testing.T) {
-		commit, err := getGitCommit()
-		require.NoError(t, err)
-		assert.Regexp(t, `^[0-9a-f]{40}$`, commit)
-	})
+	t.Run("git metadata in repository", func(t *testing.T) {
+		ctx := context.Background()
+		repoDir := filepath.Join(t.TempDir(), "repo")
+		require.NoError(t, testlib.NewBasicRepoCreator().CreateMinimalRepo(ctx, repoDir))
+		t.Chdir(repoDir)
 
-	t.Run("getGitBranch", func(t *testing.T) {
-		branch, err := getGitBranch()
+		commit, err := getGitCommit(ctx)
+		require.NoError(t, err)
+		assert.Regexp(t, `^(?:[0-9a-f]{40}|[0-9a-f]{64})$`, commit)
+
+		branch, err := getGitBranch(ctx)
 		require.NoError(t, err)
 		assert.NotEmpty(t, branch)
+
+		cmd := exec.CommandContext(ctx, "git", "checkout", "--detach")
+		cmd.Dir = repoDir
+		require.NoError(t, cmd.Run())
+		branch, err = getGitBranch(ctx)
+		require.NoError(t, err)
+		assert.Empty(t, branch)
+	})
+
+	t.Run("git metadata outside repository", func(t *testing.T) {
+		t.Chdir(t.TempDir())
+		ctx := context.Background()
+
+		commit, err := getGitCommit(ctx)
+		assert.Error(t, err)
+		assert.Empty(t, commit)
+
+		branch, err := getGitBranch(ctx)
+		assert.Error(t, err)
+		assert.Empty(t, branch)
+
+		env := getBenchmarkEnvironment(ctx)
+		assert.Empty(t, env.GitCommit)
+		assert.Empty(t, env.GitBranch)
 	})
 }
 

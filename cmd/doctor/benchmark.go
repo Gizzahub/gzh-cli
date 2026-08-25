@@ -234,7 +234,7 @@ func runBenchmarkAnalysis(ctx context.Context, flags *cli.CommonFlags, opts benc
 	// Create benchmark report
 	report := &BenchmarkReport{
 		Timestamp:   time.Now(),
-		Environment: getBenchmarkEnvironment(),
+		Environment: getBenchmarkEnvironment(ctx),
 		Benchmarks:  make([]profiling.BenchmarkResult, 0),
 		CIMetrics: CIBenchmarkMetrics{
 			RegressionThreshold: opts.regressionThreshold,
@@ -335,7 +335,7 @@ func runBenchmarkAnalysis(ctx context.Context, flags *cli.CommonFlags, opts benc
 	}
 }
 
-func getBenchmarkEnvironment() BenchmarkEnvironment {
+func getBenchmarkEnvironment(ctx context.Context) BenchmarkEnvironment {
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
 
@@ -348,10 +348,10 @@ func getBenchmarkEnvironment() BenchmarkEnvironment {
 	}
 
 	// Try to get Git information
-	if commit, err := getGitCommit(); err == nil {
+	if commit, err := getGitCommit(ctx); err == nil {
 		env.GitCommit = commit
 	}
-	if branch, err := getGitBranch(); err == nil {
+	if branch, err := getGitBranch(ctx); err == nil {
 		env.GitBranch = branch
 	}
 
@@ -734,18 +734,18 @@ func displayBenchmarkResults(report *BenchmarkReport, opts benchmarkOptions, sna
 }
 
 // Helper functions for Git integration.
-func getGitCommit() (string, error) {
-	return runGitRevParse("HEAD")
+func getGitCommit(ctx context.Context) (string, error) {
+	return runGit(ctx, "rev-parse", "HEAD")
 }
 
-func getGitBranch() (string, error) {
-	return runGitRevParse("--abbrev-ref", "HEAD")
+func getGitBranch(ctx context.Context) (string, error) {
+	return runGit(ctx, "branch", "--show-current")
 }
 
-func runGitRevParse(args ...string) (string, error) {
-	output, err := exec.CommandContext(context.Background(), "git", append([]string{"rev-parse"}, args...)...).Output() //nolint:gosec // fixed git subcommand; arguments are internal constants
+func runGit(ctx context.Context, args ...string) (string, error) {
+	output, err := exec.CommandContext(ctx, "git", args...).Output()
 	if err != nil {
-		return "", fmt.Errorf("git rev-parse failed: %w", err)
+		return "", fmt.Errorf("git command failed: %w", err)
 	}
 
 	return strings.TrimSpace(string(output)), nil
