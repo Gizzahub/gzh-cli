@@ -81,11 +81,11 @@ func (p *SimpleProfiler) StartHTTPServer(port int) error {
 
 func newPprofServeMux() *http.ServeMux {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/debug/pprof/", httppprof.Index)
-	mux.HandleFunc("/debug/pprof/cmdline", httppprof.Cmdline)
-	mux.HandleFunc("/debug/pprof/profile", httppprof.Profile)
-	mux.HandleFunc("/debug/pprof/symbol", httppprof.Symbol)
-	mux.HandleFunc("/debug/pprof/trace", httppprof.Trace)
+	mux.HandleFunc("GET /debug/pprof/", httppprof.Index)
+	mux.HandleFunc("GET /debug/pprof/cmdline", httppprof.Cmdline)
+	mux.HandleFunc("GET /debug/pprof/profile", httppprof.Profile)
+	mux.HandleFunc("GET /debug/pprof/symbol", httppprof.Symbol)
+	mux.HandleFunc("GET /debug/pprof/trace", httppprof.Trace)
 	return mux
 }
 

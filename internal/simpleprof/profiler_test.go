@@ -25,6 +25,13 @@ func TestPprofServeMuxOwnsOnlyPprofRoutes(t *testing.T) {
 		if pattern == "" {
 			t.Errorf("mux has no handler for %q", path)
 		}
+
+		postRequest := httptest.NewRequestWithContext(t.Context(), http.MethodPost, path, nil)
+		postResponse := httptest.NewRecorder()
+		mux.ServeHTTP(postResponse, postRequest)
+		if postResponse.Code != http.StatusMethodNotAllowed {
+			t.Errorf("POST %s status = %d, want %d", path, postResponse.Code, http.StatusMethodNotAllowed)
+		}
 	}
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/healthz", nil)
