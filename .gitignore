@@ -590,3 +590,11 @@ id_ed25519
 # End of .gitignore
 # =============================================================================
 bin/
+
+# go.work is tracked on purpose (see its header comment): a single-module
+# workspace stops `go` from inheriting the devbox checkout's 11-module one.
+# go.work.sum is not — nothing needs it (`go build` works without it and does
+# not recreate it), its 130 entries are stale leftovers from when this
+# workspace listed the siblings, and `go list -m all` rewrites it, so every
+# `make deps-*` would otherwise leave a dirty tree.
+go.work.sum
