@@ -246,13 +246,27 @@ security-deps: ## check dependencies for vulnerabilities
 
 security-code: install-gosec ## run security code analysis
 	@echo -e "$(CYAN)Running security code analysis with gosec...$(RESET)"
-	@"$(GOSEC)" -config=.gosec.yaml ./... 2>/dev/null || echo -e "$(YELLOW)No gosec config found, using defaults$(RESET)"
+	@"$(GOSEC)" $(GOSEC_SCAN_FLAGS) -no-fail ./...
 
 security-json: install-gosec ## run security analysis and output JSON/SARIF report
 	@echo -e "$(CYAN)Running security analysis with JSON/SARIF output...$(RESET)"
-	@"$(GOSEC)" -fmt=sarif -out=gosec-report.json -config=.gosec.yaml ./... 2>/dev/null || \
-		"$(GOSEC)" -fmt=sarif -out=gosec-report.json ./... 2>/dev/null || \
-		(echo -e "$(YELLOW)⚠️  Security scan completed with warnings$(RESET)" && touch gosec-report.json)
+	@set -e; \
+	REPORT=$$(mktemp .gosec-report.sarif.XXXXXX); \
+	DETAILS=$$(mktemp .gosec-report.json.XXXXXX); \
+	trap 'rm -f "$$REPORT" "$$DETAILS"' EXIT; \
+	"$(GOSEC)" $(GOSEC_SCAN_FLAGS) -no-fail -fmt=sarif -out="$$REPORT" -stdout -verbose=json ./... >"$$DETAILS"; \
+	test -s "$$REPORT"; test -s "$$DETAILS"; \
+	if command -v jq >/dev/null 2>&1; then \
+		jq -e '.version == "2.1.0" and (.runs | type == "array")' "$$REPORT" >/dev/null; \
+		jq -e '(.Stats.files > 0) and ((.["Golang errors"] | length) == 0)' "$$DETAILS" >/dev/null; \
+	else \
+		COMPACT=$$(tr -d '[:space:]' <"$$DETAILS"); \
+		printf '%s' "$$COMPACT" | grep -Eq '"files":[1-9][0-9]*'; \
+		printf '%s' "$$COMPACT" | grep -Fq '"Golangerrors":{}'; \
+	fi; \
+	mv "$$REPORT" gosec-report.json; \
+	rm -f "$$DETAILS"; \
+	trap - EXIT
 	@echo -e "$(GREEN)✅ Security report generated: gosec-report.json$(RESET)"
 
 # ==============================================================================
@@ -456,4 +470,4 @@ lint-help: ## show comprehensive help for linting targets
 	@echo -e "$(YELLOW)📁 Configuration Files:$(RESET)"
 	@echo "  .golangci.yml             golangci-lint configuration"
 	@echo "  .pre-commit-config.yaml   Pre-commit hooks configuration"
-	@echo "  .gosec.yaml              gosec security scanner configuration"
+	@echo "  .gosec.json              gosec security scanner configuration"

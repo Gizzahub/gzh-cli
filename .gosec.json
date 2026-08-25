@@ -1,0 +1,17 @@
+{
+  "global": {
+    "audit": false,
+    "nosec": false,
+    "show-ignored": false
+  },
+  "G101": {
+    "pattern": "(?i)(?:password|passwd|pwd|secret|token|key|api[_-]?key|private[_-]?key|credential|auth)",
+    "ignore_entropy": false,
+    "entropy_threshold": "80.0",
+    "per_char_threshold": "3.0",
+    "truncate": "32"
+  },
+  "G301": "0o750",
+  "G302": "0o600",
+  "G306": "0o600"
+}

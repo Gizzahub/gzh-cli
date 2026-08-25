@@ -24,15 +24,10 @@ conda install -c conda-forge pre-commit
 
 ### Install Go Tools
 
-The following Go tools are required for the hooks:
+Install the formatter and pinned linter used by the local hooks:
 
 ```bash
-# Install required Go tools
-go install mvdan.cc/gofumpt@latest
-go install github.com/daixiang0/gci@latest
-go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
-go install golang.org/x/vuln/cmd/govulncheck@latest
-go install honnef.co/go/tools/cmd/staticcheck@latest
+make format-install-tools install-golangci-lint
 ```
 
 ### Install Hooks
@@ -43,10 +38,8 @@ Once pre-commit and the Go tools are installed, set up the hooks:
 # Install pre-commit hooks for this repository
 make pre-commit-install
 
-# Or manually:
+# Or install the configured pre-commit stage manually:
 pre-commit install --install-hooks
-pre-commit install --hook-type commit-msg
-pre-commit install --hook-type pre-push
 ```
 
 ## Usage
@@ -55,9 +48,7 @@ pre-commit install --hook-type pre-push
 
 Once installed, the hooks will run automatically:
 
-- **pre-commit**: Runs before each commit
-- **commit-msg**: Validates commit message format
-- **pre-push**: Runs before pushing to remote
+- **pre-commit**: Runs the configured file checks and fast Go checks before each commit
 
 ### Manual Execution
 
@@ -66,8 +57,8 @@ Once installed, the hooks will run automatically:
 make pre-commit
 
 # Run specific hooks
-pre-commit run --hook-stage manual gosec
-pre-commit run --hook-stage manual go-vuln-check
+pre-commit run fast-format-check --all-files
+pre-commit run fast-lint-check --all-files
 
 # Run hooks on specific files
 pre-commit run --files cmd/bulk-clone/*.go
@@ -96,30 +87,16 @@ pre-commit autoupdate
 - **check-added-large-files**: Prevents large files (>500KB)
 - **check-case-conflict**: Prevents case-sensitive filename conflicts
 - **check-merge-conflict**: Detects merge conflict markers
-- **check-symlinks**: Validates symlinks
-- **detect-private-key**: Detects private keys
+- **check-shebang-scripts-are-executable**: Validates executable script metadata
+- **check-executables-have-shebangs**: Requires executable text files to declare an interpreter
 - **mixed-line-ending**: Normalizes line endings to LF
+- **pretty-format-json**: Normalizes JSON formatting
 
 ### Go Code Quality
 
-- **go-build-mod**: Verifies code compiles
-- **go-test-mod**: Runs unit tests with race detection
-- **go-vet-mod**: Runs `go vet` static analysis
-- **go-staticcheck-mod**: Runs staticcheck linter
-- **go-fumpt**: Formats Go code (stricter than gofmt)
-- **golangci-lint-mod**: Runs comprehensive linting
-- **gci**: Formats Go imports
-- **gosec**: Security vulnerability scanning
+- **fast-format-check**: Runs `make fmt-diff` for changed Go files
+- **fast-lint-check**: Runs `make lint-diff` for changed Go files
 - **go-mod-tidy**: Ensures go.mod and go.sum are tidy
-- **go-vuln-check**: Checks for known vulnerabilities
-
-### Additional Linting
-
-- **prettier**: Formats YAML, JSON, and Markdown files
-- **hadolint-docker**: Lints Dockerfiles
-- **shellcheck**: Lints shell scripts
-- **conventional-pre-commit**: Enforces conventional commit messages
-- **detect-secrets**: Detects hardcoded secrets
 
 ## Configuration
 
@@ -128,29 +105,15 @@ pre-commit autoupdate
 The configuration is in `.pre-commit-config.yaml`. Key settings:
 
 ```yaml
-default_install_hook_types: [pre-commit, commit-msg, pre-push]
-default_stages: [pre-commit]
-
-ci:
-  skip: [go-test-mod, go-vuln-check, gosec] # Skip slow hooks in CI
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+  - repo: local
+    hooks:
+      - id: fast-format-check
+      - id: fast-lint-check
+      - id: go-mod-tidy
 ```
-
-### Secrets Detection
-
-The `.secrets.baseline` file contains the baseline for secrets detection. To update:
-
-```bash
-detect-secrets scan --baseline .secrets.baseline
-```
-
-### Exclusions
-
-Some hooks exclude certain paths:
-
-- **prettier**: Excludes test and sample configuration files
-- **detect-secrets**: Excludes test files and documentation
-
-## Bypassing Hooks
 
 ### Emergency Bypass
 
@@ -159,7 +122,7 @@ Some hooks exclude certain paths:
 git commit --no-verify -m "emergency fix"
 
 # Bypass specific hooks
-SKIP=gosec,go-vuln-check git commit -m "fix: urgent patch"
+SKIP=fast-lint-check git commit -m "fix: urgent patch"
 ```
 
 ### Permanent Exclusions
@@ -167,7 +130,7 @@ SKIP=gosec,go-vuln-check git commit -m "fix: urgent patch"
 Edit `.pre-commit-config.yaml` to exclude files or disable hooks:
 
 ```yaml
-- id: prettier
+- id: fast-lint-check
   exclude: ^(path/to/exclude|another/path)
 ```
 
@@ -186,8 +149,8 @@ Edit `.pre-commit-config.yaml` to exclude files or disable hooks:
 1. **Slow hook execution**
 
    ```bash
-   # Skip slow hooks during development
-   SKIP=go-test-mod,gosec git commit -m "wip: development"
+   # Skip the lint hook during development
+   SKIP=fast-lint-check git commit -m "wip: development"
    ```
 
 1. **Pre-commit not found**
@@ -209,16 +172,7 @@ Edit `.pre-commit-config.yaml` to exclude files or disable hooks:
 ### Performance Tips
 
 - Use `SKIP` environment variable for development commits
-- Run `pre-commit run --hook-stage manual` for expensive checks
 - Consider using `--files` flag for partial runs during development
-
-### CI Integration
-
-The configuration includes CI-specific settings for pre-commit.ci:
-
-- Automatically creates PRs for hook updates
-- Skips resource-intensive hooks in CI environment
-- Provides auto-fix capabilities for formatting issues
 
 ## Best Practices
 
@@ -235,8 +189,9 @@ The configuration includes CI-specific settings for pre-commit.ci:
 git add .
 git commit -m "feat(module): add new feature"  # Hooks run automatically
 
-# Before pushing
-git push  # pre-push hooks run
+# Before pushing, run the configured hooks across the repository
+make pre-commit
+git push
 
 # Periodic maintenance
 make pre-commit-update  # Update hook versions

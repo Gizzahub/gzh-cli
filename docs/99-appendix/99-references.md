@@ -125,7 +125,7 @@ Comprehensive collection of external references, related projects, standards, an
 - **[Snyk](https://snyk.io/)** - Vulnerability scanner
 - **[SonarQube](https://www.sonarqube.org/)** - Code quality and security
 - **[Bandit](https://bandit.readthedocs.io/)** - Python security linter
-- **[gosec](https://github.com/securecodewarrior/gosec)** - Go security analyzer
+- **[gosec](https://github.com/securego/gosec)** - Go security analyzer
 - **[Brakeman](https://brakemanscanner.org/)** - Ruby security scanner
 
 ## 💻 Development References

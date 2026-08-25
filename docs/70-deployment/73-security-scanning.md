@@ -1,6 +1,6 @@
 # Security Scanning
 
-This project implements comprehensive security scanning using [gosec](https://github.com/securecodewarrior/gosec) and integrated security linters in golangci-lint.
+This project implements security scanning using [gosec](https://github.com/securego/gosec) and the gosec analyzer integrated into golangci-lint.
 
 ## Overview
 
@@ -8,7 +8,6 @@ Security scanning is performed at multiple levels:
 
 1. **Integrated with golangci-lint**: Runs as part of normal linting process
 1. **Standalone gosec**: Dedicated security analysis with detailed reporting
-1. **Pre-commit hooks**: Catches security issues before commits
 1. **CI/CD integration**: Automated security checks in pipeline
 
 ## Configuration
@@ -36,7 +35,7 @@ Security scanning is performed at multiple levels:
 | G304      | File path injection               | MEDIUM   |
 | G305      | ZIP/TAR traversal                 | HIGH     |
 | G306      | Poor file permissions (write)     | MEDIUM   |
-| G307      | Deferred error not checked        | LOW      |
+| G307      | Insecure `os.Create` permissions  | MEDIUM   |
 | G401      | Weak crypto (DES, RC4, MD5, SHA1) | HIGH     |
 | G402      | Bad TLS settings                  | HIGH     |
 | G403      | Weak RSA keys (\<2048 bits)       | HIGH     |
@@ -47,9 +46,9 @@ Security scanning is performed at multiple levels:
 
 ### Configuration Files
 
-- **`.golang-ci.yml`**: Integrates gosec with golangci-lint
-- **`.gosec.yaml`**: Standalone gosec configuration
-- **`.pre-commit-config.yaml`**: Pre-commit security hooks
+- **`.golangci.yml`**: Integrates gosec with the regular lint policy
+- **`.gosec.json`**: Standalone gosec rule configuration
+- **`.make/tools.mk`**: Pins the repository-local gosec version and strict rule set
 
 ## Usage
 
@@ -59,30 +58,33 @@ Security scanning is performed at multiple levels:
 # Run integrated security scanning with golangci-lint
 make lint
 
-# Run standalone gosec analysis
-make security
+# Run the standalone gosec policy
+make security-code
 
-# Generate JSON report
+# Generate the SARIF report uploaded by CI
 make security-json
 ```
 
 ### Advanced Usage
 
 ```bash
-# Run gosec with custom config
-gosec -config=.gosec.yaml ./...
+# Install the pinned repository-local scanner
+make install-gosec
+
+# Run gosec with the repository config
+./bin/tools/gosec -conf=.gosec.json ./...
 
 # Run with specific rules only
-gosec -include=G101,G102,G104 ./...
+./bin/tools/gosec -include=G101,G102,G104 ./...
 
 # Run with verbose output
-gosec -verbose ./...
+./bin/tools/gosec -verbose=text ./...
 
 # Generate different output formats
-gosec -fmt=json ./...        # JSON format
-gosec -fmt=yaml ./...        # YAML format
-gosec -fmt=csv ./...         # CSV format
-gosec -fmt=junit-xml ./...   # JUnit XML
+./bin/tools/gosec -fmt=json ./...        # JSON format
+./bin/tools/gosec -fmt=yaml ./...        # YAML format
+./bin/tools/gosec -fmt=csv ./...         # CSV format
+./bin/tools/gosec -fmt=junit-xml ./...   # JUnit XML
 ```
 
 ### Excluding False Positives
@@ -238,19 +240,6 @@ if err := json.Unmarshal(data, &result); err != nil {
     fi
 ```
 
-### Pre-commit Integration
-
-Security scanning is automatically integrated into pre-commit hooks:
-
-```yaml
-- id: gosec
-  name: Security scan Go code with gosec
-  entry: gosec
-  args: [-fmt=json, -out=gosec-report.json, -stdout, -verbose=text, ./...]
-  language: system
-  files: \.go$
-```
-
 ## Troubleshooting
 
 ### Common Issues
@@ -258,20 +247,20 @@ Security scanning is automatically integrated into pre-commit hooks:
 1. **gosec not found**
 
    ```bash
-   go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
+   make install-gosec
    ```
 
 1. **Too many false positives**
 
    - Use `#nosec` comments for legitimate cases
-   - Update exclude rules in `.gosec.yaml`
+   - Update exclude rules in `.gosec.json`
    - Adjust confidence/severity thresholds
 
 1. **Performance issues**
 
    - Use `--exclude-dir` to skip large directories
-   - Run on specific packages: `gosec ./pkg/...`
-   - Use parallel execution with `--parallel`
+   - Run on specific packages: `./bin/tools/gosec ./pkg/...`
+   - Tune concurrency with `-concurrency`
 
 ### Reporting Security Issues
 
@@ -297,8 +286,8 @@ Track these metrics over time:
 
 ```bash
 # Generate metrics for reporting
-gosec -fmt=json ./... | jq '.Issues | length'
-gosec -fmt=json ./... | jq '.Issues | group_by(.severity) | map({severity: .[0].severity, count: length})'
+./bin/tools/gosec -fmt=json ./... | jq '.Issues | length'
+./bin/tools/gosec -fmt=json ./... | jq '.Issues | group_by(.severity) | map({severity: .[0].severity, count: length})'
 ```
 
 ## Best Practices
@@ -316,7 +305,7 @@ gosec -fmt=json ./... | jq '.Issues | group_by(.severity) | map({severity: .[0].
 
 ## References
 
-- [gosec Documentation](https://github.com/securecodewarrior/gosec)
+- [gosec Documentation](https://github.com/securego/gosec)
 - [Go Security Checklist](https://github.com/Checkmarx/Go-SCP)
 - [OWASP Go Security Guide](https://owasp.org/www-project-go-secure-coding-practices-guide/)
 - [Go Vulnerability Database](https://vuln.go.dev/)
