@@ -20,19 +20,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGetExecutableVersion_TerminatesChildProcessTree(t *testing.T) {
+func TestCommandContext_TerminatesChildProcessTree(t *testing.T) {
 	dir := t.TempDir()
 	pidFile := filepath.Join(dir, "child.pid")
 	script := filepath.Join(dir, "spawn-child.sh")
 	require.NoError(t, os.WriteFile(script, []byte("#!/bin/sh\nsleep 60 &\nchild=$!\nprintf '%s\\n' \"$child\" > \"$1\"\nwait \"$child\"\n"), 0o755))
 
-	detector := NewIDEDetector()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	result := make(chan string, 1)
+	cmd := commandContext(ctx, script, pidFile)
+	require.NoError(t, cmd.Start())
+
+	result := make(chan error, 1)
 	go func() {
-		result <- detector.getExecutableVersion(ctx, script, pidFile)
+		result <- cmd.Wait()
 	}()
 	var pid int
 	require.Eventually(t, func() bool {
@@ -46,14 +48,13 @@ func TestGetExecutableVersion_TerminatesChildProcessTree(t *testing.T) {
 
 	start := time.Now()
 	cancel()
-	var version string
 	select {
-	case version = <-result:
+	case err := <-result:
+		assert.Error(t, err)
 	case <-time.After(5 * time.Second):
 		t.Fatal("timed-out exec did not return")
 	}
 	require.Less(t, time.Since(start), 5*time.Second)
-	assert.Equal(t, "unknown", version)
 
 	require.Eventually(t, func() bool {
 		err := syscall.Kill(pid, syscall.Signal(0))
