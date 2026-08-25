@@ -57,18 +57,6 @@ jobs:
           go-version: '1.26.7'
           cache: true
 
-      - name: Enhanced Go modules caching
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-            ~/Library/Caches/go-build
-            %LocalAppData%\go-build
-          key: ${{ env.CACHE_VERSION }}-go-${{ matrix.os }}-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ env.CACHE_VERSION }}-go-${{ matrix.os }}-
-
       - name: Install dependencies
         run: go mod download && go mod verify
 
@@ -94,7 +82,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         uses: codecov/codecov-action@v6
         with:
-          file: ./coverage-ubuntu-latest.out
+          files: ./coverage-ubuntu-latest.out
           flags: unittests
           fail_ci_if_error: false
 
@@ -126,16 +114,6 @@ jobs:
         with:
           go-version: '1.26.7'
           cache: true
-
-      - name: Enhanced Go modules caching
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-          key: ${{ env.CACHE_VERSION }}-go-ubuntu-latest-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ env.CACHE_VERSION }}-go-ubuntu-latest-
 
       - name: Cache tool binaries
         uses: actions/cache@v5
@@ -214,16 +192,6 @@ jobs:
         with:
           go-version: '1.26.7'
           cache: true
-
-      - name: Enhanced Go modules caching
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-          key: ${{ env.CACHE_VERSION }}-go-ubuntu-latest-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ env.CACHE_VERSION }}-go-ubuntu-latest-
 
       - name: Install dependencies
         run: go mod download
@@ -343,16 +311,6 @@ jobs:
         with:
           go-version: '1.26.7'
           cache: true
-
-      - name: Enhanced Go modules caching
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-          key: ${{ env.CACHE_VERSION }}-go-ubuntu-latest-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ env.CACHE_VERSION }}-go-ubuntu-latest-
 
       - name: Install dependencies
         run: go mod download
