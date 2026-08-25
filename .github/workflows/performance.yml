@@ -75,14 +75,16 @@ jobs:
       run: go mod download
 
     - name: Compile check
+      shell: bash
       run: |
+        set -euo pipefail
         echo "Checking if all packages compile..."
         go build -v ./...
         echo "Checking if tests compile (per package)..."
-        for pkg in $(go list ./...); do
+        while IFS= read -r pkg; do
           echo "Testing compilation for $pkg"
-          go test -c "$pkg" -o /dev/null || echo "⚠️ Test compilation failed for $pkg"
-        done
+          go test -run '^$' "$pkg"
+        done < <(go list ./...)
         echo "✅ Compilation checks completed!"
 
     - name: Install benchstat
@@ -95,41 +97,66 @@ jobs:
         fi
 
     - name: Run benchmarks
+      id: benchmark-run
+      shell: bash
       run: |
+        set -uo pipefail
         PACKAGE_PATTERN="${{ github.event.inputs.package_pattern || './...' }}"
         echo "Running benchmarks for: $PACKAGE_PATTERN"
 
-        # Run benchmarks multiple times for statistical significance
+        failures=0
         for i in {1..5}; do
           echo "Benchmark run $i/5"
-          go test -bench=. -benchmem -run=^$ $PACKAGE_PATTERN >> benchmark_$i.txt
+          attempt_output="benchmark_attempt_${i}.log"
+          if go test -bench=. -benchmem -run=^$ $PACKAGE_PATTERN 2>&1 | tee "$attempt_output"; then
+            mv "$attempt_output" "benchmark_${i}.txt"
+          else
+            mv "$attempt_output" "benchmark_failure_${i}.log"
+            echo "::error::Benchmark run $i/5 failed; its output is retained in benchmark_failure_${i}.log"
+            failures=$((failures + 1))
+          fi
         done
+        echo "failures=$failures" >> "$GITHUB_OUTPUT"
 
     - name: Generate benchmark report
+      if: always()
+      shell: bash
       run: |
-        echo "# Performance Benchmark Report" > benchmark_report.md
-        echo "" >> benchmark_report.md
-        echo "**Commit:** \`${{ github.sha }}\`" >> benchmark_report.md
-        echo "**Date:** $(date)" >> benchmark_report.md
-        echo "" >> benchmark_report.md
-
-        # Combine all benchmark results
-        cat benchmark_*.txt > all_benchmarks.txt
-
-        # Generate summary
-        echo "## Benchmark Results" >> benchmark_report.md
-        echo "\`\`\`" >> benchmark_report.md
-        benchstat all_benchmarks.txt >> benchmark_report.md
-        echo "\`\`\`" >> benchmark_report.md
+        set -euo pipefail
+        {
+          echo "# Performance Benchmark Report"
+          echo ""
+          echo "**Commit:** \`${{ github.sha }}\`"
+          echo "**Date:** $(date)"
+          echo ""
+          echo "## Benchmark Results"
+          echo "\`\`\`"
+          shopt -s nullglob
+          successful_results=(benchmark_[1-5].txt)
+          if ((${#successful_results[@]} > 0)); then
+            cat "${successful_results[@]}" > all_benchmarks.txt
+            benchstat all_benchmarks.txt
+          else
+            : > all_benchmarks.txt
+            echo "No benchmark results found or all benchmarks failed"
+          fi
+          echo "\`\`\`"
+        } > benchmark_report.md
 
     - name: Upload benchmark results
+      if: always()
       uses: actions/upload-artifact@v7
       with:
         name: benchmark-results
         path: |
           benchmark_*.txt
+          benchmark_failure_*.log
           benchmark_report.md
           all_benchmarks.txt
+
+    - name: Fail on benchmark errors
+      if: always() && steps.benchmark-run.outputs.failures != '0'
+      run: exit 1
 
     - name: Comment PR with results
       if: github.event_name == 'pull_request'
