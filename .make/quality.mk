@@ -257,15 +257,8 @@ security-json: install-gosec ## run security analysis and output JSON/SARIF repo
 	command -v jq >/dev/null 2>&1 || { echo "jq is required to validate gosec reports" >&2; exit 1; }; \
 	"$(GOSEC)" $(GOSEC_SCAN_FLAGS) -no-fail -fmt=sarif -out="$$REPORT" -stdout -verbose=json ./... >"$$DETAILS"; \
 	test -s "$$REPORT"; test -s "$$DETAILS"; \
-	jq -e '.version == "2.1.0" and \
-		(.runs | type == "array" and length > 0) and \
-		all(.runs[]; \
-			(.tool.driver.name | type == "string" and length > 0) and \
-			(.results | type == "array"))' "$$REPORT" >/dev/null; \
-	jq -e '(.Stats | type == "object") and \
-		(.Stats.files | type == "number" and . > 0) and \
-		(.["Golang errors"] | type == "object" and length == 0) and \
-		(.Issues | type == "array")' "$$DETAILS" >/dev/null; \
+	jq -e '.version == "2.1.0" and (.runs | type == "array" and length > 0) and all(.runs[]; (.tool.driver.name | type == "string" and length > 0) and (.results | type == "array"))' "$$REPORT" >/dev/null; \
+	jq -e '(.Stats | type == "object") and (.Stats.files | type == "number" and . > 0) and (.["Golang errors"] | type == "object" and length == 0) and (.Issues | type == "array")' "$$DETAILS" >/dev/null; \
 	mv "$$REPORT" gosec-report.json; \
 	rm -f "$$DETAILS"; \
 	trap - EXIT
