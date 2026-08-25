@@ -8,6 +8,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/gizzahub/gzh-cli/internal/env"
 )
 
 func TestFindConfigFile(t *testing.T) {
@@ -189,6 +191,27 @@ func TestExpandPath(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			result := ExpandPath(tt.input)
 			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestExpandPathWithEnvEmptyExpansion(t *testing.T) {
+	tests := []struct {
+		name   string
+		values map[string]string
+	}{
+		{name: "unset variable", values: map[string]string{}},
+		{name: "empty variable", values: map[string]string{"EMPTY_PATH": ""}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			variable := "$UNSET_PATH"
+			if tt.name == "empty variable" {
+				variable = "$EMPTY_PATH"
+			}
+
+			assert.Empty(t, ExpandPathWithEnv(variable, env.NewMockEnvironment(tt.values)))
 		})
 	}
 }

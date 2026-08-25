@@ -731,10 +731,10 @@ func (d *IDEDetector) getAppImageVersion(installPath, appName string) string {
 
 // resolveAppImageDirectory resolves the actual directory from launcher scripts.
 func (d *IDEDetector) resolveAppImageDirectory(installPath, _ string) string {
-	// If we have a direct path from the script, use it
-	if filepath.IsAbs(installPath) && installPath != "VAR_REFERENCE" {
-		// Validate the directory exists
-		if _, err := os.Stat(installPath); err == nil {
+	// If the script resolved to an existing directory, use it. Launcher scripts
+	// may provide either absolute or working-directory-relative paths.
+	if installPath != "VAR_REFERENCE" {
+		if info, err := os.Stat(installPath); err == nil && info.IsDir() {
 			return installPath
 		}
 	}

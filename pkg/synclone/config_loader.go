@@ -220,6 +220,9 @@ func ExpandPathWithEnv(path string, environment env.Environment) string {
 
 	// Expand environment variables
 	path = environment.Expand(path)
+	if path == "" {
+		return ""
+	}
 
 	return filepath.Clean(path)
 }

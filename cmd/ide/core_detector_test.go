@@ -363,6 +363,14 @@ func TestGetAppImageVersion(t *testing.T) {
 	assert.Equal(t, "unknown", version)
 }
 
+func TestResolveAppImageDirectoryRelativePath(t *testing.T) {
+	detector := NewIDEDetector()
+	t.Chdir(t.TempDir())
+	require.NoError(t, os.Mkdir("Apps", 0o755))
+
+	assert.Equal(t, "Apps", detector.resolveAppImageDirectory("Apps", "Cursor"))
+}
+
 func TestDetectInstallMethod(t *testing.T) {
 	detector := NewIDEDetector()
 	ctx := context.Background()
