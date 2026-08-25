@@ -86,8 +86,9 @@ jobs:
           echo "✅ Compilation checks completed!"
 
       - name: Run tests with coverage
+        shell: bash
         run: |
-          go test -race -coverprofile=coverage-${{ matrix.os }}.out -covermode=atomic ./...
+          go test -race "-coverprofile=coverage-${{ matrix.os }}.out" -covermode=atomic ./...
 
       - name: Upload coverage (Ubuntu only)
         if: matrix.os == 'ubuntu-latest'
