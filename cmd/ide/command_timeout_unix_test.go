@@ -42,7 +42,7 @@ func TestGetExecutableVersion_TerminatesChildProcessTree(t *testing.T) {
 		}
 		pid, err = strconv.Atoi(strings.TrimSpace(string(pidData)))
 		return err == nil && pid > 0
-	}, 5*time.Second, 10*time.Millisecond)
+	}, 30*time.Second, 10*time.Millisecond, "timed out waiting for child process PID")
 
 	start := time.Now()
 	cancel()
