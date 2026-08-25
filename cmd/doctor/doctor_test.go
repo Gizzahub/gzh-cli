@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/gizzahub/gzh-cli/internal/profiling"
 )
@@ -810,16 +811,21 @@ func TestHelperFunctions(t *testing.T) {
 	})
 
 	t.Run("getGitConfig", func(t *testing.T) {
+		globalConfig := filepath.Join(t.TempDir(), "gitconfig")
+		require.NoError(t, os.WriteFile(globalConfig, []byte("[user]\n\tname = doctor-fixture\n\temail = doctor-fixture@example.invalid\n[core]\n\teditor = fixture-editor\n[init]\n\tdefaultBranch = fixture-main\n"), 0o600))
+		t.Setenv("HOME", t.TempDir())
+		t.Setenv("GIT_CONFIG_GLOBAL", globalConfig)
+		t.Setenv("GIT_CONFIG_NOSYSTEM", "1")
+
 		ctx := context.Background()
 		config := getGitConfig(ctx)
 
-		assert.NotNil(t, config)
-		// Should contain expected keys even if empty
-		expectedKeys := []string{"user.name", "user.email", "core.editor", "init.defaultBranch"}
-		for _, key := range expectedKeys {
-			_, exists := config[key]
-			assert.True(t, exists, "Should contain key %s", key)
-		}
+		assert.Equal(t, map[string]string{
+			"user.name":          "doctor-fixture",
+			"user.email":         "doctor-fixture@example.invalid",
+			"core.editor":        "fixture-editor",
+			"init.defaultBranch": "fixture-main",
+		}, config)
 	})
 }
 
