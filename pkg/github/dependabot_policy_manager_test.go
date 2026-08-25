@@ -214,7 +214,10 @@ func TestDependabotPolicyManager_UpdatePolicy(t *testing.T) {
 	assert.False(t, updated.Enabled)
 	assert.Equal(t, originalVersion+1, updated.Version)
 	assert.Equal(t, originalCreatedAt, updated.CreatedAt)
-	assert.True(t, updated.UpdatedAt.After(originalCreatedAt))
+	// Windows can have a coarse wall-clock resolution, so an update completed
+	// in the creation tick may retain the same timestamp. Version and updated
+	// fields above still verify the update itself.
+	assert.False(t, updated.UpdatedAt.Before(originalCreatedAt))
 
 	// Test updating non-existent policy
 	nonExistentPolicy := createTestDependabotPolicy()

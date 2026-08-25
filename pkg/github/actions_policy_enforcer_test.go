@@ -4,6 +4,7 @@ package github
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -177,7 +178,10 @@ func TestActionsPolicyEnforcer_EnforcePolicy(t *testing.T) {
 	assert.Equal(t, "testorg", result.Organization)
 	assert.Equal(t, "testrepo", result.Repository)
 	assert.NotEmpty(t, result.ValidationResult)
-	assert.NotZero(t, result.ExecutionTime)
+	// Windows' monotonic clock can report no elapsed time for this in-memory
+	// operation. The timestamp and enforcement result above establish that the
+	// operation completed; a zero duration is therefore valid on coarse clocks.
+	assert.GreaterOrEqual(t, result.ExecutionTime, time.Duration(0))
 	assert.NotZero(t, result.Timestamp)
 }
 

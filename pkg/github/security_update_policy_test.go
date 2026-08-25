@@ -228,7 +228,9 @@ func TestSecurityUpdatePolicyManager_ProcessSecurityUpdates(t *testing.T) {
 	assert.GreaterOrEqual(t, result.TotalUpdates, 0)
 	assert.NotZero(t, result.StartedAt)
 	assert.NotZero(t, result.CompletedAt)
-	assert.Greater(t, result.ProcessingTime, time.Duration(0))
+	// This is an in-memory operation and Windows' coarse monotonic clock may
+	// legitimately measure it as zero. The timestamps above verify completion.
+	assert.GreaterOrEqual(t, result.ProcessingTime, time.Duration(0))
 }
 
 func TestVulnerabilitySeverityConstants(t *testing.T) {
