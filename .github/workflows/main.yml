@@ -337,34 +337,29 @@ jobs:
       - name: Install dependencies
         run: go mod download
 
-      - name: Build all binaries
+      - name: Build supported binary
         run: |
           echo "🔨 Building main binary..."
-          go build -ldflags="-s -w -X main.version=${{ github.sha }}" -o gz .
-
-          echo "🔨 Building command binaries..."
-          go build -ldflags="-s -w" -o git-synclone ./cmd/git-synclone
-          go build -ldflags="-s -w" -o actions-policy ./cmd/actions-policy
+          go build -trimpath \
+            -ldflags="-s -w -X github.com/gizzahub/gzh-cli/internal/version.Version=${{ github.sha }}" \
+            -o gz ./cmd/gz
 
       - name: Test binary functionality
         run: |
           echo "🧪 Testing binary versions..."
-          ./gz version || echo "⚠️ Main binary version check failed"
-          ./git-synclone --version || echo "⚠️ git-synclone version check failed"
-          ./actions-policy --version || echo "⚠️ actions-policy version check failed"
+          version_output=$(./gz version)
+          echo "$version_output"
+          test "$version_output" = "gz version ${{ github.sha }}"
 
           echo "🧪 Testing basic commands..."
-          ./gz --help > /dev/null || echo "⚠️ Main binary help failed"
-          ./gz dev-env --help > /dev/null || echo "⚠️ dev-env help failed"
+          ./gz --help > /dev/null
+          ./gz dev-env --help > /dev/null
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
         with:
           name: binaries-${{ github.sha }}
-          path: |
-            gz
-            git-synclone
-            actions-policy
+          path: gz
 
   # 📋 Summary job for branch protection
   summary:
