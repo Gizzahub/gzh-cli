@@ -146,7 +146,7 @@ func TestAwsCredentialsSaveLoad(t *testing.T) {
 		// Check file permissions (should be 0600 for security)
 		info, err := os.Stat(savedPath)
 		require.NoError(t, err)
-		assert.Equal(t, os.FileMode(0o600), info.Mode().Perm())
+		assertPrivateMode(t, info, 0o600)
 	})
 
 	t.Run("load AWS credentials", func(t *testing.T) {
@@ -174,7 +174,7 @@ func TestAwsCredentialsSaveLoad(t *testing.T) {
 		// Check file permissions (should be 0600 for security)
 		info, err := os.Stat(targetPath)
 		require.NoError(t, err)
-		assert.Equal(t, os.FileMode(0o600), info.Mode().Perm())
+		assertPrivateMode(t, info, 0o600)
 	})
 
 	t.Run("list AWS credentials", func(t *testing.T) {
@@ -206,7 +206,7 @@ func TestAwsCredentialsMetadata(t *testing.T) {
 	// Check metadata file permissions (should be 0600 for security)
 	info, err := os.Stat(metadataPath)
 	require.NoError(t, err)
-	assert.Equal(t, os.FileMode(0o600), info.Mode().Perm())
+	assertPrivateMode(t, info, 0o600)
 
 	// Test load metadata
 	metadata := opts.loadMetadata("test-metadata")
@@ -241,7 +241,7 @@ aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY`
 	// Check permissions (should be 0600 for security)
 	info, err := os.Stat(dstPath)
 	require.NoError(t, err)
-	assert.Equal(t, os.FileMode(0o600), info.Mode().Perm())
+	assertPrivateMode(t, info, 0o600)
 }
 
 func TestAwsCredentialsDisplayInfo(t *testing.T) {

@@ -166,7 +166,7 @@ func TestGcloudCredentialsSaveLoad(t *testing.T) {
 		// Check metadata file permissions (should be 0600 for security)
 		info, err := os.Stat(metadataPath)
 		require.NoError(t, err)
-		assert.Equal(t, os.FileMode(0o600), info.Mode().Perm())
+		assertPrivateMode(t, info, 0o600)
 
 		// Verify credential files were copied
 		savedAdcPath := filepath.Join(savedPath, "application_default_credentials.json")
@@ -181,7 +181,7 @@ func TestGcloudCredentialsSaveLoad(t *testing.T) {
 		// Check file permissions (should be 0600 for security)
 		adcInfo, err := os.Stat(savedAdcPath)
 		require.NoError(t, err)
-		assert.Equal(t, os.FileMode(0o600), adcInfo.Mode().Perm())
+		assertPrivateMode(t, adcInfo, 0o600)
 	})
 
 	t.Run("load gcloud credentials", func(t *testing.T) {
@@ -211,12 +211,12 @@ func TestGcloudCredentialsSaveLoad(t *testing.T) {
 		// Check file permissions (should be 0600 for security)
 		adcInfo, err := os.Stat(loadedAdcPath)
 		require.NoError(t, err)
-		assert.Equal(t, os.FileMode(0o600), adcInfo.Mode().Perm())
+		assertPrivateMode(t, adcInfo, 0o600)
 
 		// Check directory permissions (should be 0700 for security)
 		dirInfo, err := os.Stat(targetPath)
 		require.NoError(t, err)
-		assert.Equal(t, os.FileMode(0o700), dirInfo.Mode().Perm())
+		assertPrivateMode(t, dirInfo, 0o700)
 	})
 
 	t.Run("list gcloud credentials", func(t *testing.T) {
@@ -248,7 +248,7 @@ func TestGcloudCredentialsMetadata(t *testing.T) {
 	// Check metadata file permissions (should be 0600 for security)
 	info, err := os.Stat(metadataPath)
 	require.NoError(t, err)
-	assert.Equal(t, os.FileMode(0o600), info.Mode().Perm())
+	assertPrivateMode(t, info, 0o600)
 
 	// Test load metadata
 	metadata := opts.loadMetadata("test-metadata")
@@ -281,7 +281,7 @@ func TestGcloudCredentialsCopyFile(t *testing.T) {
 	// Check permissions (should be 0600 for security)
 	info, err := os.Stat(dstPath)
 	require.NoError(t, err)
-	assert.Equal(t, os.FileMode(0o600), info.Mode().Perm())
+	assertPrivateMode(t, info, 0o600)
 }
 
 func TestGcloudCredentialsCopyDir(t *testing.T) {
@@ -321,12 +321,12 @@ func TestGcloudCredentialsCopyDir(t *testing.T) {
 	// Check directory permissions (should be 0700 for security)
 	dirInfo, err := os.Stat(dstDir)
 	require.NoError(t, err)
-	assert.Equal(t, os.FileMode(0o700), dirInfo.Mode().Perm())
+	assertPrivateMode(t, dirInfo, 0o700)
 
 	// Check file permissions (should be 0600 for security)
 	fileInfo, err := os.Stat(filepath.Join(dstDir, "cred1.json"))
 	require.NoError(t, err)
-	assert.Equal(t, os.FileMode(0o600), fileInfo.Mode().Perm())
+	assertPrivateMode(t, fileInfo, 0o600)
 }
 
 func TestGcloudCredentialsCopyCredentials(t *testing.T) {
@@ -390,7 +390,7 @@ func TestGcloudCredentialsCopyCredentials(t *testing.T) {
 	// Check directory permissions (should be 0700 for security)
 	dirInfo, err := os.Stat(dstDir)
 	require.NoError(t, err)
-	assert.Equal(t, os.FileMode(0o700), dirInfo.Mode().Perm())
+	assertPrivateMode(t, dirInfo, 0o700)
 }
 
 func TestGcloudCredentialsDisplayInfo(t *testing.T) {

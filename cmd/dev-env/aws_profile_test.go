@@ -73,11 +73,7 @@ func TestAWSProfileManager(t *testing.T) {
 
 	require.NoError(t, credCfg.SaveTo(credentialsPath))
 
-	// Override home directory for testing
-	oldHome := os.Getenv("HOME")
-
-	_ = os.Setenv("HOME", tmpDir)                     //nolint:errcheck // Test environment setup
-	defer func() { _ = os.Setenv("HOME", oldHome) }() // Ignore error
+	setTestHome(t, tmpDir)
 
 	t.Run("LoadProfiles", func(t *testing.T) {
 		ctx := context.Background()
@@ -315,11 +311,7 @@ func TestUpdateShellConfig(t *testing.T) {
 	err = os.WriteFile(zshrcPath, []byte("# Test zshrc\nexport AWS_PROFILE=old-profile\n"), 0o644)
 	require.NoError(t, err)
 
-	// Override home directory
-	oldHome := os.Getenv("HOME")
-
-	_ = os.Setenv("HOME", tmpDir)                     //nolint:errcheck // Test environment setup
-	defer func() { _ = os.Setenv("HOME", oldHome) }() // Ignore error
+	setTestHome(t, tmpDir)
 
 	ctx := context.Background()
 	manager := &AWSProfileManager{

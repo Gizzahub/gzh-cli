@@ -4,7 +4,6 @@ package devenv
 import (
 	"context"
 	"encoding/json"
-	"os"
 	"testing"
 	"time"
 
@@ -16,10 +15,7 @@ func TestNewAzureSubscriptionManager(t *testing.T) {
 	// Create temporary directory for testing
 	tmpDir := t.TempDir()
 
-	originalHome := os.Getenv("HOME")
-	defer func() { _ = os.Setenv("HOME", originalHome) }() //nolint:errcheck // Test cleanup
-
-	_ = os.Setenv("HOME", tmpDir) //nolint:errcheck // Test environment setup
+	setTestHome(t, tmpDir)
 
 	ctx := context.Background()
 	manager, err := NewAzureSubscriptionManager(ctx)
@@ -94,10 +90,7 @@ func TestAzureSubscription_JSONSerialization(t *testing.T) {
 func TestAzureSubscriptionManager_EmptyState(t *testing.T) {
 	tmpDir := t.TempDir()
 
-	originalHome := os.Getenv("HOME")
-	defer func() { _ = os.Setenv("HOME", originalHome) }() //nolint:errcheck // Test cleanup
-
-	_ = os.Setenv("HOME", tmpDir) //nolint:errcheck // Test environment setup
+	setTestHome(t, tmpDir)
 
 	manager := &AzureSubscriptionManager{
 		configPath:    tmpDir + "/.azure",
@@ -339,10 +332,7 @@ func TestAzureSubscriptionManager_Integration(t *testing.T) {
 
 	tmpDir := t.TempDir()
 
-	originalHome := os.Getenv("HOME")
-	defer func() { _ = os.Setenv("HOME", originalHome) }() //nolint:errcheck // Test cleanup
-
-	_ = os.Setenv("HOME", tmpDir) //nolint:errcheck // Test environment setup
+	setTestHome(t, tmpDir)
 
 	ctx := context.Background()
 	manager, err := NewAzureSubscriptionManager(ctx)
@@ -394,10 +384,7 @@ func TestAzureSubscriptionManager_InvalidFormat(t *testing.T) {
 func BenchmarkAzureSubscriptionManager_LoadSubscriptions(b *testing.B) {
 	tmpDir := b.TempDir()
 
-	originalHome := os.Getenv("HOME")
-	defer func() { _ = os.Setenv("HOME", originalHome) }() //nolint:errcheck // Test cleanup
-
-	_ = os.Setenv("HOME", tmpDir) //nolint:errcheck // Test environment setup
+	setTestHome(b, tmpDir)
 
 	b.ResetTimer()
 
