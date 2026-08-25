@@ -10,9 +10,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	_ "net/http/pprof" // Import pprof HTTP handlers
-
-	//nolint:gosec // G108: 개발 프로파일링을 위한 의도적 노출
+	httppprof "net/http/pprof"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -56,10 +54,11 @@ func NewSimpleProfiler(outputDir string) *SimpleProfiler {
 
 // StartHTTPServer starts the pprof HTTP server on the specified port.
 func (p *SimpleProfiler) StartHTTPServer(port int) error {
-	addr := fmt.Sprintf("localhost:%d", port)
+	addr := fmt.Sprintf("127.0.0.1:%d", port)
 
 	p.server = &http.Server{
 		Addr:              addr,
+		Handler:           newPprofServeMux(),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
@@ -78,6 +77,16 @@ func (p *SimpleProfiler) StartHTTPServer(port int) error {
 	}()
 
 	return nil
+}
+
+func newPprofServeMux() *http.ServeMux {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/debug/pprof/", httppprof.Index)
+	mux.HandleFunc("/debug/pprof/cmdline", httppprof.Cmdline)
+	mux.HandleFunc("/debug/pprof/profile", httppprof.Profile)
+	mux.HandleFunc("/debug/pprof/symbol", httppprof.Symbol)
+	mux.HandleFunc("/debug/pprof/trace", httppprof.Trace)
+	return mux
 }
 
 // StopHTTPServer stops the pprof HTTP server.

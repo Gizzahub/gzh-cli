@@ -300,7 +300,7 @@ func TestSimpleServerCmdStopsOnContextCancel(t *testing.T) {
 	// 비어 있는 항구를 하나 얻는다. 6060은 이미 누가 쓰고 있을 수 있다.
 	var lc net.ListenConfig
 
-	listener, err := lc.Listen(context.Background(), "tcp", "localhost:0")
+	listener, err := lc.Listen(context.Background(), "tcp", "127.0.0.1:0")
 	require.NoError(t, err)
 
 	addr, ok := listener.Addr().(*net.TCPAddr)

@@ -79,7 +79,7 @@ The server provides the following endpoints:
 				return fmt.Errorf("failed to start pprof server: %w", err)
 			}
 
-			fmt.Printf("✅ Pprof server started on http://localhost:%d/debug/pprof/\n", port)
+			fmt.Printf("✅ Pprof server started on http://127.0.0.1:%d/debug/pprof/\n", port)
 			fmt.Println("Press Ctrl+C to stop the server")
 
 			// 멈추라는 신호를 기다린다.

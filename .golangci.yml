@@ -141,7 +141,6 @@ linters:
         - G306 # CLI writes user-visible files at 0644
         - G301 # CLI creates directories at 0755
         - G101 # template tokens / env names, not literals
-        - G108 # simpleprof intentionally imports net/http/pprof
         - G702 # CLI runs user-configured tool commands
         - G703 # CLI reads user-configured paths
         - G704 # GitHub/API client URLs are configured, not SSRF from request input
