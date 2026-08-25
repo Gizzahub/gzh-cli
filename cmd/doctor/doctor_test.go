@@ -796,8 +796,10 @@ func TestHelperFunctions(t *testing.T) {
 		// Should be able to create in temp
 		assert.True(t, canCreateDirectory(testDir))
 
-		// Test with invalid path
-		assert.False(t, canCreateDirectory("/invalid/root/path"))
+		// A child of a regular file is invalid on every supported platform.
+		blocker := filepath.Join(tmpDir, "regular-file")
+		require.NoError(t, os.WriteFile(blocker, []byte("block"), 0o600))
+		assert.False(t, canCreateDirectory(filepath.Join(blocker, "child")))
 	})
 
 	t.Run("isURLReachable", func(t *testing.T) {

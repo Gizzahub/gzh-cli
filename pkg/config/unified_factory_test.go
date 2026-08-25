@@ -161,7 +161,11 @@ func TestConfigFactory_GetDefaultConfigPath(t *testing.T) {
 			factory.environment = mockEnv
 
 			result := factory.GetDefaultConfigPath()
-			assert.Equal(t, tt.expected, result)
+			expected := tt.expected
+			if tt.homeDir != "" {
+				expected = filepath.Join(tt.homeDir, ".config", "gzh.yaml")
+			}
+			assert.Equal(t, expected, result)
 		})
 	}
 }
@@ -195,14 +199,23 @@ func TestConfigFactory_ExpandPath(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			input := tt.path
+			expected := tt.expected
+			if tt.name == "absolute path unchanged" {
+				input = filepath.Join(t.TempDir(), "config.yaml")
+				expected = input
+			} else if tt.name == "expands tilde" {
+				expected = filepath.Join(tt.homeDir, "config.yaml")
+			}
+
 			mockEnv := env.NewMockEnvironment(map[string]string{})
 			mockEnv.Set(env.CommonEnvironmentKeys.HomeDir, tt.homeDir)
 
 			factory := NewConfigFactory()
 			factory.environment = mockEnv
 
-			result := factory.expandPath(tt.path)
-			assert.Equal(t, tt.expected, result)
+			result := factory.expandPath(input)
+			assert.Equal(t, expected, result)
 		})
 	}
 }

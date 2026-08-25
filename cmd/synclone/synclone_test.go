@@ -50,7 +50,7 @@ repo_roots:
     org_name: "my-test-org"
 `
 	configPath := filepath.Join(tempDir, "test-config.yaml")
-	formattedConfig := fmt.Sprintf(configContent, tempDir, tempDir)
+	formattedConfig := fmt.Sprintf(configContent, filepath.ToSlash(tempDir), filepath.ToSlash(tempDir))
 	err := os.WriteFile(configPath, []byte(formattedConfig), 0o600)
 	require.NoError(t, err)
 
@@ -87,7 +87,7 @@ default:
     recursive: true
 `
 		gitlabConfigPath := filepath.Join(tempDir, "gitlab-config.yaml")
-		formattedGitlabConfig := fmt.Sprintf(gitlabConfig, tempDir)
+		formattedGitlabConfig := fmt.Sprintf(gitlabConfig, filepath.ToSlash(tempDir))
 		err := os.WriteFile(gitlabConfigPath, []byte(formattedGitlabConfig), 0o600)
 		require.NoError(t, err)
 

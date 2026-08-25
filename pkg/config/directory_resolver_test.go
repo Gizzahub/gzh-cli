@@ -68,7 +68,7 @@ func TestDirectoryResolver_ResolveRepositoryPath(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			resolver := NewDirectoryResolver(tt.target)
 			result := resolver.ResolveRepositoryPath(tt.repositoryName)
-			assert.Equal(t, tt.expected, result)
+			assert.Equal(t, filepath.FromSlash(tt.expected), result)
 		})
 	}
 }
@@ -114,7 +114,11 @@ func TestDirectoryResolver_GetOrganizationPath(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			resolver := NewDirectoryResolver(tt.target)
 			orgPath := resolver.GetOrganizationPath()
-			assert.Equal(t, tt.expected, orgPath)
+			expected := tt.expected
+			if !tt.target.Flatten {
+				expected = filepath.FromSlash(expected)
+			}
+			assert.Equal(t, expected, orgPath)
 		})
 	}
 }
@@ -199,7 +203,7 @@ func TestDirectoryStructure_GetExamplePath(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			examplePath := tt.structure.GetExamplePath(tt.repoName)
-			assert.Equal(t, tt.expected, examplePath)
+			assert.Equal(t, filepath.FromSlash(tt.expected), examplePath)
 		})
 	}
 }
@@ -223,11 +227,11 @@ func TestDirectoryPathGenerator_GenerateRepositoryPaths(t *testing.T) {
 
 	assert.Len(t, paths, 2)
 	assert.Equal(t, "repo1", paths[0].Repository.Name)
-	assert.Equal(t, "/home/user/repos/github/test-org/repo1", paths[0].FullPath)
-	assert.Equal(t, "test-org/repo1", paths[0].RelativePath)
+	assert.Equal(t, filepath.FromSlash("/home/user/repos/github/test-org/repo1"), paths[0].FullPath)
+	assert.Equal(t, filepath.Join("test-org", "repo1"), paths[0].RelativePath)
 	assert.Equal(t, "repo2", paths[1].Repository.Name)
-	assert.Equal(t, "/home/user/repos/github/test-org/repo2", paths[1].FullPath)
-	assert.Equal(t, "test-org/repo2", paths[1].RelativePath)
+	assert.Equal(t, filepath.FromSlash("/home/user/repos/github/test-org/repo2"), paths[1].FullPath)
+	assert.Equal(t, filepath.Join("test-org", "repo2"), paths[1].RelativePath)
 }
 
 func TestDirectoryPathGenerator_GenerateRepositoryPaths_Flattened(t *testing.T) {
@@ -249,20 +253,20 @@ func TestDirectoryPathGenerator_GenerateRepositoryPaths_Flattened(t *testing.T) 
 
 	assert.Len(t, paths, 2)
 	assert.Equal(t, "repo1", paths[0].Repository.Name)
-	assert.Equal(t, "/home/user/repos/github/repo1", paths[0].FullPath)
+	assert.Equal(t, filepath.FromSlash("/home/user/repos/github/repo1"), paths[0].FullPath)
 	assert.Equal(t, "repo1", paths[0].RelativePath)
 	assert.Equal(t, "repo2", paths[1].Repository.Name)
-	assert.Equal(t, "/home/user/repos/github/repo2", paths[1].FullPath)
+	assert.Equal(t, filepath.FromSlash("/home/user/repos/github/repo2"), paths[1].FullPath)
 	assert.Equal(t, "repo2", paths[1].RelativePath)
 }
 
 func TestRepositoryPath_GetParentDirectory(t *testing.T) {
 	path := RepositoryPath{
-		FullPath: "/home/user/repos/github/test-org/test-repo",
+		FullPath: filepath.FromSlash("/home/user/repos/github/test-org/test-repo"),
 	}
 
 	parentDir := path.GetParentDirectory()
-	expectedParent := "/home/user/repos/github/test-org"
+	expectedParent := filepath.FromSlash("/home/user/repos/github/test-org")
 
 	assert.Equal(t, expectedParent, parentDir)
 }

@@ -2,6 +2,7 @@
 package config
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/gizzahub/gzh-cli/internal/env"
@@ -25,7 +26,7 @@ func TestLoaderWithEnvironment(t *testing.T) {
 	// Test path expansion with mock environment
 	testPath := "~/config/test.yaml"
 	expandedPath := expandPathWithEnv(testPath, mockEnv)
-	expectedPath := "/test/home/config/test.yaml"
+	expectedPath := filepath.Join("/test/home", "config", "test.yaml")
 
 	if expandedPath != expectedPath {
 		t.Errorf("Expected %s, got %s", expectedPath, expandedPath)

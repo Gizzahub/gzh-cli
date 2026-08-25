@@ -221,7 +221,7 @@ func ExpandPathWithEnv(path string, environment env.Environment) string {
 	// Expand environment variables
 	path = environment.Expand(path)
 
-	return path
+	return filepath.Clean(path)
 }
 
 // applyOverlays applies all found overlay configurations.

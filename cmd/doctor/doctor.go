@@ -933,16 +933,21 @@ func isDirectoryWritable(dir string) bool {
 }
 
 func canCreateDirectory(dir string) bool {
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		err := os.MkdirAll(dir, 0o755)
-		if err != nil {
-			return false
-		}
+	info, err := os.Stat(dir)
+	if err == nil {
+		return info.IsDir()
+	}
+	if !os.IsNotExist(err) {
+		return false
+	}
 
-		if err := os.RemoveAll(dir); err != nil {
-			// Log error but don't fail the check
-			fmt.Printf("Warning: failed to remove test directory: %v\n", err)
-		}
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return false
+	}
+
+	if err := os.RemoveAll(dir); err != nil {
+		// Log error but don't fail the check
+		fmt.Printf("Warning: failed to remove test directory: %v\n", err)
 	}
 
 	return true

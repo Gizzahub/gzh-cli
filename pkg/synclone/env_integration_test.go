@@ -2,6 +2,7 @@
 package bulkclone
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/gizzahub/gzh-cli/internal/env"
@@ -29,7 +30,7 @@ func TestEnvironmentAbstraction(t *testing.T) {
 	// Test path expansion
 	testPath := "~/config/test.yaml"
 	expanded := ExpandPathWithEnv(testPath, mockEnv)
-	expected := "/test/home/config/test.yaml"
+	expected := filepath.Join("/test/home", "config", "test.yaml")
 
 	if expanded != expected {
 		t.Errorf("Expected expanded path: %s, got: %s", expected, expanded)

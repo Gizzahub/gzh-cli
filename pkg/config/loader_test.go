@@ -33,14 +33,21 @@ func TestExpandPath(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := expandPath(tt.path)
+			input := tt.path
+			expected := tt.expected
+			if tt.name == "absolute path unchanged" {
+				input = filepath.Join(t.TempDir(), "config.yaml")
+				expected = input
+			}
+
+			result := expandPath(input)
 
 			switch {
 			case tt.path == "~/test.yaml":
 				homeDir, _ := os.UserHomeDir()
 				assert.Equal(t, filepath.Join(homeDir, "test.yaml"), result)
-			case tt.expected != "":
-				assert.Equal(t, tt.expected, result)
+			case expected != "":
+				assert.Equal(t, expected, result)
 			default:
 				// For relative paths, just check it's now absolute
 				assert.True(t, filepath.IsAbs(result))
