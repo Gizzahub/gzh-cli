@@ -5,7 +5,9 @@ package profiling
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"math"
 	"testing"
 	"time"
 
@@ -51,6 +53,31 @@ func TestBenchmarkSuite_RunBenchmark_NilOptions(t *testing.T) {
 	assert.Equal(t, 1000, result.Operations) // Default iterations
 	// A no-op benchmark can complete within Windows' clock resolution.
 	assert.GreaterOrEqual(t, result.Duration, time.Duration(0))
+}
+
+func TestBenchmarkThroughput_ZeroDurationIsFiniteAndJSONMarshalable(t *testing.T) {
+	nsPerOp, opsPerSec := benchmarkThroughput(1000, 0)
+
+	assert.Zero(t, nsPerOp)
+	assert.Zero(t, opsPerSec)
+	assert.False(t, math.IsInf(opsPerSec, 0))
+	assert.False(t, math.IsNaN(opsPerSec))
+
+	encoded, err := json.Marshal(BenchmarkResult{
+		Operations: 1000,
+		Duration:   0,
+		NsPerOp:    nsPerOp,
+		OpsPerSec:  opsPerSec,
+	})
+	require.NoError(t, err)
+	assert.Contains(t, string(encoded), `"ops_per_sec":0`)
+}
+
+func TestBenchmarkThroughput_PositiveDuration(t *testing.T) {
+	nsPerOp, opsPerSec := benchmarkThroughput(4, 20*time.Millisecond)
+
+	assert.Equal(t, int64(5*time.Millisecond), nsPerOp)
+	assert.Equal(t, 200.0, opsPerSec)
 }
 
 func TestBenchmarkSuite_RunBenchmark_CustomOptions(t *testing.T) {

@@ -49,6 +49,19 @@ func TestNewProfiler(t *testing.T) {
 	assert.Equal(t, "custom/profiles", profiler.outputDir)
 }
 
+func TestNewProfiler_DisabledPreservesCPUProfileConfiguration(t *testing.T) {
+	config := &ProfileConfig{
+		Enabled:    false,
+		OutputDir:  t.TempDir(),
+		SampleRate: 37,
+	}
+
+	profiler := NewProfiler(config)
+
+	assert.Equal(t, 37, profiler.config.SampleRate)
+	assert.False(t, profiler.config.Enabled)
+}
+
 func TestProfiler_StartStop_Disabled(t *testing.T) {
 	config := &ProfileConfig{Enabled: false}
 	profiler := NewProfiler(config)

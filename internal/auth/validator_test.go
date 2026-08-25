@@ -148,6 +148,7 @@ func TestValidator_validateTokenPattern(t *testing.T) {
 func TestValidator_ValidateToken_BasicValidation(t *testing.T) {
 	validator := NewValidator()
 	ctx := context.Background()
+	before := time.Now()
 
 	// Test with empty token (should fail basic validation)
 	result, err := validator.ValidateToken(ctx, "", TokenTypeGitHub)
@@ -160,7 +161,8 @@ func TestValidator_ValidateToken_BasicValidation(t *testing.T) {
 	// Windows can report zero elapsed time for this immediately rejected input.
 	// The result still records a valid, non-negative duration on every platform.
 	assert.GreaterOrEqual(t, result.Duration, time.Duration(0))
-	assert.NotZero(t, result.Timestamp)
+	assert.False(t, result.Timestamp.Before(before))
+	assert.False(t, result.Timestamp.After(time.Now()))
 }
 
 func TestValidator_ValidateToken_PatternWarnings(t *testing.T) {

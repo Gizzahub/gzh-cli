@@ -32,14 +32,17 @@ const (
 
 // ProfileConfig holds configuration for profiling.
 type ProfileConfig struct {
-	Enabled       bool          `yaml:"enabled" json:"enabled"`
-	HTTPPort      int           `yaml:"http_port" json:"http_port"`
-	OutputDir     string        `yaml:"output_dir" json:"output_dir"`
-	AutoProfile   bool          `yaml:"auto_profile" json:"auto_profile"`
-	CPUDuration   time.Duration `yaml:"cpu_duration" json:"cpu_duration"`
-	SampleRate    int           `yaml:"sample_rate" json:"sample_rate"`
-	BlockRate     int           `yaml:"block_rate" json:"block_rate"`
-	MutexFraction int           `yaml:"mutex_fraction" json:"mutex_fraction"`
+	Enabled     bool          `yaml:"enabled" json:"enabled"`
+	HTTPPort    int           `yaml:"http_port" json:"http_port"`
+	OutputDir   string        `yaml:"output_dir" json:"output_dir"`
+	AutoProfile bool          `yaml:"auto_profile" json:"auto_profile"`
+	CPUDuration time.Duration `yaml:"cpu_duration" json:"cpu_duration"`
+	// SampleRate is retained for configuration compatibility. CPU profile
+	// sampling is managed by runtime/pprof when profiling starts, rather than
+	// being applied globally while constructing a Profiler.
+	SampleRate    int `yaml:"sample_rate" json:"sample_rate"`
+	BlockRate     int `yaml:"block_rate" json:"block_rate"`
+	MutexFraction int `yaml:"mutex_fraction" json:"mutex_fraction"`
 }
 
 // DefaultProfileConfig returns default profiling configuration.
@@ -92,8 +95,9 @@ func NewProfiler(config *ProfileConfig) *Profiler {
 		p.logger.Warn("Failed to create profile output directory", "dir", p.outputDir, "error", err)
 	}
 
-	// Configure runtime profiling rates
-	runtime.SetCPUProfileRate(config.SampleRate)
+	// Configure runtime profiling rates that are safe to update without an
+	// active CPU profile. CPU sampling is managed by runtime/pprof at profile
+	// start, so construction must not mutate that process-global setting.
 	runtime.SetBlockProfileRate(config.BlockRate)
 	runtime.SetMutexProfileFraction(config.MutexFraction)
 

@@ -213,8 +213,7 @@ func (bs *BenchmarkSuite) runSequentialBenchmark(ctx context.Context, result *Be
 	result.Duration = totalDuration
 
 	if operations > 0 {
-		result.NsPerOp = totalDuration.Nanoseconds() / int64(operations)
-		result.OpsPerSec = float64(operations) / totalDuration.Seconds()
+		result.NsPerOp, result.OpsPerSec = benchmarkThroughput(int64(operations), totalDuration)
 		result.Percentiles = calculatePercentiles(durations)
 	}
 
@@ -273,12 +272,26 @@ func (bs *BenchmarkSuite) runConcurrentBenchmark(ctx context.Context, result *Be
 	result.Duration = totalDuration
 
 	if operations > 0 {
-		result.NsPerOp = totalDuration.Nanoseconds() / operations
-		result.OpsPerSec = float64(operations) / totalDuration.Seconds()
+		result.NsPerOp, result.OpsPerSec = benchmarkThroughput(operations, totalDuration)
 		result.Percentiles = calculatePercentiles(durations)
 	}
 
 	return result, nil
+}
+
+// benchmarkThroughput derives per-operation metrics without producing a
+// non-finite rate when the platform clock reports a zero-duration run.
+func benchmarkThroughput(operations int64, totalDuration time.Duration) (int64, float64) {
+	if operations <= 0 {
+		return 0, 0
+	}
+
+	nsPerOp := totalDuration.Nanoseconds() / operations
+	if totalDuration <= 0 {
+		return nsPerOp, 0
+	}
+
+	return nsPerOp, float64(operations) / totalDuration.Seconds()
 }
 
 // calculatePercentiles calculates percentile durations from a slice of durations.
