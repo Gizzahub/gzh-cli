@@ -1308,19 +1308,15 @@ func TestBenchmarkUtilityFunctions(t *testing.T) {
 	})
 
 	t.Run("getGitCommit", func(t *testing.T) {
-		// This function returns "not implemented" error
 		commit, err := getGitCommit()
-		assert.Error(t, err)
-		assert.Equal(t, "", commit)
-		assert.Contains(t, err.Error(), "not implemented")
+		require.NoError(t, err)
+		assert.Regexp(t, `^[0-9a-f]{40}$`, commit)
 	})
 
 	t.Run("getGitBranch", func(t *testing.T) {
-		// This function returns "not implemented" error
 		branch, err := getGitBranch()
-		assert.Error(t, err)
-		assert.Equal(t, "", branch)
-		assert.Contains(t, err.Error(), "not implemented")
+		require.NoError(t, err)
+		assert.NotEmpty(t, branch)
 	})
 }
 

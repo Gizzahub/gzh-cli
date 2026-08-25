@@ -8,9 +8,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -733,13 +735,20 @@ func displayBenchmarkResults(report *BenchmarkReport, opts benchmarkOptions, sna
 
 // Helper functions for Git integration.
 func getGitCommit() (string, error) {
-	// Implementation would use git commands to get current commit
-	return "", fmt.Errorf("not implemented")
+	return runGitRevParse("HEAD")
 }
 
 func getGitBranch() (string, error) {
-	// Implementation would use git commands to get current branch
-	return "", fmt.Errorf("not implemented")
+	return runGitRevParse("--abbrev-ref", "HEAD")
+}
+
+func runGitRevParse(args ...string) (string, error) {
+	output, err := exec.CommandContext(context.Background(), "git", append([]string{"rev-parse"}, args...)...).Output() //nolint:gosec // fixed git subcommand; arguments are internal constants
+	if err != nil {
+		return "", fmt.Errorf("git rev-parse failed: %w", err)
+	}
+
+	return strings.TrimSpace(string(output)), nil
 }
 
 // BenchmarkFunction represents a discovered benchmark function.
