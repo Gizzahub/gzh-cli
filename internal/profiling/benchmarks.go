@@ -337,7 +337,7 @@ func (bs *BenchmarkSuite) CompareBenchmarks(baseline, current *BenchmarkResult) 
 	}
 
 	// Performance comparison
-	if baseline.NsPerOp > 0 {
+	if baseline.NsPerOp > 0 && current.NsPerOp > 0 {
 		speedupRatio := float64(baseline.NsPerOp) / float64(current.NsPerOp)
 		comparison["speedup_ratio"] = speedupRatio
 		comparison["performance_change_percent"] = (speedupRatio - 1.0) * 100

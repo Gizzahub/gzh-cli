@@ -363,6 +363,25 @@ func TestBenchmarkSuite_CompareBenchmarks_ValidInputs(t *testing.T) {
 	assert.InDelta(t, -20.0, allocChange, 0.1) // 20% reduction
 }
 
+func TestBenchmarkSuite_CompareBenchmarks_UnmeasurableCurrent(t *testing.T) {
+	suite := NewBenchmarkSuite(nil)
+	baseline := &BenchmarkResult{Name: "baseline", NsPerOp: 1000}
+	current := &BenchmarkResult{
+		Name:       "current",
+		Operations: 1000,
+		Duration:   0,
+		NsPerOp:    0,
+		OpsPerSec:  0,
+	}
+
+	comparison := suite.CompareBenchmarks(baseline, current)
+
+	assert.NotContains(t, comparison, "speedup_ratio")
+	assert.NotContains(t, comparison, "performance_change_percent")
+	_, err := json.Marshal(comparison)
+	require.NoError(t, err)
+}
+
 func TestCalculatePercentiles(t *testing.T) {
 	// Test with empty slice
 	percentiles := calculatePercentiles([]time.Duration{})
