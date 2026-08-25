@@ -15,8 +15,7 @@ GOSEC_MODULE := github.com/securego/gosec/v2
 GOSEC_INSTALL := $(GOSEC_MODULE)/cmd/gosec@$(GOSEC_VERSION)
 GOSEC_DIR := $(CURDIR)/bin/tools
 GOSEC := $(GOSEC_DIR)/gosec$(shell go env GOEXE)
-GOSEC_INCLUDE := G101,G102,G103,G104,G106,G107,G108,G109,G110,G201,G202,G203,G204,G301,G302,G303,G304,G305,G306,G307,G401,G402,G403,G404,G501,G502,G503,G504,G505,G601,G602
-GOSEC_SCAN_FLAGS := -conf=.gosec.json -include=$(GOSEC_INCLUDE) -exclude-generated -exclude-dir=vendor -exclude-dir=node_modules -exclude-dir=.git -exclude-dir=tmp -tests -confidence=medium -severity=medium
+GOSEC_SCAN_FLAGS := -conf=.gosec.json -exclude-generated -exclude-dir=vendor -exclude-dir=node_modules -exclude-dir=.git -exclude-dir=tmp -tests -confidence=medium -severity=medium
 
 # ==============================================================================
 # Core Tool Installation
