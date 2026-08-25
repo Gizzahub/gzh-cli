@@ -2,6 +2,8 @@ module github.com/gizzahub/gzh-cli
 
 go 1.26
 
+toolchain go1.26.6
+
 require (
 	github.com/Gizzahub/gzh-cli-quality v0.1.2
 	github.com/aws/aws-sdk-go-v2 v1.41.1
