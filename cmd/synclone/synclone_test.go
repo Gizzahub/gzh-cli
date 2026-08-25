@@ -3,7 +3,6 @@ package synclone
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,8 +10,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v3"
 
 	"github.com/gizzahub/gzh-cli/internal/app"
+	internalconfig "github.com/gizzahub/gzh-cli/internal/config"
 	gerrors "github.com/gizzahub/gzh-cli/internal/errors"
 )
 
@@ -36,24 +37,28 @@ func TestDefaultSyncCloneOptions(t *testing.T) {
 func TestBulkCloneConfigSupport(t *testing.T) {
 	tempDir := t.TempDir()
 
-	// Create a test config file
-	configContent := `version: "1.0"
-default:
-  protocol: https
-  github:
-    root_path: '%s/github-repos'
-    org_name: "test-default-org"
-repo_roots:
-  - root_path: '%s/my-repos'
-    provider: "github"
-    protocol: "https"
-    org_name: "my-test-org"
-`
+	githubDefaultRoot := filepath.Join(tempDir, "github-repos")
+	githubOrgRoot := filepath.Join(tempDir, "my-repos")
+	config := map[string]any{
+		"version": "1.0",
+		"default": map[string]any{
+			"protocol": "https",
+			"github": map[string]any{
+				"root_path": githubDefaultRoot,
+				"org_name":  "test-default-org",
+			},
+		},
+		"repo_roots": []map[string]any{{
+			"root_path": githubOrgRoot,
+			"provider":  "github",
+			"protocol":  "https",
+			"org_name":  "my-test-org",
+		}},
+	}
 	configPath := filepath.Join(tempDir, "test-config.yaml")
-	// YAML double quotes interpret backslashes as escapes. Single quotes preserve
-	// native Windows paths exactly as users provide them.
-	formattedConfig := fmt.Sprintf(configContent, tempDir, tempDir)
-	err := os.WriteFile(configPath, []byte(formattedConfig), 0o600)
+	configData, err := yaml.Marshal(config)
+	require.NoError(t, err)
+	err = os.WriteFile(configPath, configData, 0o600)
 	require.NoError(t, err)
 
 	t.Run("github with config file", func(t *testing.T) {
@@ -62,9 +67,8 @@ repo_roots:
 			orgName:    "my-test-org",
 		}
 
-		err := opts.loadFromConfig()
-		assert.NoError(t, err)
-		assert.Equal(t, filepath.Join(tempDir, "my-repos"), opts.targetPath)
+		require.NoError(t, opts.loadFromConfig())
+		assert.Equal(t, githubOrgRoot, opts.targetPath)
 	})
 
 	t.Run("github with config use default org", func(t *testing.T) {
@@ -73,24 +77,27 @@ repo_roots:
 			orgName:    "test-default-org",
 		}
 
-		err := opts.loadFromConfig()
-		assert.NoError(t, err)
-		assert.Equal(t, filepath.Join(tempDir, "github-repos"), opts.targetPath)
+		require.NoError(t, opts.loadFromConfig())
+		assert.Equal(t, githubDefaultRoot, opts.targetPath)
 	})
 
 	t.Run("gitlab with config file", func(t *testing.T) {
-		// Create GitLab config
-		gitlabConfig := `version: "1.0"
-default:
-  protocol: https
-  gitlab:
-    root_path: '%s/gitlab-repos'
-    group_name: "test-group"
-    recursive: true
-`
+		gitlabRoot := filepath.Join(tempDir, "gitlab-repos")
+		gitlabConfig := map[string]any{
+			"version": "1.0",
+			"default": map[string]any{
+				"protocol": "https",
+				"gitlab": map[string]any{
+					"root_path":  gitlabRoot,
+					"group_name": "test-group",
+					"recursive":  true,
+				},
+			},
+		}
 		gitlabConfigPath := filepath.Join(tempDir, "gitlab-config.yaml")
-		formattedGitlabConfig := fmt.Sprintf(gitlabConfig, tempDir)
-		err := os.WriteFile(gitlabConfigPath, []byte(formattedGitlabConfig), 0o600)
+		gitlabConfigData, err := yaml.Marshal(gitlabConfig)
+		require.NoError(t, err)
+		err = os.WriteFile(gitlabConfigPath, gitlabConfigData, 0o600)
 		require.NoError(t, err)
 
 		opts := &syncCloneGitlabOptions{
@@ -98,9 +105,8 @@ default:
 			groupName:  "test-group",
 		}
 
-		err = opts.loadFromConfig()
-		assert.NoError(t, err)
-		assert.Equal(t, filepath.Join(tempDir, "gitlab-repos"), opts.targetPath)
+		require.NoError(t, opts.loadFromConfig())
+		assert.Equal(t, gitlabRoot, opts.targetPath)
 		assert.True(t, opts.recursively)
 	})
 
@@ -111,8 +117,7 @@ default:
 			targetPath: "/override/path",
 		}
 
-		err := opts.loadFromConfig()
-		assert.NoError(t, err)
+		require.NoError(t, opts.loadFromConfig())
 		// CLI flag should take precedence
 		assert.Equal(t, "/override/path", opts.targetPath)
 	})
@@ -173,34 +178,39 @@ repo_roots: []
 	})
 
 	t.Run("config loading", func(t *testing.T) {
-		// Create a comprehensive config
-		configContent := `version: "1.0"
-default:
-  protocol: https
-  github:
-    root_path: "%s/default-github"
-    org_name: "default-github-org"
-  gitlab:
-    root_path: "%s/default-gitlab"
-    group_name: "default-gitlab-group"
-repo_roots:
-  - root_path: "%s/github-org1"
-    provider: "github"
-    protocol: "ssh"
-    org_name: "github-org1"
-  - root_path: "%s/github-org2"
-    provider: "github"
-    protocol: "https"
-    org_name: "github-org2"
-  - root_path: "%s/gitlab-group1"
-    provider: "gitlab"
-    protocol: "https"
-    org_name: "gitlab-group1"
-`
+		defaultGitHubRoot := filepath.Join(tempDir, "default-github")
+		defaultGitLabRoot := filepath.Join(tempDir, "default-gitlab")
+		githubOrg1Root := filepath.Join(tempDir, "github-org1")
+		githubOrg2Root := filepath.Join(tempDir, "github-org2")
+		gitlabGroupRoot := filepath.Join(tempDir, "gitlab-group1")
+		config := map[string]any{
+			"version": "1.0",
+			"default": map[string]any{
+				"protocol": "https",
+				"github": map[string]any{
+					"root_path": defaultGitHubRoot,
+					"org_name":  "default-github-org",
+				},
+				"gitlab": map[string]any{
+					"root_path":  defaultGitLabRoot,
+					"group_name": "default-gitlab-group",
+				},
+			},
+			"repo_roots": []map[string]any{
+				{"root_path": githubOrg1Root, "provider": "github", "protocol": "ssh", "org_name": "github-org1"},
+				{"root_path": githubOrg2Root, "provider": "github", "protocol": "https", "org_name": "github-org2"},
+				{"root_path": gitlabGroupRoot, "provider": "gitlab", "protocol": "https", "org_name": "gitlab-group1"},
+			},
+		}
 		configPath := filepath.Join(tempDir, "comprehensive-config.yaml")
-		formattedConfig := fmt.Sprintf(configContent, tempDir, tempDir, tempDir, tempDir, tempDir)
-		err := os.WriteFile(configPath, []byte(formattedConfig), 0o600)
+		configData, err := yaml.Marshal(config)
 		require.NoError(t, err)
+		err = os.WriteFile(configPath, configData, 0o600)
+		require.NoError(t, err)
+
+		loadedConfig, err := internalconfig.LoadCommandConfig(configPath, "synclone")
+		require.NoError(t, err)
+		require.NotNil(t, loadedConfig)
 
 		opts := &syncCloneOptions{
 			configFile: configPath,

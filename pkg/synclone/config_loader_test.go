@@ -159,6 +159,7 @@ func TestGetGithubOrgConfig(t *testing.T) {
 
 func TestExpandPath(t *testing.T) {
 	homeDir, _ := os.UserHomeDir()
+	absPath := filepath.Join(t.TempDir(), "absolute", "path")
 
 	tests := []struct {
 		name     string
@@ -177,8 +178,8 @@ func TestExpandPath(t *testing.T) {
 		},
 		{
 			name:     "no expansion needed",
-			input:    "/absolute/path",
-			expected: filepath.FromSlash("/absolute/path"),
+			input:    absPath,
+			expected: absPath,
 		},
 		{
 			name:     "empty path",

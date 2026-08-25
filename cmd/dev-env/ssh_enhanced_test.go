@@ -157,12 +157,13 @@ Host test.com
 		assert.Equal(t, 6, keyFiles) // 3 private + 3 public keys
 
 		// Verify file permissions where the platform exposes POSIX mode bits.
-		if info, err := os.Stat(filepath.Join(targetSSHDir, "id_rsa")); err == nil {
-			assertPrivateMode(t, info, 0o600)
-		}
-		if info, err := os.Stat(filepath.Join(targetSSHDir, "id_rsa.pub")); err == nil {
-			assertPrivateMode(t, info, 0o644)
-		}
+		info, err := os.Stat(filepath.Join(targetSSHDir, "id_rsa"))
+		require.NoError(t, err)
+		assertPrivateMode(t, info, 0o600)
+
+		info, err = os.Stat(filepath.Join(targetSSHDir, "id_rsa.pub"))
+		require.NoError(t, err)
+		assertPrivateMode(t, info, 0o644)
 	})
 
 	t.Run("List enhanced configs", func(t *testing.T) {
