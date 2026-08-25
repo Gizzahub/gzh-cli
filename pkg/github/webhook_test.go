@@ -54,7 +54,7 @@ func (l *mockWebhookLogger) Error(msg string, fields ...any) {
 //
 // NewWebhookService는 baseURL을 https://api.github.com으로 박아 두므로
 // 같은 패키지 안에서 구조체를 직접 만든다.
-func newFakeWebhookService(t *testing.T) *webhookServiceImpl {
+func newFakeWebhookService(t testing.TB) *webhookServiceImpl {
 	t.Helper()
 
 	mux := http.NewServeMux()
@@ -623,8 +623,7 @@ func TestValidateWebhookRequest(t *testing.T) {
 
 // Benchmark tests.
 func BenchmarkWebhookService_CreateRepositoryWebhook(b *testing.B) {
-	logger := &mockWebhookLogger{}
-	service := NewWebhookService(nil, logger)
+	service := newFakeWebhookService(b)
 
 	request := &WebhookCreateRequest{
 		Name:   "benchmark-webhook",
@@ -648,8 +647,7 @@ func BenchmarkWebhookService_CreateRepositoryWebhook(b *testing.B) {
 }
 
 func BenchmarkWebhookService_ListRepositoryWebhooks(b *testing.B) {
-	logger := &mockWebhookLogger{}
-	service := NewWebhookService(nil, logger)
+	service := newFakeWebhookService(b)
 
 	b.ResetTimer()
 
