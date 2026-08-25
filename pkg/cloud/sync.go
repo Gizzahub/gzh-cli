@@ -549,13 +549,20 @@ func GetSyncRecommendations(config *Config) ([]SyncTarget, error) { //nolint:goc
 		providersByEnv[environment][profile.Provider] = true
 	}
 
-	for environment, providers := range providersByEnv {
+	// Everything below reads out of a map, so it is sorted before use. Without
+	// that, identical input produces a different Source/Target orientation and a
+	// different Profiles order on each run — recommendations that cannot be
+	// diffed between runs or compared between machines, and a test that passes
+	// roughly four times in five.
+	for _, profiles := range envProfiles {
+		slices.Sort(profiles)
+	}
+
+	for _, environment := range slices.Sorted(maps.Keys(providersByEnv)) {
+		providers := providersByEnv[environment]
 		if len(providers) > 1 {
 			// Multiple providers for same environment - suggest sync
-			var providerList []string
-			for provider := range providers {
-				providerList = append(providerList, provider)
-			}
+			providerList := slices.Sorted(maps.Keys(providers))
 
 			// Create bidirectional sync recommendations
 			for i := 0; i < len(providerList); i++ {

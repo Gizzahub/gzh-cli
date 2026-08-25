@@ -609,6 +609,7 @@ func TestGetSyncRecommendations(t *testing.T) {
 	assert.Len(t, recommendations, 1)
 	assert.Equal(t, "aws-prod", recommendations[0].Source)
 	assert.Equal(t, "gcp-prod", recommendations[0].Target)
-	assert.Contains(t, recommendations[0].Profiles, "app-prod-aws")
-	assert.Contains(t, recommendations[0].Profiles, "app-prod-gcp")
+	// Equal, not Contains: the order is the guarantee under test. Contains would
+	// pass just as happily on the shuffled output this test was written against.
+	assert.Equal(t, []string{"app-prod-aws", "app-prod-gcp"}, recommendations[0].Profiles)
 }
