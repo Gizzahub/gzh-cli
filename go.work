@@ -1,12 +1,10 @@
 go 1.26
 
-use (
-	.
-	../gzh-cli-core
-	../gzh-cli-quality
-	../gzh-cli-gitforge
-	../gzh-cli-shellforge
-	../gzh-cli-package-manager
-	../gzh-cli-dev-env
-	../gzh-cli-template
-)
+// Deliberately a single-module workspace, mirroring gzh-cli-quality (605ea39).
+// It is tracked to stop `go` from walking up into the devbox checkout's own
+// go.work, which lists all eleven sibling modules — not to wire the siblings in
+// here. Naming absent siblings is what broke this: outside a devbox layout
+// there are no siblings, so every `go` invocation failed before it started, on
+// CI and in any fresh clone alike. Cross-repo local development goes through
+// `make local-dev` in the devbox, which is the documented mechanism.
+use .
