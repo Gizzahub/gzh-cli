@@ -34,9 +34,14 @@ func TestGetExecutableVersion_TerminatesChildProcessTree(t *testing.T) {
 	go func() {
 		result <- detector.getExecutableVersion(ctx, script, pidFile)
 	}()
+	var pid int
 	require.Eventually(t, func() bool {
-		_, err := os.Stat(pidFile)
-		return err == nil
+		pidData, err := os.ReadFile(pidFile)
+		if err != nil {
+			return false
+		}
+		pid, err = strconv.Atoi(strings.TrimSpace(string(pidData)))
+		return err == nil && pid > 0
 	}, 5*time.Second, 10*time.Millisecond)
 
 	start := time.Now()
@@ -49,11 +54,6 @@ func TestGetExecutableVersion_TerminatesChildProcessTree(t *testing.T) {
 	}
 	require.Less(t, time.Since(start), 5*time.Second)
 	assert.Equal(t, "unknown", version)
-
-	pidData, err := os.ReadFile(pidFile)
-	require.NoError(t, err)
-	pid, err := strconv.Atoi(strings.TrimSpace(string(pidData)))
-	require.NoError(t, err)
 
 	require.Eventually(t, func() bool {
 		err := syscall.Kill(pid, syscall.Signal(0))
