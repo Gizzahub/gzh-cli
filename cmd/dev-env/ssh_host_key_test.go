@@ -128,10 +128,23 @@ func TestPrepareKnownHostsFileRejectsUnsafePaths(t *testing.T) {
 			defer func() { require.NoError(t, os.Chmod(path, 0o600)) }()
 
 			require.NoError(t, prepareKnownHostsFile(path, false))
-			require.NoError(t, prepareKnownHostsFile(path, true))
+			callback, err := newHostKeyCallback(path, true, nil)
+			require.NoError(t, err)
+			err = callback("readonly.example:22", &net.TCPAddr{}, newTestHostKey(t))
+			require.Error(t, err)
 			info, err := os.Stat(path)
 			require.NoError(t, err)
 			require.Equal(t, os.FileMode(0o400), info.Mode().Perm())
+		})
+
+		t.Run("existing writable permissions survive append", func(t *testing.T) {
+			path := writeKnownHosts(t, "")
+			callback, err := newHostKeyCallback(path, true, nil)
+			require.NoError(t, err)
+			require.NoError(t, callback("writable.example:22", &net.TCPAddr{}, newTestHostKey(t)))
+			info, err := os.Stat(path)
+			require.NoError(t, err)
+			require.Equal(t, os.FileMode(0o600), info.Mode().Perm())
 		})
 
 		t.Run("unreadable file", func(t *testing.T) {
