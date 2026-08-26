@@ -59,18 +59,18 @@ func run() (runErr error) {
 	rootCmd := cmd.NewRootCmd(context.Background(), "dev", appCtx)
 
 	var roff bytes.Buffer
-	fmt.Fprintf(&roff, ".nh\n.TH \"GZ\" \"1\" \"%s\" \"gzh-cli\" \"gz Manual\"\n", date.Format("Jan 2006"))
-	fmt.Fprintf(&roff, ".SH NAME\ngz \\- %s\n", roffEscape(rootCmd.Short))
+	fmt.Fprintf(&roff, ".nh\n.TH \"GZ\" \"1\" \"%s\" \"gzh-cli\" \"gz Manual\"\n", date.Format("2006-01-02"))
+	fmt.Fprintf(&roff, ".SH NAME\n%s\n", wrapRoff("gz \\- "+roffEscape(rootCmd.Short), 60))
 	fmt.Fprintf(&roff, ".SH SYNOPSIS\n\\fBgz [flags] <command>\\fP\n")
-	fmt.Fprintf(&roff, ".SH DESCRIPTION\n%s\n", roffEscape(rootCmd.Long))
+	fmt.Fprintf(&roff, ".SH DESCRIPTION\n%s\n", wrapRoff(roffEscape(rootCmd.Long), 60))
 	fmt.Fprintln(&roff, ".SH COMMANDS")
 	for _, subcommand := range rootCmd.Commands() {
 		if subcommand.Hidden {
 			continue
 		}
-		fmt.Fprintf(&roff, ".TP\n\\fBgz %s\\fP\n%s\n", roffEscape(subcommand.Name()), roffEscape(subcommand.Short))
+		fmt.Fprintf(&roff, ".TP\n\\fBgz %s\\fP\n%s\n", roffEscape(subcommand.Name()), wrapRoff(roffEscape(subcommand.Short), 60))
 	}
-	fmt.Fprintf(&roff, ".SH OPTIONS\n.nf\n%s.fi\n", roffEscape(rootCmd.Flags().FlagUsages()))
+	fmt.Fprintf(&roff, ".SH OPTIONS\n.nf\n%s.fi\n", roffEscape(rootCmd.PersistentFlags().FlagUsagesWrapped(60)))
 
 	writer := gzip.NewWriter(os.Stdout)
 	if _, err := writer.Write(roff.Bytes()); err != nil {
@@ -86,4 +86,47 @@ func run() (runErr error) {
 
 func roffEscape(value string) string {
 	return strings.NewReplacer("\\", "\\\\", "-", "\\-").Replace(value)
+}
+
+func wrapRoff(value string, width int) string {
+	words := strings.Fields(value)
+	if len(words) == 0 {
+		return ""
+	}
+
+	var output strings.Builder
+	lineBytes := 0
+	for _, word := range words {
+		separator := 0
+		if lineBytes > 0 {
+			separator = 1
+		}
+		wordWidth := roffInputWidth(word)
+		if lineBytes > 0 && lineBytes+separator+wordWidth > width {
+			output.WriteByte('\n')
+			lineBytes = 0
+			separator = 0
+		}
+		if separator > 0 {
+			output.WriteByte(' ')
+			lineBytes++
+		}
+		output.WriteString(word)
+		lineBytes += wordWidth
+	}
+
+	return output.String()
+}
+
+func roffInputWidth(value string) int {
+	width := 0
+	for _, character := range value {
+		if character > 127 {
+			width += len(`\[uFFFF]`)
+			continue
+		}
+		width++
+	}
+
+	return width
 }

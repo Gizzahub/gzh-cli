@@ -66,7 +66,7 @@ external release validation steps.
    - Signs artifacts with Cosign
    - Creates GitHub Release with changelog
    - Publishes to package managers
-   - Sends notifications
+   - Leaves external notifications disabled until their protected-workflow credentials are configured
 
 ### Manual Release (Development)
 
