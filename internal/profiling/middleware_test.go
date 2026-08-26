@@ -6,12 +6,104 @@ package profiling
 import (
 	"context"
 	"errors"
+	"math"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestSignedMemoryDelta(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name          string
+		before        uint64
+		after         uint64
+		wantDelta     int64
+		wantSaturated bool
+	}{
+		{name: "equal", before: 42, after: 42, wantDelta: 0},
+		{name: "positive", before: 1000, after: 1200, wantDelta: 200},
+		{name: "negative", before: 1200, after: 1000, wantDelta: -200},
+		{name: "positive max int64", before: 0, after: math.MaxInt64, wantDelta: math.MaxInt64},
+		{name: "positive overflow", before: 0, after: uint64(math.MaxInt64) + 1, wantDelta: math.MaxInt64, wantSaturated: true},
+		{name: "positive max uint64", before: 0, after: math.MaxUint64, wantDelta: math.MaxInt64, wantSaturated: true},
+		{name: "negative max int64", before: math.MaxInt64, after: 0, wantDelta: -math.MaxInt64},
+		{name: "exact min int64", before: uint64(math.MaxInt64) + 1, after: 0, wantDelta: math.MinInt64},
+		{name: "negative overflow", before: uint64(math.MaxInt64) + 2, after: 0, wantDelta: math.MinInt64, wantSaturated: true},
+		{name: "negative max uint64", before: math.MaxUint64, after: 0, wantDelta: math.MinInt64, wantSaturated: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			gotDelta, gotSaturated := signedMemoryDelta(tt.before, tt.after)
+
+			assert.Equal(t, tt.wantDelta, gotDelta)
+			assert.Equal(t, tt.wantSaturated, gotSaturated)
+		})
+	}
+}
+
+func TestPerformanceLogData_MemoryDeltaSaturation(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name          string
+		before        uint64
+		after         uint64
+		wantDelta     int64
+		wantSaturated bool
+	}{
+		{name: "normal delta", before: 100, after: 150, wantDelta: 50},
+		{name: "positive saturation", before: 0, after: math.MaxUint64, wantDelta: math.MaxInt64, wantSaturated: true},
+		{name: "exact minimum", before: uint64(math.MaxInt64) + 1, after: 0, wantDelta: math.MinInt64},
+		{name: "negative saturation", before: math.MaxUint64, after: 0, wantDelta: math.MinInt64, wantSaturated: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			data := performanceLogData(&OperationMetrics{
+				MemoryBefore: tt.before,
+				MemoryAfter:  tt.after,
+			})
+
+			assert.Equal(t, tt.wantDelta, data["memory_delta_bytes"])
+			if tt.wantSaturated {
+				assert.Equal(t, true, data["memory_delta_saturated"])
+			} else {
+				assert.NotContains(t, data, "memory_delta_saturated")
+			}
+		})
+	}
+
+	t.Run("preserves existing metrics", func(t *testing.T) {
+		t.Parallel()
+
+		operationErr := errors.New("operation failed")
+		data := performanceLogData(&OperationMetrics{
+			Duration:         1500 * time.Millisecond,
+			GoroutinesBefore: 2,
+			GoroutinesAfter:  5,
+			MemoryBefore:     100,
+			MemoryAfter:      125,
+			Success:          false,
+			Error:            operationErr,
+		})
+
+		assert.Equal(t, int64(1500), data["duration_ms"])
+		assert.Equal(t, 3, data["goroutine_delta"])
+		assert.Equal(t, int64(25), data["memory_delta_bytes"])
+		assert.Equal(t, false, data["success"])
+		assert.Equal(t, operationErr.Error(), data["error"])
+		assert.NotContains(t, data, "memory_delta_saturated")
+	})
+}
 
 func TestNewPerformanceMiddleware(t *testing.T) {
 	profiler := NewProfiler(nil)

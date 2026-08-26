@@ -5,6 +5,7 @@ package profiling
 
 import (
 	"context"
+	"math"
 	"time"
 
 	"github.com/gizzahub/gzh-cli/internal/logger"
@@ -15,6 +16,46 @@ type PerformanceMiddleware struct {
 	profiler *Profiler
 	logger   *logger.SimpleLogger
 	enabled  bool
+}
+
+func signedMemoryDelta(before, after uint64) (int64, bool) {
+	if after >= before {
+		delta := after - before
+		if delta > math.MaxInt64 {
+			return math.MaxInt64, true
+		}
+
+		return int64(delta), false
+	}
+
+	delta := before - after
+	if delta <= math.MaxInt64 {
+		return -int64(delta), false
+	}
+	if delta == uint64(math.MaxInt64)+1 {
+		return math.MinInt64, false
+	}
+
+	return math.MinInt64, true
+}
+
+func performanceLogData(metrics *OperationMetrics) map[string]any {
+	memoryDelta, memoryDeltaSaturated := signedMemoryDelta(metrics.MemoryBefore, metrics.MemoryAfter)
+	performanceData := map[string]any{
+		"duration_ms":        metrics.Duration.Milliseconds(),
+		"goroutine_delta":    metrics.GoroutinesAfter - metrics.GoroutinesBefore,
+		"memory_delta_bytes": memoryDelta,
+		"success":            metrics.Success,
+	}
+
+	if metrics.Error != nil {
+		performanceData["error"] = metrics.Error.Error()
+	}
+	if memoryDeltaSaturated {
+		performanceData["memory_delta_saturated"] = true
+	}
+
+	return performanceData
 }
 
 // NewPerformanceMiddleware creates a new performance middleware.
@@ -104,14 +145,6 @@ func (pm *PerformanceMiddleware) TrackOperationWithProfiling(ctx context.Context
 
 // logMetrics logs the performance metrics.
 func (pm *PerformanceMiddleware) logMetrics(metrics *OperationMetrics) {
-	goroutineDelta := metrics.GoroutinesAfter - metrics.GoroutinesBefore
-	var memoryDelta int64
-	if metrics.MemoryAfter >= metrics.MemoryBefore {
-		memoryDelta = int64(metrics.MemoryAfter - metrics.MemoryBefore) //nolint:gosec // G115: 메모리 통계는 안전한 범위
-	} else {
-		memoryDelta = -int64(metrics.MemoryBefore - metrics.MemoryAfter) //nolint:gosec // G115: 메모리 통계는 안전한 범위
-	}
-
 	logLevel := "Info"
 	if !metrics.Success {
 		logLevel = "Error"
@@ -119,16 +152,7 @@ func (pm *PerformanceMiddleware) logMetrics(metrics *OperationMetrics) {
 		logLevel = "Warn" // Long operations get warning level
 	}
 
-	performanceData := map[string]any{
-		"duration_ms":        metrics.Duration.Milliseconds(),
-		"goroutine_delta":    goroutineDelta,
-		"memory_delta_bytes": memoryDelta,
-		"success":            metrics.Success,
-	}
-
-	if metrics.Error != nil {
-		performanceData["error"] = metrics.Error.Error()
-	}
+	performanceData := performanceLogData(metrics)
 
 	switch logLevel {
 	case "Error":
