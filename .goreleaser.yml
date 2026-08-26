@@ -6,6 +6,8 @@ env:
 
 git:
   tag_sort: -version:refname
+  ignore_tags:
+    - refactor-start
 
 before:
   hooks:
