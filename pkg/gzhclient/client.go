@@ -9,6 +9,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/gizzahub/gzh-cli/pkg/github"
@@ -358,7 +360,7 @@ func (c *Client) GitHubClient(token string) github.APIClient {
 	config := github.DefaultAPIClientConfig()
 	config.Token = token
 
-	httpClient := &httpClientWrapper{&http.Client{Timeout: c.config.Timeout}}
+	httpClient := newHTTPClientWrapper(&http.Client{Timeout: c.config.Timeout}, config.BaseURL)
 	logger := &silentLoggerImpl{}
 
 	return github.NewAPIClient(config, httpClient, logger)
@@ -495,10 +497,76 @@ func (l *silentLoggerImpl) Error(_ string, _ ...any) {}
 
 // httpClientWrapper wraps http.Client to implement github.HTTPClientInterface.
 type httpClientWrapper struct {
-	client *http.Client
+	client        *http.Client
+	allowedOrigin *url.URL
+}
+
+func newHTTPClientWrapper(client *http.Client, configuredBaseURL string) *httpClientWrapper {
+	allowedOrigin := parseConfiguredOrigin(configuredBaseURL)
+	wrappedClient := *client
+	previousCheckRedirect := wrappedClient.CheckRedirect
+	wrapper := &httpClientWrapper{
+		client:        &wrappedClient,
+		allowedOrigin: allowedOrigin,
+	}
+
+	wrapper.client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		if err := wrapper.validateOrigin(req.URL); err != nil {
+			return err
+		}
+		if previousCheckRedirect != nil {
+			return previousCheckRedirect(req, via)
+		}
+		if len(via) >= 10 {
+			return fmt.Errorf("stopped after %d redirects", len(via))
+		}
+
+		return nil
+	}
+
+	return wrapper
+}
+
+func parseConfiguredOrigin(rawURL string) *url.URL {
+	parsed, err := url.Parse(rawURL)
+	if err != nil || parsed.Scheme == "" || parsed.Host == "" {
+		return nil
+	}
+
+	return &url.URL{
+		Scheme: strings.ToLower(parsed.Scheme),
+		Host:   strings.ToLower(parsed.Host),
+	}
+}
+
+func (h *httpClientWrapper) validateOrigin(requestURL *url.URL) error {
+	if h.allowedOrigin == nil {
+		return fmt.Errorf("invalid configured HTTP origin")
+	}
+	if requestURL == nil || requestURL.Scheme == "" || requestURL.Host == "" {
+		return fmt.Errorf("request URL must contain an absolute origin")
+	}
+	if !strings.EqualFold(requestURL.Scheme, h.allowedOrigin.Scheme) ||
+		!strings.EqualFold(requestURL.Host, h.allowedOrigin.Host) {
+		return fmt.Errorf(
+			"request origin %q does not match configured origin %q",
+			requestURL.Scheme+"://"+requestURL.Host,
+			h.allowedOrigin.String(),
+		)
+	}
+
+	return nil
 }
 
 func (h *httpClientWrapper) Do(req *http.Request) (*http.Response, error) {
+	if req == nil {
+		return nil, fmt.Errorf("request must not be nil")
+	}
+	if err := h.validateOrigin(req.URL); err != nil {
+		return nil, err
+	}
+
+	// #nosec G704 -- the initial request and every redirect are restricted to the configured origin.
 	return h.client.Do(req)
 }
 
@@ -507,7 +575,7 @@ func (h *httpClientWrapper) Get(url string) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	return h.client.Do(req)
+	return h.Do(req)
 }
 
 func (h *httpClientWrapper) Post(url, contentType string, body any) (*http.Response, error) {
@@ -537,5 +605,5 @@ func (h *httpClientWrapper) Post(url, contentType string, body any) (*http.Respo
 		return nil, err
 	}
 	req.Header.Set("Content-Type", contentType)
-	return h.client.Do(req)
+	return h.Do(req)
 }

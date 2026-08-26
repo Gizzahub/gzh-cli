@@ -143,7 +143,6 @@ linters:
         - G101 # template tokens / env names, not literals
         - G702 # CLI runs user-configured tool commands
         - G703 # CLI reads user-configured paths
-        - G704 # GitHub/API client URLs are configured, not SSRF from request input
         - G118 # workerpool stores cancel and calls it from Stop
     govet:
       disable:
