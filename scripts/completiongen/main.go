@@ -23,9 +23,25 @@ func main() {
 	}
 }
 
-func run(args []string) error {
+func run(args []string) (runErr error) {
 	if len(args) != 1 {
 		return fmt.Errorf("usage: go run ./scripts/completiongen <bash|zsh|fish>")
+	}
+
+	tempHome, err := os.MkdirTemp("", "gzh-cli-completiongen-")
+	if err != nil {
+		return fmt.Errorf("create isolated home: %w", err)
+	}
+	defer func() {
+		if err := os.RemoveAll(tempHome); err != nil && runErr == nil {
+			runErr = fmt.Errorf("remove isolated home: %w", err)
+		}
+	}()
+
+	for _, key := range []string{"HOME", "USERPROFILE", "XDG_CONFIG_HOME"} {
+		if err := os.Setenv(key, tempHome); err != nil {
+			return fmt.Errorf("isolate %s: %w", key, err)
+		}
 	}
 
 	appCtx := &app.AppContext{

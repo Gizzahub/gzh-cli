@@ -328,10 +328,10 @@ milestones:
 
 announce:
   slack:
-    enabled: "{{ .Env.SLACK_WEBHOOK_URL }}"
+    enabled: "false"
     message_template: "gz {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}"
   discord:
-    enabled: "{{ .Env.DISCORD_WEBHOOK_URL }}"
+    enabled: "false"
     message_template: "gz {{ .Tag }} has been released! 🎉"
 
 metadata:

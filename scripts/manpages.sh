@@ -2,4 +2,5 @@
 set -e
 rm -rf manpages
 mkdir manpages
-go run . man | gzip -c -9 >manpages/gzh-manager.1.gz
+SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)" \
+	go run ./scripts/manpagegen >manpages/gzh-manager.1.gz

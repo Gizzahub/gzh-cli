@@ -292,6 +292,11 @@ wget https://github.com/gizzahub/gzh-cli/releases/v1.0.0/gzh-cli_linux_amd64.tar
 docker pull ghcr.io/gizzahub/gzh-cli:v1.0.0
 ```
 
+macOS Cask의 postflight는 Apple code-signing·notarization이 없는 `gz` binary의
+`com.apple.quarantine` 속성만 staged binary 경로에서 제거합니다. 이는 Cosign artifact
+서명과 별개이며, 실제 tap 게시와 `brew install --cask` 검증은 공개 릴리스 단계에서
+수행해야 합니다.
+
 ### 기존 설치 업그레이드
 
 ```bash

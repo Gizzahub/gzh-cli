@@ -10,7 +10,7 @@ The project uses a fully automated release pipeline that:
 1. **Packages** releases as archives, Linux packages (deb/rpm/apk), and container images
 1. **Publishes** to multiple distribution channels (GitHub Releases, Docker Hub, Homebrew, etc.)
 1. **Signs** artifacts with Cosign for supply chain security
-1. **Announces** releases via Slack/Discord webhooks
+1. Keeps Slack/Discord announcements disabled until the protected release workflow supplies the provider-specific credentials
 
 ## Release Channels
 
@@ -25,6 +25,14 @@ The project uses a fully automated release pipeline that:
 | **Linux**      | APT (deb)       | `dpkg -i gz_*.deb`                                                                       |
 | **Linux**      | YUM/DNF (rpm)   | `rpm -i gz_*.rpm`                                                                        |
 | **Alpine**     | APK             | `apk add gz_*.apk`                                                                       |
+
+Upgrade a Cask installation with `brew upgrade --cask gz`.
+
+The generated Cask removes `com.apple.quarantine` from the staged `gz` binary in a
+macOS-only postflight hook because the binary is not Apple code-signed or notarized.
+This is separate from Cosign artifact signing. Snapshot validation checks the generated
+Cask structure and binary locally; an actual tap publish and `brew install --cask` remain
+external release validation steps.
 
 ### Container Images
 
@@ -123,11 +131,11 @@ Each release includes build metadata:
 
 ```bash
 gz version
-# Output: gz version v1.0.0
+# Output: gz version 1.0.0
 ```
 
 GoReleaser embeds the release version from the Git tag (for example,
-`v1.0.0`) in `internal/version.Version`. The current `gz version` contract
+`v1.0.0`) without the tag's `v` prefix in `internal/version.Version`. The current `gz version` contract
 does not expose separate commit, build-date, or builder fields.
 
 ## Security
@@ -167,8 +175,10 @@ Required secrets for automated releases:
 | `HOMEBREW_TAP_GITHUB_TOKEN` | Homebrew Cask updates     | Optional |
 | `SCOOP_BUCKET_GITHUB_TOKEN` | Scoop manifest updates    | Optional |
 | `AUR_KEY`                   | Arch Linux AUR publishing | Optional |
-| `SLACK_WEBHOOK_URL`         | Slack notifications       | Optional |
-| `DISCORD_WEBHOOK_URL`       | Discord notifications     | Optional |
+
+Slack and Discord announcements are intentionally disabled in `.goreleaser.yml`.
+Enabling either provider requires a separately approved protected-workflow change that
+passes the exact provider credentials expected by the installed GoReleaser version.
 
 ## Changelog Generation
 
