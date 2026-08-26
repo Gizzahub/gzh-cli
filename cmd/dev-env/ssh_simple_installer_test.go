@@ -74,15 +74,22 @@ func TestSerializeOpenSSHPathRejectsExpansionAndControls(t *testing.T) {
 }
 
 func TestSerializeOpenSSHPathMatchesSSHConfigParser(t *testing.T) {
-	sshPath, err := exec.LookPath("ssh")
+	_, err := exec.LookPath("ssh")
 	if err != nil {
 		t.Skipf("system ssh is unavailable: %v", err)
 	}
 
-	path := filepath.Join(t.TempDir(), `known hosts%h"quoted\part`)
+	const path = `/tmp/known hosts%h"quoted\part`
 	serialized, err := serializeOpenSSHPath(path)
 	require.NoError(t, err)
-	output, err := exec.CommandContext(t.Context(), sshPath, "-F", "none", "-G", "-o", "UserKnownHostsFile="+serialized, "example.invalid").CombinedOutput()
+	var output []byte
+	if runtime.GOOS == "windows" {
+		require.Equal(t, `"/tmp/known hosts%%h\"quoted/part"`, serialized)
+		output, err = exec.CommandContext(t.Context(), "ssh", "-F", "none", "-G", "-o", `UserKnownHostsFile="/tmp/known hosts%%h\"quoted/part"`, "example.invalid").CombinedOutput()
+	} else {
+		require.Equal(t, `"/tmp/known hosts%%h\"quoted\\part"`, serialized)
+		output, err = exec.CommandContext(t.Context(), "ssh", "-F", "none", "-G", "-o", `UserKnownHostsFile="/tmp/known hosts%%h\"quoted\\part"`, "example.invalid").CombinedOutput()
+	}
 	require.NoError(t, err, string(output))
 
 	want := "userknownhostsfile " + filepath.ToSlash(path)
@@ -91,15 +98,16 @@ func TestSerializeOpenSSHPathMatchesSSHConfigParser(t *testing.T) {
 }
 
 func TestSerializeHostKeyAliasMatchesSSHConfigParser(t *testing.T) {
-	sshPath, err := exec.LookPath("ssh")
+	_, err := exec.LookPath("ssh")
 	if err != nil {
 		t.Skipf("system ssh is unavailable: %v", err)
 	}
 
-	hostKeyAlias := `server%h "quoted alias"`
+	const hostKeyAlias = `server%h "quoted alias"`
 	serialized, err := serializeOpenSSHValue(hostKeyAlias, "SSH host", false)
 	require.NoError(t, err)
-	output, err := exec.CommandContext(t.Context(), sshPath, "-F", "none", "-G", "-o", "HostKeyAlias="+serialized, "example.invalid").CombinedOutput()
+	require.Equal(t, `"server%h \"quoted alias\""`, serialized)
+	output, err := exec.CommandContext(t.Context(), "ssh", "-F", "none", "-G", "-o", `HostKeyAlias="server%h \"quoted alias\""`, "example.invalid").CombinedOutput()
 	require.NoError(t, err, string(output))
 
 	lines := strings.Split(string(output), "\n")
@@ -124,22 +132,27 @@ func TestSimpleInstallerReturnsSSHFailureWithoutFallback(t *testing.T) {
 		t.Skip("Unix executable fixture")
 	}
 
+	shellPath, err := exec.LookPath("sh")
+	if err != nil {
+		t.Skipf("system shell is unavailable: %v", err)
+	}
 	binDir := t.TempDir()
 	sshFixture := filepath.Join(binDir, "ssh")
+	require.NoError(t, os.Symlink(shellPath, sshFixture))
+	scriptPath := filepath.Join(t.TempDir(), "unsupported-accept-new.sh")
 	countPath := filepath.Join(t.TempDir(), "invocations")
-	require.NoError(t, os.WriteFile(sshFixture, []byte("#!/bin/sh\nprintf x >> \"$SSH_TEST_COUNT_FILE\"\necho unsupported accept-new >&2\nexit 255\n"), 0o700))
+	require.NoError(t, os.WriteFile(scriptPath, []byte("printf x >> \"$SSH_TEST_COUNT_FILE\"\necho unsupported accept-new >&2\nexit 255\n"), 0o600))
 	t.Setenv("PATH", binDir)
 	t.Setenv("SSH_TEST_COUNT_FILE", countPath)
 	var stderr bytes.Buffer
 
-	err := runSystemSSH(t.Context(), []string{"-o", "StrictHostKeyChecking=accept-new"}, strings.NewReader(""), io.Discard, &stderr)
+	err = runSystemSSH(t.Context(), []string{scriptPath}, strings.NewReader(""), io.Discard, &stderr)
 	require.Error(t, err)
 	var exitError *exec.ExitError
 	require.ErrorAs(t, err, &exitError)
 	require.Equal(t, 255, exitError.ExitCode())
 	require.Contains(t, stderr.String(), "unsupported accept-new")
-	invocations, readErr := os.ReadFile(countPath)
-	require.NoError(t, readErr)
+	invocations := readKnownHosts(t, countPath)
 	require.Equal(t, "x", string(invocations))
 }
 
