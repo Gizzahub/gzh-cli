@@ -122,6 +122,18 @@ func TestPrepareKnownHostsFileRejectsUnsafePaths(t *testing.T) {
 	})
 
 	if runtime.GOOS != "windows" {
+		t.Run("existing permissions are not widened", func(t *testing.T) {
+			path := writeKnownHosts(t, "")
+			require.NoError(t, os.Chmod(path, 0o400))
+			defer func() { require.NoError(t, os.Chmod(path, 0o600)) }()
+
+			require.NoError(t, prepareKnownHostsFile(path, false))
+			require.NoError(t, prepareKnownHostsFile(path, true))
+			info, err := os.Stat(path)
+			require.NoError(t, err)
+			require.Equal(t, os.FileMode(0o400), info.Mode().Perm())
+		})
+
 		t.Run("unreadable file", func(t *testing.T) {
 			path := writeKnownHosts(t, "")
 			require.NoError(t, os.Chmod(path, 0o000))
