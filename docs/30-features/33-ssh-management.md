@@ -174,6 +174,8 @@ gz dev-env ssh install-key --host <hostname> --user <username> [options]
 Host key verification is strict by default. The host must already exist in the selected
 known_hosts file. For a verified first connection, inspect the server fingerprint out of band and
 run once with `--accept-new-host-key`. A changed or revoked key is always rejected.
+The system SSH backend pins the requested host as the lookup identity and disables hostname
+canonicalization so user SSH configuration cannot select a different known_hosts identity.
 
 **Examples:**
 

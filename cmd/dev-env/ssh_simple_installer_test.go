@@ -39,10 +39,17 @@ func TestBuildSimpleSSHArgsHostKeyPolicy(t *testing.T) {
 			require.Contains(t, args, "UpdateHostKeys=no")
 			require.Contains(t, args, "CheckHostIP=no")
 			require.Contains(t, args, "HashKnownHosts=no")
+			require.Contains(t, args, "HostKeyAlias=server.example")
+			require.Contains(t, args, "CanonicalizeHostname=no")
 			require.NotContains(t, args, "StrictHostKeyChecking=no")
 			require.Equal(t, []string{"admin@server.example", "echo ready"}, args[len(args)-2:])
 		})
 	}
+}
+
+func TestBuildSimpleSSHArgsEscapesKnownHostsTokens(t *testing.T) {
+	args := buildSimpleSSHArgs("server.example", "admin", "true", "/tmp/known%h", false)
+	require.Contains(t, args, "UserKnownHostsFile=/tmp/known%%h")
 }
 
 func TestInstallKeyCommandsExposeHostKeyPolicyFlags(t *testing.T) {

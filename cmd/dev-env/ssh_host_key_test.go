@@ -132,6 +132,15 @@ func TestPrepareKnownHostsFileRejectsUnsafePaths(t *testing.T) {
 	}
 }
 
+func TestResolveKnownHostsPathMakesRelativePathAbsolute(t *testing.T) {
+	workingDirectory, err := os.Getwd()
+	require.NoError(t, err)
+
+	path, err := resolveKnownHostsPath(filepath.Join("fixtures", "known_hosts"))
+	require.NoError(t, err)
+	require.Equal(t, filepath.Join(workingDirectory, "fixtures", "known_hosts"), path)
+}
+
 func TestHostKeyCallbackCanonicalAddresses(t *testing.T) {
 	tests := []struct {
 		name    string

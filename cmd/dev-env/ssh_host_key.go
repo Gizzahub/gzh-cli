@@ -26,7 +26,12 @@ var knownHostsAppendMu sync.Mutex
 
 func resolveKnownHostsPath(path string) (string, error) {
 	if path != "" {
-		return filepath.Clean(path), nil
+		absolutePath, err := filepath.Abs(path)
+		if err != nil {
+			return "", fmt.Errorf("resolve known_hosts %q: %w", path, err)
+		}
+
+		return filepath.Clean(absolutePath), nil
 	}
 
 	homeDir, err := os.UserHomeDir()
@@ -42,6 +47,9 @@ func newHostKeyCallback(path string, acceptNew bool, output io.Writer) (ssh.Host
 		return nil, err
 	}
 
+	// knownhosts.New accepts only a path. The rooted preflight rejects static
+	// symlinks and non-regular files, but a hostile local replacement after this
+	// point remains an operating-system-level TOCTOU boundary.
 	verify, err := knownhosts.New(path)
 	if err != nil {
 		return nil, fmt.Errorf("load known_hosts %q: %w", path, err)

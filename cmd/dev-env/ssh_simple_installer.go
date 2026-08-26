@@ -91,13 +91,15 @@ func buildSimpleSSHArgs(host, user, command, knownHostsPath string, acceptNew bo
 
 	return []string{
 		"-o", "StrictHostKeyChecking=" + strictHostKeyChecking,
-		"-o", "UserKnownHostsFile=" + knownHostsPath,
+		"-o", "UserKnownHostsFile=" + strings.ReplaceAll(knownHostsPath, "%", "%%"),
 		"-o", "GlobalKnownHostsFile=" + os.DevNull,
 		"-o", "KnownHostsCommand=none",
 		"-o", "VerifyHostKeyDNS=no",
 		"-o", "UpdateHostKeys=no",
 		"-o", "CheckHostIP=no",
 		"-o", "HashKnownHosts=no",
+		"-o", "HostKeyAlias=" + host,
+		"-o", "CanonicalizeHostname=no",
 		"-o", "ConnectTimeout=10",
 		fmt.Sprintf("%s@%s", user, host), command,
 	}
