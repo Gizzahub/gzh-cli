@@ -4,6 +4,8 @@ package cmd
 import (
 	"bytes"
 	"context"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -40,6 +42,25 @@ func TestNewRootCmdExtensionSelection(t *testing.T) {
 	loaded = false
 	generationRoot := newRootCmd(ctx, "dev", appCtx, nil)
 	require.False(t, loaded)
+	require.Nil(t, findCommand(generationRoot, "local-only"))
+}
+
+func TestPublicRootConstructorsSelectUserExtensions(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	configDir := filepath.Join(home, ".config", "gzh-manager")
+	require.NoError(t, os.MkdirAll(configDir, 0o750))
+	require.NoError(t, os.WriteFile(
+		filepath.Join(configDir, "extensions.yaml"),
+		[]byte("aliases:\n  local-only:\n    command: git status\n    description: local fixture\nexternal: []\n"),
+		0o600,
+	))
+
+	productRoot := NewRootCmd(context.Background(), "dev", app.NewTestAppContext())
+	require.NotNil(t, findCommand(productRoot, "local-only"))
+
+	generationRoot := NewRootCmdForGeneration(context.Background(), "dev", app.NewTestAppContext())
 	require.Nil(t, findCommand(generationRoot, "local-only"))
 }
 
