@@ -61,7 +61,7 @@ func TestBuildSimpleSSHArgsEscapesKnownHostsTokens(t *testing.T) {
 func TestBuildSimpleSSHArgsEscapesHostIdentityTokens(t *testing.T) {
 	args, err := buildSimpleSSHArgs(`server%h "alias"`, "admin", "true", "/tmp/known_hosts", false)
 	require.NoError(t, err)
-	require.Contains(t, args, `HostKeyAlias="server%%h \"alias\""`)
+	require.Contains(t, args, `HostKeyAlias="server%h \"alias\""`)
 }
 
 func TestSerializeOpenSSHPathRejectsExpansionAndControls(t *testing.T) {
@@ -86,6 +86,22 @@ func TestSerializeOpenSSHPathMatchesSSHConfigParser(t *testing.T) {
 	want := "userknownhostsfile " + filepath.ToSlash(path)
 	lines := strings.Split(string(output), "\n")
 	require.Contains(t, lines, want)
+}
+
+func TestSerializeHostKeyAliasMatchesSSHConfigParser(t *testing.T) {
+	sshPath, err := exec.LookPath("ssh")
+	if err != nil {
+		t.Skipf("system ssh is unavailable: %v", err)
+	}
+
+	hostKeyAlias := `server%h "quoted alias"`
+	serialized, err := serializeOpenSSHValue(hostKeyAlias, "SSH host", false)
+	require.NoError(t, err)
+	output, err := exec.CommandContext(t.Context(), sshPath, "-G", "-o", "HostKeyAlias="+serialized, "example.invalid").CombinedOutput()
+	require.NoError(t, err, string(output))
+
+	lines := strings.Split(string(output), "\n")
+	require.Contains(t, lines, "hostkeyalias "+hostKeyAlias)
 }
 
 func TestSimpleInstallerPreflightStopsExecution(t *testing.T) {

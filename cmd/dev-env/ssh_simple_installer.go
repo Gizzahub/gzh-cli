@@ -100,7 +100,7 @@ func buildSimpleSSHArgs(host, user, command, knownHostsPath string, acceptNew bo
 	if err != nil {
 		return nil, err
 	}
-	serializedHostKeyAlias, err := serializeOpenSSHValue(host, "SSH host")
+	serializedHostKeyAlias, err := serializeOpenSSHValue(host, "SSH host", false)
 	if err != nil {
 		return nil, err
 	}
@@ -122,10 +122,10 @@ func buildSimpleSSHArgs(host, user, command, knownHostsPath string, acceptNew bo
 }
 
 func serializeOpenSSHPath(path string) (string, error) {
-	return serializeOpenSSHValue(filepath.ToSlash(path), "known_hosts path")
+	return serializeOpenSSHValue(filepath.ToSlash(path), "known_hosts path", true)
 }
 
-func serializeOpenSSHValue(value, label string) (string, error) {
+func serializeOpenSSHValue(value, label string, escapePercent bool) (string, error) {
 	if value == "" {
 		return "", fmt.Errorf("%s is empty", label)
 	}
@@ -139,7 +139,11 @@ func serializeOpenSSHValue(value, label string) (string, error) {
 		case '$':
 			return "", fmt.Errorf("%s %q contains unsupported OpenSSH environment expansion", label, value)
 		case '%':
-			serialized.WriteString("%%")
+			if escapePercent {
+				serialized.WriteString("%%")
+			} else {
+				serialized.WriteRune(character)
+			}
 		case '\\', '"':
 			serialized.WriteByte('\\')
 			serialized.WriteRune(character)
