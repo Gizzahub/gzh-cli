@@ -82,6 +82,38 @@ func TestBenchmarkThroughput_PositiveDuration(t *testing.T) {
 	assert.Equal(t, 200.0, opsPerSec)
 }
 
+func TestSaturatingPerOperationMetric(t *testing.T) {
+	tests := []struct {
+		name       string
+		total      uint64
+		operations int
+		want       int64
+	}{
+		{name: "zero operations", total: 100, operations: 0, want: 0},
+		{name: "negative operations", total: 100, operations: -1, want: 0},
+		{name: "integer division truncates", total: 10, operations: 3, want: 3},
+		{name: "divide before conversion", total: uint64(math.MaxInt64) + 1, operations: 2, want: math.MaxInt64/2 + 1},
+		{name: "maximum unsigned divided by two", total: math.MaxUint64, operations: 2, want: math.MaxInt64},
+		{name: "maximum unsigned saturates", total: math.MaxUint64, operations: 1, want: math.MaxInt64},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, saturatingPerOperationMetric(tt.total, tt.operations))
+		})
+	}
+}
+
+func TestBenchmarkResultAllocationJSONContract(t *testing.T) {
+	encoded, err := json.Marshal(BenchmarkResult{AllocBytesPerOp: 512, AllocsPerOp: 10})
+	require.NoError(t, err)
+
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal(encoded, &decoded))
+	assert.Equal(t, float64(512), decoded["alloc_bytes_per_op"])
+	assert.Equal(t, float64(10), decoded["allocs_per_op"])
+}
+
 func TestBenchmarkSuite_RunBenchmark_CustomOptions(t *testing.T) {
 	suite := NewBenchmarkSuite(nil)
 

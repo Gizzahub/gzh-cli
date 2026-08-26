@@ -6,6 +6,7 @@ package profiling
 import (
 	"context"
 	"fmt"
+	"math"
 	"runtime"
 	"slices"
 	"sync"
@@ -37,6 +38,19 @@ type BenchmarkSuite struct {
 	logger   *logger.SimpleLogger
 	results  []BenchmarkResult
 	mu       sync.RWMutex
+}
+
+func saturatingPerOperationMetric(total uint64, operations int) int64 {
+	if operations <= 0 {
+		return 0
+	}
+
+	perOperation := total / uint64(operations)
+	if perOperation > math.MaxInt64 {
+		return math.MaxInt64
+	}
+
+	return int64(perOperation)
 }
 
 // NewBenchmarkSuite creates a new benchmark suite.
@@ -141,8 +155,8 @@ func (bs *BenchmarkSuite) RunBenchmark(ctx context.Context, name string, fn Benc
 		allocDelta := finalStats.TotalAlloc - initialStats.TotalAlloc
 		mallocsDelta := finalStats.Mallocs - initialStats.Mallocs
 
-		result.AllocBytesPerOp = int64(allocDelta) / int64(result.Operations) //nolint:gosec // G115: 벤치마크 통계는 안전한 범위
-		result.AllocsPerOp = int64(mallocsDelta) / int64(result.Operations)   //nolint:gosec // G115: 벤치마크 통계는 안전한 범위
+		result.AllocBytesPerOp = saturatingPerOperationMetric(allocDelta, result.Operations)
+		result.AllocsPerOp = saturatingPerOperationMetric(mallocsDelta, result.Operations)
 	}
 
 	result.Timestamp = time.Now()
