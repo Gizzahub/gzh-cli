@@ -367,28 +367,28 @@ echo "Building gz variants..."
 # Full build (all features)
 echo "  - gz-full (all commands)"
 go build -tags full \
-    -ldflags "-X main.version=$VERSION" \
+    -ldflags "-X github.com/gizzahub/gzh-cli/internal/version.Version=$VERSION" \
     -o "$OUTPUT_DIR/gz-full" \
     ./cmd/gz
 
 # Core build (essential commands only)
 echo "  - gz-core (git + dev-env only)"
 go build -tags core \
-    -ldflags "-X main.version=$VERSION" \
+    -ldflags "-X github.com/gizzahub/gzh-cli/internal/version.Version=$VERSION" \
     -o "$OUTPUT_DIR/gz-core" \
     ./cmd/gz
 
 # Git-focused build
 echo "  - gz-git (git commands + quality)"
 go build -tags "core,quality" \
-    -ldflags "-X main.version=$VERSION" \
+    -ldflags "-X github.com/gizzahub/gzh-cli/internal/version.Version=$VERSION" \
     -o "$OUTPUT_DIR/gz-git" \
     ./cmd/gz
 
 # Developer build
 echo "  - gz-dev (dev-env focused)"
 go build -tags "core,quality,pm" \
-    -ldflags "-X main.version=$VERSION" \
+    -ldflags "-X github.com/gizzahub/gzh-cli/internal/version.Version=$VERSION" \
     -o "$OUTPUT_DIR/gz-dev" \
     ./cmd/gz
 
@@ -410,19 +410,19 @@ build-variants: ## Build all binary variants (full, core, git, dev)
 # Individual variant targets
 .PHONY: build-full
 build-full: ## Build full binary with all commands
-	@go build -tags full -ldflags "-X main.version=$(VERSION)" -o $(OUTPUT_DIR)/gz-full ./cmd/gz
+	@go build -tags full -ldflags "-X github.com/gizzahub/gzh-cli/internal/version.Version=$(VERSION)" -o $(OUTPUT_DIR)/gz-full ./cmd/gz
 
 .PHONY: build-core
 build-core: ## Build core binary (git + dev-env only)
-	@go build -tags core -ldflags "-X main.version=$(VERSION)" -o $(OUTPUT_DIR)/gz-core ./cmd/gz
+	@go build -tags core -ldflags "-X github.com/gizzahub/gzh-cli/internal/version.Version=$(VERSION)" -o $(OUTPUT_DIR)/gz-core ./cmd/gz
 
 .PHONY: build-git
 build-git: ## Build git-focused binary
-	@go build -tags "core,quality" -ldflags "-X main.version=$(VERSION)" -o $(OUTPUT_DIR)/gz-git ./cmd/gz
+	@go build -tags "core,quality" -ldflags "-X github.com/gizzahub/gzh-cli/internal/version.Version=$(VERSION)" -o $(OUTPUT_DIR)/gz-git ./cmd/gz
 
 .PHONY: build-dev
 build-dev: ## Build developer-focused binary
-	@go build -tags "core,quality,pm" -ldflags "-X main.version=$(VERSION)" -o $(OUTPUT_DIR)/gz-dev ./cmd/gz
+	@go build -tags "core,quality,pm" -ldflags "-X github.com/gizzahub/gzh-cli/internal/version.Version=$(VERSION)" -o $(OUTPUT_DIR)/gz-dev ./cmd/gz
 
 # Default build is full
 .PHONY: build

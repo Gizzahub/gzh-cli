@@ -19,10 +19,7 @@ builds:
     binary: gz
     main: ./cmd/gz
     ldflags:
-      - -s -w -X main.version={{ .Version }}
-      - -X main.commit={{ .Commit }}
-      - -X main.date={{ .Date }}
-      - -X main.builtBy=goreleaser
+      - -s -w -X github.com/gizzahub/gzh-cli/internal/version.Version={{ .Version }}
     goos:
       - linux
       - darwin
@@ -42,12 +39,13 @@ builds:
 
 archives:
   - id: default
-    builds:
+    ids:
       - gz
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
     format_overrides:
       - goos: windows
-        format: zip
+        formats:
+          - zip
     files:
       - README.md
       - LICENSE
@@ -57,7 +55,7 @@ archives:
 
 nfpms:
   - id: packages
-    builds:
+    ids:
       - gz
     vendor: Gizzahub
     homepage: https://github.com/Gizzahub/gzh-cli
@@ -148,23 +146,26 @@ docker_manifests:
       - "ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64"
       - "ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64"
 
-brews:
+homebrew_casks:
   - name: gz
     ids:
       - default
+    binary: gz
     repository:
       owner: Gizzahub
       name: homebrew-tap
       branch: main
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
-    folder: Formula
+    directory: Casks
     homepage: https://github.com/Gizzahub/gzh-cli
     description: "Comprehensive CLI tool for managing development environments and Git repositories"
     license: GPL-3.0
-    test: |
-      system "#{bin}/gz version"
-    install: |
-      bin.install "gz"
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/gz"]
+          end
 
 chocolateys:
   - name: gz
@@ -199,7 +200,7 @@ scoops:
       name: scoop-bucket
       branch: main
       token: "{{ .Env.SCOOP_BUCKET_GITHUB_TOKEN }}"
-    folder: bucket
+    directory: bucket
     homepage: https://github.com/Gizzahub/gzh-cli
     description: "Comprehensive CLI tool for managing development environments and Git repositories"
     license: GPL-3.0
@@ -324,11 +325,11 @@ milestones:
     fail_on_error: false
     name_template: "{{ .Tag }}"
 
-announcements:
-  - provider: slack
+announce:
+  slack:
     enabled: "{{ .Env.SLACK_WEBHOOK_URL }}"
     message_template: "gz {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}"
-  - provider: discord
+  discord:
     enabled: "{{ .Env.DISCORD_WEBHOOK_URL }}"
     message_template: "gz {{ .Tag }} has been released! 🎉"
 

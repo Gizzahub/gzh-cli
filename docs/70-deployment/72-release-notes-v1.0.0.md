@@ -282,8 +282,8 @@ gz net-env wifi monitor --daemon
 ### 새로운 설치
 
 ```bash
-# Homebrew (macOS/Linux)
-brew install gizzahub/tap/gzh-cli
+# Homebrew Cask (macOS)
+brew install --cask gizzahub/tap/gz
 
 # 직접 다운로드
 wget https://github.com/gizzahub/gzh-cli/releases/v1.0.0/gzh-cli_linux_amd64.tar.gz
@@ -295,8 +295,8 @@ docker pull ghcr.io/gizzahub/gzh-cli:v1.0.0
 ### 기존 설치 업그레이드
 
 ```bash
-# Homebrew
-brew upgrade gzh-cli
+# Homebrew Cask
+brew upgrade --cask gz
 
 # 수동 업그레이드
 gz version --check-update

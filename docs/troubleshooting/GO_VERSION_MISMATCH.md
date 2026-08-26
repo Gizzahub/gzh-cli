@@ -37,7 +37,7 @@ go clean -cache -modcache
 go build -o gz ./cmd/gz
 
 # Or with version flag
-go build -ldflags "-X main.version=$(git describe --tags --always --dirty)" -o gz ./cmd/gz
+go build -ldflags "-X github.com/gizzahub/gzh-cli/internal/version.Version=$(git describe --tags --always --dirty)" -o gz ./cmd/gz
 ```
 
 **Why this works**: Direct `go build` handles toolchain selection automatically.

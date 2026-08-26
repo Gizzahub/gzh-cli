@@ -18,7 +18,7 @@ The project uses a fully automated release pipeline that:
 
 | Platform | Package Manager | Installation Command |
 | -------------- | --------------- | ---------------------------------------------------------------------------------------- |
-| **macOS** | Homebrew | `brew install gizzahub/tap/gz` |
+| **macOS** | Homebrew Cask | `brew install --cask gizzahub/tap/gz` |
 | **Windows** | Chocolatey | `choco install gz` |
 | **Windows** | Scoop | `scoop bucket add gizzahub https://github.com/gizzahub/scoop-bucket && scoop install gz` |
 | **Arch Linux** | AUR | `yay -S gz-bin` |
@@ -167,7 +167,7 @@ Required secrets for automated releases:
 | `GITHUB_TOKEN` | GitHub API access | ✅ |
 | `DOCKERHUB_USERNAME` | Docker Hub publishing | ✅ |
 | `DOCKERHUB_TOKEN` | Docker Hub authentication | ✅ |
-| `HOMEBREW_TAP_GITHUB_TOKEN` | Homebrew formula updates | Optional |
+| `HOMEBREW_TAP_GITHUB_TOKEN` | Homebrew Cask updates | Optional |
 | `SCOOP_BUCKET_GITHUB_TOKEN` | Scoop manifest updates | Optional |
 | `AUR_KEY` | Arch Linux AUR publishing | Optional |
 | `SLACK_WEBHOOK_URL` | Slack notifications | Optional |
