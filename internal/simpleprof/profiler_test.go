@@ -20,9 +20,9 @@ func TestLastGCTime(t *testing.T) {
 	}{
 		{name: "zero preserves Unix epoch", lastGC: 0, want: time.Unix(0, 0)},
 		{name: "normal timestamp", lastGC: 1_234_567_890, want: time.Unix(0, 1_234_567_890)},
-		{name: "maximum signed timestamp", lastGC: math.MaxInt64, want: time.Unix(0, math.MaxInt64)},
-		{name: "overflow saturates", lastGC: uint64(math.MaxInt64) + 1, want: time.Unix(0, math.MaxInt64)},
-		{name: "maximum unsigned saturates", lastGC: math.MaxUint64, want: time.Unix(0, math.MaxInt64)},
+		{name: "maximum signed timestamp", lastGC: math.MaxInt64, want: time.Unix(9_223_372_036, 854_775_807)},
+		{name: "signed boundary plus one", lastGC: uint64(math.MaxInt64) + 1, want: time.Unix(9_223_372_036, 854_775_808)},
+		{name: "maximum unsigned timestamp", lastGC: math.MaxUint64, want: time.Unix(18_446_744_073, 709_551_615)},
 	}
 
 	for _, tt := range tests {

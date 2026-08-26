@@ -19,14 +19,17 @@ import (
 	"time"
 )
 
-// LastGCTime converts runtime.MemStats.LastGC to time.Time, saturating values
-// that cannot be represented as signed Unix nanoseconds.
+// LastGCTime converts runtime.MemStats.LastGC to time.Time without narrowing
+// the unsigned nanosecond timestamp to a signed integer.
 func LastGCTime(lastGC uint64) time.Time {
-	if lastGC > math.MaxInt64 {
-		lastGC = math.MaxInt64
+	const nanosPerSecond = uint64(time.Second)
+	seconds := lastGC / nanosPerSecond
+	nanoseconds := lastGC % nanosPerSecond
+	if seconds > math.MaxInt64 {
+		seconds = math.MaxInt64
 	}
 
-	return time.Unix(0, int64(lastGC))
+	return time.Unix(int64(seconds), int64(nanoseconds))
 }
 
 // ProfileType represents the type of profile to collect.
