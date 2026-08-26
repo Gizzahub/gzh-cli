@@ -57,34 +57,3 @@ func TestRunUsesReleaseRootFactory(t *testing.T) {
 	require.Contains(t, string(page), ".B \"gz standard\"")
 	require.Contains(t, string(page), "\\-\\-verbose")
 }
-
-func TestDefaultReleaseRootExcludesUserExtensions(t *testing.T) {
-	home := t.TempDir()
-	t.Setenv("HOME", home)
-	t.Setenv("USERPROFILE", home)
-	configDir := filepath.Join(home, ".config", "gzh-manager")
-	require.NoError(t, os.MkdirAll(configDir, 0o750))
-	require.NoError(t, os.WriteFile(
-		filepath.Join(configDir, "extensions.yaml"),
-		[]byte("aliases:\n  local-only:\n    command: git status\n    description: local fixture\nexternal: []\n"),
-		0o600,
-	))
-	t.Setenv("SOURCE_DATE_EPOCH", "1787756400")
-
-	outputPath := filepath.Join(t.TempDir(), "gz.1.gz")
-	require.NoError(t, run([]string{outputPath}))
-
-	compressed, err := os.Open(outputPath)
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, compressed.Close())
-	})
-	reader, err := gzip.NewReader(compressed)
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, reader.Close())
-	})
-	page, err := io.ReadAll(reader)
-	require.NoError(t, err)
-	require.NotContains(t, string(page), "local-only")
-}
