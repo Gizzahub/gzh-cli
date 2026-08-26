@@ -9,6 +9,7 @@ import (
 	"crypto/rand"
 	"net"
 	"os"
+	"os/user"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -123,6 +124,12 @@ func TestPrepareKnownHostsFileRejectsUnsafePaths(t *testing.T) {
 
 	if runtime.GOOS != "windows" {
 		t.Run("existing permissions are not widened", func(t *testing.T) {
+			currentUser, err := user.Current()
+			require.NoError(t, err)
+			if currentUser.Uid == "0" {
+				t.Skip("root can append to a 0400 file")
+			}
+
 			path := writeKnownHosts(t, "")
 			require.NoError(t, os.Chmod(path, 0o400))
 			defer func() { require.NoError(t, os.Chmod(path, 0o600)) }()
