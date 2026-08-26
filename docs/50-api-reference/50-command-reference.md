@@ -614,7 +614,7 @@ gz dev-env ssh list --all
 # Install specific key to remote server
 gz dev-env ssh install-key --host server.com --user admin --public-key ~/.ssh/id_rsa.pub
 
-# Trust a new host key after independently verifying the displayed fingerprint
+# Trust a new host key after obtaining and verifying its fingerprint out of band
 gz dev-env ssh install-key --host server.com --user admin --public-key ~/.ssh/id_rsa.pub --accept-new-host-key
 
 # Install all keys from saved configuration

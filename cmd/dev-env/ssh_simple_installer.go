@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
+	"unicode"
 )
 
 // SimpleSSHInstaller uses system SSH command for installation.
@@ -67,15 +69,21 @@ func (installer *SimpleSSHInstaller) InstallPublicKeySimpleWithOptions(
 	if err != nil {
 		return err
 	}
+	sshArgs, err := buildSimpleSSHArgs(host, user, cmdStr, knownHostsPath, hostKeyOptions.AcceptNewHostKey)
+	if err != nil {
+		return err
+	}
 	if err := prepareKnownHostsFile(knownHostsPath, hostKeyOptions.AcceptNewHostKey); err != nil {
 		return err
 	}
 	// 응답 없는 호스트에 매달리지 않도록 붙는 시간을 제한한다. ssh는 기본값이
 	// 없으면 TCP가 포기할 때까지 기다린다. 맥락 취소는 이미 붙은 뒤에 끊는
 	// 길이고, ConnectTimeout은 붙기 전에 포기하는 길이라 둘 다 필요하다.
-	cmd := exec.CommandContext(ctx, "ssh", buildSimpleSSHArgs(host, user, cmdStr, knownHostsPath, hostKeyOptions.AcceptNewHostKey)...)
+	return runSystemSSH(ctx, sshArgs)
+}
 
-	// Connect stdin/stdout/stderr to allow password input
+func runSystemSSH(ctx context.Context, args []string) error {
+	cmd := exec.CommandContext(ctx, "ssh", args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -83,24 +91,63 @@ func (installer *SimpleSSHInstaller) InstallPublicKeySimpleWithOptions(
 	return cmd.Run()
 }
 
-func buildSimpleSSHArgs(host, user, command, knownHostsPath string, acceptNew bool) []string {
+func buildSimpleSSHArgs(host, user, command, knownHostsPath string, acceptNew bool) ([]string, error) {
 	strictHostKeyChecking := "yes"
 	if acceptNew {
 		strictHostKeyChecking = "accept-new"
 	}
+	serializedKnownHosts, err := serializeOpenSSHPath(knownHostsPath)
+	if err != nil {
+		return nil, err
+	}
+	serializedHostKeyAlias, err := serializeOpenSSHValue(host, "SSH host")
+	if err != nil {
+		return nil, err
+	}
 
 	return []string{
 		"-o", "StrictHostKeyChecking=" + strictHostKeyChecking,
-		"-o", "UserKnownHostsFile=" + strings.ReplaceAll(knownHostsPath, "%", "%%"),
+		"-o", "UserKnownHostsFile=" + serializedKnownHosts,
 		"-o", "GlobalKnownHostsFile=" + os.DevNull,
 		"-o", "KnownHostsCommand=none",
 		"-o", "VerifyHostKeyDNS=no",
 		"-o", "UpdateHostKeys=no",
 		"-o", "CheckHostIP=no",
 		"-o", "HashKnownHosts=no",
-		"-o", "HostKeyAlias=" + host,
+		"-o", "HostKeyAlias=" + serializedHostKeyAlias,
 		"-o", "CanonicalizeHostname=no",
 		"-o", "ConnectTimeout=10",
 		fmt.Sprintf("%s@%s", user, host), command,
+	}, nil
+}
+
+func serializeOpenSSHPath(path string) (string, error) {
+	return serializeOpenSSHValue(filepath.ToSlash(path), "known_hosts path")
+}
+
+func serializeOpenSSHValue(value, label string) (string, error) {
+	if value == "" {
+		return "", fmt.Errorf("%s is empty", label)
 	}
+	var serialized strings.Builder
+	serialized.WriteByte('"')
+	for _, character := range value {
+		if unicode.IsControl(character) {
+			return "", fmt.Errorf("%s %q contains a control character", label, value)
+		}
+		switch character {
+		case '$':
+			return "", fmt.Errorf("%s %q contains unsupported OpenSSH environment expansion", label, value)
+		case '%':
+			serialized.WriteString("%%")
+		case '\\', '"':
+			serialized.WriteByte('\\')
+			serialized.WriteRune(character)
+		default:
+			serialized.WriteRune(character)
+		}
+	}
+	serialized.WriteByte('"')
+
+	return serialized.String(), nil
 }

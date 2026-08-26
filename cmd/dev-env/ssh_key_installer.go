@@ -171,20 +171,7 @@ func (installer *SSHKeyInstaller) InstallKeysFromConfig(configName, host, user s
 	for _, originalKeyPath := range metadata.PublicKeys {
 		keyName := filepath.Base(originalKeyPath)
 		publicKeyPath := filepath.Join(keysDir, keyName)
-		privateKeyPath := strings.TrimSuffix(publicKeyPath, ".pub")
-
-		installOpts := &InstallOptions{
-			Host:             host,
-			Port:             opts.Port,
-			User:             user,
-			PublicKeyPath:    publicKeyPath,
-			PrivateKeyPath:   privateKeyPath,
-			Password:         opts.Password,
-			KnownHostsPath:   opts.KnownHostsPath,
-			AcceptNewHostKey: opts.AcceptNewHostKey,
-			Force:            opts.Force,
-			DryRun:           opts.DryRun,
-		}
+		installOpts := configuredInstallOptions(opts, host, user, publicKeyPath)
 
 		result, err := installer.InstallPublicKey(installOpts)
 		if err != nil {
@@ -201,6 +188,21 @@ func (installer *SSHKeyInstaller) InstallKeysFromConfig(configName, host, user s
 	}
 
 	return results, nil
+}
+
+func configuredInstallOptions(opts *InstallOptions, host, user, publicKeyPath string) *InstallOptions {
+	return &InstallOptions{
+		Host:             host,
+		Port:             opts.Port,
+		User:             user,
+		PublicKeyPath:    publicKeyPath,
+		PrivateKeyPath:   strings.TrimSuffix(publicKeyPath, ".pub"),
+		Password:         opts.Password,
+		KnownHostsPath:   opts.KnownHostsPath,
+		AcceptNewHostKey: opts.AcceptNewHostKey,
+		Force:            opts.Force,
+		DryRun:           opts.DryRun,
+	}
 }
 
 // validateOptions validates installation options.

@@ -96,6 +96,24 @@ func TestSSHKeyInstaller_ValidateOptions(t *testing.T) {
 	}
 }
 
+func TestConfiguredInstallOptionsPropagatesHostKeyPolicy(t *testing.T) {
+	base := &InstallOptions{
+		Port:             "2222",
+		Password:         "password",
+		KnownHostsPath:   "/isolated/known_hosts",
+		AcceptNewHostKey: true,
+		Force:            true,
+		DryRun:           true,
+	}
+
+	configured := configuredInstallOptions(base, "server.example", "admin", "/keys/id_ed25519.pub")
+	require.Equal(t, base.KnownHostsPath, configured.KnownHostsPath)
+	require.Equal(t, base.AcceptNewHostKey, configured.AcceptNewHostKey)
+	require.Equal(t, "server.example", configured.Host)
+	require.Equal(t, "admin", configured.User)
+	require.Equal(t, "/keys/id_ed25519", configured.PrivateKeyPath)
+}
+
 func TestSSHKeyInstaller_ReadPublicKey(t *testing.T) {
 	installer := NewSSHKeyInstaller()
 	tempDir := t.TempDir()

@@ -162,7 +162,7 @@ func appendNewHostKey(path, hostname string, remote net.Addr, key ssh.PublicKey,
 	}
 
 	if output != nil {
-		_, _ = fmt.Fprintf(output, "Accepted new SSH host key for %s (%s)\n",
+		_, _ = fmt.Fprintf(output, "WARNING: accepting a new SSH host key uses trust on first use (TOFU); verify this fingerprint out of band: %s (%s)\n",
 			knownhosts.Normalize(hostname), ssh.FingerprintSHA256(key))
 	}
 

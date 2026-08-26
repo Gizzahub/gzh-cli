@@ -64,6 +64,18 @@ func TestHostKeyCallbackKnownUnknownAndChanged(t *testing.T) {
 	})
 }
 
+func TestHostKeyCallbackAcceptsHashedKnownHost(t *testing.T) {
+	address := "hashed.example:22"
+	remote := &net.TCPAddr{IP: net.ParseIP("192.0.2.13"), Port: 22}
+	key := newTestHostKey(t)
+	line := knownhosts.Line([]string{knownhosts.HashHostname(knownhosts.Normalize(address))}, key) + "\n"
+	path := writeKnownHosts(t, line)
+
+	callback, err := newHostKeyCallback(path, false, nil)
+	require.NoError(t, err)
+	require.NoError(t, callback(address, remote, key))
+}
+
 func TestHostKeyCallbackAcceptsAndRecordsUnknownKey(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "nested", "known_hosts")
 	address := "server.example:2222"
@@ -74,6 +86,8 @@ func TestHostKeyCallbackAcceptsAndRecordsUnknownKey(t *testing.T) {
 	callback, err := newHostKeyCallback(path, true, &output)
 	require.NoError(t, err)
 	require.NoError(t, callback(address, remote, key))
+	require.Contains(t, output.String(), "WARNING")
+	require.Contains(t, output.String(), "TOFU")
 	require.Contains(t, output.String(), knownhosts.Normalize(address))
 	require.Contains(t, output.String(), ssh.FingerprintSHA256(key))
 
@@ -236,6 +250,44 @@ func TestHostKeyCallbackSerializesParallelAcceptNew(t *testing.T) {
 	for _, item := range hosts {
 		require.NoError(t, strictCallback(item.address, item.remote, item.key))
 	}
+}
+
+func TestHostKeyCallbackRejectsCompetingKeyDuringParallelAcceptNew(t *testing.T) {
+	path := writeKnownHosts(t, "")
+	callback, err := newHostKeyCallback(path, true, nil)
+	require.NoError(t, err)
+	address := "same.example:22"
+	remote := &net.TCPAddr{IP: net.ParseIP("192.0.2.31"), Port: 22}
+	keys := []ssh.PublicKey{newTestHostKey(t), newTestHostKey(t)}
+
+	results := make(chan error, len(keys))
+	var waitGroup sync.WaitGroup
+	for _, key := range keys {
+		waitGroup.Add(1)
+		go func(key ssh.PublicKey) {
+			defer waitGroup.Done()
+			results <- callback(address, remote, key)
+		}(key)
+	}
+	waitGroup.Wait()
+	close(results)
+
+	successes := 0
+	failures := 0
+	for result := range results {
+		if result == nil {
+			successes++
+		} else {
+			failures++
+			require.ErrorContains(t, result, "recheck SSH host key")
+		}
+	}
+	require.Equal(t, 1, successes)
+	require.Equal(t, 1, failures)
+
+	content, err := os.ReadFile(path)
+	require.NoError(t, err)
+	require.Len(t, strings.Split(strings.TrimSpace(string(content)), "\n"), 1)
 }
 
 func newTestHostKey(t *testing.T) ssh.PublicKey {
