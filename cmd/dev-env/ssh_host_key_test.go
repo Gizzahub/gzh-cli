@@ -47,8 +47,7 @@ func TestHostKeyCallbackKnownUnknownAndChanged(t *testing.T) {
 		callback, err := newHostKeyCallback(path, true, nil)
 		require.NoError(t, err)
 		require.ErrorContains(t, callback(address, remote, changedKey), "key mismatch")
-		content, err := os.ReadFile(path)
-		require.NoError(t, err)
+		content := readKnownHosts(t, path)
 		require.Equal(t, line, string(content))
 	})
 
@@ -58,8 +57,7 @@ func TestHostKeyCallbackKnownUnknownAndChanged(t *testing.T) {
 		callback, err := newHostKeyCallback(path, true, nil)
 		require.NoError(t, err)
 		require.ErrorContains(t, callback(address, remote, knownKey), "revoked")
-		content, err := os.ReadFile(path)
-		require.NoError(t, err)
+		content := readKnownHosts(t, path)
 		require.Equal(t, line, string(content))
 	})
 }
@@ -206,8 +204,7 @@ func TestHostKeyCallbackCanonicalAddresses(t *testing.T) {
 			callback, err := newHostKeyCallback(path, true, nil)
 			require.NoError(t, err)
 			require.NoError(t, callback(tt.address, &net.TCPAddr{}, newTestHostKey(t)))
-			content, err := os.ReadFile(path)
-			require.NoError(t, err)
+			content := readKnownHosts(t, path)
 			fields := strings.Fields(string(content))
 			require.NotEmpty(t, fields)
 			require.Equal(t, tt.want, fields[0])
@@ -285,8 +282,7 @@ func TestHostKeyCallbackRejectsCompetingKeyDuringParallelAcceptNew(t *testing.T)
 	require.Equal(t, 1, successes)
 	require.Equal(t, 1, failures)
 
-	content, err := os.ReadFile(path)
-	require.NoError(t, err)
+	content := readKnownHosts(t, path)
 	require.Len(t, strings.Split(strings.TrimSpace(string(content)), "\n"), 1)
 }
 
@@ -306,4 +302,15 @@ func writeKnownHosts(t *testing.T, content string) string {
 	require.NoError(t, os.WriteFile(path, []byte(content), 0o600))
 
 	return path
+}
+
+func readKnownHosts(t *testing.T, path string) []byte {
+	t.Helper()
+	root, err := os.OpenRoot(filepath.Dir(path))
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, root.Close()) })
+	content, err := root.ReadFile(filepath.Base(path))
+	require.NoError(t, err)
+
+	return content
 }
