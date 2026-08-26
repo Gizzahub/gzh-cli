@@ -8,7 +8,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
+
+	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-cli/cmd"
 	"github.com/gizzahub/gzh-cli/internal/app"
@@ -16,14 +19,18 @@ import (
 	"github.com/gizzahub/gzh-cli/internal/logger"
 )
 
+type rootCommandFactory func(context.Context, string, *app.AppContext) *cobra.Command
+
+var newRootCommand rootCommandFactory = cmd.NewRootCmdForGeneration
+
 func main() {
-	if err := run(os.Args[1:]); err != nil {
+	if err := run(os.Args[1:], os.Stdout); err != nil {
 		fmt.Fprintf(os.Stderr, "generate completion: %v\n", err)
 		os.Exit(1)
 	}
 }
 
-func run(args []string) error {
+func run(args []string, output io.Writer) error {
 	if len(args) != 1 {
 		return fmt.Errorf("usage: go run ./scripts/completiongen <bash|zsh|fish>")
 	}
@@ -32,15 +39,15 @@ func run(args []string) error {
 		Logger: logger.NewStructuredLogger("completiongen", logger.LevelInfo),
 		Config: config.DefaultGlobalConfig(),
 	}
-	rootCmd := cmd.NewRootCmdForGeneration(context.Background(), "dev", appCtx)
+	rootCmd := newRootCommand(context.Background(), "dev", appCtx)
 
 	switch args[0] {
 	case "bash":
-		return rootCmd.GenBashCompletion(os.Stdout)
+		return rootCmd.GenBashCompletion(output)
 	case "zsh":
-		return rootCmd.GenZshCompletion(os.Stdout)
+		return rootCmd.GenZshCompletion(output)
 	case "fish":
-		return rootCmd.GenFishCompletion(os.Stdout, true)
+		return rootCmd.GenFishCompletion(output, true)
 	default:
 		return fmt.Errorf("unsupported shell %q (want bash, zsh, or fish)", args[0])
 	}

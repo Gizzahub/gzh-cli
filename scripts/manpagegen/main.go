@@ -24,6 +24,10 @@ import (
 	"github.com/gizzahub/gzh-cli/internal/logger"
 )
 
+type rootCommandFactory func(context.Context, string, *app.AppContext) *cobra.Command
+
+var newRootCommand rootCommandFactory = cmd.NewRootCmdForGeneration
+
 func main() {
 	if err := run(os.Args[1:]); err != nil {
 		fmt.Fprintf(os.Stderr, "generate manpage: %v\n", err)
@@ -45,7 +49,7 @@ func run(args []string) error {
 		Logger: logger.NewStructuredLogger("manpagegen", logger.LevelInfo),
 		Config: config.DefaultGlobalConfig(),
 	}
-	rootCmd := cmd.NewRootCmdForGeneration(context.Background(), "dev", appCtx)
+	rootCmd := newRootCommand(context.Background(), "dev", appCtx)
 
 	return writeCompressedManpage(args[0], rootCmd, generatedAt)
 }

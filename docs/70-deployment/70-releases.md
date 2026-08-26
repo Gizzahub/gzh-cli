@@ -66,7 +66,7 @@ external release validation steps.
    - Signs artifacts with Cosign
    - Creates GitHub Release with changelog
    - Publishes to package managers
-   - Leaves external notifications disabled until their protected-workflow credentials are configured
+   - Leaves Slack and Discord notifications disabled pending protected workflow wiring
 
 ### Manual Release (Development)
 
