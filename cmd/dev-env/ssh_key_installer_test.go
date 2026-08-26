@@ -114,6 +114,29 @@ func TestConfiguredInstallOptionsPropagatesHostKeyPolicy(t *testing.T) {
 	require.Equal(t, "/keys/id_ed25519", configured.PrivateKeyPath)
 }
 
+func TestResolveConfigStoreDirNormalAndTestOverride(t *testing.T) {
+	t.Run("normal CLI options use user store", func(t *testing.T) {
+		homeDir, err := os.UserHomeDir()
+		require.NoError(t, err)
+		opts := &InstallOptions{}
+
+		storeDir, err := resolveConfigStoreDir(opts, "server.example")
+		require.NoError(t, err)
+		require.Equal(t, filepath.Join(homeDir, ".gz", "ssh-configs"), storeDir)
+		require.Empty(t, opts.Host)
+	})
+
+	t.Run("test override remains explicit", func(t *testing.T) {
+		override := t.TempDir()
+		opts := &InstallOptions{Host: override}
+
+		storeDir, err := resolveConfigStoreDir(opts, "server.example")
+		require.NoError(t, err)
+		require.Equal(t, override, storeDir)
+		require.Equal(t, "server.example", opts.Host)
+	})
+}
+
 func TestSSHKeyInstaller_ReadPublicKey(t *testing.T) {
 	installer := NewSSHKeyInstaller()
 	tempDir := t.TempDir()

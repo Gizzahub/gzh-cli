@@ -6,6 +6,7 @@ package devenv
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -79,14 +80,14 @@ func (installer *SimpleSSHInstaller) InstallPublicKeySimpleWithOptions(
 	// 응답 없는 호스트에 매달리지 않도록 붙는 시간을 제한한다. ssh는 기본값이
 	// 없으면 TCP가 포기할 때까지 기다린다. 맥락 취소는 이미 붙은 뒤에 끊는
 	// 길이고, ConnectTimeout은 붙기 전에 포기하는 길이라 둘 다 필요하다.
-	return runSystemSSH(ctx, sshArgs)
+	return runSystemSSH(ctx, sshArgs, os.Stdin, os.Stdout, os.Stderr)
 }
 
-func runSystemSSH(ctx context.Context, args []string) error {
+func runSystemSSH(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.Writer) error {
 	cmd := exec.CommandContext(ctx, "ssh", args...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stdin = stdin
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
 
 	return cmd.Run()
 }

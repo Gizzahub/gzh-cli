@@ -4,6 +4,8 @@
 package devenv
 
 import (
+	"bytes"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -80,7 +82,7 @@ func TestSerializeOpenSSHPathMatchesSSHConfigParser(t *testing.T) {
 	path := filepath.Join(t.TempDir(), `known hosts%h"quoted\part`)
 	serialized, err := serializeOpenSSHPath(path)
 	require.NoError(t, err)
-	output, err := exec.CommandContext(t.Context(), sshPath, "-G", "-o", "UserKnownHostsFile="+serialized, "example.invalid").CombinedOutput()
+	output, err := exec.CommandContext(t.Context(), sshPath, "-F", os.DevNull, "-G", "-o", "UserKnownHostsFile="+serialized, "example.invalid").CombinedOutput()
 	require.NoError(t, err, string(output))
 
 	want := "userknownhostsfile " + filepath.ToSlash(path)
@@ -97,7 +99,7 @@ func TestSerializeHostKeyAliasMatchesSSHConfigParser(t *testing.T) {
 	hostKeyAlias := `server%h "quoted alias"`
 	serialized, err := serializeOpenSSHValue(hostKeyAlias, "SSH host", false)
 	require.NoError(t, err)
-	output, err := exec.CommandContext(t.Context(), sshPath, "-G", "-o", "HostKeyAlias="+serialized, "example.invalid").CombinedOutput()
+	output, err := exec.CommandContext(t.Context(), sshPath, "-F", os.DevNull, "-G", "-o", "HostKeyAlias="+serialized, "example.invalid").CombinedOutput()
 	require.NoError(t, err, string(output))
 
 	lines := strings.Split(string(output), "\n")
@@ -122,23 +124,23 @@ func TestSimpleInstallerReturnsSSHFailureWithoutFallback(t *testing.T) {
 		t.Skip("Unix executable fixture")
 	}
 
-	publicKeyPath := filepath.Join(t.TempDir(), "id_ed25519.pub")
-	require.NoError(t, os.WriteFile(publicKeyPath, []byte("ssh-ed25519 test-key\n"), 0o600))
-	knownHostsPath := filepath.Join(t.TempDir(), "known_hosts")
 	binDir := t.TempDir()
 	sshFixture := filepath.Join(binDir, "ssh")
-	require.NoError(t, os.WriteFile(sshFixture, []byte("#!/bin/sh\necho unsupported accept-new >&2\nexit 255\n"), 0o700))
+	countPath := filepath.Join(t.TempDir(), "invocations")
+	require.NoError(t, os.WriteFile(sshFixture, []byte("#!/bin/sh\nprintf x >> \"$SSH_TEST_COUNT_FILE\"\necho unsupported accept-new >&2\nexit 255\n"), 0o700))
 	t.Setenv("PATH", binDir)
-	installer := NewSimpleSSHInstaller()
+	t.Setenv("SSH_TEST_COUNT_FILE", countPath)
+	var stderr bytes.Buffer
 
-	err := installer.InstallPublicKeySimpleWithOptions(t.Context(), "server.example", "admin", publicKeyPath, HostKeyOptions{
-		KnownHostsPath:   knownHostsPath,
-		AcceptNewHostKey: true,
-	})
+	err := runSystemSSH(t.Context(), []string{"-o", "StrictHostKeyChecking=accept-new"}, strings.NewReader(""), io.Discard, &stderr)
 	require.Error(t, err)
 	var exitError *exec.ExitError
 	require.ErrorAs(t, err, &exitError)
 	require.Equal(t, 255, exitError.ExitCode())
+	require.Contains(t, stderr.String(), "unsupported accept-new")
+	invocations, readErr := os.ReadFile(countPath)
+	require.NoError(t, readErr)
+	require.Equal(t, "x", string(invocations))
 }
 
 func TestInstallKeyCommandsExposeHostKeyPolicyFlags(t *testing.T) {

@@ -145,14 +145,9 @@ func (installer *SSHKeyInstaller) InstallKeysFromConfig(configName, host, user s
 	// Load SSH configuration
 	enhancedCmd := NewEnhancedSSHCommand()
 
-	// Allow override of store directory for testing
-	storeDir := ""
-	if opts.Host != host { // Hack: if Host differs from host param, use it as store dir
-		storeDir = opts.Host
-		opts.Host = host // Restore original host
-	} else {
-		homeDir, _ := os.UserHomeDir()
-		storeDir = filepath.Join(homeDir, ".gz", "ssh-configs")
+	storeDir, err := resolveConfigStoreDir(opts, host)
+	if err != nil {
+		return nil, err
 	}
 
 	metadataFile := filepath.Join(storeDir, configName, "metadata.json")
@@ -188,6 +183,23 @@ func (installer *SSHKeyInstaller) InstallKeysFromConfig(configName, host, user s
 	}
 
 	return results, nil
+}
+
+func resolveConfigStoreDir(opts *InstallOptions, host string) (string, error) {
+	// Tests may pass an explicit store directory through Host. A normal CLI call
+	// leaves Host empty, which must resolve to the user's configured store.
+	if opts.Host != "" && opts.Host != host {
+		storeDir := opts.Host
+		opts.Host = host
+		return storeDir, nil
+	}
+
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("resolve user home for SSH configuration store: %w", err)
+	}
+
+	return filepath.Join(homeDir, ".gz", "ssh-configs"), nil
 }
 
 func configuredInstallOptions(opts *InstallOptions, host, user, publicKeyPath string) *InstallOptions {
