@@ -27,6 +27,7 @@ func TestRunUsesReleaseRootFactory(t *testing.T) {
 	newRootCommand = func(context.Context, string, *app.AppContext) *cobra.Command {
 		called = true
 		root := &cobra.Command{Use: "gz", Short: "test command", Long: "test command tree"}
+		root.PersistentFlags().Bool("verbose", false, "show verbose output")
 		root.AddCommand(&cobra.Command{
 			Use:   "standard",
 			Short: "standard command",
@@ -54,4 +55,5 @@ func TestRunUsesReleaseRootFactory(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, string(page), ".TH \"GZ\" \"1\"")
 	require.Contains(t, string(page), ".B \"gz standard\"")
+	require.Contains(t, string(page), "\\-\\-verbose")
 }

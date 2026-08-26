@@ -145,6 +145,9 @@ func writeManpage(w io.Writer, root *cobra.Command, generatedAt time.Time) error
 		page.WriteString(".TP\n")
 		fmt.Fprintf(&page, ".B \"gz %s\"\n%s\n", escapeRoff(command.Name()), escapeRoff(command.Short))
 	}
+	page.WriteString(".SH OPTIONS\n.nf\n")
+	page.WriteString(escapeRoff(strings.TrimSpace(root.PersistentFlags().FlagUsagesWrapped(80))))
+	page.WriteString("\n.fi\n")
 	page.WriteString(".SH SEE ALSO\n")
 	page.WriteString("Project documentation: https://github.com/Gizzahub/gzh-cli\n")
 
