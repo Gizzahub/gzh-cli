@@ -231,11 +231,16 @@ gz dev-env ssh list --all                       # List saved configurations with
 # Key Installation (SFTP-based)
 gz dev-env ssh install-key --host server.com --user admin --public-key ~/.ssh/id_rsa.pub
 gz dev-env ssh install-key --config production --host server.com --user admin --verbose
+gz dev-env ssh install-key --host server.com --user admin --public-key ~/.ssh/id_rsa.pub --accept-new-host-key
 
 # Key Management
 gz dev-env ssh list-keys --config production    # List available keys in configuration
 gz dev-env ssh install-key-simple --host server.com --user admin --public-key ~/.ssh/id_rsa.pub
 ```
+
+Both installers verify the server against `~/.ssh/known_hosts` by default. Use `--known-hosts` to
+select an isolated file. Unknown hosts fail unless `--accept-new-host-key` is explicitly provided;
+changed and revoked keys always fail.
 
 **Storage Structure**:
 

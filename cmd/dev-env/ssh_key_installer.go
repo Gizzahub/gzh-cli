@@ -39,14 +39,16 @@ func (installer *SSHKeyInstaller) SetVerbose(verbose bool) {
 
 // InstallOptions represents options for installing SSH keys.
 type InstallOptions struct {
-	Host           string
-	Port           string
-	User           string
-	PublicKeyPath  string
-	PrivateKeyPath string
-	Password       string
-	Force          bool
-	DryRun         bool
+	Host             string
+	Port             string
+	User             string
+	PublicKeyPath    string
+	PrivateKeyPath   string
+	Password         string
+	KnownHostsPath   string
+	AcceptNewHostKey bool
+	Force            bool
+	DryRun           bool
 }
 
 // InstallResult represents the result of a key installation.
@@ -172,14 +174,16 @@ func (installer *SSHKeyInstaller) InstallKeysFromConfig(configName, host, user s
 		privateKeyPath := strings.TrimSuffix(publicKeyPath, ".pub")
 
 		installOpts := &InstallOptions{
-			Host:           host,
-			Port:           opts.Port,
-			User:           user,
-			PublicKeyPath:  publicKeyPath,
-			PrivateKeyPath: privateKeyPath,
-			Password:       opts.Password,
-			Force:          opts.Force,
-			DryRun:         opts.DryRun,
+			Host:             host,
+			Port:             opts.Port,
+			User:             user,
+			PublicKeyPath:    publicKeyPath,
+			PrivateKeyPath:   privateKeyPath,
+			Password:         opts.Password,
+			KnownHostsPath:   opts.KnownHostsPath,
+			AcceptNewHostKey: opts.AcceptNewHostKey,
+			Force:            opts.Force,
+			DryRun:           opts.DryRun,
 		}
 
 		result, err := installer.InstallPublicKey(installOpts)
@@ -293,10 +297,19 @@ func (installer *SSHKeyInstaller) createSSHClient(opts *InstallOptions) (*ssh.Cl
 		return answers, nil
 	}))
 
+	knownHostsPath, err := resolveKnownHostsPath(opts.KnownHostsPath)
+	if err != nil {
+		return nil, err
+	}
+	hostKeyCallback, err := newHostKeyCallback(knownHostsPath, opts.AcceptNewHostKey, os.Stderr)
+	if err != nil {
+		return nil, err
+	}
+
 	config := &ssh.ClientConfig{
 		User:            opts.User,
 		Auth:            authMethods,
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // In production, use proper host key checking
+		HostKeyCallback: hostKeyCallback,
 		Timeout:         installer.timeout,
 	}
 

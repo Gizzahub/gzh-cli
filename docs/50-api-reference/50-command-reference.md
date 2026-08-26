@@ -614,6 +614,9 @@ gz dev-env ssh list --all
 # Install specific key to remote server
 gz dev-env ssh install-key --host server.com --user admin --public-key ~/.ssh/id_rsa.pub
 
+# Trust a new host key after independently verifying the displayed fingerprint
+gz dev-env ssh install-key --host server.com --user admin --public-key ~/.ssh/id_rsa.pub --accept-new-host-key
+
 # Install all keys from saved configuration
 gz dev-env ssh install-key --config production --host server.com --user deploy
 
@@ -639,23 +642,25 @@ gz dev-env ssh list-keys
 
 **Flags:**
 
-| Flag             | Description                          | Applies To                      |
-| ---------------- | ------------------------------------ | ------------------------------- |
-| `--name`         | Configuration name                   | save, load, list                |
-| `--description`  | Configuration description            | save                            |
-| `--include-keys` | Include private keys in backup       | save                            |
-| `--backup`       | Backup current config before loading | load                            |
-| `--force`        | Overwrite without confirmation       | load, install-key               |
-| `--host`         | Remote hostname/IP                   | install-key, install-key-simple |
-| `--user`         | SSH username                         | install-key, install-key-simple |
-| `--public-key`   | Path to public key file              | install-key, install-key-simple |
-| `--private-key`  | Path to private key for auth         | install-key                     |
-| `--config`       | Use keys from saved configuration    | install-key, list-keys          |
-| `--password`     | SSH password                         | install-key                     |
-| `--port`         | SSH port (default: 22)               | install-key                     |
-| `--dry-run`      | Preview changes without applying     | install-key                     |
-| `--all`          | Show detailed information            | list                            |
-| `--verbose`      | Enable verbose logging               | install-key                     |
+| Flag                    | Description                                      | Applies To                      |
+| ----------------------- | ------------------------------------------------ | ------------------------------- |
+| `--name`                | Configuration name                               | save, load, list                |
+| `--description`         | Configuration description                        | save                            |
+| `--include-keys`        | Include private keys in backup                   | save                            |
+| `--backup`              | Backup current config before loading             | load                            |
+| `--force`               | Overwrite without confirmation                   | load, install-key               |
+| `--host`                | Remote hostname/IP                               | install-key, install-key-simple |
+| `--user`                | SSH username                                     | install-key, install-key-simple |
+| `--public-key`          | Path to public key file                          | install-key, install-key-simple |
+| `--private-key`         | Path to private key for auth                     | install-key                     |
+| `--config`              | Use keys from saved configuration                | install-key, list-keys          |
+| `--password`            | SSH password                                     | install-key                     |
+| `--port`                | SSH port (default: 22)                           | install-key                     |
+| `--known-hosts`         | Known hosts file                                 | install-key, install-key-simple |
+| `--accept-new-host-key` | Record an unknown host key after explicit opt-in | install-key, install-key-simple |
+| `--dry-run`             | Preview changes without applying                 | install-key                     |
+| `--all`                 | Show detailed information                        | list                            |
+| `--verbose`             | Enable verbose logging                           | install-key                     |
 
 **Features:**
 

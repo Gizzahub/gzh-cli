@@ -15,9 +15,11 @@ import (
 // CreateInstallKeySimpleCommand creates a simple install-key command using system SSH.
 func (c *EnhancedSSHCommand) CreateInstallKeySimpleCommand() *cobra.Command {
 	var (
-		host          string
-		user          string
-		publicKeyPath string
+		host             string
+		user             string
+		publicKeyPath    string
+		knownHostsPath   string
+		acceptNewHostKey bool
 	)
 
 	cmd := &cobra.Command{
@@ -33,13 +35,18 @@ Examples:
   gz dev-env ssh install-key-simple --host server.com --user admin --public-key ~/.ssh/id_rsa.pub`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			installer := NewSimpleSSHInstaller()
-			return installer.InstallPublicKeySimple(cmd.Context(), host, user, publicKeyPath)
+			return installer.InstallPublicKeySimpleWithOptions(cmd.Context(), host, user, publicKeyPath, HostKeyOptions{
+				KnownHostsPath:   knownHostsPath,
+				AcceptNewHostKey: acceptNewHostKey,
+			})
 		},
 	}
 
 	cmd.Flags().StringVar(&host, "host", "", "Remote server hostname or IP (required)")
 	cmd.Flags().StringVar(&user, "user", "", "Username for SSH connection (required)")
 	cmd.Flags().StringVar(&publicKeyPath, "public-key", "", "Path to public key file (required)")
+	cmd.Flags().StringVar(&knownHostsPath, "known-hosts", "", "Known hosts file (default: ~/.ssh/known_hosts)")
+	cmd.Flags().BoolVar(&acceptNewHostKey, "accept-new-host-key", false, "Trust and record an unknown host key (changed keys are rejected)")
 
 	cmd.MarkFlagRequired("host")
 	cmd.MarkFlagRequired("user")
@@ -51,15 +58,17 @@ Examples:
 // CreateInstallKeyCommand creates the install-key command for SSH.
 func (c *EnhancedSSHCommand) CreateInstallKeyCommand() *cobra.Command {
 	var (
-		host           string
-		port           string
-		user           string
-		publicKeyPath  string
-		privateKeyPath string
-		password       string
-		configName     string
-		force          bool
-		dryRun         bool
+		host             string
+		port             string
+		user             string
+		publicKeyPath    string
+		privateKeyPath   string
+		password         string
+		configName       string
+		knownHostsPath   string
+		acceptNewHostKey bool
+		force            bool
+		dryRun           bool
 	)
 
 	cmd := &cobra.Command{
@@ -96,6 +105,10 @@ Examples:
   gz dev-env ssh install-key --config production --host server.com --user admin --dry-run`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			installer := NewSSHKeyInstaller()
+			hostKeyOptions := HostKeyOptions{
+				KnownHostsPath:   knownHostsPath,
+				AcceptNewHostKey: acceptNewHostKey,
+			}
 
 			// Set verbose mode based on global flag
 			verbose, _ := cmd.Flags().GetBool("verbose")
@@ -103,9 +116,9 @@ Examples:
 
 			var err error
 			if configName != "" {
-				err = c.installKeysFromConfig(installer, configName, host, user, port, password, force, dryRun)
+				err = c.installKeysFromConfig(installer, configName, host, user, port, password, hostKeyOptions, force, dryRun)
 			} else {
-				err = c.installSingleKey(installer, host, port, user, publicKeyPath, privateKeyPath, password, force, dryRun)
+				err = c.installSingleKey(installer, host, port, user, publicKeyPath, privateKeyPath, password, hostKeyOptions, force, dryRun)
 			}
 
 			if err != nil {
@@ -123,6 +136,8 @@ Examples:
 	cmd.Flags().StringVar(&privateKeyPath, "private-key", "", "Path to private key file (for authentication)")
 	cmd.Flags().StringVar(&password, "password", "", "Password for SSH connection")
 	cmd.Flags().StringVar(&configName, "config", "", "Name of saved SSH configuration to install keys from")
+	cmd.Flags().StringVar(&knownHostsPath, "known-hosts", "", "Known hosts file (default: ~/.ssh/known_hosts)")
+	cmd.Flags().BoolVar(&acceptNewHostKey, "accept-new-host-key", false, "Trust and record an unknown host key (changed keys are rejected)")
 	cmd.Flags().BoolVar(&force, "force", false, "Force install even if key already exists")
 	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Show what would be done without making changes")
 
@@ -136,7 +151,12 @@ Examples:
 }
 
 // installSingleKey installs a single public key to a remote server.
-func (c *EnhancedSSHCommand) installSingleKey(installer *SSHKeyInstaller, host, port, user, publicKeyPath, privateKeyPath, password string, force, dryRun bool) error {
+func (c *EnhancedSSHCommand) installSingleKey(
+	installer *SSHKeyInstaller,
+	host, port, user, publicKeyPath, privateKeyPath, password string,
+	hostKeyOptions HostKeyOptions,
+	force, dryRun bool,
+) error {
 	// If no private key specified, try to find corresponding private key
 	if privateKeyPath == "" && publicKeyPath != "" {
 		if before, ok := strings.CutSuffix(publicKeyPath, ".pub"); ok {
@@ -148,14 +168,16 @@ func (c *EnhancedSSHCommand) installSingleKey(installer *SSHKeyInstaller, host, 
 	}
 
 	opts := &InstallOptions{
-		Host:           host,
-		Port:           port,
-		User:           user,
-		PublicKeyPath:  publicKeyPath,
-		PrivateKeyPath: privateKeyPath,
-		Password:       password,
-		Force:          force,
-		DryRun:         dryRun,
+		Host:             host,
+		Port:             port,
+		User:             user,
+		PublicKeyPath:    publicKeyPath,
+		PrivateKeyPath:   privateKeyPath,
+		Password:         password,
+		KnownHostsPath:   hostKeyOptions.KnownHostsPath,
+		AcceptNewHostKey: hostKeyOptions.AcceptNewHostKey,
+		Force:            force,
+		DryRun:           dryRun,
 	}
 
 	result, err := installer.InstallPublicKey(opts)
@@ -168,12 +190,19 @@ func (c *EnhancedSSHCommand) installSingleKey(installer *SSHKeyInstaller, host, 
 }
 
 // installKeysFromConfig installs all keys from a saved SSH configuration.
-func (c *EnhancedSSHCommand) installKeysFromConfig(installer *SSHKeyInstaller, configName, host, user, port, password string, force, dryRun bool) error {
+func (c *EnhancedSSHCommand) installKeysFromConfig(
+	installer *SSHKeyInstaller,
+	configName, host, user, port, password string,
+	hostKeyOptions HostKeyOptions,
+	force, dryRun bool,
+) error {
 	opts := &InstallOptions{
-		Port:     port,
-		Password: password,
-		Force:    force,
-		DryRun:   dryRun,
+		Port:             port,
+		Password:         password,
+		KnownHostsPath:   hostKeyOptions.KnownHostsPath,
+		AcceptNewHostKey: hostKeyOptions.AcceptNewHostKey,
+		Force:            force,
+		DryRun:           dryRun,
 	}
 
 	results, err := installer.InstallKeysFromConfig(configName, host, user, opts)

@@ -166,14 +166,23 @@ gz dev-env ssh install-key --host <hostname> --user <username> [options]
 - `--config`: Install all keys from saved configuration
 - `--password`: SSH password (prompted if not provided)
 - `--port`: SSH port (default: 22)
+- `--known-hosts`: Known hosts file (default: `~/.ssh/known_hosts`)
+- `--accept-new-host-key`: Explicitly trust and record an unknown host key
 - `--force`: Install even if key already exists
 - `--dry-run`: Show what would be done without making changes
+
+Host key verification is strict by default. The host must already exist in the selected
+known_hosts file. For a verified first connection, inspect the server fingerprint out of band and
+run once with `--accept-new-host-key`. A changed or revoked key is always rejected.
 
 **Examples:**
 
 ```bash
 # Install specific public key
 gz dev-env ssh install-key --host server.com --user admin --public-key ~/.ssh/id_rsa.pub
+
+# Explicitly accept and record a new host key after verifying its fingerprint
+gz dev-env ssh install-key --host server.com --user admin --public-key ~/.ssh/id_rsa.pub --accept-new-host-key
 
 # Install with verbose output
 gz dev-env ssh install-key --host server.com --user admin --public-key ~/.ssh/id_rsa.pub --verbose
@@ -191,7 +200,8 @@ gz dev-env ssh install-key --config production --host server.com --user admin --
 gz dev-env ssh install-key-simple --host <hostname> --user <username> --public-key <key-path>
 ```
 
-Uses system SSH command for compatibility when the advanced installer encounters issues.
+Uses system SSH for compatibility while enforcing the same known_hosts file and strict/accept-new
+policy as the advanced installer. It also accepts `--known-hosts` and `--accept-new-host-key`.
 
 ### List Available Keys
 
