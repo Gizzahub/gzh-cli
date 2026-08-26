@@ -126,12 +126,9 @@ gz version
 # Output: gz version v1.0.0
 ```
 
-Build-time information embedded in binaries:
-
-- **Version**: Git tag (e.g., `v1.0.0`)
-- **Commit**: Git commit SHA
-- **Date**: Build timestamp
-- **Built By**: Build system (e.g., `goreleaser`)
+GoReleaser embeds the release version from the Git tag (for example,
+`v1.0.0`) in `internal/version.Version`. The current `gz version` contract
+does not expose separate commit, build-date, or builder fields.
 
 ## Security
 
