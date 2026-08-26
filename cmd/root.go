@@ -39,8 +39,24 @@ var (
 	experimental bool
 )
 
+type extensionRegistrar func(*cobra.Command) error
+
 // NewRootCmd creates the root command and wires up subcommands with shared context.
 func NewRootCmd(ctx context.Context, version string, appCtx *app.AppContext) *cobra.Command {
+	return newRootCmd(ctx, version, appCtx, registerUserExtensions)
+}
+
+// NewRootCmdForGeneration은 사용자 확장 없이 배포 문서용 command tree를 만든다.
+func NewRootCmdForGeneration(ctx context.Context, version string, appCtx *app.AppContext) *cobra.Command {
+	return newRootCmd(ctx, version, appCtx, nil)
+}
+
+func newRootCmd(
+	ctx context.Context,
+	version string,
+	appCtx *app.AppContext,
+	registerExtensions extensionRegistrar,
+) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "gz",
 		Short: "개발 환경 및 Git 플랫폼 통합 관리 도구",
@@ -134,11 +150,11 @@ Utility Commands: doctor, version`,
 		cmd.AddCommand(providerCmd)
 	}
 
-	// Load user extensions (aliases and external commands)
-	// 실패해도 계속 진행 (사용자 확장은 선택적)
-	extensionLoader := extensions.NewLoader()
-	if err := extensionLoader.RegisterAll(cmd); err != nil {
-		fmt.Fprintf(os.Stderr, "⚠️  Failed to load extensions: %v\n", err)
+	// 사용자 확장은 선택 사항이므로 실패해도 기본 command tree를 유지한다.
+	if registerExtensions != nil {
+		if err := registerExtensions(cmd); err != nil {
+			fmt.Fprintf(os.Stderr, "⚠️  Failed to load extensions: %v\n", err)
+		}
 	}
 
 	// Utility commands - set as hidden to reduce clutter in main help
@@ -168,6 +184,11 @@ Utility Commands: doctor, version`,
 	cmd.PersistentFlags().MarkHidden("debug-shell")
 
 	return cmd
+}
+
+func registerUserExtensions(cmd *cobra.Command) error {
+	extensionLoader := extensions.NewLoader()
+	return extensionLoader.RegisterAll(cmd)
 }
 
 // Execute invokes the command.

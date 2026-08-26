@@ -307,6 +307,11 @@ brew upgrade --cask gz
 gz version --check-update
 ```
 
+Homebrew updates stay on the Cask channel. Because this release binary is not
+Apple-signed or notarized, the generated Cask removes macOS quarantine metadata
+after installation. That compatibility hook is independent of Cosign artifact
+signing and should be removed when Apple signing and notarization are adopted.
+
 ## 🎯 다음 계획
 
 ### v1.1.0 (2025년 2분기 예정)

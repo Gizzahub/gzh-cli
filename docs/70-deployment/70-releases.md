@@ -10,7 +10,7 @@ The project uses a fully automated release pipeline that:
 1. **Packages** releases as archives, Linux packages (deb/rpm/apk), and container images
 1. **Publishes** to multiple distribution channels (GitHub Releases, Docker Hub, Homebrew, etc.)
 1. **Signs** artifacts with Cosign for supply chain security
-1. Keeps Slack/Discord announcements disabled until the protected release workflow supplies the provider-specific credentials
+1. **Leaves notifications disabled** until the protected workflow supplies provider credentials
 
 ## Release Channels
 
@@ -134,9 +134,10 @@ gz version
 # Output: gz version 1.0.0
 ```
 
-GoReleaser embeds the release version from the Git tag (for example,
-`v1.0.0`) without the tag's `v` prefix in `internal/version.Version`. The current `gz version` contract
-does not expose separate commit, build-date, or builder fields.
+GoReleaser removes the tag's `v` prefix and embeds the resulting release
+version (for example, `1.0.0`) in `internal/version.Version`. The current
+`gz version` contract does not expose separate commit, build-date, or builder
+fields.
 
 ## Security
 
@@ -176,9 +177,10 @@ Required secrets for automated releases:
 | `SCOOP_BUCKET_GITHUB_TOKEN` | Scoop manifest updates    | Optional |
 | `AUR_KEY`                   | Arch Linux AUR publishing | Optional |
 
-Slack and Discord announcements are intentionally disabled in `.goreleaser.yml`.
-Enabling either provider requires a separately approved protected-workflow change that
-passes the exact provider credentials expected by the installed GoReleaser version.
+Slack and Discord announcements are deliberately disabled in
+`.goreleaser.yml`. Enabling them requires a separately approved protected
+workflow change that passes the exact credentials expected by each GoReleaser
+provider. A repository secret alone does not enable notifications.
 
 ## Changelog Generation
 
