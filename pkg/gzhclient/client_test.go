@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -82,6 +83,30 @@ func TestHTTPClientWrapperOriginValidation(t *testing.T) {
 		}
 	})
 
+	t.Run("explicit default port is same origin", func(t *testing.T) {
+		var roundTrips atomic.Int32
+		client := &http.Client{Transport: roundTripFunc(func(*http.Request) (*http.Response, error) {
+			roundTrips.Add(1)
+			return &http.Response{
+				StatusCode: http.StatusNoContent,
+				Body:       io.NopCloser(bytes.NewReader(nil)),
+				Header:     make(http.Header),
+			}, nil
+		})}
+		wrapper := newHTTPClientWrapper(client, "https://api.github.com")
+
+		resp, err := wrapper.Get("https://api.github.com:443/repos")
+		if err != nil {
+			t.Fatalf("Get() unexpected error: %v", err)
+		}
+		if closeErr := resp.Body.Close(); closeErr != nil {
+			t.Errorf("response body close failed: %v", closeErr)
+		}
+		if got := roundTrips.Load(); got != 1 {
+			t.Fatalf("RoundTrip calls = %d, want 1", got)
+		}
+	})
+
 	t.Run("same origin redirect allowed", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Path == "/start" {
@@ -132,6 +157,75 @@ func TestHTTPClientWrapperOriginValidation(t *testing.T) {
 		}
 		if got := destinationHits.Load(); got != 0 {
 			t.Fatalf("destination hits = %d, want 0", got)
+		}
+	})
+
+	t.Run("redirect hook cannot rewrite to cross origin", func(t *testing.T) {
+		var destinationHits atomic.Int32
+		destination := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			destinationHits.Add(1)
+			w.WriteHeader(http.StatusNoContent)
+		}))
+		defer destination.Close()
+		destinationURL, err := url.Parse(destination.URL)
+		if err != nil {
+			t.Fatalf("url.Parse() unexpected error: %v", err)
+		}
+
+		origin := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, "/finish", http.StatusFound)
+		}))
+		defer origin.Close()
+
+		client := origin.Client()
+		client.CheckRedirect = func(req *http.Request, _ []*http.Request) error {
+			req.URL = destinationURL
+			return nil
+		}
+		wrapper := newHTTPClientWrapper(client, origin.URL)
+		resp, err := wrapper.Get(origin.URL)
+		if resp != nil {
+			if closeErr := resp.Body.Close(); closeErr != nil {
+				t.Errorf("response body close failed: %v", closeErr)
+			}
+		}
+		if err == nil {
+			t.Fatal("Get() expected rewritten redirect origin error")
+		}
+		if got := destinationHits.Load(); got != 0 {
+			t.Fatalf("destination hits = %d, want 0", got)
+		}
+	})
+
+	t.Run("redirect hook error semantics preserved", func(t *testing.T) {
+		var finishHits atomic.Int32
+		origin := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path == "/finish" {
+				finishHits.Add(1)
+				w.WriteHeader(http.StatusNoContent)
+				return
+			}
+			http.Redirect(w, r, "/finish", http.StatusFound)
+		}))
+		defer origin.Close()
+
+		client := origin.Client()
+		client.CheckRedirect = func(*http.Request, []*http.Request) error {
+			return http.ErrUseLastResponse
+		}
+		wrapper := newHTTPClientWrapper(client, origin.URL)
+		resp, err := wrapper.Get(origin.URL)
+		if err != nil {
+			t.Fatalf("Get() unexpected error: %v", err)
+		}
+		if closeErr := resp.Body.Close(); closeErr != nil {
+			t.Errorf("response body close failed: %v", closeErr)
+		}
+		if resp.StatusCode != http.StatusFound {
+			t.Fatalf("Get() status = %d, want %d", resp.StatusCode, http.StatusFound)
+		}
+		if got := finishHits.Load(); got != 0 {
+			t.Fatalf("finish hits = %d, want 0", got)
 		}
 	})
 

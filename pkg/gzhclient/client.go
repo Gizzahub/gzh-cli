@@ -515,7 +515,11 @@ func newHTTPClientWrapper(client *http.Client, configuredBaseURL string) *httpCl
 			return err
 		}
 		if previousCheckRedirect != nil {
-			return previousCheckRedirect(req, via)
+			if err := previousCheckRedirect(req, via); err != nil {
+				return err
+			}
+
+			return wrapper.validateOrigin(req.URL)
 		}
 		if len(via) >= 10 {
 			return fmt.Errorf("stopped after %d redirects", len(via))
@@ -547,7 +551,8 @@ func (h *httpClientWrapper) validateOrigin(requestURL *url.URL) error {
 		return fmt.Errorf("request URL must contain an absolute origin")
 	}
 	if !strings.EqualFold(requestURL.Scheme, h.allowedOrigin.Scheme) ||
-		!strings.EqualFold(requestURL.Host, h.allowedOrigin.Host) {
+		!strings.EqualFold(requestURL.Hostname(), h.allowedOrigin.Hostname()) ||
+		effectiveOriginPort(requestURL) != effectiveOriginPort(h.allowedOrigin) {
 		return fmt.Errorf(
 			"request origin %q does not match configured origin %q",
 			requestURL.Scheme+"://"+requestURL.Host,
@@ -556,6 +561,21 @@ func (h *httpClientWrapper) validateOrigin(requestURL *url.URL) error {
 	}
 
 	return nil
+}
+
+func effectiveOriginPort(parsedURL *url.URL) string {
+	if port := parsedURL.Port(); port != "" {
+		return port
+	}
+
+	switch strings.ToLower(parsedURL.Scheme) {
+	case "http":
+		return "80"
+	case "https":
+		return "443"
+	default:
+		return ""
+	}
 }
 
 func (h *httpClientWrapper) Do(req *http.Request) (*http.Response, error) {
