@@ -1,8 +1,9 @@
-#compdef gzh-manager
+#compdef gz
+compdef _gz gz
 
-# zsh completion for gzh-manager                  -*- shell-script -*-
+# zsh completion for gz                                   -*- shell-script -*-
 
-__gzh-manager_debug()
+__gz_debug()
 {
     local file="$BASH_COMP_DEBUG_FILE"
     if [[ -n ${file} ]]; then
@@ -10,32 +11,33 @@ __gzh-manager_debug()
     fi
 }
 
-_gzh-manager()
+_gz()
 {
     local shellCompDirectiveError=1
     local shellCompDirectiveNoSpace=2
     local shellCompDirectiveNoFileComp=4
     local shellCompDirectiveFilterFileExt=8
     local shellCompDirectiveFilterDirs=16
+    local shellCompDirectiveKeepOrder=32
 
-    local lastParam lastChar flagPrefix requestComp out directive comp lastComp noSpace
+    local lastParam lastChar flagPrefix requestComp out directive comp lastComp noSpace keepOrder
     local -a completions
 
-    __gzh-manager_debug "\n========= starting completion logic =========="
-    __gzh-manager_debug "CURRENT: ${CURRENT}, words[*]: ${words[*]}"
+    __gz_debug "\n========= starting completion logic =========="
+    __gz_debug "CURRENT: ${CURRENT}, words[*]: ${words[*]}"
 
     # The user could have moved the cursor backwards on the command-line.
     # We need to trigger completion from the $CURRENT location, so we need
     # to truncate the command-line ($words) up to the $CURRENT location.
     # (We cannot use $CURSOR as its value does not work when a command is an alias.)
     words=("${=words[1,CURRENT]}")
-    __gzh-manager_debug "Truncated words[*]: ${words[*]},"
+    __gz_debug "Truncated words[*]: ${words[*]},"
 
     lastParam=${words[-1]}
     lastChar=${lastParam[-1]}
-    __gzh-manager_debug "lastParam: ${lastParam}, lastChar: ${lastChar}"
+    __gz_debug "lastParam: ${lastParam}, lastChar: ${lastChar}"
 
-    # For zsh, when completing a flag with an = (e.g., bulk-clone -n=<TAB>)
+    # For zsh, when completing a flag with an = (e.g., gz -n=<TAB>)
     # completions must be prefixed with the flag
     setopt local_options BASH_REMATCH
     if [[ "${lastParam}" =~ '-.*=' ]]; then
@@ -48,22 +50,22 @@ _gzh-manager()
     if [ "${lastChar}" = "" ]; then
         # If the last parameter is complete (there is a space following it)
         # We add an extra empty parameter so we can indicate this to the go completion code.
-        __gzh-manager_debug "Adding extra empty parameter"
+        __gz_debug "Adding extra empty parameter"
         requestComp="${requestComp} \"\""
     fi
 
-    __gzh-manager_debug "About to call: eval ${requestComp}"
+    __gz_debug "About to call: eval ${requestComp}"
 
     # Use eval to handle any environment variables and such
     out=$(eval ${requestComp} 2>/dev/null)
-    __gzh-manager_debug "completion output: ${out}"
+    __gz_debug "completion output: ${out}"
 
     # Extract the directive integer following a : from the last line
     local lastLine
     while IFS='\n' read -r line; do
         lastLine=${line}
     done < <(printf "%s\n" "${out[@]}")
-    __gzh-manager_debug "last line: ${lastLine}"
+    __gz_debug "last line: ${lastLine}"
 
     if [ "${lastLine[1]}" = : ]; then
         directive=${lastLine[2,-1]}
@@ -73,16 +75,16 @@ _gzh-manager()
         out=${out[1,-$suffix]}
     else
         # There is no directive specified.  Leave $out as is.
-        __gzh-manager_debug "No directive found.  Setting do default"
+        __gz_debug "No directive found.  Setting do default"
         directive=0
     fi
 
-    __gzh-manager_debug "directive: ${directive}"
-    __gzh-manager_debug "completions: ${out}"
-    __gzh-manager_debug "flagPrefix: ${flagPrefix}"
+    __gz_debug "directive: ${directive}"
+    __gz_debug "completions: ${out}"
+    __gz_debug "flagPrefix: ${flagPrefix}"
 
     if [ $((directive & shellCompDirectiveError)) -ne 0 ]; then
-        __gzh-manager_debug "Completion received error. Ignoring completions."
+        __gz_debug "Completion received error. Ignoring completions."
         return
     fi
 
@@ -93,11 +95,11 @@ _gzh-manager()
     while IFS='\n' read -r comp; do
         # Check if this is an activeHelp statement (i.e., prefixed with $activeHelpMarker)
         if [ "${comp[1,$endIndex]}" = "$activeHelpMarker" ];then
-            __gzh-manager_debug "ActiveHelp found: $comp"
+            __gz_debug "ActiveHelp found: $comp"
             comp="${comp[$startIndex,-1]}"
             if [ -n "$comp" ]; then
                 compadd -x "${comp}"
-                __gzh-manager_debug "ActiveHelp will need delimiter"
+                __gz_debug "ActiveHelp will need delimiter"
                 hasActiveHelp=1
             fi
 
@@ -114,7 +116,7 @@ _gzh-manager()
             local tab="$(printf '\t')"
             comp=${comp//$tab/:}
 
-            __gzh-manager_debug "Adding completion: ${comp}"
+            __gz_debug "Adding completion: ${comp}"
             completions+=${comp}
             lastComp=$comp
         fi
@@ -125,15 +127,20 @@ _gzh-manager()
     # - file completion will be performed (so there will be choices after the activeHelp)
     if [ $hasActiveHelp -eq 1 ]; then
         if [ ${#completions} -ne 0 ] || [ $((directive & shellCompDirectiveNoFileComp)) -eq 0 ]; then
-            __gzh-manager_debug "Adding activeHelp delimiter"
+            __gz_debug "Adding activeHelp delimiter"
             compadd -x "--"
             hasActiveHelp=0
         fi
     fi
 
     if [ $((directive & shellCompDirectiveNoSpace)) -ne 0 ]; then
-        __gzh-manager_debug "Activating nospace."
+        __gz_debug "Activating nospace."
         noSpace="-S ''"
+    fi
+
+    if [ $((directive & shellCompDirectiveKeepOrder)) -ne 0 ]; then
+        __gz_debug "Activating keep order."
+        keepOrder="-V"
     fi
 
     if [ $((directive & shellCompDirectiveFilterFileExt)) -ne 0 ]; then
@@ -149,17 +156,17 @@ _gzh-manager()
         done
         filteringCmd+=" ${flagPrefix}"
 
-        __gzh-manager_debug "File filtering command: $filteringCmd"
+        __gz_debug "File filtering command: $filteringCmd"
         _arguments '*:filename:'"$filteringCmd"
     elif [ $((directive & shellCompDirectiveFilterDirs)) -ne 0 ]; then
         # File completion for directories only
         local subdir
         subdir="${completions[1]}"
         if [ -n "$subdir" ]; then
-            __gzh-manager_debug "Listing directories in $subdir"
+            __gz_debug "Listing directories in $subdir"
             pushd "${subdir}" >/dev/null 2>&1
         else
-            __gzh-manager_debug "Listing directories in ."
+            __gz_debug "Listing directories in ."
         fi
 
         local result
@@ -170,17 +177,17 @@ _gzh-manager()
         fi
         return $result
     else
-        __gzh-manager_debug "Calling _describe"
-        if eval _describe "completions" completions $flagPrefix $noSpace; then
-            __gzh-manager_debug "_describe found some completions"
+        __gz_debug "Calling _describe"
+        if eval _describe $keepOrder "completions" completions $flagPrefix $noSpace; then
+            __gz_debug "_describe found some completions"
 
             # Return the success of having called _describe
             return 0
         else
-            __gzh-manager_debug "_describe did not find completions."
-            __gzh-manager_debug "Checking if we should do file completion."
+            __gz_debug "_describe did not find completions."
+            __gz_debug "Checking if we should do file completion."
             if [ $((directive & shellCompDirectiveNoFileComp)) -ne 0 ]; then
-                __gzh-manager_debug "deactivating file completion"
+                __gz_debug "deactivating file completion"
 
                 # We must return an error code here to let zsh know that there were no
                 # completions found by _describe; this is what will trigger other
@@ -189,7 +196,7 @@ _gzh-manager()
                 return 1
             else
                 # Perform file completion
-                __gzh-manager_debug "Activating file completion"
+                __gz_debug "Activating file completion"
 
                 # We must return the result of this command, so it must be the
                 # last command, or else we must store its result to return it.
@@ -200,6 +207,6 @@ _gzh-manager()
 }
 
 # don't run the completion function when being source-ed or eval-ed
-if [ "$funcstack[1]" = "_gzh-manager" ]; then
-    _gzh-manager
+if [ "$funcstack[1]" = "_gz" ]; then
+    _gz
 fi
