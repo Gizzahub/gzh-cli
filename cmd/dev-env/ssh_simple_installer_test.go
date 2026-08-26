@@ -82,7 +82,7 @@ func TestSerializeOpenSSHPathMatchesSSHConfigParser(t *testing.T) {
 	path := filepath.Join(t.TempDir(), `known hosts%h"quoted\part`)
 	serialized, err := serializeOpenSSHPath(path)
 	require.NoError(t, err)
-	output, err := exec.CommandContext(t.Context(), sshPath, "-F", os.DevNull, "-G", "-o", "UserKnownHostsFile="+serialized, "example.invalid").CombinedOutput()
+	output, err := exec.CommandContext(t.Context(), sshPath, "-F", "none", "-G", "-o", "UserKnownHostsFile="+serialized, "example.invalid").CombinedOutput()
 	require.NoError(t, err, string(output))
 
 	want := "userknownhostsfile " + filepath.ToSlash(path)
@@ -99,7 +99,7 @@ func TestSerializeHostKeyAliasMatchesSSHConfigParser(t *testing.T) {
 	hostKeyAlias := `server%h "quoted alias"`
 	serialized, err := serializeOpenSSHValue(hostKeyAlias, "SSH host", false)
 	require.NoError(t, err)
-	output, err := exec.CommandContext(t.Context(), sshPath, "-F", os.DevNull, "-G", "-o", "HostKeyAlias="+serialized, "example.invalid").CombinedOutput()
+	output, err := exec.CommandContext(t.Context(), sshPath, "-F", "none", "-G", "-o", "HostKeyAlias="+serialized, "example.invalid").CombinedOutput()
 	require.NoError(t, err, string(output))
 
 	lines := strings.Split(string(output), "\n")
