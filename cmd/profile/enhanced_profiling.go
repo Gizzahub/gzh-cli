@@ -466,7 +466,7 @@ func GetEnhancedStats() map[string]any {
 		},
 		"gc": map[string]any{
 			"num_gc":          m.NumGC,
-			"last_gc":         time.Unix(0, int64(m.LastGC)),
+			"last_gc":         simpleprof.LastGCTime(m.LastGC),
 			"pause_total_ns":  m.PauseTotalNs,
 			"gc_cpu_fraction": m.GCCPUFraction,
 		},

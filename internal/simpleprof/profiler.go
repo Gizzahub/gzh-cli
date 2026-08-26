@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math"
 	"net/http"
 	httppprof "net/http/pprof"
 	"os"
@@ -17,6 +18,16 @@ import (
 	"runtime/pprof"
 	"time"
 )
+
+// LastGCTime converts runtime.MemStats.LastGC to time.Time, saturating values
+// that cannot be represented as signed Unix nanoseconds.
+func LastGCTime(lastGC uint64) time.Time {
+	if lastGC > math.MaxInt64 {
+		lastGC = math.MaxInt64
+	}
+
+	return time.Unix(0, int64(lastGC))
+}
 
 // ProfileType represents the type of profile to collect.
 type ProfileType string
@@ -204,7 +215,7 @@ func (p *SimpleProfiler) GetStats() map[string]any {
 		"stack_inuse":    m.StackInuse,
 		"stack_sys":      m.StackSys,
 		"gc_runs":        m.NumGC,
-		"last_gc":        time.Unix(0, int64(m.LastGC)), //nolint:gosec // LastGC is from runtime.MemStats
+		"last_gc":        LastGCTime(m.LastGC),
 		"pause_total_ns": m.PauseTotalNs,
 	}
 }

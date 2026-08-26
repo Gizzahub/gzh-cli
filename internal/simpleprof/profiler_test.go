@@ -5,10 +5,34 @@ package simpleprof
 
 import (
 	"context"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
+
+func TestLastGCTime(t *testing.T) {
+	tests := []struct {
+		name   string
+		lastGC uint64
+		want   time.Time
+	}{
+		{name: "zero preserves Unix epoch", lastGC: 0, want: time.Unix(0, 0)},
+		{name: "normal timestamp", lastGC: 1_234_567_890, want: time.Unix(0, 1_234_567_890)},
+		{name: "maximum signed timestamp", lastGC: math.MaxInt64, want: time.Unix(0, math.MaxInt64)},
+		{name: "overflow saturates", lastGC: uint64(math.MaxInt64) + 1, want: time.Unix(0, math.MaxInt64)},
+		{name: "maximum unsigned saturates", lastGC: math.MaxUint64, want: time.Unix(0, math.MaxInt64)},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := LastGCTime(tt.lastGC); !got.Equal(tt.want) {
+				t.Errorf("LastGCTime(%d) = %v, want %v", tt.lastGC, got, tt.want)
+			}
+		})
+	}
+}
 
 func TestPprofServeMuxOwnsOnlyPprofRoutes(t *testing.T) {
 	assertPprofServeMuxContract(t, newPprofServeMux())
