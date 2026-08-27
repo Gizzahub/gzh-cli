@@ -11,26 +11,26 @@ import (
 	"path/filepath"
 )
 
-func replaceBinary(tempPath, currentPath string) error {
+func replaceBinary(tempPath, currentPath string) (replacementResult, error) {
 	if err := validateReplacementPaths(tempPath, currentPath); err != nil {
-		return err
+		return replacementResult{}, err
 	}
 	if err := os.Rename(tempPath, currentPath); err != nil {
-		return fmt.Errorf("replacing current binary: %w", err)
+		return replacementResult{}, fmt.Errorf("replacing current binary: %w", err)
 	}
 
 	// 파일 이름 교체까지 디스크에 반영되도록 대상 디렉터리를 동기화한다.
 	dir, err := os.Open(filepath.Dir(currentPath))
 	if err != nil {
-		return fmt.Errorf("opening binary directory after replacement: %w", err)
+		return replacementResult{cleanupWarning: fmt.Errorf("binary replaced but opening its directory for sync: %w", err)}, nil
 	}
 	if err := dir.Sync(); err != nil {
 		_ = dir.Close()
-		return fmt.Errorf("syncing binary directory after replacement: %w", err)
+		return replacementResult{cleanupWarning: fmt.Errorf("binary replaced but syncing its directory: %w", err)}, nil
 	}
 	if err := dir.Close(); err != nil {
-		return fmt.Errorf("closing binary directory after replacement: %w", err)
+		return replacementResult{cleanupWarning: fmt.Errorf("binary replaced but closing its directory: %w", err)}, nil
 	}
 
-	return nil
+	return replacementResult{}, nil
 }

@@ -25,6 +25,7 @@ type fakeDownloadFile struct {
 	syncErr   error
 	closeErr  error
 	closeCall int
+	events    []string
 }
 
 func readTestFile(t *testing.T, path string) []byte {
@@ -36,16 +37,26 @@ func readTestFile(t *testing.T, path string) []byte {
 }
 
 func (f *fakeDownloadFile) Write(p []byte) (int, error) {
+	f.events = append(f.events, "write")
 	if f.writeErr != nil {
 		return 0, f.writeErr
 	}
 	return len(p), nil
 }
 
-func (f *fakeDownloadFile) Chmod(os.FileMode) error { return f.chmodErr }
-func (f *fakeDownloadFile) Sync() error             { return f.syncErr }
+func (f *fakeDownloadFile) Chmod(os.FileMode) error {
+	f.events = append(f.events, "chmod")
+	return f.chmodErr
+}
+
+func (f *fakeDownloadFile) Sync() error {
+	f.events = append(f.events, "sync")
+	return f.syncErr
+}
+
 func (f *fakeDownloadFile) Close() error {
 	f.closeCall++
+	f.events = append(f.events, "close")
 	return f.closeErr
 }
 
@@ -274,6 +285,39 @@ func TestUpdater_DownloadAssetPropagatesFileErrors(t *testing.T) {
 	}
 }
 
+func TestUpdater_DownloadAssetFileOperationOrder(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = io.WriteString(w, "release binary")
+	}))
+	t.Cleanup(server.Close)
+
+	file := &fakeDownloadFile{}
+	require.NoError(t, NewUpdater("dev").downloadAsset(context.Background(), server.URL, file))
+	want := []string{"write", "sync", "close"}
+	if runtime.GOOS != "windows" {
+		want = []string{"write", "chmod", "sync", "close"}
+	}
+	assert.Equal(t, want, file.events)
+}
+
+func TestUpdater_DownloadAssetForTargetCleansFailedStage(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Length", "20")
+		_, _ = io.WriteString(w, "short")
+	}))
+	t.Cleanup(server.Close)
+
+	dir := t.TempDir()
+	currentPath := filepath.Join(dir, "gz")
+	require.NoError(t, os.WriteFile(currentPath, []byte("old binary"), 0o600))
+
+	_, err := NewUpdater("dev").downloadAssetForTarget(context.Background(), server.URL, currentPath)
+	require.Error(t, err)
+	matches, globErr := filepath.Glob(filepath.Join(dir, ".gz-update-*"))
+	require.NoError(t, globErr)
+	assert.Empty(t, matches)
+}
+
 func TestReplaceBinary(t *testing.T) {
 	dir := t.TempDir()
 	currentPath := filepath.Join(dir, "gz")
@@ -281,7 +325,9 @@ func TestReplaceBinary(t *testing.T) {
 	require.NoError(t, os.WriteFile(currentPath, []byte("old"), 0o600))
 	require.NoError(t, os.WriteFile(tempPath, []byte("new"), 0o600))
 
-	require.NoError(t, replaceBinary(tempPath, currentPath))
+	result, err := replaceBinary(tempPath, currentPath)
+	require.NoError(t, err)
+	require.NoError(t, result.cleanupWarning)
 	got := readTestFile(t, currentPath)
 	assert.Equal(t, "new", string(got))
 	_, statErr := os.Lstat(tempPath)
@@ -296,7 +342,7 @@ func TestReplaceBinaryRejectsDifferentDirectory(t *testing.T) {
 	require.NoError(t, os.WriteFile(currentPath, []byte("old"), 0o600))
 	require.NoError(t, os.WriteFile(tempPath, []byte("new"), 0o600))
 
-	err := replaceBinary(tempPath, currentPath)
+	_, err := replaceBinary(tempPath, currentPath)
 	require.Error(t, err)
 	assert.True(t, strings.Contains(err.Error(), "replacement stage must be in current binary directory"))
 
@@ -314,7 +360,7 @@ func TestReplaceBinaryRejectsUnsafeStage(t *testing.T) {
 	require.NoError(t, os.WriteFile(realStagePath, []byte("new"), 0o600))
 
 	t.Run("current binary itself", func(t *testing.T) {
-		err := replaceBinary(currentPath, currentPath)
+		_, err := replaceBinary(currentPath, currentPath)
 		require.Error(t, err)
 		assert.ErrorContains(t, err, "must differ")
 	})
@@ -323,7 +369,7 @@ func TestReplaceBinaryRejectsUnsafeStage(t *testing.T) {
 		stagePath := filepath.Join(dir, "stage-directory")
 		require.NoError(t, os.Mkdir(stagePath, 0o700))
 
-		err := replaceBinary(stagePath, currentPath)
+		_, err := replaceBinary(stagePath, currentPath)
 		require.Error(t, err)
 		assert.ErrorContains(t, err, "regular file")
 	})
@@ -334,11 +380,29 @@ func TestReplaceBinaryRejectsUnsafeStage(t *testing.T) {
 			t.Skipf("symlink unsupported: %v", err)
 		}
 
-		err := replaceBinary(stagePath, currentPath)
+		_, err := replaceBinary(stagePath, currentPath)
 		require.Error(t, err)
 		assert.ErrorContains(t, err, "regular file")
 	})
 
 	got := readTestFile(t, currentPath)
 	assert.Equal(t, "old", string(got))
+}
+
+func TestValidateCurrentBinaryIdentity(t *testing.T) {
+	dir := t.TempDir()
+	currentPath := filepath.Join(dir, "gz")
+	require.NoError(t, os.WriteFile(currentPath, []byte("old"), 0o600))
+	expected, err := currentBinaryIdentity(currentPath)
+	require.NoError(t, err)
+	require.NoError(t, validateCurrentBinaryIdentity(currentPath, expected))
+
+	replacementPath := filepath.Join(dir, "replacement")
+	require.NoError(t, os.WriteFile(replacementPath, []byte("new"), 0o600))
+	require.NoError(t, os.Remove(currentPath))
+	require.NoError(t, os.Rename(replacementPath, currentPath))
+
+	err = validateCurrentBinaryIdentity(currentPath, expected)
+	require.Error(t, err)
+	assert.ErrorContains(t, err, "changed while downloading")
 }

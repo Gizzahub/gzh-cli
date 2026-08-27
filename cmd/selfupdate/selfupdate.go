@@ -51,6 +51,10 @@ type downloadFile interface {
 	Close() error
 }
 
+type replacementResult struct {
+	cleanupWarning error
+}
+
 func NewUpdater(version string) *Updater {
 	return &Updater{
 		currentVersion: version,
@@ -118,10 +122,12 @@ func (u *Updater) GetAssetName() string {
 	return fmt.Sprintf("gz_%s_%s%s", os, arch, suffix)
 }
 
+// DownloadAsset는 호출자가 쓰기 권한을 가진 새 경로에만 자산을 내려받는다.
+// 기존 파일, 심볼릭 링크, 그 밖의 충돌 경로는 덮어쓰지 않는다.
 func (u *Updater) DownloadAsset(ctx context.Context, downloadURL, tempPath string) error {
 	u.logger.Info("Downloading update", map[string]any{"url": downloadURL})
 
-	//gosec:disable G304 -- 배타 생성으로 기존 파일 덮어쓰기와 심볼릭 링크 추종을 차단한다.
+	//gosec:disable G304 -- 호출자가 권한을 가진 새 destination만 배타 생성하며 내부 Update는 실행파일 디렉터리만 사용한다.
 	tempFile, err := os.OpenFile(tempPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 	if err != nil {
 		return fmt.Errorf("creating temporary file: %w", err)
@@ -206,7 +212,31 @@ func (u *Updater) currentBinaryPath() (string, error) {
 	return currentPath, nil
 }
 
+func currentBinaryIdentity(currentPath string) (os.FileInfo, error) {
+	info, err := os.Stat(currentPath)
+	if err != nil {
+		return nil, fmt.Errorf("inspecting current binary: %w", err)
+	}
+	if !info.Mode().IsRegular() {
+		return nil, fmt.Errorf("current binary must be a regular file: %s", currentPath)
+	}
+	return info, nil
+}
+
+func validateCurrentBinaryIdentity(currentPath string, expected os.FileInfo) error {
+	current, err := currentBinaryIdentity(currentPath)
+	if err != nil {
+		return err
+	}
+	if !os.SameFile(expected, current) {
+		return fmt.Errorf("current binary changed while downloading update: %s", currentPath)
+	}
+	return nil
+}
+
 func (u *Updater) downloadAssetForTarget(ctx context.Context, downloadURL, currentPath string) (string, error) {
+	u.logger.Info("Downloading update", map[string]any{"url": downloadURL})
+
 	pattern := ".gz-update-*"
 	if runtime.GOOS == "windows" {
 		pattern += ".exe"
@@ -268,6 +298,7 @@ func validateReplacementPaths(tempPath, currentPath string) error {
 	return nil
 }
 
+// ReplaceCurrentBinary는 현재 실행 파일과 같은 디렉터리의 일반 stage 파일만 교체한다.
 func (u *Updater) ReplaceCurrentBinary(tempPath string) error {
 	currentPath, err := u.currentBinaryPath()
 	if err != nil {
@@ -282,8 +313,12 @@ func (u *Updater) replaceCurrentBinary(tempPath, currentPath string) error {
 		"temp":    tempPath,
 	})
 
-	if err := replaceBinary(tempPath, currentPath); err != nil {
+	result, err := replaceBinary(tempPath, currentPath)
+	if err != nil {
 		return err
+	}
+	if result.cleanupWarning != nil {
+		u.logger.Warn("Binary updated with cleanup pending", map[string]any{"error": result.cleanupWarning.Error()})
 	}
 
 	u.logger.Info("Binary updated successfully")
@@ -323,10 +358,17 @@ func (u *Updater) Update(ctx context.Context, force bool) error {
 	if err != nil {
 		return err
 	}
+	currentIdentity, err := currentBinaryIdentity(currentPath)
+	if err != nil {
+		return err
+	}
 
 	tempPath, err := u.downloadAssetForTarget(ctx, downloadURL, currentPath)
 	if err != nil {
 		return fmt.Errorf("downloading update: %w", err)
+	}
+	if err := validateCurrentBinaryIdentity(currentPath, currentIdentity); err != nil {
+		return errors.Join(err, removeOwnedTemp(tempPath))
 	}
 
 	if err := u.replaceCurrentBinary(tempPath, currentPath); err != nil {

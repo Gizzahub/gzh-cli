@@ -33,6 +33,7 @@ cmd/selfupdate/
 ├── selfupdate.go    # Main implementation
 ├── replace_unix.go  # Unix atomic replacement and directory sync
 ├── replace_windows.go # Windows backup, replacement, and rollback
+├── replace_windows_test.go # Windows rollback and committed-cleanup tests
 ├── selfupdate_test.go # Unit tests
 └── AGENTS.md        # This documentation
 ```
@@ -96,6 +97,10 @@ gz_${GOOS}_${GOARCH}${EXT}
 1. **Atomic Replacement**: Unix uses same-directory rename followed by directory sync
 1. **Recoverable Replacement**: Windows uses a private backup directory and checked rollback
 1. **Executable Permission**: Unix release binaries receive mode 0755 through the owned file handle
+
+`DownloadAsset` accepts a caller-authorized destination but requires that it does not already
+exist. `ReplaceCurrentBinary` accepts only a regular stage file in the installed binary directory.
+These fail-closed constraints are part of the supported API contract.
 
 ### Error Handling
 
@@ -199,7 +204,7 @@ make build && ./gz selfupdate --help
 
 - .exe file extension
 - Backup before replacement (file locking)
-- Private random backup directory with checked rollback and cleanup errors
+- Private random backup directory with checked rollback; post-commit cleanup failures are warnings
 
 #### Unix/Linux Specific
 
@@ -239,6 +244,7 @@ gz selfupdate --help
 - Unix: same-directory atomic rename followed by directory sync
 - Windows: backup → replace → cleanup
 - Windows rollback errors retain the backup path in the returned error
+- Post-commit backup or directory-sync cleanup failures report warnings without misreporting the installed update as failed
 
 ### Asset Selection Logic
 
