@@ -31,6 +31,8 @@ The selfupdate command enables automatic updates of the gz binary by downloading
 cmd/selfupdate/
 ├── register.go      # Command registration
 ├── selfupdate.go    # Main implementation
+├── replace_unix.go  # Unix atomic replacement and directory sync
+├── replace_windows.go # Windows backup, replacement, and rollback
 ├── selfupdate_test.go # Unit tests
 └── AGENTS.md        # This documentation
 ```
@@ -42,7 +44,9 @@ cmd/selfupdate/
 - Version comparison logic
 - Asset name generation
 - Platform detection
-- Error handling
+- Exclusive staging and owned-file cleanup
+- Replacement path and file-type validation
+- Download write, permission, sync, and close error handling
 
 #### Integration Tests (Future)
 
@@ -86,10 +90,12 @@ gz_${GOOS}_${GOARCH}${EXT}
 ### Security Considerations
 
 1. **HTTPS Only**: All GitHub API calls use HTTPS
-1. **Temporary Files**: Downloads to system temp directory
-1. **Atomic Replacement**: Binary replacement is atomic where possible
-1. **Backup Strategy**: Windows backup before replacement
-1. **Permission Preservation**: Unix executable permissions maintained
+1. **Owned Temporary Files**: Downloads use an exclusive random file in the installed binary's directory
+1. **Safe Staging**: Existing paths, symbolic links, special files, and cross-directory stages are rejected
+1. **Durable Download**: The staged file is synced and explicitly closed before replacement
+1. **Atomic Replacement**: Unix uses same-directory rename followed by directory sync
+1. **Recoverable Replacement**: Windows uses a private backup directory and checked rollback
+1. **Executable Permission**: Unix release binaries receive mode 0755 through the owned file handle
 
 ### Error Handling
 
@@ -132,7 +138,7 @@ gz_${GOOS}_${GOARCH}${EXT}
 
 #### Environment Variables
 
-- Uses system temp directory
+- Uses an exclusive temporary file in the installed binary directory
 - Respects HTTP proxy settings via Go's net/http
 
 #### Command Flags
@@ -193,7 +199,7 @@ make build && ./gz selfupdate --help
 
 - .exe file extension
 - Backup before replacement (file locking)
-- Cleanup of .old backup files
+- Private random backup directory with checked rollback and cleanup errors
 
 #### Unix/Linux Specific
 
@@ -230,10 +236,9 @@ gz selfupdate --help
 
 ### Binary Replacement Strategy
 
-- Atomic replacement where possible
+- Unix: same-directory atomic rename followed by directory sync
 - Windows: backup → replace → cleanup
-- Unix: direct replacement
-- Error recovery through backup restoration
+- Windows rollback errors retain the backup path in the returned error
 
 ### Asset Selection Logic
 

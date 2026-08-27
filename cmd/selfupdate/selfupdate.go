@@ -6,6 +6,7 @@ package selfupdate
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -40,12 +41,21 @@ type GitHubRelease struct {
 type Updater struct {
 	currentVersion string
 	logger         *logger.StructuredLogger
+	downloadClient *http.Client
+}
+
+type downloadFile interface {
+	io.Writer
+	Chmod(mode os.FileMode) error
+	Sync() error
+	Close() error
 }
 
 func NewUpdater(version string) *Updater {
 	return &Updater{
 		currentVersion: version,
 		logger:         logger.NewStructuredLogger("selfupdate", logger.LevelInfo),
+		downloadClient: &http.Client{},
 	}
 }
 
@@ -111,6 +121,31 @@ func (u *Updater) GetAssetName() string {
 func (u *Updater) DownloadAsset(ctx context.Context, downloadURL, tempPath string) error {
 	u.logger.Info("Downloading update", map[string]any{"url": downloadURL})
 
+	//gosec:disable G304 -- 배타 생성으로 기존 파일 덮어쓰기와 심볼릭 링크 추종을 차단한다.
+	tempFile, err := os.OpenFile(tempPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	if err != nil {
+		return fmt.Errorf("creating temporary file: %w", err)
+	}
+
+	if err := u.downloadAsset(ctx, downloadURL, tempFile); err != nil {
+		return errors.Join(err, removeOwnedTemp(tempPath))
+	}
+
+	u.logger.Info("Download completed", map[string]any{"path": tempPath})
+	return nil
+}
+
+func (u *Updater) downloadAsset(ctx context.Context, downloadURL string, tempFile downloadFile) (retErr error) {
+	closed := false
+	defer func() {
+		if closed {
+			return
+		}
+		if err := tempFile.Close(); err != nil {
+			retErr = errors.Join(retErr, fmt.Errorf("closing downloaded file: %w", err))
+		}
+	}()
+
 	ctx, cancel := context.WithTimeout(ctx, downloadTimeout)
 	defer cancel()
 
@@ -119,7 +154,10 @@ func (u *Updater) DownloadAsset(ctx context.Context, downloadURL, tempPath strin
 		return fmt.Errorf("creating download request: %w", err)
 	}
 
-	client := &http.Client{}
+	client := u.downloadClient
+	if client == nil {
+		client = &http.Client{}
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("downloading asset: %w", err)
@@ -130,68 +168,122 @@ func (u *Updater) DownloadAsset(ctx context.Context, downloadURL, tempPath strin
 		return fmt.Errorf("download failed with status %d", resp.StatusCode)
 	}
 
-	// Create temporary file
-	tempFile, err := os.Create(tempPath)
-	if err != nil {
-		return fmt.Errorf("creating temporary file: %w", err)
-	}
-	defer tempFile.Close()
-
-	// Copy downloaded content to temporary file
 	_, err = io.Copy(tempFile, resp.Body)
 	if err != nil {
 		return fmt.Errorf("writing downloaded file: %w", err)
 	}
 
-	// Make executable on Unix systems
 	if runtime.GOOS != "windows" {
-		if err := os.Chmod(tempPath, 0o755); err != nil {
+		//gosec:disable G302 -- 릴리스 바이너리를 실행 가능하게 설치하는 기능 계약상 0755가 필요하다.
+		if err := tempFile.Chmod(0o755); err != nil {
 			return fmt.Errorf("setting executable permissions: %w", err)
 		}
 	}
 
+	if err := tempFile.Sync(); err != nil {
+		return fmt.Errorf("syncing downloaded file: %w", err)
+	}
+
+	closeErr := tempFile.Close()
+	closed = true
+	if closeErr != nil {
+		return fmt.Errorf("closing downloaded file: %w", closeErr)
+	}
+
+	return nil
+}
+
+func (u *Updater) currentBinaryPath() (string, error) {
+	currentPath, err := os.Executable()
+	if err != nil {
+		return "", fmt.Errorf("getting current executable path: %w", err)
+	}
+
+	currentPath, err = filepath.EvalSymlinks(currentPath)
+	if err != nil {
+		return "", fmt.Errorf("resolving symlinks: %w", err)
+	}
+	return currentPath, nil
+}
+
+func (u *Updater) downloadAssetForTarget(ctx context.Context, downloadURL, currentPath string) (string, error) {
+	pattern := ".gz-update-*"
+	if runtime.GOOS == "windows" {
+		pattern += ".exe"
+	}
+
+	tempFile, err := os.CreateTemp(filepath.Dir(currentPath), pattern)
+	if err != nil {
+		return "", fmt.Errorf("creating owned temporary file: %w", err)
+	}
+	tempPath := tempFile.Name()
+
+	if err := u.downloadAsset(ctx, downloadURL, tempFile); err != nil {
+		return "", errors.Join(err, removeOwnedTemp(tempPath))
+	}
+
 	u.logger.Info("Download completed", map[string]any{"path": tempPath})
+	return tempPath, nil
+}
+
+// removeOwnedTemp는 이 프로세스가 배타적으로 생성한 임시 파일에만 사용한다.
+func removeOwnedTemp(path string) error {
+	if err := os.Remove(path); err != nil && !errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("removing owned temporary file: %w", err)
+	}
+	return nil
+}
+
+func validateReplacementPaths(tempPath, currentPath string) error {
+	tempPath = filepath.Clean(tempPath)
+	currentPath = filepath.Clean(currentPath)
+	if tempPath == currentPath {
+		return errors.New("replacement stage must differ from current binary")
+	}
+
+	tempDir, err := filepath.Abs(filepath.Dir(tempPath))
+	if err != nil {
+		return fmt.Errorf("resolving temporary directory: %w", err)
+	}
+	currentDir, err := filepath.Abs(filepath.Dir(currentPath))
+	if err != nil {
+		return fmt.Errorf("resolving current binary directory: %w", err)
+	}
+	rel, err := filepath.Rel(currentDir, tempDir)
+	if err != nil {
+		return fmt.Errorf("comparing replacement directories: %w", err)
+	}
+	if rel != "." {
+		return fmt.Errorf("replacement stage must be in current binary directory: %s", tempDir)
+	}
+
+	// 심볼릭 링크나 특수 파일을 실행 파일 위치로 이동하지 않는다.
+	stageInfo, err := os.Lstat(tempPath)
+	if err != nil {
+		return fmt.Errorf("inspecting replacement stage: %w", err)
+	}
+	if !stageInfo.Mode().IsRegular() {
+		return fmt.Errorf("replacement stage must be a regular file: %s", tempPath)
+	}
 	return nil
 }
 
 func (u *Updater) ReplaceCurrentBinary(tempPath string) error {
-	// Get current executable path
-	currentPath, err := os.Executable()
+	currentPath, err := u.currentBinaryPath()
 	if err != nil {
-		return fmt.Errorf("getting current executable path: %w", err)
+		return err
 	}
+	return u.replaceCurrentBinary(tempPath, currentPath)
+}
 
-	// Resolve any symlinks
-	currentPath, err = filepath.EvalSymlinks(currentPath)
-	if err != nil {
-		return fmt.Errorf("resolving symlinks: %w", err)
-	}
-
+func (u *Updater) replaceCurrentBinary(tempPath, currentPath string) error {
 	u.logger.Info("Replacing binary", map[string]any{
 		"current": currentPath,
 		"temp":    tempPath,
 	})
 
-	// On Windows, we might need to rename the old file first
-	if runtime.GOOS == "windows" {
-		backupPath := currentPath + ".old"
-		if err := os.Rename(currentPath, backupPath); err != nil {
-			return fmt.Errorf("backing up current binary: %w", err)
-		}
-
-		if err := os.Rename(tempPath, currentPath); err != nil {
-			// Try to restore backup
-			os.Rename(backupPath, currentPath)
-			return fmt.Errorf("replacing binary: %w", err)
-		}
-
-		// Remove backup
-		os.Remove(backupPath)
-	} else {
-		// On Unix systems, we can replace directly
-		if err := os.Rename(tempPath, currentPath); err != nil {
-			return fmt.Errorf("replacing binary: %w", err)
-		}
+	if err := replaceBinary(tempPath, currentPath); err != nil {
+		return err
 	}
 
 	u.logger.Info("Binary updated successfully")
@@ -227,23 +319,18 @@ func (u *Updater) Update(ctx context.Context, force bool) error {
 		return fmt.Errorf("no asset found for platform %s/%s (looking for %s)", runtime.GOOS, runtime.GOARCH, assetName)
 	}
 
-	// Create temporary file for download
-	tempDir := os.TempDir()
-	tempPath := filepath.Join(tempDir, "gz_update_"+time.Now().Format("20060102_150405"))
-	if runtime.GOOS == "windows" {
-		tempPath += ".exe"
+	currentPath, err := u.currentBinaryPath()
+	if err != nil {
+		return err
 	}
 
-	// Download the new version
-	if err := u.DownloadAsset(ctx, downloadURL, tempPath); err != nil {
-		os.Remove(tempPath) // Clean up on error
+	tempPath, err := u.downloadAssetForTarget(ctx, downloadURL, currentPath)
+	if err != nil {
 		return fmt.Errorf("downloading update: %w", err)
 	}
 
-	// Replace current binary
-	if err := u.ReplaceCurrentBinary(tempPath); err != nil {
-		os.Remove(tempPath) // Clean up on error
-		return fmt.Errorf("replacing binary: %w", err)
+	if err := u.replaceCurrentBinary(tempPath, currentPath); err != nil {
+		return errors.Join(fmt.Errorf("replacing binary: %w", err), removeOwnedTemp(tempPath))
 	}
 
 	fmt.Printf("✅ Successfully updated gz to version %s\n", release.TagName)
