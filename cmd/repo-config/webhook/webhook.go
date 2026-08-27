@@ -13,8 +13,6 @@ import (
 	"github.com/google/go-github/v66/github"
 	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
-
-	"github.com/gizzahub/gzh-cli/pkg/types/repoconfig"
 )
 
 // GlobalFlags represents global flags for all repo-config commands.
@@ -39,6 +37,34 @@ type WebhookFlags struct {
 	ContentType  string
 	ID           int64
 	OutputFormat string
+}
+
+type webhookDisplayConfig struct {
+	ContentType *string `json:"content_type,omitempty"`
+	InsecureSSL *string `json:"insecure_ssl,omitempty"`
+	URL         *string `json:"url,omitempty"`
+}
+
+type webhookDisplay struct {
+	CreatedAt    *github.Timestamp      `json:"created_at,omitempty"`
+	UpdatedAt    *github.Timestamp      `json:"updated_at,omitempty"`
+	URL          *string                `json:"url,omitempty"`
+	ID           *int64                 `json:"id,omitempty"`
+	Type         *string                `json:"type,omitempty"`
+	Name         *string                `json:"name,omitempty"`
+	TestURL      *string                `json:"test_url,omitempty"`
+	PingURL      *string                `json:"ping_url,omitempty"`
+	LastResponse map[string]interface{} `json:"last_response,omitempty"`
+	Config       *webhookDisplayConfig  `json:"config,omitempty"`
+	Events       []string               `json:"events,omitempty"`
+	Active       *bool                  `json:"active,omitempty"`
+}
+
+type webhookConfigDisplay struct {
+	URL         string   `json:"url"`
+	Events      []string `json:"events"`
+	Active      *bool    `json:"active,omitempty"`
+	ContentType string   `json:"contentType,omitempty"`
 }
 
 // addGlobalFlags adds common flags to the command.
@@ -422,12 +448,17 @@ func createGitHubClient(token string) *github.Client {
 func displayWebhooks(webhooks []*github.Hook, format string) error {
 	switch format {
 	case "json":
-		return json.NewEncoder(os.Stdout).Encode(webhooks)
-	case "yaml":
-		// Convert to repoconfig.WebhookConfig for YAML output
-		configs := make([]repoconfig.WebhookConfig, len(webhooks))
+		redacted := make([]*webhookDisplay, len(webhooks))
 		for i, hook := range webhooks {
-			configs[i] = convertToWebhookConfig(hook)
+			redacted[i] = webhookForDisplay(hook)
+		}
+
+		return json.NewEncoder(os.Stdout).Encode(redacted)
+	case "yaml":
+		// 기존 YAML 선택 경로의 JSON 형식을 유지하면서 secret은 제외한다.
+		configs := make([]webhookConfigDisplay, len(webhooks))
+		for i, hook := range webhooks {
+			configs[i] = webhookConfigForDisplay(hook)
 		}
 
 		data, err := json.MarshalIndent(configs, "", "  ")
@@ -481,9 +512,9 @@ func displayWebhooks(webhooks []*github.Hook, format string) error {
 func displayWebhook(hook *github.Hook, format string) error {
 	switch format {
 	case "json":
-		return json.NewEncoder(os.Stdout).Encode(hook)
+		return json.NewEncoder(os.Stdout).Encode(webhookForDisplay(hook))
 	case "yaml":
-		config := convertToWebhookConfig(hook)
+		config := webhookConfigForDisplay(hook)
 
 		data, err := json.MarshalIndent(config, "", "  ")
 		if err != nil {
@@ -507,9 +538,39 @@ func displayWebhook(hook *github.Hook, format string) error {
 	}
 }
 
-// convertToWebhookConfig converts a GitHub Hook to repoconfig.WebhookConfig.
-func convertToWebhookConfig(hook *github.Hook) repoconfig.WebhookConfig {
-	config := repoconfig.WebhookConfig{
+// webhookForDisplay는 기존 JSON 필드를 보존하되 secret 필드가 없는 표시 전용 값을 만든다.
+func webhookForDisplay(hook *github.Hook) *webhookDisplay {
+	if hook == nil {
+		return nil
+	}
+
+	display := &webhookDisplay{
+		CreatedAt:    hook.CreatedAt,
+		UpdatedAt:    hook.UpdatedAt,
+		URL:          hook.URL,
+		ID:           hook.ID,
+		Type:         hook.Type,
+		Name:         hook.Name,
+		TestURL:      hook.TestURL,
+		PingURL:      hook.PingURL,
+		LastResponse: hook.LastResponse,
+		Events:       hook.Events,
+		Active:       hook.Active,
+	}
+	if hook.Config != nil {
+		display.Config = &webhookDisplayConfig{
+			ContentType: hook.Config.ContentType,
+			InsecureSSL: hook.Config.InsecureSSL,
+			URL:         hook.Config.URL,
+		}
+	}
+
+	return display
+}
+
+// webhookConfigForDisplay는 기존 YAML 선택 경로의 축소형 출력 계약을 보존한다.
+func webhookConfigForDisplay(hook *github.Hook) webhookConfigDisplay {
+	config := webhookConfigDisplay{
 		Events: hook.Events,
 		Active: hook.Active,
 	}
@@ -521,10 +582,6 @@ func convertToWebhookConfig(hook *github.Hook) repoconfig.WebhookConfig {
 
 		if hook.Config.ContentType != nil {
 			config.ContentType = *hook.Config.ContentType
-		}
-
-		if hook.Config.Secret != nil {
-			config.Secret = *hook.Config.Secret
 		}
 	}
 
@@ -688,4 +745,3 @@ func runBulkSyncWebhooks(_ WebhookFlags, configFile string, parallelJobs int, dr
 
 	return nil
 }
-
