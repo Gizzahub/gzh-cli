@@ -173,6 +173,58 @@ func TestPool_SubmitWithoutStart(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestPool_StopBeforeStartCancelsContext(t *testing.T) {
+	pool := New[int](DefaultWorkerPoolConfig())
+
+	pool.Stop()
+
+	require.ErrorIs(t, pool.ctx.Err(), context.Canceled)
+}
+
+func TestPool_StopCancelsInFlightJob(t *testing.T) {
+	pool := New[int](WorkerPoolConfig{
+		WorkerCount: 1,
+		BufferSize:  1,
+		Timeout:     time.Minute,
+	})
+	require.NoError(t, pool.Start())
+
+	jobStarted := make(chan struct{})
+	jobCanceled := make(chan error, 1)
+	require.NoError(t, pool.Submit(1, func(ctx context.Context, _ int) error {
+		close(jobStarted)
+		<-ctx.Done()
+		jobCanceled <- ctx.Err()
+
+		return ctx.Err()
+	}))
+
+	select {
+	case <-jobStarted:
+	case <-time.After(time.Second):
+		t.Fatal("timeout waiting for job to start")
+	}
+
+	poolStopped := make(chan struct{})
+	go func() {
+		pool.Stop()
+		close(poolStopped)
+	}()
+
+	select {
+	case err := <-jobCanceled:
+		require.ErrorIs(t, err, context.Canceled)
+	case <-time.After(time.Second):
+		t.Fatal("timeout waiting for job cancellation")
+	}
+
+	select {
+	case <-poolStopped:
+	case <-time.After(time.Second):
+		t.Fatal("timeout waiting for pool to stop")
+	}
+}
+
 func TestProcessBatch(t *testing.T) {
 	items := []int{1, 2, 3, 4, 5}
 	config := WorkerPoolConfig{

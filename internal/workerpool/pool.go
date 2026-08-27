@@ -68,6 +68,8 @@ func New[T any](config WorkerPoolConfig) *Pool[T] {
 		config.Timeout = 30 * time.Second
 	}
 
+	// 취소 함수의 소유권은 Pool로 이전되며 Stop에서 해제한다.
+	//gosec:disable G118 -- Pool.Stop이 cancel을 호출한다.
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return &Pool[T]{
@@ -130,6 +132,8 @@ func (p *Pool[T]) Stop() {
 	defer p.mu.Unlock()
 
 	if !p.started {
+		p.cancel()
+
 		return
 	}
 
