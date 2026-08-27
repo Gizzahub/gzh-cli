@@ -4,6 +4,7 @@
 package devenv
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
@@ -112,6 +113,27 @@ Host test.com
 		assert.Len(t, metadata.IncludeFiles, 1)
 		assert.Len(t, metadata.PrivateKeys, 3)
 		assert.Len(t, metadata.PublicKeys, 3)
+
+		configRoot, err := os.OpenRoot(configDir)
+		require.NoError(t, err)
+		defer configRoot.Close()
+
+		metadataContent, err := configRoot.ReadFile("metadata.json")
+		require.NoError(t, err)
+		assert.Contains(t, string(metadataContent), `"private_keys"`)
+		for _, info := range keyFiles {
+			assert.NotContains(t, string(metadataContent), info.content)
+		}
+
+		var metadataJSON struct {
+			PrivateKeys []string `json:"private_keys"`
+		}
+		require.NoError(t, json.Unmarshal(metadataContent, &metadataJSON))
+		assert.Equal(t, []string{
+			filepath.Join(sshDir, "id_rsa"),
+			filepath.Join(sshDir, "test_key"),
+			filepath.Join(sshDir, "work_key"),
+		}, metadataJSON.PrivateKeys)
 	})
 
 	t.Run("Load enhanced config", func(t *testing.T) {

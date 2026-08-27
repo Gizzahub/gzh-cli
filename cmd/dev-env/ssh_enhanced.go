@@ -474,6 +474,7 @@ func (c *EnhancedSSHCommand) saveEnhancedMetadata(filename string, metadata Enha
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
+	//gosec:disable G117 -- PrivateKeys는 키 내용이 아니라 원본 파일 경로만 포함한다.
 	return encoder.Encode(metadata)
 }
 
