@@ -266,7 +266,7 @@ func TestBenchmarkSuite_RunBenchmark_ContextCancellation(t *testing.T) {
 func TestBenchmarkSuite_RunBenchmark_WithProfiling(t *testing.T) {
 	config := &ProfileConfig{
 		Enabled:   true,
-		OutputDir: "tmp/test_profiles",
+		OutputDir: t.TempDir(),
 	}
 	profiler := NewProfiler(config)
 	suite := NewBenchmarkSuite(profiler)

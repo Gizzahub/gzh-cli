@@ -191,7 +191,7 @@ func TestPerformanceMiddleware_TrackOperationWithProfiling_NilProfiler(t *testin
 func TestPerformanceMiddleware_TrackOperationWithProfiling_Enabled(t *testing.T) {
 	config := &ProfileConfig{
 		Enabled:   true,
-		OutputDir: "tmp/test_profiles",
+		OutputDir: t.TempDir(),
 	}
 	profiler := NewProfiler(config)
 	middleware := NewPerformanceMiddleware(profiler, true)
@@ -371,7 +371,7 @@ func TestPerformanceMiddleware_TrackOperation_ContextCancellation(t *testing.T) 
 func TestPerformanceMiddleware_Integration(t *testing.T) {
 	config := &ProfileConfig{
 		Enabled:   true,
-		OutputDir: "tmp/test_profiles",
+		OutputDir: t.TempDir(),
 	}
 	profiler := NewProfiler(config)
 	middleware := NewPerformanceMiddleware(profiler, true)

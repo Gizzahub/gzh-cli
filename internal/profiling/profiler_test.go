@@ -85,11 +85,8 @@ func TestProfiler_StartProfile_Disabled(t *testing.T) {
 }
 
 func TestProfiler_StartProfile_UnsupportedType(t *testing.T) {
-	config := &ProfileConfig{Enabled: true, OutputDir: "tmp/test_profiles"}
+	config := &ProfileConfig{Enabled: true, OutputDir: t.TempDir()}
 	profiler := NewProfiler(config)
-
-	// Clean up test directory
-	defer os.RemoveAll("tmp/test_profiles")
 
 	sessionID, err := profiler.StartProfile(ProfileType("unsupported"))
 	assert.Error(t, err)
@@ -100,12 +97,9 @@ func TestProfiler_StartProfile_UnsupportedType(t *testing.T) {
 func TestProfiler_StartStopProfile_CPU(t *testing.T) {
 	config := &ProfileConfig{
 		Enabled:   true,
-		OutputDir: "tmp/test_profiles",
+		OutputDir: t.TempDir(),
 	}
 	profiler := NewProfiler(config)
-
-	// Clean up test directory
-	defer os.RemoveAll("tmp/test_profiles")
 
 	// Start CPU profile
 	sessionID, err := profiler.StartProfile(ProfileTypeCPU)
@@ -131,12 +125,9 @@ func TestProfiler_StartStopProfile_CPU(t *testing.T) {
 func TestProfiler_StartStopProfile_Memory(t *testing.T) {
 	config := &ProfileConfig{
 		Enabled:   true,
-		OutputDir: "tmp/test_profiles",
+		OutputDir: t.TempDir(),
 	}
 	profiler := NewProfiler(config)
-
-	// Clean up test directory
-	defer os.RemoveAll("tmp/test_profiles")
 
 	// Start memory profile
 	sessionID, err := profiler.StartProfile(ProfileTypeMemory)
@@ -148,7 +139,7 @@ func TestProfiler_StartStopProfile_Memory(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Verify profile file was created
-	expectedFile := filepath.Join("tmp", "test_profiles", "memory_"+sessionID+".prof")
+	expectedFile := filepath.Join(config.OutputDir, "memory_"+sessionID+".prof")
 	_, err = os.Stat(expectedFile)
 	assert.NoError(t, err)
 }
@@ -156,12 +147,9 @@ func TestProfiler_StartStopProfile_Memory(t *testing.T) {
 func TestProfiler_StartStopProfile_Goroutine(t *testing.T) {
 	config := &ProfileConfig{
 		Enabled:   true,
-		OutputDir: "tmp/test_profiles",
+		OutputDir: t.TempDir(),
 	}
 	profiler := NewProfiler(config)
-
-	// Clean up test directory
-	defer os.RemoveAll("tmp/test_profiles")
 
 	// Start goroutine profile
 	sessionID, err := profiler.StartProfile(ProfileTypeGoroutine)
@@ -173,7 +161,7 @@ func TestProfiler_StartStopProfile_Goroutine(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Verify profile file was created
-	expectedFile := filepath.Join("tmp", "test_profiles", "goroutine_"+sessionID+".prof")
+	expectedFile := filepath.Join(config.OutputDir, "goroutine_"+sessionID+".prof")
 	_, err = os.Stat(expectedFile)
 	assert.NoError(t, err)
 }
@@ -190,12 +178,9 @@ func TestProfiler_StopProfile_NotFound(t *testing.T) {
 func TestProfiler_StopProfile_NotActive(t *testing.T) {
 	config := &ProfileConfig{
 		Enabled:   true,
-		OutputDir: "tmp/test_profiles",
+		OutputDir: t.TempDir(),
 	}
 	profiler := NewProfiler(config)
-
-	// Clean up test directory
-	defer os.RemoveAll("tmp/test_profiles")
 
 	// Start and stop a session
 	sessionID, err := profiler.StartProfile(ProfileTypeMemory)
@@ -227,12 +212,9 @@ func TestProfiler_ProfileOperation_Disabled(t *testing.T) {
 func TestProfiler_ProfileOperation_Enabled(t *testing.T) {
 	config := &ProfileConfig{
 		Enabled:   true,
-		OutputDir: "tmp/test_profiles",
+		OutputDir: t.TempDir(),
 	}
 	profiler := NewProfiler(config)
-
-	// Clean up test directory
-	defer os.RemoveAll("tmp/test_profiles")
 
 	executed := false
 	err := profiler.ProfileOperation(context.Background(), "test-op", []ProfileType{ProfileTypeMemory}, func() error {
@@ -245,7 +227,7 @@ func TestProfiler_ProfileOperation_Enabled(t *testing.T) {
 	assert.True(t, executed)
 
 	// Verify profile file was created
-	files, err := filepath.Glob("tmp/test_profiles/memory_*.prof")
+	files, err := filepath.Glob(filepath.Join(config.OutputDir, "memory_*.prof"))
 	assert.NoError(t, err)
 	assert.Len(t, files, 1)
 }
@@ -253,12 +235,9 @@ func TestProfiler_ProfileOperation_Enabled(t *testing.T) {
 func TestProfiler_ProfileOperation_WithError(t *testing.T) {
 	config := &ProfileConfig{
 		Enabled:   true,
-		OutputDir: "tmp/test_profiles",
+		OutputDir: t.TempDir(),
 	}
 	profiler := NewProfiler(config)
-
-	// Clean up test directory
-	defer os.RemoveAll("tmp/test_profiles")
 
 	testError := assert.AnError
 	err := profiler.ProfileOperation(context.Background(), "test-op", []ProfileType{ProfileTypeMemory}, func() error {
@@ -268,7 +247,7 @@ func TestProfiler_ProfileOperation_WithError(t *testing.T) {
 	assert.Equal(t, testError, err)
 
 	// Verify profile file was still created
-	files, err := filepath.Glob("tmp/test_profiles/memory_*.prof")
+	files, err := filepath.Glob(filepath.Join(config.OutputDir, "memory_*.prof"))
 	assert.NoError(t, err)
 	assert.Len(t, files, 1)
 }
@@ -305,12 +284,9 @@ func TestProfiler_GetRuntimeStats(t *testing.T) {
 func TestProfiler_ListActiveSessions(t *testing.T) {
 	config := &ProfileConfig{
 		Enabled:   true,
-		OutputDir: "tmp/test_profiles",
+		OutputDir: t.TempDir(),
 	}
 	profiler := NewProfiler(config)
-
-	// Clean up test directory
-	defer os.RemoveAll("tmp/test_profiles")
 
 	// Initially no sessions
 	sessions := profiler.ListActiveSessions()
@@ -351,12 +327,9 @@ func TestProfiler_ListActiveSessions(t *testing.T) {
 func TestProfiler_Stop_WithActiveSessions(t *testing.T) {
 	config := &ProfileConfig{
 		Enabled:   true,
-		OutputDir: "tmp/test_profiles",
+		OutputDir: t.TempDir(),
 	}
 	profiler := NewProfiler(config)
-
-	// Clean up test directory
-	defer os.RemoveAll("tmp/test_profiles")
 
 	// Start some sessions
 	_, err := profiler.StartProfile(ProfileTypeMemory)
@@ -378,7 +351,7 @@ func TestProfiler_Stop_WithActiveSessions(t *testing.T) {
 	assert.Len(t, sessions, 0)
 
 	// Verify profile files were created
-	files, err := filepath.Glob("tmp/test_profiles/*.prof")
+	files, err := filepath.Glob(filepath.Join(config.OutputDir, "*.prof"))
 	assert.NoError(t, err)
 	assert.Len(t, files, 2)
 }
@@ -410,12 +383,9 @@ func TestProfileTypes(t *testing.T) {
 func TestProfiler_MultipleProfileTypes(t *testing.T) {
 	config := &ProfileConfig{
 		Enabled:   true,
-		OutputDir: "tmp/test_profiles",
+		OutputDir: t.TempDir(),
 	}
 	profiler := NewProfiler(config)
-
-	// Clean up test directory
-	defer os.RemoveAll("tmp/test_profiles")
 
 	profileTypes := []ProfileType{
 		ProfileTypeMemory,
@@ -432,7 +402,7 @@ func TestProfiler_MultipleProfileTypes(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Verify multiple profile files were created
-	files, err := filepath.Glob("tmp/test_profiles/*.prof")
+	files, err := filepath.Glob(filepath.Join(config.OutputDir, "*.prof"))
 	assert.NoError(t, err)
 	assert.Len(t, files, len(profileTypes))
 }
@@ -440,12 +410,9 @@ func TestProfiler_MultipleProfileTypes(t *testing.T) {
 func TestProfiler_ConcurrentProfileOperations(t *testing.T) {
 	config := &ProfileConfig{
 		Enabled:   true,
-		OutputDir: "tmp/test_profiles",
+		OutputDir: t.TempDir(),
 	}
 	profiler := NewProfiler(config)
-
-	// Clean up test directory
-	defer os.RemoveAll("tmp/test_profiles")
 
 	// Run multiple concurrent profile operations with small delays to ensure different timestamps
 	done := make(chan error, 3)
@@ -469,7 +436,7 @@ func TestProfiler_ConcurrentProfileOperations(t *testing.T) {
 	}
 
 	// Verify profile files were created (may be fewer than 3 due to timestamp collisions)
-	files, err := filepath.Glob("tmp/test_profiles/memory_*.prof")
+	files, err := filepath.Glob(filepath.Join(config.OutputDir, "memory_*.prof"))
 	assert.NoError(t, err)
 	assert.GreaterOrEqual(t, len(files), 1) // At least one file should be created
 	assert.LessOrEqual(t, len(files), 3)    // At most 3 files should be created
