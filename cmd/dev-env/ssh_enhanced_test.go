@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -340,4 +341,137 @@ func TestEnhancedSSHCommand_OverwriteProtection(t *testing.T) {
 		err := cmd.SaveEnhancedConfig(opts)
 		assert.NoError(t, err)
 	})
+}
+
+func TestEnhancedSSHCommand_RestoreEnhancedFileDestinationContract(t *testing.T) {
+	command := NewEnhancedSSHCommand()
+	tempDir := t.TempDir()
+	source := filepath.Join(tempDir, "saved")
+	require.NoError(t, os.WriteFile(source, []byte("saved content"), 0o600))
+
+	t.Run("absent destination publishes requested mode", func(t *testing.T) {
+		destination := filepath.Join(tempDir, "absent")
+		require.NoError(t, command.restoreEnhancedFile(source, destination, 0o600, false))
+		content, err := os.ReadFile(destination)
+		require.NoError(t, err)
+		assert.Equal(t, "saved content", string(content))
+		info, err := os.Stat(destination)
+		require.NoError(t, err)
+		assertPrivateMode(t, info, 0o600)
+	})
+
+	t.Run("existing regular file requires force and preserves victim", func(t *testing.T) {
+		destination := filepath.Join(tempDir, "regular")
+		require.NoError(t, os.WriteFile(destination, []byte("victim"), 0o600))
+
+		err := command.restoreEnhancedFile(source, destination, 0o600, false)
+		require.Error(t, err)
+		content, readErr := os.ReadFile(destination)
+		require.NoError(t, readErr)
+		assert.Equal(t, "victim", string(content))
+
+		require.NoError(t, command.restoreEnhancedFile(source, destination, 0o600, true))
+		content, readErr = os.ReadFile(destination)
+		require.NoError(t, readErr)
+		assert.Equal(t, "saved content", string(content))
+	})
+
+	for _, force := range []bool{false, true} {
+		t.Run("live symlink is refused regardless of force="+strconv.FormatBool(force), func(t *testing.T) {
+			victim := filepath.Join(tempDir, "live-victim-"+strconv.FormatBool(force))
+			destination := filepath.Join(tempDir, "live-link-"+strconv.FormatBool(force))
+			require.NoError(t, os.WriteFile(victim, []byte("victim"), 0o600))
+			require.NoError(t, os.Symlink(victim, destination))
+
+			require.Error(t, command.restoreEnhancedFile(source, destination, 0o600, force))
+			content, err := os.ReadFile(victim)
+			require.NoError(t, err)
+			assert.Equal(t, "victim", string(content))
+		})
+
+		t.Run("dangling symlink is refused regardless of force="+strconv.FormatBool(force), func(t *testing.T) {
+			destination := filepath.Join(tempDir, "dangling-link-"+strconv.FormatBool(force))
+			require.NoError(t, os.Symlink(filepath.Join(tempDir, "missing"), destination))
+
+			require.Error(t, command.restoreEnhancedFile(source, destination, 0o600, force))
+			info, err := os.Lstat(destination)
+			require.NoError(t, err)
+			assert.NotZero(t, info.Mode()&os.ModeSymlink)
+		})
+	}
+
+	t.Run("directory is refused regardless of force", func(t *testing.T) {
+		for _, force := range []bool{false, true} {
+			destination := filepath.Join(tempDir, "directory-"+strconv.FormatBool(force))
+			require.NoError(t, os.Mkdir(destination, 0o700))
+			require.Error(t, command.restoreEnhancedFile(source, destination, 0o600, force))
+			assert.DirExists(t, destination)
+		}
+	})
+
+	t.Run("public key mode is explicit", func(t *testing.T) {
+		destination := filepath.Join(tempDir, "id_ed25519.pub")
+		require.NoError(t, command.restoreEnhancedFile(source, destination, 0o644, false))
+		info, err := os.Stat(destination)
+		require.NoError(t, err)
+		assertPrivateMode(t, info, 0o644)
+	})
+}
+
+func TestEnhancedSSHCommand_LoadRestoreModesAndFailureStopsFurtherFiles(t *testing.T) {
+	command := NewEnhancedSSHCommand()
+	tempDir := t.TempDir()
+	storePath := filepath.Join(tempDir, "store")
+	configDir := filepath.Join(storePath, "saved")
+	require.NoError(t, os.MkdirAll(filepath.Join(configDir, "includes"), 0o700))
+	require.NoError(t, os.MkdirAll(filepath.Join(configDir, "keys"), 0o700))
+	require.NoError(t, os.WriteFile(filepath.Join(configDir, "metadata.json"), []byte(`{}`), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(configDir, "config"), []byte("Host saved"), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(configDir, "includes", "include_0_hosts.conf"), []byte("Host included"), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(configDir, "keys", "id_ed25519"), []byte("private"), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(configDir, "keys", "id_ed25519.pub"), []byte("public"), 0o600))
+
+	targetConfig := filepath.Join(tempDir, "target", ".ssh", "config")
+	opts := &EnhancedSSHOptions{Name: "saved", ConfigPath: targetConfig, StorePath: storePath}
+	require.NoError(t, command.LoadEnhancedConfig(opts))
+
+	for path, mode := range map[string]os.FileMode{
+		targetConfig: 0o600,
+		filepath.Join(filepath.Dir(targetConfig), "config.d", "hosts.conf"): 0o600,
+		filepath.Join(filepath.Dir(targetConfig), "id_ed25519"):             0o600,
+		filepath.Join(filepath.Dir(targetConfig), "id_ed25519.pub"):         0o644,
+	} {
+		info, err := os.Stat(path)
+		require.NoError(t, err, path)
+		assertPrivateMode(t, info, mode)
+	}
+
+	// A failed main-file restore must stop before include and key publication.
+	blockedTarget := filepath.Join(tempDir, "blocked", ".ssh", "config")
+	require.NoError(t, os.MkdirAll(filepath.Dir(blockedTarget), 0o700))
+	require.NoError(t, os.WriteFile(blockedTarget, []byte("victim"), 0o600))
+	err := command.LoadEnhancedConfig(&EnhancedSSHOptions{Name: "saved", ConfigPath: blockedTarget, StorePath: storePath})
+	require.Error(t, err)
+	content, readErr := os.ReadFile(blockedTarget)
+	require.NoError(t, readErr)
+	assert.Equal(t, "victim", string(content))
+	assert.NoFileExists(t, filepath.Join(filepath.Dir(blockedTarget), "id_ed25519"))
+}
+
+func TestEnhancedSSHCommand_LoadForceFlagContract(t *testing.T) {
+	command := NewEnhancedSSHCommand()
+
+	for _, args := range [][]string{nil, {"--force"}, {"-f"}} {
+		cmd := command.CreateEnhancedLoadCommand()
+		cmd.SetArgs(args)
+		if len(args) == 0 {
+			assert.Equal(t, "false", cmd.Flags().Lookup("force").DefValue)
+			assert.False(t, cmd.Flags().Lookup("force").Changed)
+			continue
+		}
+		require.NoError(t, cmd.ParseFlags(args))
+		value, err := cmd.Flags().GetBool("force")
+		require.NoError(t, err)
+		assert.True(t, value)
+	}
 }

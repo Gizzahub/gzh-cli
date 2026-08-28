@@ -113,7 +113,7 @@ The configuration is restored maintaining the original directory structure.`,
 	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "Name of the configuration to load (required)")
 	cmd.Flags().StringVar(&opts.ConfigPath, "config-path", opts.ConfigPath, "Path to SSH config file")
 	cmd.Flags().StringVar(&opts.StorePath, "store-path", opts.StorePath, "Path to stored configurations")
-	cmd.Flags().BoolVarP(&opts.Force, "force", "f", false, "Overwrite existing files")
+	cmd.Flags().BoolVarP(&opts.Force, "force", "f", false, "Replace existing regular files (symlinks and non-regular files are refused)")
 
 	cmd.MarkFlagRequired("name")
 
@@ -280,11 +280,6 @@ func (c *EnhancedSSHCommand) LoadEnhancedConfig(opts *EnhancedSSHOptions) error 
 		return fmt.Errorf("failed to load metadata: %w", err)
 	}
 
-	// Check if target config already exists
-	if _, err := os.Stat(opts.ConfigPath); err == nil && !opts.Force {
-		return fmt.Errorf("config file already exists at %s (use --force to overwrite)", opts.ConfigPath)
-	}
-
 	// Create target directory
 	if err := os.MkdirAll(filepath.Dir(opts.ConfigPath), 0o755); err != nil {
 		return fmt.Errorf("failed to create config directory: %w", err)
@@ -292,7 +287,7 @@ func (c *EnhancedSSHCommand) LoadEnhancedConfig(opts *EnhancedSSHOptions) error 
 
 	// Load main config file
 	mainConfigSrc := filepath.Join(configDir, "config")
-	if err := c.copyFile(mainConfigSrc, opts.ConfigPath); err != nil {
+	if err := c.restoreEnhancedFile(mainConfigSrc, opts.ConfigPath, 0o600, opts.Force); err != nil {
 		return fmt.Errorf("failed to load main config: %w", err)
 	}
 
@@ -302,26 +297,35 @@ func (c *EnhancedSSHCommand) LoadEnhancedConfig(opts *EnhancedSSHOptions) error 
 	includeDir := filepath.Join(configDir, "includes")
 	if _, err := os.Stat(includeDir); err == nil {
 		entries, err := os.ReadDir(includeDir)
-		if err == nil {
-			for _, entry := range entries {
-				if !entry.IsDir() {
-					srcPath := filepath.Join(includeDir, entry.Name())
-					// For now, restore to config.d/ directory
-					configD := filepath.Join(filepath.Dir(opts.ConfigPath), "config.d")
-					if err := os.MkdirAll(configD, 0o755); err == nil {
-						// Remove the prefix we added during save
-						originalName := strings.TrimPrefix(entry.Name(), "include_")
-						if idx := strings.Index(originalName, "_"); idx > 0 {
-							originalName = originalName[idx+1:]
-						}
-						destPath := filepath.Join(configD, originalName)
-						if err := c.copyFile(srcPath, destPath); err == nil {
-							loadedFiles++
-						}
-					}
-				}
-			}
+		if err != nil {
+			return fmt.Errorf("failed to read includes directory: %w", err)
 		}
+
+		// Include files are restored under the target configuration directory.
+		configD := filepath.Join(filepath.Dir(opts.ConfigPath), "config.d")
+		if err := os.MkdirAll(configD, 0o755); err != nil {
+			return fmt.Errorf("failed to create includes directory: %w", err)
+		}
+
+		for _, entry := range entries {
+			if entry.IsDir() {
+				continue
+			}
+
+			srcPath := filepath.Join(includeDir, entry.Name())
+			// Remove the prefix added during save.
+			originalName := strings.TrimPrefix(entry.Name(), "include_")
+			if idx := strings.Index(originalName, "_"); idx > 0 {
+				originalName = originalName[idx+1:]
+			}
+			destPath := filepath.Join(configD, originalName)
+			if err := c.restoreEnhancedFile(srcPath, destPath, 0o600, opts.Force); err != nil {
+				return fmt.Errorf("failed to load include file %s: %w", entry.Name(), err)
+			}
+			loadedFiles++
+		}
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("failed to inspect includes directory: %w", err)
 	}
 
 	// Load keys
@@ -329,23 +333,28 @@ func (c *EnhancedSSHCommand) LoadEnhancedConfig(opts *EnhancedSSHOptions) error 
 	if _, err := os.Stat(keysDir); err == nil {
 		sshKeysDir := filepath.Dir(opts.ConfigPath)
 		entries, err := os.ReadDir(keysDir)
-		if err == nil {
-			for _, entry := range entries {
-				if !entry.IsDir() {
-					srcPath := filepath.Join(keysDir, entry.Name())
-					destPath := filepath.Join(sshKeysDir, entry.Name())
-					if err := c.copyFile(srcPath, destPath); err == nil {
-						// Set proper permissions
-						if strings.HasSuffix(entry.Name(), ".pub") {
-							os.Chmod(destPath, 0o644)
-						} else {
-							os.Chmod(destPath, 0o600)
-						}
-						loadedFiles++
-					}
-				}
-			}
+		if err != nil {
+			return fmt.Errorf("failed to read keys directory: %w", err)
 		}
+
+		for _, entry := range entries {
+			if entry.IsDir() {
+				continue
+			}
+
+			srcPath := filepath.Join(keysDir, entry.Name())
+			destPath := filepath.Join(sshKeysDir, entry.Name())
+			mode := os.FileMode(0o600)
+			if strings.HasSuffix(entry.Name(), ".pub") {
+				mode = 0o644 //nolint:gosec // Public SSH keys must remain readable by non-owner tools.
+			}
+			if err := c.restoreEnhancedFile(srcPath, destPath, mode, opts.Force); err != nil {
+				return fmt.Errorf("failed to load key %s: %w", entry.Name(), err)
+			}
+			loadedFiles++
+		}
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("failed to inspect keys directory: %w", err)
 	}
 
 	// Print summary
@@ -356,6 +365,91 @@ func (c *EnhancedSSHCommand) LoadEnhancedConfig(opts *EnhancedSSHOptions) error 
 	fmt.Printf("   Originally saved: %s\n", metadata.SavedAt.Format("2006-01-02 15:04:05"))
 	fmt.Printf("   Files restored: %d\n", loadedFiles)
 	fmt.Printf("   Loaded to: %s\n", opts.ConfigPath)
+
+	return nil
+}
+
+// restoreEnhancedFile copies one saved SSH file into its final destination.
+// It intentionally validates only the final component; ancestor no-following and
+// multi-file rollback are outside the compatibility contract of enhanced load.
+func (c *EnhancedSSHCommand) restoreEnhancedFile(src, dst string, mode os.FileMode, force bool) (err error) {
+	if mode != 0o600 && mode != 0o644 {
+		return fmt.Errorf("unsupported restore mode %04o", mode)
+	}
+
+	if info, lstatErr := os.Lstat(dst); lstatErr == nil {
+		if info.Mode()&os.ModeSymlink != 0 {
+			return fmt.Errorf("refusing symlink destination %s", dst)
+		}
+		if !info.Mode().IsRegular() {
+			return fmt.Errorf("refusing non-regular destination %s", dst)
+		}
+		if !force {
+			return fmt.Errorf("destination already exists at %s (use --force to replace a regular file)", dst)
+		}
+	} else if !os.IsNotExist(lstatErr) {
+		return fmt.Errorf("failed to inspect destination %s: %w", dst, lstatErr)
+	}
+
+	sourceFile, err := os.Open(src)
+	if err != nil {
+		return fmt.Errorf("failed to open source %s: %w", src, err)
+	}
+
+	tempFile, err := os.CreateTemp(filepath.Dir(dst), ".gzh-ssh-restore-*")
+	if err != nil {
+		if closeErr := sourceFile.Close(); closeErr != nil {
+			return fmt.Errorf("failed to create restore temp for %s: %w (also failed to close source: %w)", dst, err, closeErr)
+		}
+		return fmt.Errorf("failed to create restore temp for %s: %w", dst, err)
+	}
+	tempPath := tempFile.Name()
+	published := false
+	defer func() {
+		if !published {
+			if removeErr := os.Remove(tempPath); removeErr != nil && !os.IsNotExist(removeErr) && err == nil {
+				err = fmt.Errorf("failed to remove restore temp %s: %w", tempPath, removeErr)
+			}
+		}
+	}()
+
+	if err = tempFile.Chmod(0o600); err != nil {
+		_ = sourceFile.Close()
+		_ = tempFile.Close()
+		return fmt.Errorf("failed to secure restore temp %s: %w", tempPath, err)
+	}
+	if _, err = io.Copy(tempFile, sourceFile); err != nil {
+		_ = sourceFile.Close()
+		_ = tempFile.Close()
+		return fmt.Errorf("failed to copy %s to restore temp: %w", src, err)
+	}
+	if closeErr := sourceFile.Close(); closeErr != nil {
+		_ = tempFile.Close()
+		return fmt.Errorf("failed to close source %s: %w", src, closeErr)
+	}
+	if err = tempFile.Chmod(mode); err != nil {
+		_ = tempFile.Close()
+		return fmt.Errorf("failed to set restore mode for %s: %w", dst, err)
+	}
+	if err = tempFile.Close(); err != nil {
+		return fmt.Errorf("failed to close restore temp %s: %w", tempPath, err)
+	}
+
+	if force {
+		if err = os.Rename(tempPath, dst); err != nil {
+			return fmt.Errorf("failed to replace destination %s: %w", dst, err)
+		}
+		published = true
+		return nil
+	}
+
+	if err = os.Link(tempPath, dst); err != nil {
+		return fmt.Errorf("failed to publish destination %s without replacement: %w", dst, err)
+	}
+	published = true
+	if err = os.Remove(tempPath); err != nil {
+		return fmt.Errorf("published destination %s but failed to remove restore temp %s: %w", dst, tempPath, err)
+	}
 
 	return nil
 }
