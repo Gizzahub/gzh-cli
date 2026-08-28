@@ -7,7 +7,9 @@ package simpleprof
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"math"
 	"net/http"
@@ -16,6 +18,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"runtime/pprof"
+	"sync/atomic"
 	"time"
 )
 
@@ -45,9 +48,23 @@ const (
 
 // SimpleProfiler provides basic profiling functionality using standard Go pprof.
 type SimpleProfiler struct {
-	outputDir string
-	server    *http.Server
+	outputDir     string
+	server        *http.Server
+	now           func() time.Time
+	nextSequence  func() uint64
+	openFile      func(string, int, os.FileMode) (*os.File, error)
+	lookupProfile func(string) profileWriter
+	startCPU      func(io.Writer) error
 }
+
+type profileWriter interface {
+	WriteTo(io.Writer, int) error
+}
+
+const maxProfileReservationAttempts = 64
+
+// 프로세스 내 예약 순서는 프로파일러 인스턴스가 달라도 공유한다.
+var profileSequence atomic.Uint64
 
 // NewSimpleProfiler creates a new simple profiler.
 func NewSimpleProfiler(outputDir string) *SimpleProfiler {
@@ -63,6 +80,13 @@ func NewSimpleProfiler(outputDir string) *SimpleProfiler {
 
 	return &SimpleProfiler{
 		outputDir: outputDir,
+		now:       time.Now,
+		nextSequence: func() uint64 {
+			return profileSequence.Add(1)
+		},
+		openFile:      os.OpenFile,
+		lookupProfile: func(name string) profileWriter { return pprof.Lookup(name) },
+		startCPU:      pprof.StartCPUProfile,
 	}
 }
 
@@ -125,81 +149,104 @@ func (p *SimpleProfiler) StopHTTPServer(ctx context.Context) error {
 
 // StartProfile starts collecting a profile of the specified type.
 func (p *SimpleProfiler) StartProfile(profileType ProfileType, duration time.Duration) (string, error) {
-	timestamp := time.Now().Format("20060102_150405")
-	filename := filepath.Join(p.outputDir, fmt.Sprintf("%s_%s.prof", profileType, timestamp))
+	profileName, err := profileNameForType(profileType)
+	if err != nil {
+		return "", err
+	}
 
+	filename, file, err := p.reserveProfile(profileType)
+	if err != nil {
+		return "", err
+	}
+
+	if profileType == ProfileTypeCPU {
+		return p.startCPUProfile(filename, file, duration)
+	}
+
+	return p.saveProfile(profileName, filename, file)
+}
+
+func profileNameForType(profileType ProfileType) (string, error) {
 	switch profileType {
 	case ProfileTypeCPU:
-		return p.startCPUProfile(filename, duration)
+		return "cpu", nil
 	case ProfileTypeMemory:
-		return p.saveMemoryProfile(filename)
+		return "heap", nil
 	case ProfileTypeGoroutine:
-		return p.saveGoroutineProfile(filename)
+		return "goroutine", nil
 	case ProfileTypeBlock:
-		return p.saveBlockProfile(filename)
+		return "block", nil
 	case ProfileTypeMutex:
-		return p.saveMutexProfile(filename)
+		return "mutex", nil
 	default:
 		return "", fmt.Errorf("unsupported profile type: %s", profileType)
 	}
 }
 
-func (p *SimpleProfiler) startCPUProfile(filename string, duration time.Duration) (string, error) {
-	f, err := os.Create(filename)
-	if err != nil {
-		return "", fmt.Errorf("could not create CPU profile: %w", err)
+func (p *SimpleProfiler) reserveProfile(profileType ProfileType) (string, *os.File, error) {
+	timestamp := p.now().Format("20060102_150405")
+	lastCandidate := ""
+
+	for attempt := 1; attempt <= maxProfileReservationAttempts; attempt++ {
+		sequence := p.nextSequence()
+		filename := filepath.Join(p.outputDir, fmt.Sprintf("%s_%s_%d.prof", profileType, timestamp, sequence))
+		lastCandidate = filename
+		file, err := p.openFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+		if err == nil {
+			return filename, file, nil
+		}
+		if !errors.Is(err, os.ErrExist) {
+			return "", nil, fmt.Errorf("could not reserve %s profile %q: %w", profileType, filename, err)
+		}
 	}
 
-	if err := pprof.StartCPUProfile(f); err != nil {
-		f.Close()
-		return "", fmt.Errorf("could not start CPU profile: %w", err)
+	return "", nil, fmt.Errorf("could not reserve %s profile after %d attempts (last candidate %q): %w", profileType, maxProfileReservationAttempts, lastCandidate, os.ErrExist)
+}
+
+func (p *SimpleProfiler) startCPUProfile(filename string, file *os.File, duration time.Duration) (string, error) {
+	if err := p.startCPU(file); err != nil {
+		return "", discardReservedProfile(file, filename, fmt.Errorf("could not start CPU profile: %w", err))
 	}
 
 	// Stop CPU profiling after duration
 	go func() {
 		time.Sleep(duration)
 		pprof.StopCPUProfile()
-		f.Close()
+		if err := file.Close(); err != nil {
+			log.Printf("could not close CPU profile %s: %v", filename, err)
+		}
 		log.Printf("CPU profile saved to %s", filename)
 	}()
 
 	return filename, nil
 }
 
-func (p *SimpleProfiler) saveMemoryProfile(filename string) (string, error) {
-	return p.saveProfile("heap", filename)
-}
-
-func (p *SimpleProfiler) saveGoroutineProfile(filename string) (string, error) {
-	return p.saveProfile("goroutine", filename)
-}
-
-func (p *SimpleProfiler) saveBlockProfile(filename string) (string, error) {
-	return p.saveProfile("block", filename)
-}
-
-func (p *SimpleProfiler) saveMutexProfile(filename string) (string, error) {
-	return p.saveProfile("mutex", filename)
-}
-
-func (p *SimpleProfiler) saveProfile(profileName, filename string) (string, error) {
-	f, err := os.Create(filename)
-	if err != nil {
-		return "", fmt.Errorf("could not create %s profile: %w", profileName, err)
-	}
-	defer f.Close()
-
-	profile := pprof.Lookup(profileName)
+func (p *SimpleProfiler) saveProfile(profileName, filename string, file *os.File) (string, error) {
+	profile := p.lookupProfile(profileName)
 	if profile == nil {
-		return "", fmt.Errorf("profile %s not found", profileName)
+		return "", discardReservedProfile(file, filename, fmt.Errorf("profile %s not found", profileName))
 	}
 
-	if err := profile.WriteTo(f, 0); err != nil {
-		return "", fmt.Errorf("could not write %s profile: %w", profileName, err)
+	if err := profile.WriteTo(file, 0); err != nil {
+		return "", discardReservedProfile(file, filename, fmt.Errorf("could not write %s profile: %w", profileName, err))
+	}
+
+	if err := file.Close(); err != nil {
+		return "", removeReservedProfile(filename, fmt.Errorf("could not close %s profile: %w", profileName, err))
 	}
 
 	log.Printf("%s profile saved to %s", profileName, filename)
 	return filename, nil
+}
+
+// 예약한 파일만 닫은 뒤 제거하여 기존 프로파일을 건드리지 않는다.
+func discardReservedProfile(file *os.File, filename string, primary error) error {
+	closeErr := file.Close()
+	return removeReservedProfile(filename, errors.Join(primary, closeErr))
+}
+
+func removeReservedProfile(filename string, primary error) error {
+	return errors.Join(primary, os.Remove(filename))
 }
 
 // GetStats returns basic runtime statistics.
