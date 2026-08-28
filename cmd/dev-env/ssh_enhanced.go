@@ -5,6 +5,7 @@ package devenv
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -113,7 +114,7 @@ The configuration is restored maintaining the original directory structure.`,
 	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "Name of the configuration to load (required)")
 	cmd.Flags().StringVar(&opts.ConfigPath, "config-path", opts.ConfigPath, "Path to SSH config file")
 	cmd.Flags().StringVar(&opts.StorePath, "store-path", opts.StorePath, "Path to stored configurations")
-	cmd.Flags().BoolVarP(&opts.Force, "force", "f", false, "Replace existing regular files (symlinks and non-regular files are refused)")
+	cmd.Flags().BoolVarP(&opts.Force, "force", "f", false, "Replace an observed regular file; symlink targets are not followed")
 
 	cmd.MarkFlagRequired("name")
 
@@ -301,7 +302,7 @@ func (c *EnhancedSSHCommand) LoadEnhancedConfig(opts *EnhancedSSHOptions) error 
 			return fmt.Errorf("failed to read includes directory: %w", err)
 		}
 
-		// Include files are restored under the target configuration directory.
+		// Include 파일은 대상 설정 디렉터리 아래에 복원한다.
 		configD := filepath.Join(filepath.Dir(opts.ConfigPath), "config.d")
 		if err := os.MkdirAll(configD, 0o755); err != nil {
 			return fmt.Errorf("failed to create includes directory: %w", err)
@@ -313,7 +314,7 @@ func (c *EnhancedSSHCommand) LoadEnhancedConfig(opts *EnhancedSSHOptions) error 
 			}
 
 			srcPath := filepath.Join(includeDir, entry.Name())
-			// Remove the prefix added during save.
+			// 저장 시 추가한 접두사를 제거한다.
 			originalName := strings.TrimPrefix(entry.Name(), "include_")
 			if idx := strings.Index(originalName, "_"); idx > 0 {
 				originalName = originalName[idx+1:]
@@ -346,7 +347,7 @@ func (c *EnhancedSSHCommand) LoadEnhancedConfig(opts *EnhancedSSHOptions) error 
 			destPath := filepath.Join(sshKeysDir, entry.Name())
 			mode := os.FileMode(0o600)
 			if strings.HasSuffix(entry.Name(), ".pub") {
-				mode = 0o644 //nolint:gosec // Public SSH keys must remain readable by non-owner tools.
+				mode = 0o644 //nolint:gosec // 공개 SSH 키는 비밀이 아니며 계약은 일반적인 0644 권한을 요구한다.
 			}
 			if err := c.restoreEnhancedFile(srcPath, destPath, mode, opts.Force); err != nil {
 				return fmt.Errorf("failed to load key %s: %w", entry.Name(), err)
@@ -369,9 +370,10 @@ func (c *EnhancedSSHCommand) LoadEnhancedConfig(opts *EnhancedSSHOptions) error 
 	return nil
 }
 
-// restoreEnhancedFile copies one saved SSH file into its final destination.
-// It intentionally validates only the final component; ancestor no-following and
-// multi-file rollback are outside the compatibility contract of enhanced load.
+// restoreEnhancedFile은 저장된 SSH 파일 하나를 최종 대상에 복원한다.
+// 사용자 소유이고 비적대적인 부모 경로를 전제로, 복사 전 관찰한 최종 entry만
+// Lstat으로 검증한다. 심볼릭 링크 대상은 따라가지 않지만 동시 entry 교체는 이
+// 배치의 위협 모델 밖이며, source 검증·조상 no-follow·다중 파일 롤백도 범위 밖이다.
 func (c *EnhancedSSHCommand) restoreEnhancedFile(src, dst string, mode os.FileMode, force bool) (err error) {
 	if mode != 0o600 && mode != 0o644 {
 		return fmt.Errorf("unsupported restore mode %04o", mode)
@@ -399,41 +401,58 @@ func (c *EnhancedSSHCommand) restoreEnhancedFile(src, dst string, mode os.FileMo
 	tempFile, err := os.CreateTemp(filepath.Dir(dst), ".gzh-ssh-restore-*")
 	if err != nil {
 		if closeErr := sourceFile.Close(); closeErr != nil {
-			return fmt.Errorf("failed to create restore temp for %s: %w (also failed to close source: %w)", dst, err, closeErr)
+			return errors.Join(
+				fmt.Errorf("failed to create restore temp for %s: %w", dst, err),
+				fmt.Errorf("failed to close source %s: %w", src, closeErr),
+			)
 		}
 		return fmt.Errorf("failed to create restore temp for %s: %w", dst, err)
 	}
 	tempPath := tempFile.Name()
 	published := false
+	sourceClosed := false
+	tempClosed := false
 	defer func() {
-		if !published {
-			if removeErr := os.Remove(tempPath); removeErr != nil && !os.IsNotExist(removeErr) && err == nil {
-				err = fmt.Errorf("failed to remove restore temp %s: %w", tempPath, removeErr)
+		var cleanupErrs []error
+		if !sourceClosed {
+			if closeErr := sourceFile.Close(); closeErr != nil {
+				cleanupErrs = append(cleanupErrs, fmt.Errorf("failed to close source %s: %w", src, closeErr))
 			}
+		}
+		if !tempClosed {
+			if closeErr := tempFile.Close(); closeErr != nil {
+				cleanupErrs = append(cleanupErrs, fmt.Errorf("failed to close restore temp %s: %w", tempPath, closeErr))
+			}
+		}
+		if !published {
+			if removeErr := os.Remove(tempPath); removeErr != nil && !os.IsNotExist(removeErr) {
+				cleanupErrs = append(cleanupErrs, fmt.Errorf("failed to remove restore temp %s: %w", tempPath, removeErr))
+			}
+		}
+		if len(cleanupErrs) > 0 {
+			err = errors.Join(append([]error{err}, cleanupErrs...)...)
 		}
 	}()
 
 	if err = tempFile.Chmod(0o600); err != nil {
-		_ = sourceFile.Close()
-		_ = tempFile.Close()
 		return fmt.Errorf("failed to secure restore temp %s: %w", tempPath, err)
 	}
 	if _, err = io.Copy(tempFile, sourceFile); err != nil {
-		_ = sourceFile.Close()
-		_ = tempFile.Close()
 		return fmt.Errorf("failed to copy %s to restore temp: %w", src, err)
 	}
 	if closeErr := sourceFile.Close(); closeErr != nil {
-		_ = tempFile.Close()
+		sourceClosed = true
 		return fmt.Errorf("failed to close source %s: %w", src, closeErr)
 	}
+	sourceClosed = true
 	if err = tempFile.Chmod(mode); err != nil {
-		_ = tempFile.Close()
 		return fmt.Errorf("failed to set restore mode for %s: %w", dst, err)
 	}
 	if err = tempFile.Close(); err != nil {
+		tempClosed = true
 		return fmt.Errorf("failed to close restore temp %s: %w", tempPath, err)
 	}
+	tempClosed = true
 
 	if force {
 		if err = os.Rename(tempPath, dst); err != nil {

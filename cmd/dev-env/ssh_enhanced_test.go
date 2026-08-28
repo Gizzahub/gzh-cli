@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -358,6 +359,7 @@ func TestEnhancedSSHCommand_RestoreEnhancedFileDestinationContract(t *testing.T)
 		info, err := os.Stat(destination)
 		require.NoError(t, err)
 		assertPrivateMode(t, info, 0o600)
+		assertNoRestoreTemps(t, tempDir)
 	})
 
 	t.Run("existing regular file requires force and preserves victim", func(t *testing.T) {
@@ -374,6 +376,7 @@ func TestEnhancedSSHCommand_RestoreEnhancedFileDestinationContract(t *testing.T)
 		content, readErr = os.ReadFile(destination)
 		require.NoError(t, readErr)
 		assert.Equal(t, "saved content", string(content))
+		assertNoRestoreTemps(t, tempDir)
 	})
 
 	for _, force := range []bool{false, true} {
@@ -416,6 +419,31 @@ func TestEnhancedSSHCommand_RestoreEnhancedFileDestinationContract(t *testing.T)
 		require.NoError(t, err)
 		assertPrivateMode(t, info, 0o644)
 	})
+
+	t.Run("missing source leaves absent and forced existing destinations unchanged", func(t *testing.T) {
+		missingSource := filepath.Join(tempDir, "missing-source")
+		absentDestination := filepath.Join(tempDir, "missing-absent")
+		require.Error(t, command.restoreEnhancedFile(missingSource, absentDestination, 0o600, false))
+		assert.NoFileExists(t, absentDestination)
+
+		existingDestination := filepath.Join(tempDir, "missing-existing")
+		require.NoError(t, os.WriteFile(existingDestination, []byte("victim"), 0o600))
+		require.Error(t, command.restoreEnhancedFile(missingSource, existingDestination, 0o600, true))
+		info, err := os.Stat(existingDestination)
+		require.NoError(t, err)
+		assert.Equal(t, int64(len("victim")), info.Size())
+		assertNoRestoreTemps(t, tempDir)
+	})
+
+	t.Run("invalid mode leaves destination unchanged", func(t *testing.T) {
+		destination := filepath.Join(tempDir, "invalid-mode")
+		require.NoError(t, os.WriteFile(destination, []byte("victim"), 0o600))
+		require.Error(t, command.restoreEnhancedFile(source, destination, 0o640, true))
+		info, err := os.Stat(destination)
+		require.NoError(t, err)
+		assert.Equal(t, int64(len("victim")), info.Size())
+		assertNoRestoreTemps(t, tempDir)
+	})
 }
 
 func TestEnhancedSSHCommand_LoadRestoreModesAndFailureStopsFurtherFiles(t *testing.T) {
@@ -446,7 +474,7 @@ func TestEnhancedSSHCommand_LoadRestoreModesAndFailureStopsFurtherFiles(t *testi
 		assertPrivateMode(t, info, mode)
 	}
 
-	// A failed main-file restore must stop before include and key publication.
+	// main 파일 복원 실패 시 include와 key 발행 전에 중단해야 한다.
 	blockedTarget := filepath.Join(tempDir, "blocked", ".ssh", "config")
 	require.NoError(t, os.MkdirAll(filepath.Dir(blockedTarget), 0o700))
 	require.NoError(t, os.WriteFile(blockedTarget, []byte("victim"), 0o600))
@@ -456,6 +484,15 @@ func TestEnhancedSSHCommand_LoadRestoreModesAndFailureStopsFurtherFiles(t *testi
 	require.NoError(t, readErr)
 	assert.Equal(t, "victim", string(content))
 	assert.NoFileExists(t, filepath.Join(filepath.Dir(blockedTarget), "id_ed25519"))
+}
+
+func assertNoRestoreTemps(t *testing.T, directory string) {
+	t.Helper()
+	entries, err := os.ReadDir(directory)
+	require.NoError(t, err)
+	for _, entry := range entries {
+		assert.False(t, strings.HasPrefix(entry.Name(), ".gzh-ssh-restore-"), entry.Name())
+	}
 }
 
 func TestEnhancedSSHCommand_LoadForceFlagContract(t *testing.T) {
