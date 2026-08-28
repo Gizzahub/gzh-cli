@@ -71,7 +71,7 @@ func TestProfiler_LifecycleDoesNotMutateRuntimeProfileRates(t *testing.T) {
 		runtime.SetMutexProfileFraction(previousMutexRate)
 	})
 	assertMutexRateSentinel := func() {
-		assert.Equal(t, mutexRateSentinel, runtime.SetMutexProfileFraction(mutexRateSentinel))
+		assert.Equal(t, mutexRateSentinel, runtime.SetMutexProfileFraction(-1))
 	}
 
 	configs := []*ProfileConfig{
