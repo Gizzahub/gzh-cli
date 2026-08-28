@@ -24,6 +24,7 @@ var (
 	sshSaveRename    = os.Rename
 	sshSaveRemoveAll = os.RemoveAll
 	sshSaveChmod     = os.Chmod
+	sshSaveMkdirDir  = os.Mkdir
 	sshSaveMkdirTemp = os.MkdirTemp
 	sshSaveCopyBytes = io.Copy
 	sshSaveClose     = func(closer io.Closer) error { return closer.Close() }
@@ -412,7 +413,7 @@ func sshSaveMkdir(path string, needed bool) error {
 	if !needed {
 		return nil
 	}
-	if err := os.Mkdir(path, 0o700); err != nil {
+	if err := sshSaveMkdirDir(path, 0o700); err != nil {
 		return fmt.Errorf("failed to create snapshot directory %s: %w", path, err)
 	}
 	if err := sshSaveChmod(path, 0o700); err != nil {

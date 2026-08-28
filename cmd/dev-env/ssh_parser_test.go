@@ -46,6 +46,66 @@ func TestSSHConfigParser_JoinsScanAndCloseFailures(t *testing.T) {
 	require.ErrorIs(t, err, closeErr)
 }
 
+func TestSSHConfigParser_FaultCardDiscovery(t *testing.T) {
+	writeConfig := func(t *testing.T, body string) (string, string) {
+		t.Helper()
+		root := t.TempDir()
+		config := filepath.Join(root, "config")
+		require.NoError(t, os.WriteFile(config, []byte(body), 0o600))
+		return root, config
+	}
+	t.Run("recursive include open", func(t *testing.T) {
+		root, config := writeConfig(t, "Include child")
+		child := filepath.Join(root, "child")
+		require.NoError(t, os.WriteFile(child, []byte("Host child"), 0o600))
+		original := sshParserOpen
+		sshParserOpen = func(path string) (sshParserFile, error) {
+			if path == child {
+				return nil, errors.New("child open")
+			}
+			return original(path)
+		}
+		t.Cleanup(func() { sshParserOpen = original })
+		_, err := NewSSHConfigParser(config).Parse()
+		require.Error(t, err)
+	})
+	t.Run("scanner token too long", func(t *testing.T) {
+		_, config := writeConfig(t, string(make([]byte, 70*1024)))
+		_, err := NewSSHConfigParser(config).Parse()
+		require.Error(t, err)
+	})
+	t.Run("invalid glob", func(t *testing.T) {
+		_, config := writeConfig(t, "Include [")
+		_, err := NewSSHConfigParser(config).Parse()
+		require.Error(t, err)
+	})
+	t.Run("discovered nonregular include", func(t *testing.T) {
+		root, config := writeConfig(t, "Include includes/*")
+		require.NoError(t, os.MkdirAll(filepath.Join(root, "includes", "nested"), 0o700))
+		_, err := NewSSHConfigParser(config).Parse()
+		require.Error(t, err)
+	})
+	t.Run("IdentityFile and public key nonregular", func(t *testing.T) {
+		root, config := writeConfig(t, "IdentityFile key")
+		require.NoError(t, os.Mkdir(filepath.Join(root, "key"), 0o700))
+		_, err := NewSSHConfigParser(config).Parse()
+		require.Error(t, err)
+		require.NoError(t, os.Remove(filepath.Join(root, "key")))
+		require.NoError(t, os.WriteFile(filepath.Join(root, "key"), []byte("private"), 0o600))
+		require.NoError(t, os.Mkdir(filepath.Join(root, "key.pub"), 0o700))
+		_, err = NewSSHConfigParser(config).Parse()
+		require.Error(t, err)
+	})
+	t.Run("unmatched Include and missing IdentityFile/public key are nonfatal", func(t *testing.T) {
+		_, config := writeConfig(t, "Include no-match-*\nIdentityFile missing")
+		parsed, err := NewSSHConfigParser(config).Parse()
+		require.NoError(t, err)
+		assert.Empty(t, parsed.IncludeFiles)
+		assert.Empty(t, parsed.PrivateKeys)
+		assert.Empty(t, parsed.PublicKeys)
+	})
+}
+
 func TestSSHConfigParser_Parse(t *testing.T) {
 	tests := []struct {
 		name             string
