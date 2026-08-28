@@ -595,6 +595,46 @@ func TestSSHSaveKeyPlanRolesAndCollisions(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestEnhancedSSHCommand_SaveSameFilePublicCandidateKeepsPrivateRole(t *testing.T) {
+	root := t.TempDir()
+	sshDir, store := filepath.Join(root, "ssh"), filepath.Join(root, "store")
+	require.NoError(t, os.MkdirAll(filepath.Join(sshDir, "a"), 0o700))
+	require.NoError(t, os.MkdirAll(filepath.Join(sshDir, "b"), 0o700))
+	privateID := filepath.Join(sshDir, "a", "id")
+	privatePublicNamed := filepath.Join(sshDir, "b", "id.pub")
+	publicCandidate := filepath.Join(sshDir, "a", "id.pub")
+	require.NoError(t, os.WriteFile(privateID, []byte("private-id"), 0o600))
+	require.NoError(t, os.WriteFile(privatePublicNamed, []byte("private-public-name"), 0o600))
+	// Hard links are supported by the Windows NTFS and POSIX filesystems used by CI;
+	// do not skip this role-safety assertion if the platform cannot create one.
+	require.NoError(t, os.Link(privatePublicNamed, publicCandidate))
+	first, err := os.Stat(privatePublicNamed)
+	require.NoError(t, err)
+	second, err := os.Stat(publicCandidate)
+	require.NoError(t, err)
+	require.True(t, os.SameFile(first, second))
+	config := filepath.Join(sshDir, "config")
+	require.NoError(t, os.WriteFile(config, []byte("IdentityFile a/id\nIdentityFile b/id.pub\n"), 0o600))
+	opts := &EnhancedSSHOptions{Name: "snapshot", ConfigPath: config, StorePath: store, IncludeKeys: true, IncludePublic: true}
+	output, err := captureSSHSaveOutput(t, func() error { return NewEnhancedSSHCommand().SaveEnhancedConfig(opts) })
+	require.NoError(t, err)
+	keys := filepath.Join(store, "snapshot", "keys")
+	entries, err := os.ReadDir(keys)
+	require.NoError(t, err)
+	require.Len(t, entries, 2)
+	assert.ElementsMatch(t, []string{"id", "id.pub"}, []string{entries[0].Name(), entries[1].Name()})
+	info, err := os.Stat(filepath.Join(keys, "id.pub"))
+	require.NoError(t, err)
+	assertPrivateMode(t, info, 0o600)
+	metadata, err := NewEnhancedSSHCommand().loadEnhancedMetadata(filepath.Join(store, "snapshot", "metadata.json"))
+	require.NoError(t, err)
+	assert.Equal(t, []string{privateID, privatePublicNamed}, metadata.PrivateKeys)
+	assert.Empty(t, metadata.PublicKeys)
+	assert.True(t, metadata.HasKeys)
+	assert.Contains(t, output, "Private keys: 2")
+	assert.Contains(t, output, "Public keys: 0")
+}
+
 func TestEnhancedSSHCommand_SaveCopyFaultMatrix(t *testing.T) {
 	newOptions := func(t *testing.T) *EnhancedSSHOptions {
 		t.Helper()
