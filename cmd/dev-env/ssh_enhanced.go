@@ -25,6 +25,9 @@ var (
 	sshSaveRemoveAll = os.RemoveAll
 	sshSaveChmod     = os.Chmod
 	sshSaveMkdirTemp = os.MkdirTemp
+	sshSaveCopyBytes = io.Copy
+	sshSaveClose     = func(closer io.Closer) error { return closer.Close() }
+	sshSaveWrite     = func(writer io.Writer, data []byte) (int, error) { return writer.Write(data) }
 )
 
 // EnhancedSSHOptions represents options for enhanced SSH commands.
@@ -417,7 +420,7 @@ func sshSaveCopy(source, destination string, mode os.FileMode) (err error) {
 	srcClosed := false
 	dst, err := sshSaveOpenFile(destination, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 	if err != nil {
-		closeErr := src.Close()
+		closeErr := sshSaveClose(src)
 		srcClosed = true
 		if closeErr != nil {
 			return errors.Join(fmt.Errorf("failed to create destination %s: %w", destination, err), fmt.Errorf("failed to close source %s: %w", source, closeErr))
@@ -428,12 +431,12 @@ func sshSaveCopy(source, destination string, mode os.FileMode) (err error) {
 	defer func() {
 		var cleanup []error
 		if !srcClosed {
-			if closeErr := src.Close(); closeErr != nil {
+			if closeErr := sshSaveClose(src); closeErr != nil {
 				cleanup = append(cleanup, fmt.Errorf("failed to close source %s: %w", source, closeErr))
 			}
 		}
 		if !dstClosed {
-			if closeErr := dst.Close(); closeErr != nil {
+			if closeErr := sshSaveClose(dst); closeErr != nil {
 				cleanup = append(cleanup, fmt.Errorf("failed to close destination %s: %w", destination, closeErr))
 			}
 		}
@@ -441,10 +444,10 @@ func sshSaveCopy(source, destination string, mode os.FileMode) (err error) {
 			err = errors.Join(append([]error{err}, cleanup...)...)
 		}
 	}()
-	if _, err = io.Copy(dst, src); err != nil {
+	if _, err = sshSaveCopyBytes(dst, src); err != nil {
 		return fmt.Errorf("failed to copy %s: %w", source, err)
 	}
-	if closeErr := src.Close(); closeErr != nil {
+	if closeErr := sshSaveClose(src); closeErr != nil {
 		srcClosed = true
 		return fmt.Errorf("failed to close source %s: %w", source, closeErr)
 	}
@@ -452,7 +455,7 @@ func sshSaveCopy(source, destination string, mode os.FileMode) (err error) {
 	if err = sshSaveChmod(destination, mode); err != nil {
 		return fmt.Errorf("failed to set mode on %s: %w", destination, err)
 	}
-	if closeErr := dst.Close(); closeErr != nil {
+	if closeErr := sshSaveClose(dst); closeErr != nil {
 		dstClosed = true
 		return fmt.Errorf("failed to close destination %s: %w", destination, closeErr)
 	}
@@ -465,21 +468,21 @@ func sshSaveBytes(destination string, data []byte, mode os.FileMode) error {
 	if err != nil {
 		return fmt.Errorf("failed to create metadata %s: %w", destination, err)
 	}
-	if _, err := file.Write(data); err != nil {
-		closeErr := file.Close()
+	if _, err := sshSaveWrite(file, data); err != nil {
+		closeErr := sshSaveClose(file)
 		if closeErr != nil {
 			return errors.Join(err, closeErr)
 		}
 		return err
 	}
 	if err := sshSaveChmod(destination, mode); err != nil {
-		closeErr := file.Close()
+		closeErr := sshSaveClose(file)
 		if closeErr != nil {
 			return errors.Join(err, closeErr)
 		}
 		return err
 	}
-	if err := file.Close(); err != nil {
+	if err := sshSaveClose(file); err != nil {
 		return fmt.Errorf("failed to close metadata %s: %w", destination, err)
 	}
 	return nil
