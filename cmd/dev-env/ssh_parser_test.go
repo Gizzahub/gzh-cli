@@ -317,3 +317,17 @@ func TestRemoveDuplicates(t *testing.T) {
 		})
 	}
 }
+
+func TestSSHConfigParser_ParseRecursiveIncludesIsCycleSafe(t *testing.T) {
+	root := t.TempDir()
+	config := filepath.Join(root, "config")
+	first := filepath.Join(root, "first.conf")
+	second := filepath.Join(root, "second.conf")
+	require.NoError(t, os.WriteFile(config, []byte("Include first.conf\n"), 0o600))
+	require.NoError(t, os.WriteFile(first, []byte("Include second.conf\n"), 0o600))
+	require.NoError(t, os.WriteFile(second, []byte("Include first.conf\n"), 0o600))
+
+	parsed, err := NewSSHConfigParser(config).Parse()
+	require.NoError(t, err)
+	assert.Equal(t, []string{first, second}, parsed.IncludeFiles)
+}

@@ -10,10 +10,20 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
+)
+
+// 저장 경로의 실패 처리는 외부 API를 늘리지 않고 단위 테스트에서만 주입한다.
+var (
+	sshSaveOpenFile  = os.OpenFile
+	sshSaveOpen      = os.Open
+	sshSaveRename    = os.Rename
+	sshSaveRemoveAll = os.RemoveAll
+	sshSaveChmod     = os.Chmod
 )
 
 // EnhancedSSHOptions represents options for enhanced SSH commands.
@@ -140,124 +150,347 @@ func (c *EnhancedSSHCommand) CreateEnhancedListCommand() *cobra.Command {
 }
 
 // SaveEnhancedConfig saves the SSH configuration with includes and keys.
-func (c *EnhancedSSHCommand) SaveEnhancedConfig(opts *EnhancedSSHOptions) error {
-	// Validate inputs
-	if opts.Name == "" {
-		return fmt.Errorf("configuration name is required")
+func (c *EnhancedSSHCommand) SaveEnhancedConfig(opts *EnhancedSSHOptions) (err error) {
+	if err := validateSSHSaveName(opts.Name); err != nil {
+		return err
 	}
-
-	// Check if source config exists
-	if _, err := os.Stat(opts.ConfigPath); os.IsNotExist(err) {
-		return fmt.Errorf("SSH config file not found at %s", opts.ConfigPath)
+	if _, err := sshSaveRegularSource(opts.ConfigPath); err != nil {
+		return fmt.Errorf("SSH config file not found or not regular at %s: %w", opts.ConfigPath, err)
 	}
-
-	// Parse SSH configuration
-	parser := NewSSHConfigParser(opts.ConfigPath)
-	parsed, err := parser.Parse()
+	parsed, err := NewSSHConfigParser(opts.ConfigPath).Parse()
 	if err != nil {
 		return fmt.Errorf("failed to parse SSH configuration: %w", err)
 	}
-
-	// Check if config already exists
+	if err := ensureSSHStore(opts.StorePath); err != nil {
+		return err
+	}
 	configDir := filepath.Join(opts.StorePath, opts.Name)
-	if _, err := os.Stat(configDir); err == nil && !opts.Force {
-		return fmt.Errorf("configuration '%s' already exists (use --force to overwrite)", opts.Name)
+	if err := checkSSHSaveDestination(configDir, opts.Force); err != nil {
+		return err
 	}
 
-	// Create store directory structure
-	if err := os.MkdirAll(configDir, 0o755); err != nil {
-		return fmt.Errorf("failed to create config directory: %w", err)
+	includes, err := sshSaveDedupe(parsed.IncludeFiles, "include")
+	if err != nil {
+		return err
 	}
-
-	// Save main config file
-	mainConfigDest := filepath.Join(configDir, "config")
-	if err := c.copyFile(parsed.MainConfigPath, mainConfigDest); err != nil {
-		return fmt.Errorf("failed to save main config: %w", err)
-	}
-
-	// Save include files
-	if len(parsed.IncludeFiles) > 0 {
-		includeDir := filepath.Join(configDir, "includes")
-		if err := os.MkdirAll(includeDir, 0o755); err != nil {
-			return fmt.Errorf("failed to create includes directory: %w", err)
+	privateKeys := []string{}
+	if opts.IncludeKeys {
+		privateKeys, err = sshSaveDedupe(parsed.PrivateKeys, "key")
+		if err != nil {
+			return err
 		}
+	}
+	publicKeys := []string{}
+	if opts.IncludePublic {
+		publicKeys, err = sshSaveDedupe(parsed.PublicKeys, "key")
+		if err != nil {
+			return err
+		}
+	}
+	if err := sshSaveCrossKeyCollision(privateKeys, publicKeys); err != nil {
+		return err
+	}
 
-		for i, includeFile := range parsed.IncludeFiles {
-			destName := fmt.Sprintf("include_%d_%s", i, filepath.Base(includeFile))
-			destPath := filepath.Join(includeDir, destName)
-			if err := c.copyFile(includeFile, destPath); err != nil {
-				fmt.Printf("Warning: failed to copy include file %s: %v\n", includeFile, err)
+	stage, err := os.MkdirTemp(opts.StorePath, ".gzh-ssh-stage-")
+	if err != nil {
+		return fmt.Errorf("failed to create SSH staging directory: %w", err)
+	}
+	if err := sshSaveChmod(stage, 0o700); err != nil {
+		return errors.Join(fmt.Errorf("failed to secure staging directory %s: %w", stage, err), sshSaveRemoveAll(stage))
+	}
+	published := false
+	defer func() {
+		if !published {
+			if cleanupErr := sshSaveRemoveAll(stage); cleanupErr != nil {
+				err = errors.Join(err, fmt.Errorf("failed to remove unpublished stage %s: %w", stage, cleanupErr))
 			}
 		}
+	}()
+	if err := sshSaveMkdir(filepath.Join(stage, "includes"), len(includes) > 0); err != nil {
+		return err
 	}
-
-	// Save private keys
-	if opts.IncludeKeys && len(parsed.PrivateKeys) > 0 {
-		keysDir := filepath.Join(configDir, "keys")
-		if err := os.MkdirAll(keysDir, 0o700); err != nil {
-			return fmt.Errorf("failed to create keys directory: %w", err)
-		}
-
-		for _, keyFile := range parsed.PrivateKeys {
-			destName := filepath.Base(keyFile)
-			destPath := filepath.Join(keysDir, destName)
-			if err := c.copyFile(keyFile, destPath); err != nil {
-				fmt.Printf("Warning: failed to copy private key %s: %v\n", keyFile, err)
-			} else {
-				// Set proper permissions for private keys
-				os.Chmod(destPath, 0o600)
-			}
+	if err := sshSaveMkdir(filepath.Join(stage, "keys"), len(privateKeys)+len(publicKeys) > 0); err != nil {
+		return err
+	}
+	if err := sshSaveCopy(opts.ConfigPath, filepath.Join(stage, "config"), 0o600); err != nil {
+		return fmt.Errorf("failed to stage main config: %w", err)
+	}
+	for i, source := range includes {
+		if err := sshSaveCopy(source, filepath.Join(stage, "includes", fmt.Sprintf("include_%d_%s", i, filepath.Base(source))), 0o600); err != nil {
+			return fmt.Errorf("failed to stage include %s: %w", source, err)
 		}
 	}
-
-	// Save public keys
-	if opts.IncludePublic && len(parsed.PublicKeys) > 0 {
-		keysDir := filepath.Join(configDir, "keys")
-		if err := os.MkdirAll(keysDir, 0o755); err != nil {
-			return fmt.Errorf("failed to create keys directory: %w", err)
-		}
-
-		for _, keyFile := range parsed.PublicKeys {
-			destName := filepath.Base(keyFile)
-			destPath := filepath.Join(keysDir, destName)
-			if err := c.copyFile(keyFile, destPath); err != nil {
-				fmt.Printf("Warning: failed to copy public key %s: %v\n", keyFile, err)
-			}
+	for _, source := range privateKeys {
+		if err := sshSaveCopy(source, filepath.Join(stage, "keys", filepath.Base(source)), 0o600); err != nil {
+			return fmt.Errorf("failed to stage private key %s: %w", source, err)
 		}
 	}
-
-	// Save metadata
-	metadata := EnhancedSSHMetadata{
-		Description:  opts.Description,
-		SavedAt:      time.Now(),
-		SourcePath:   opts.ConfigPath,
-		IncludeFiles: parsed.IncludeFiles,
-		PrivateKeys:  parsed.PrivateKeys,
-		PublicKeys:   parsed.PublicKeys,
-		HasIncludes:  len(parsed.IncludeFiles) > 0,
-		HasKeys:      len(parsed.PrivateKeys) > 0,
+	for _, source := range publicKeys {
+		if err := sshSaveCopy(source, filepath.Join(stage, "keys", filepath.Base(source)), 0o644); err != nil {
+			return fmt.Errorf("failed to stage public key %s: %w", source, err)
+		}
 	}
-
-	metadataFile := filepath.Join(configDir, "metadata.json")
-	if err := c.saveEnhancedMetadata(metadataFile, metadata); err != nil {
-		fmt.Printf("Warning: failed to save metadata: %v\n", err)
+	metadata := EnhancedSSHMetadata{Description: opts.Description, SavedAt: time.Now(), SourcePath: opts.ConfigPath, IncludeFiles: includes, PrivateKeys: privateKeys, PublicKeys: publicKeys, HasIncludes: len(includes) > 0, HasKeys: len(privateKeys)+len(publicKeys) > 0}
+	//gosec:disable G117 -- PrivateKeys에는 키 내용이 아닌 선택되어 저장된 원본 경로만 기록한다.
+	metadataBytes, err := json.MarshalIndent(metadata, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal metadata: %w", err)
 	}
+	if err := sshSaveBytes(filepath.Join(stage, "metadata.json"), append(metadataBytes, '\n'), 0o600); err != nil {
+		return fmt.Errorf("failed to stage metadata: %w", err)
+	}
+	if err := sshSavePublish(stage, configDir, opts.Force); err != nil {
+		return err
+	}
+	published = true
 
-	// Print summary
 	fmt.Printf("✅ SSH configuration '%s' saved successfully\n", opts.Name)
 	if opts.Description != "" {
 		fmt.Printf("   Description: %s\n", opts.Description)
 	}
 	fmt.Printf("   Main config: %s\n", parsed.MainConfigPath)
-	fmt.Printf("   Include files: %d\n", len(parsed.IncludeFiles))
+	fmt.Printf("   Include files: %d\n", len(includes))
 	if opts.IncludeKeys {
-		fmt.Printf("   Private keys: %d\n", len(parsed.PrivateKeys))
+		fmt.Printf("   Private keys: %d\n", len(privateKeys))
 	}
 	if opts.IncludePublic {
-		fmt.Printf("   Public keys: %d\n", len(parsed.PublicKeys))
+		fmt.Printf("   Public keys: %d\n", len(publicKeys))
 	}
 	fmt.Printf("   Saved to: %s\n", configDir)
 
+	return nil
+}
+
+func validateSSHSaveName(name string) error {
+	if name == "" {
+		return fmt.Errorf("configuration name is required")
+	}
+	if filepath.Base(name) != name || name == "." || name == ".." || strings.ContainsAny(name, `/\\`) {
+		return fmt.Errorf("configuration name must be one basename")
+	}
+	return nil
+}
+
+func ensureSSHStore(store string) error {
+	info, err := os.Lstat(store)
+	if os.IsNotExist(err) {
+		if err := os.MkdirAll(store, 0o700); err != nil {
+			return fmt.Errorf("failed to create store directory: %w", err)
+		}
+		return sshSaveChmod(store, 0o700)
+	}
+	if err != nil {
+		return fmt.Errorf("failed to inspect store directory: %w", err)
+	}
+	if info.Mode()&os.ModeSymlink != 0 || !info.IsDir() {
+		return fmt.Errorf("store path is not a real directory: %s", store)
+	}
+	return nil
+}
+
+func checkSSHSaveDestination(final string, force bool) error {
+	info, err := os.Lstat(final)
+	if os.IsNotExist(err) {
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("failed to inspect destination %s: %w", final, err)
+	}
+	if !force {
+		return fmt.Errorf("configuration '%s' already exists (use --force to overwrite)", filepath.Base(final))
+	}
+	if info.Mode()&os.ModeSymlink != 0 || !info.IsDir() {
+		return fmt.Errorf("--force only replaces a real directory at %s", final)
+	}
+	return nil
+}
+
+func sshSaveRegularSource(path string) (string, error) {
+	resolved, err := filepath.EvalSymlinks(path)
+	if err != nil {
+		return "", err
+	}
+	info, err := os.Stat(resolved)
+	if err != nil {
+		return "", err
+	}
+	if !info.Mode().IsRegular() {
+		return "", fmt.Errorf("source is not a regular file: %s", path)
+	}
+	return resolved, nil
+}
+
+// sshSaveDedupe는 Load가 복원할 basename을 기준으로 충돌을 막는다. 같은 실제
+// source만 최초 순서로 한 번 저장하므로 복원 결과도 결정적이다.
+func sshSaveDedupe(paths []string, kind string) ([]string, error) {
+	result := make([]string, 0, len(paths))
+	byName := map[string]string{}
+	for _, path := range paths {
+		resolved, err := sshSaveRegularSource(path)
+		if err != nil {
+			return nil, fmt.Errorf("invalid %s source %s: %w", kind, path, err)
+		}
+		name := filepath.Base(path)
+		key := strings.ToLower(name)
+		if prior, ok := byName[key]; ok {
+			if prior != resolved {
+				return nil, fmt.Errorf("%s basename collision for %q", kind, name)
+			}
+			continue
+		}
+		byName[key] = resolved
+		result = append(result, path)
+	}
+	sort.Strings(result)
+	return result, nil
+}
+
+func sshSaveCrossKeyCollision(privateKeys, publicKeys []string) error {
+	seen := make(map[string]string, len(privateKeys))
+	for _, path := range privateKeys {
+		resolved, err := sshSaveRegularSource(path)
+		if err != nil {
+			return err
+		}
+		seen[strings.ToLower(filepath.Base(path))] = resolved
+	}
+	for _, path := range publicKeys {
+		resolved, err := sshSaveRegularSource(path)
+		if err != nil {
+			return err
+		}
+		if previous, ok := seen[strings.ToLower(filepath.Base(path))]; ok && previous != resolved {
+			return fmt.Errorf("key basename collision for %q", filepath.Base(path))
+		}
+	}
+	return nil
+}
+
+func sshSaveMkdir(path string, needed bool) error {
+	if !needed {
+		return nil
+	}
+	if err := os.Mkdir(path, 0o700); err != nil {
+		return fmt.Errorf("failed to create snapshot directory %s: %w", path, err)
+	}
+	if err := sshSaveChmod(path, 0o700); err != nil {
+		return fmt.Errorf("failed to secure snapshot directory %s: %w", path, err)
+	}
+	return nil
+}
+
+func sshSaveCopy(source, destination string, mode os.FileMode) (err error) {
+	if _, err = sshSaveRegularSource(source); err != nil {
+		return err
+	}
+	src, err := sshSaveOpen(source)
+	if err != nil {
+		return fmt.Errorf("failed to open source %s: %w", source, err)
+	}
+	srcClosed := false
+	dst, err := sshSaveOpenFile(destination, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	if err != nil {
+		closeErr := src.Close()
+		srcClosed = true
+		if closeErr != nil {
+			return errors.Join(fmt.Errorf("failed to create destination %s: %w", destination, err), fmt.Errorf("failed to close source %s: %w", source, closeErr))
+		}
+		return fmt.Errorf("failed to create destination %s: %w", destination, err)
+	}
+	dstClosed := false
+	defer func() {
+		var cleanup []error
+		if !srcClosed {
+			if closeErr := src.Close(); closeErr != nil {
+				cleanup = append(cleanup, fmt.Errorf("failed to close source %s: %w", source, closeErr))
+			}
+		}
+		if !dstClosed {
+			if closeErr := dst.Close(); closeErr != nil {
+				cleanup = append(cleanup, fmt.Errorf("failed to close destination %s: %w", destination, closeErr))
+			}
+		}
+		if len(cleanup) > 0 {
+			err = errors.Join(append([]error{err}, cleanup...)...)
+		}
+	}()
+	if _, err = io.Copy(dst, src); err != nil {
+		return fmt.Errorf("failed to copy %s: %w", source, err)
+	}
+	if closeErr := src.Close(); closeErr != nil {
+		srcClosed = true
+		return fmt.Errorf("failed to close source %s: %w", source, closeErr)
+	}
+	srcClosed = true
+	if err = sshSaveChmod(destination, mode); err != nil {
+		return fmt.Errorf("failed to set mode on %s: %w", destination, err)
+	}
+	if closeErr := dst.Close(); closeErr != nil {
+		dstClosed = true
+		return fmt.Errorf("failed to close destination %s: %w", destination, closeErr)
+	}
+	dstClosed = true
+	return nil
+}
+
+func sshSaveBytes(destination string, data []byte, mode os.FileMode) error {
+	file, err := sshSaveOpenFile(destination, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	if err != nil {
+		return fmt.Errorf("failed to create metadata %s: %w", destination, err)
+	}
+	if _, err := file.Write(data); err != nil {
+		closeErr := file.Close()
+		if closeErr != nil {
+			return errors.Join(err, closeErr)
+		}
+		return err
+	}
+	if err := sshSaveChmod(destination, mode); err != nil {
+		closeErr := file.Close()
+		if closeErr != nil {
+			return errors.Join(err, closeErr)
+		}
+		return err
+	}
+	if err := file.Close(); err != nil {
+		return fmt.Errorf("failed to close metadata %s: %w", destination, err)
+	}
+	return nil
+}
+
+func sshSavePublish(stage, final string, force bool) error {
+	if !force {
+		if err := sshSaveRename(stage, final); err != nil {
+			return fmt.Errorf("failed to publish staged snapshot %s to %s: %w", stage, final, err)
+		}
+		return nil
+	}
+	info, err := os.Lstat(final)
+	if os.IsNotExist(err) {
+		if err := sshSaveRename(stage, final); err != nil {
+			return fmt.Errorf("failed to publish staged snapshot %s to %s: %w", stage, final, err)
+		}
+		return nil
+	}
+	if err != nil || info.Mode()&os.ModeSymlink != 0 || !info.IsDir() {
+		return fmt.Errorf("force destination changed or is not a real directory: %s", final)
+	}
+	backup := filepath.Join(filepath.Dir(final), ".gzh-ssh-backup-"+filepath.Base(final)+"-"+fmt.Sprint(time.Now().UnixNano()))
+	if err := sshSaveRename(final, backup); err != nil {
+		cleanupErr := sshSaveRemoveAll(stage)
+		return errors.Join(fmt.Errorf("failed to move old snapshot %s to backup %s: %w", final, backup, err), cleanupErr)
+	}
+	if err := sshSaveRename(stage, final); err != nil {
+		rollbackErr := sshSaveRename(backup, final)
+		if rollbackErr != nil {
+			return errors.Join(fmt.Errorf("failed to publish stage %s to final %s; backup retained at %s (stage/final states must be inspected): %w", stage, final, backup, err), fmt.Errorf("failed to rollback backup %s to final %s: %w", backup, final, rollbackErr))
+		}
+		cleanupErr := sshSaveRemoveAll(stage)
+		return errors.Join(fmt.Errorf("failed to publish stage %s to final %s; old snapshot restored: %w", stage, final, err), cleanupErr)
+	}
+	if err := sshSaveRemoveAll(backup); err != nil {
+		return fmt.Errorf("snapshot committed at %s but backup cleanup pending at %s: %w", final, backup, err)
+	}
 	return nil
 }
 

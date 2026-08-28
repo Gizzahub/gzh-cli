@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -43,17 +44,9 @@ func (p *SSHConfigParser) Parse() (*ParsedSSHConfig, error) {
 		PublicKeys:     []string{},
 	}
 
-	// Parse main config file
-	if err := p.parseConfigFile(p.configPath, result); err != nil {
+	seen := make(map[string]bool)
+	if err := p.parseConfigTree(p.configPath, result, seen); err != nil {
 		return nil, fmt.Errorf("failed to parse main config file: %w", err)
-	}
-
-	// Parse all include files
-	for _, includeFile := range result.IncludeFiles {
-		if err := p.parseConfigFile(includeFile, result); err != nil {
-			// Don't fail completely if an include file can't be parsed
-			fmt.Printf("Warning: failed to parse include file %s: %v\n", includeFile, err)
-		}
 	}
 
 	// Remove duplicates
@@ -64,14 +57,41 @@ func (p *SSHConfigParser) Parse() (*ParsedSSHConfig, error) {
 	return result, nil
 }
 
-// parseConfigFile parses a single SSH config file.
-func (p *SSHConfigParser) parseConfigFile(configPath string, result *ParsedSSHConfig) error {
-	file, err := os.Open(configPath)
+// parseConfigTree는 Include를 이름순으로 재귀 순회한다. 현재 지원하는 단순 Include
+// 문법 범위에서 이미 방문한 실제 파일을 기록해 순환 Include를 건너뛴다.
+func (p *SSHConfigParser) parseConfigTree(configPath string, result *ParsedSSHConfig, seen map[string]bool) error {
+	canonical, err := filepath.EvalSymlinks(configPath)
 	if err != nil {
 		return err
 	}
+	if seen[canonical] {
+		return nil
+	}
+	seen[canonical] = true
+
+	includes, err := p.parseConfigFile(configPath, result)
+	if err != nil {
+		return err
+	}
+	for _, includeFile := range includes {
+		result.IncludeFiles = append(result.IncludeFiles, includeFile)
+		if err := p.parseConfigTree(includeFile, result, seen); err != nil {
+			// 기존 명령 계약대로 발견한 Include를 읽지 못해도 전체 저장은 중단하지 않는다.
+			fmt.Printf("Warning: failed to parse include file %s: %v\n", includeFile, err)
+		}
+	}
+	return nil
+}
+
+// parseConfigFile parses a single SSH config file.
+func (p *SSHConfigParser) parseConfigFile(configPath string, result *ParsedSSHConfig) ([]string, error) {
+	file, err := os.Open(configPath)
+	if err != nil {
+		return nil, err
+	}
 	defer file.Close()
 
+	includes := []string{}
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
@@ -82,8 +102,11 @@ func (p *SSHConfigParser) parseConfigFile(configPath string, result *ParsedSSHCo
 		}
 
 		// Parse Include directives
-		if err := p.parseIncludeLine(line, result); err != nil {
+		includeResult := &ParsedSSHConfig{}
+		if err := p.parseIncludeLine(line, includeResult); err != nil {
 			fmt.Printf("Warning: failed to parse include line '%s': %v\n", line, err)
+		} else {
+			includes = append(includes, includeResult.IncludeFiles...)
 		}
 
 		// Parse IdentityFile directives
@@ -92,7 +115,7 @@ func (p *SSHConfigParser) parseConfigFile(configPath string, result *ParsedSSHCo
 		}
 	}
 
-	return scanner.Err()
+	return includes, scanner.Err()
 }
 
 // parseIncludeLine parses Include directives.
@@ -133,6 +156,7 @@ func (p *SSHConfigParser) parseIncludeLine(line string, result *ParsedSSHConfig)
 			result.IncludeFiles = append(result.IncludeFiles, match)
 		}
 	}
+	sort.Strings(result.IncludeFiles)
 
 	return nil
 }

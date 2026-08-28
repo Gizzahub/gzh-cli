@@ -70,7 +70,10 @@ gz dev-env ssh save --name <config-name> [options]
 - `--name`: Configuration name (required)
 - `--description`: Optional description for the configuration
 - `--include-keys`: Include private keys in backup (default: true)
-- `--base-dir`: Custom SSH directory path (default: ~/.ssh)
+- `--include-public`: Include matching public keys (default: true)
+- `--config-path`: SSH config source path (default: `~/.ssh/config`)
+- `--store-path`: snapshot store path (default: `~/.gz/ssh-configs`)
+- `--force`: replace an existing saved snapshot directory
 
 **Examples:**
 
@@ -81,8 +84,8 @@ gz dev-env ssh save --name production --description "Production environment setu
 # Save configuration without private keys (config only)
 gz dev-env ssh save --name minimal --include-keys=false
 
-# Save from custom SSH directory
-gz dev-env ssh save --name custom --base-dir /custom/ssh/path
+# Save from a custom SSH config and store location
+gz dev-env ssh save --name custom --config-path /custom/ssh/config --store-path /secure/snapshots
 ```
 
 **What Gets Saved:**
@@ -90,11 +93,7 @@ gz dev-env ssh save --name custom --base-dir /custom/ssh/path
 ```
 ~/.gz/ssh-configs/production/
 ├── config              # Main ~/.ssh/config file
-├── includes/           # All Include directive files
-│   ├── config.d/
-│   │   ├── work.conf
-│   │   └── personal.conf
-│   └── special.config
+├── includes/           # Include files (normalized, Load-compatible names)
 ├── keys/               # All IdentityFile keys + public keys
 │   ├── id_rsa
 │   ├── id_rsa.pub
@@ -112,18 +111,42 @@ gz dev-env ssh load --name <config-name> [options]
 **Options:**
 
 - `--name`: Configuration name to load (required)
-- `--backup`: Create backup of current SSH config before loading
-- `--force`: Overwrite existing files without confirmation
+- `--config-path`: destination SSH config path (default: `~/.ssh/config`)
+- `--store-path`: snapshot store path (default: `~/.gz/ssh-configs`)
+- `--force`: replace observed regular destination files; destination symlinks are refused
 
 **Examples:**
 
 ```bash
-# Load saved configuration (with backup)
-gz dev-env ssh load --name production --backup
-
 # Force load without confirmation
 gz dev-env ssh load --name staging --force
 ```
+
+### Snapshot safety and permissions
+
+Save validates `--name` as a single basename. Before any final directory is changed it builds the
+complete snapshot in a same-filesystem private staging directory. New store, staging, snapshot,
+include, key, and backup directories use `0700`; the command never changes the permissions of an
+existing store. Main configuration, includes, private keys, and metadata use `0600`; public keys
+use `0644`.
+
+Without `--force`, every existing final entry is refused and left untouched. With `--force`, only
+an existing real directory can be replaced. The old directory is renamed to an owned backup, then
+the completed stage is renamed to its final name. A failed publication attempts to restore the old
+directory; a rollback failure reports the exact stage, backup, and final paths without deleting
+them speculatively. If the new directory is committed but backup cleanup fails, Save returns a
+cleanup-pending error and retains that backup. Success is printed only after required cleanup.
+
+The operation prevents ordinary partial snapshot publication, but it is not crash-atomic: Force
+has a brief final-path-absent window between the backup and publication renames. It assumes
+user-owned, non-hostile source and parent directories; encryption at rest, concurrent pathname
+replacement, arbitrary OpenSSH grammar, and crash durability beyond same-filesystem rename are
+outside this command's scope.
+
+Include traversal is deterministic and cycle-safe within the supported parser grammar. Names that
+would restore to the same basename (including case-fold collisions) are rejected unless they are
+the same source and can be deduplicated. Missing `IdentityFile`, matching `.pub`, or unmatched
+`Include` entries remain nonfatal; metadata and summaries list only files actually stored.
 
 ### List Configurations
 

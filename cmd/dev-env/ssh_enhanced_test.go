@@ -5,6 +5,7 @@ package devenv
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -342,6 +343,98 @@ func TestEnhancedSSHCommand_OverwriteProtection(t *testing.T) {
 		err := cmd.SaveEnhancedConfig(opts)
 		assert.NoError(t, err)
 	})
+}
+
+func TestEnhancedSSHCommand_SaveSnapshotContract(t *testing.T) {
+	tempDir := t.TempDir()
+	sshDir := filepath.Join(tempDir, "ssh")
+	store := filepath.Join(tempDir, "store")
+	require.NoError(t, os.MkdirAll(sshDir, 0o700))
+	config := filepath.Join(sshDir, "config")
+	key := filepath.Join(sshDir, "id_test")
+	require.NoError(t, os.WriteFile(key, []byte("private"), 0o600))
+	require.NoError(t, os.WriteFile(key+".pub", []byte("public"), 0o644))
+	require.NoError(t, os.WriteFile(config, []byte("Host test\n IdentityFile id_test\n"), 0o600))
+
+	command := NewEnhancedSSHCommand()
+	opts := &EnhancedSSHOptions{Name: "snapshot", ConfigPath: config, StorePath: store, IncludeKeys: true, IncludePublic: true}
+	require.NoError(t, command.SaveEnhancedConfig(opts))
+	final := filepath.Join(store, "snapshot")
+	for path, mode := range map[string]os.FileMode{
+		store:                                       0o700,
+		final:                                       0o700,
+		filepath.Join(final, "keys"):                0o700,
+		filepath.Join(final, "config"):              0o600,
+		filepath.Join(final, "metadata.json"):       0o600,
+		filepath.Join(final, "keys", "id_test"):     0o600,
+		filepath.Join(final, "keys", "id_test.pub"): 0o644,
+	} {
+		info, err := os.Stat(path)
+		require.NoError(t, err, path)
+		assertPrivateMode(t, info, mode)
+	}
+	metadata, err := command.loadEnhancedMetadata(filepath.Join(final, "metadata.json"))
+	require.NoError(t, err)
+	assert.True(t, metadata.HasKeys)
+	assert.Equal(t, []string{key}, metadata.PrivateKeys)
+	assert.Equal(t, []string{key + ".pub"}, metadata.PublicKeys)
+
+	err = command.SaveEnhancedConfig(opts)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "already exists")
+	require.NoError(t, os.WriteFile(config, []byte("Host replacement"), 0o600))
+	opts.Force = true
+	require.NoError(t, command.SaveEnhancedConfig(opts))
+	content, err := os.ReadFile(filepath.Join(final, "config"))
+	require.NoError(t, err)
+	assert.Equal(t, "Host replacement", string(content))
+}
+
+func TestEnhancedSSHCommand_SaveRejectsUnsafeNameAndDestination(t *testing.T) {
+	tempDir := t.TempDir()
+	config := filepath.Join(tempDir, "config")
+	require.NoError(t, os.WriteFile(config, []byte("Host example"), 0o600))
+	command := NewEnhancedSSHCommand()
+	for _, name := range []string{"../escape", "a/b", ".", ".."} {
+		err := command.SaveEnhancedConfig(&EnhancedSSHOptions{Name: name, ConfigPath: config, StorePath: filepath.Join(tempDir, "store")})
+		require.Error(t, err, name)
+	}
+	store := filepath.Join(tempDir, "store")
+	require.NoError(t, os.MkdirAll(store, 0o700))
+	final := filepath.Join(store, "entry")
+	require.NoError(t, os.WriteFile(final, []byte("victim"), 0o600))
+	err := command.SaveEnhancedConfig(&EnhancedSSHOptions{Name: "entry", ConfigPath: config, StorePath: store, Force: true})
+	require.Error(t, err)
+	content, readErr := os.ReadFile(final)
+	require.NoError(t, readErr)
+	assert.Equal(t, "victim", string(content))
+}
+
+func TestSSHSavePublishForceRestoresOldSnapshotOnPublishFailure(t *testing.T) {
+	root := t.TempDir()
+	final := filepath.Join(root, "saved")
+	stage := filepath.Join(root, "stage")
+	require.NoError(t, os.Mkdir(final, 0o700))
+	require.NoError(t, os.Mkdir(stage, 0o700))
+	require.NoError(t, os.WriteFile(filepath.Join(final, "config"), []byte("old"), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(stage, "config"), []byte("new"), 0o600))
+
+	publishErr := errors.New("publish failed")
+	originalRename := sshSaveRename
+	sshSaveRename = func(from, to string) error {
+		if from == stage && to == final {
+			return publishErr
+		}
+		return originalRename(from, to)
+	}
+	t.Cleanup(func() { sshSaveRename = originalRename })
+
+	err := sshSavePublish(stage, final, true)
+	require.ErrorIs(t, err, publishErr)
+	content, readErr := os.ReadFile(filepath.Join(final, "config"))
+	require.NoError(t, readErr)
+	assert.Equal(t, "old", string(content))
+	assert.NoDirExists(t, stage)
 }
 
 func TestEnhancedSSHCommand_RestoreEnhancedFileDestinationContract(t *testing.T) {
