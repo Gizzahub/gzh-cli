@@ -7,6 +7,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -60,6 +61,45 @@ func TestNewProfiler_DisabledPreservesCPUProfileConfiguration(t *testing.T) {
 
 	assert.Equal(t, 37, profiler.config.SampleRate)
 	assert.False(t, profiler.config.Enabled)
+}
+
+func TestProfiler_LifecycleDoesNotMutateRuntimeProfileRates(t *testing.T) {
+	const mutexRateSentinel = 37
+
+	previousMutexRate := runtime.SetMutexProfileFraction(mutexRateSentinel)
+	t.Cleanup(func() {
+		runtime.SetMutexProfileFraction(previousMutexRate)
+	})
+	assertMutexRateSentinel := func() {
+		assert.Equal(t, mutexRateSentinel, runtime.SetMutexProfileFraction(mutexRateSentinel))
+	}
+
+	configs := []*ProfileConfig{
+		nil,
+		{Enabled: false, OutputDir: t.TempDir()},
+		{Enabled: true, OutputDir: t.TempDir()},
+		{
+			Enabled:       true,
+			OutputDir:     t.TempDir(),
+			SampleRate:    17,
+			BlockRate:     19,
+			MutexFraction: 23,
+		},
+	}
+
+	profilers := make([]*Profiler, 0, len(configs))
+	for _, config := range configs {
+		profiler := NewProfiler(config)
+		profilers = append(profilers, profiler)
+		assertMutexRateSentinel()
+		require.NoError(t, profiler.Start(context.Background()))
+		assertMutexRateSentinel()
+	}
+
+	for _, profiler := range profilers {
+		require.NoError(t, profiler.Stop())
+		assertMutexRateSentinel()
+	}
 }
 
 func TestProfiler_StartStop_Disabled(t *testing.T) {

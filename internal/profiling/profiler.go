@@ -37,11 +37,14 @@ type ProfileConfig struct {
 	OutputDir   string        `yaml:"output_dir" json:"output_dir"`
 	AutoProfile bool          `yaml:"auto_profile" json:"auto_profile"`
 	CPUDuration time.Duration `yaml:"cpu_duration" json:"cpu_duration"`
-	// SampleRate is retained for configuration compatibility. CPU profile
-	// sampling is managed by runtime/pprof when profiling starts, rather than
-	// being applied globally while constructing a Profiler.
-	SampleRate    int `yaml:"sample_rate" json:"sample_rate"`
-	BlockRate     int `yaml:"block_rate" json:"block_rate"`
+	// Deprecated: SampleRate is retained for configuration compatibility only
+	// and is not applied. runtime/pprof manages CPU profile sampling at 100 Hz.
+	SampleRate int `yaml:"sample_rate" json:"sample_rate"`
+	// Deprecated: BlockRate is retained for configuration compatibility only
+	// and is not applied.
+	BlockRate int `yaml:"block_rate" json:"block_rate"`
+	// Deprecated: MutexFraction is retained for configuration compatibility only
+	// and is not applied.
 	MutexFraction int `yaml:"mutex_fraction" json:"mutex_fraction"`
 }
 
@@ -94,12 +97,6 @@ func NewProfiler(config *ProfileConfig) *Profiler {
 	if err := os.MkdirAll(p.outputDir, 0o755); err != nil {
 		p.logger.Warn("Failed to create profile output directory", "dir", p.outputDir, "error", err)
 	}
-
-	// Configure runtime profiling rates that are safe to update without an
-	// active CPU profile. CPU sampling is managed by runtime/pprof at profile
-	// start, so construction must not mutate that process-global setting.
-	runtime.SetBlockProfileRate(config.BlockRate)
-	runtime.SetMutexProfileFraction(config.MutexFraction)
 
 	return p
 }
