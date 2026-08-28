@@ -627,10 +627,7 @@ func (c *EnhancedSSHCommand) LoadEnhancedConfig(opts *EnhancedSSHOptions) error 
 
 			srcPath := filepath.Join(keysDir, entry.Name())
 			destPath := filepath.Join(sshKeysDir, entry.Name())
-			mode := os.FileMode(0o600)
-			if strings.HasSuffix(entry.Name(), ".pub") {
-				mode = 0o644 //nolint:gosec // 공개 SSH 키는 비밀이 아니며 계약은 일반적인 0644 권한을 요구한다.
-			}
+			mode := sshLoadKeyMode(entry.Name(), metadata)
 			if err := c.restoreEnhancedFile(srcPath, destPath, mode, opts.Force); err != nil {
 				return fmt.Errorf("failed to load key %s: %w", entry.Name(), err)
 			}
@@ -652,6 +649,24 @@ func (c *EnhancedSSHCommand) LoadEnhancedConfig(opts *EnhancedSSHOptions) error 
 	return nil
 }
 
+func sshLoadKeyMode(name string, metadata *EnhancedSSHMetadata) os.FileMode {
+	for _, path := range metadata.PublicKeys {
+		if filepath.Base(path) == name {
+			return 0o644
+		}
+	}
+	for _, path := range metadata.PrivateKeys {
+		if filepath.Base(path) == name {
+			return 0o600
+		}
+	}
+	// 레거시 metadata에 역할 목록이 모두 없을 때만 과거 suffix 규칙을 사용한다.
+	if len(metadata.PrivateKeys) == 0 && len(metadata.PublicKeys) == 0 && strings.HasSuffix(name, ".pub") {
+		return 0o644
+	}
+	return 0o600
+}
+
 // preflightEnhancedLoad은 복원 전에 최종 경로 전체를 계산해, snapshot 내부의
 // 이름 충돌이나 no-force 대상 충돌 때문에 일부만 복원되는 것을 막는다.
 func preflightEnhancedLoad(configDir, configPath string, force bool) error {
@@ -665,6 +680,9 @@ func preflightEnhancedLoad(configDir, configPath string, force bool) error {
 		return nil
 	}
 	if err := add(configPath); err != nil {
+		return err
+	}
+	if err := add(filepath.Join(filepath.Dir(configPath), "config.d")); err != nil {
 		return err
 	}
 	for _, spec := range []struct {
