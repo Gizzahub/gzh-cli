@@ -81,6 +81,69 @@ func TestSSHSaveFaultCardFileOperations(t *testing.T) {
 	})
 }
 
+func TestSSHSaveFaultCardFullSaveOutputSuppression(t *testing.T) {
+	t.Run("source-open", func(t *testing.T) {
+		opts := sshSaveFaultOptions(t, false, false)
+		original := sshSaveOpen
+		sshSaveOpen = func(string) (*os.File, error) { return nil, errors.New("source open") }
+		t.Cleanup(func() { sshSaveOpen = original })
+		requireSaveFault(t, opts)
+	})
+	t.Run("destination-create", func(t *testing.T) {
+		opts := sshSaveFaultOptions(t, false, false)
+		original := sshSaveOpenFile
+		sshSaveOpenFile = func(string, int, os.FileMode) (*os.File, error) { return nil, errors.New("destination create") }
+		t.Cleanup(func() { sshSaveOpenFile = original })
+		requireSaveFault(t, opts)
+	})
+	t.Run("destination-close", func(t *testing.T) {
+		opts := sshSaveFaultOptions(t, false, false)
+		original := sshSaveClose
+		sshSaveClose = func(closer io.Closer) error {
+			if file, ok := closer.(*os.File); ok && filepath.Base(file.Name()) == "config" {
+				_ = file.Close()
+				return errors.New("destination close")
+			}
+			return original(closer)
+		}
+		t.Cleanup(func() { sshSaveClose = original })
+		requireSaveFault(t, opts)
+	})
+	for _, fault := range []string{"create", "write", "chmod"} {
+		t.Run("metadata-"+fault, func(t *testing.T) {
+			opts := sshSaveFaultOptions(t, false, false)
+			originalOpen, originalWrite, originalChmod := sshSaveOpenFile, sshSaveWrite, sshSaveChmod
+			sshSaveOpenFile = func(path string, flag int, mode os.FileMode) (*os.File, error) {
+				if filepath.Base(path) == "metadata.json" && fault == "create" {
+					return nil, errors.New("metadata create")
+				}
+				return originalOpen(path, flag, mode)
+			}
+			sshSaveWrite = func(w io.Writer, data []byte) (int, error) {
+				if fault == "write" {
+					return 0, errors.New("metadata write")
+				}
+				return originalWrite(w, data)
+			}
+			sshSaveChmod = func(path string, mode os.FileMode) error {
+				if filepath.Base(path) == "metadata.json" && fault == "chmod" {
+					return errors.New("metadata chmod")
+				}
+				return originalChmod(path, mode)
+			}
+			t.Cleanup(func() { sshSaveOpenFile, sshSaveWrite, sshSaveChmod = originalOpen, originalWrite, originalChmod })
+			requireSaveFault(t, opts)
+		})
+	}
+	t.Run("parser-error", func(t *testing.T) {
+		opts := sshSaveFaultOptions(t, false, false)
+		original := sshParserOpen
+		sshParserOpen = func(string) (sshParserFile, error) { return nil, errors.New("parser open") }
+		t.Cleanup(func() { sshParserOpen = original })
+		requireSaveFault(t, opts)
+	})
+}
+
 func TestSSHSaveFaultCardStagingAndMetadata(t *testing.T) {
 	t.Run("stage MkdirTemp failure", func(t *testing.T) {
 		opts := sshSaveFaultOptions(t, false, false)

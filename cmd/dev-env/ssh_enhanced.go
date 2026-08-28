@@ -196,13 +196,18 @@ func (c *EnhancedSSHCommand) SaveEnhancedConfig(opts *EnhancedSSHOptions) (err e
 		return fmt.Errorf("failed to create SSH staging directory: %w", err)
 	}
 	if err := sshSaveChmod(stage, 0o700); err != nil {
-		return errors.Join(fmt.Errorf("failed to secure staging directory %s: %w", stage, err), sshSaveCleanupError("stage", stage, sshSaveRemoveAll(stage)))
+		cleanupErr := sshSaveRemoveAll(stage)
+		return errors.Join(fmt.Errorf("failed to secure staging directory %s (%s): %w", stage, sshSaveObservedState(stage, configDir, "", ""), err), sshSaveCleanupError("stage", stage, cleanupErr))
 	}
 	disposition := sshSaveStageCleanup
+	var publish sshSavePublishResult
 	defer func() {
 		if disposition == sshSaveStageCleanup {
 			if cleanupErr := sshSaveRemoveAll(stage); cleanupErr != nil {
 				err = errors.Join(err, fmt.Errorf("failed to remove unpublished stage %s (stage=%s final=%s): %w", stage, stage, configDir, cleanupErr))
+			}
+			if publish.recovery != nil {
+				err = errors.Join(err, fmt.Errorf("post-cleanup observed snapshot state: %s", sshSaveObservedState(publish.recovery.stage, publish.recovery.final, publish.recovery.backup, publish.recovery.wrapper)))
 			}
 		}
 	}()
@@ -239,7 +244,7 @@ func (c *EnhancedSSHCommand) SaveEnhancedConfig(opts *EnhancedSSHOptions) (err e
 	if err := sshSaveBytes(filepath.Join(stage, "metadata.json"), append(metadataBytes, '\n'), 0o600); err != nil {
 		return fmt.Errorf("failed to stage metadata: %w", err)
 	}
-	publish, err := sshSavePublish(stage, configDir, opts.Force)
+	publish, err = sshSavePublish(stage, configDir, opts.Force)
 	disposition = publish.disposition
 	if err != nil {
 		return err
@@ -322,7 +327,8 @@ func sshSaveRegularSource(path string) (string, error) {
 }
 
 // sshSaveDedupe는 Load가 복원할 basename을 기준으로 충돌을 막는다. 같은 실제
-// source만 최초 순서로 한 번 저장하므로 복원 결과도 결정적이다.
+// source라도 다른 basename이면 둘 다 복원해야 하므로, 같은 fold-name인 경우만
+// 동일 inode를 최초 항목으로 합친다.
 func sshSaveDedupe(paths []string, kind string) ([]string, error) {
 	result := make([]string, 0, len(paths))
 	type savedName struct {
@@ -509,7 +515,12 @@ const (
 	sshSaveStageCommitted
 )
 
-type sshSavePublishResult struct{ disposition sshSaveStageDisposition }
+type sshSaveRecoveryPaths struct{ stage, final, backup, wrapper string }
+
+type sshSavePublishResult struct {
+	disposition sshSaveStageDisposition
+	recovery    *sshSaveRecoveryPaths
+}
 
 func sshSavePublish(stage, final string, force bool) (sshSavePublishResult, error) {
 	if !force {
@@ -535,7 +546,7 @@ func sshSavePublish(stage, final string, force bool) (sshSavePublishResult, erro
 	if err := sshSaveChmod(wrapper, 0o700); err != nil {
 		cleanupErr := sshSaveRemoveAll(wrapper)
 		return sshSavePublishResult{}, errors.Join(
-			fmt.Errorf("failed to secure backup wrapper %s (stage=%s final=%s wrapper=%s): %w", wrapper, stage, final, wrapper, err),
+			fmt.Errorf("failed to secure backup wrapper %s (%s): %w", wrapper, sshSaveObservedState(stage, final, "", wrapper), err),
 			sshSaveCleanupError("backup wrapper", wrapper, cleanupErr),
 		)
 	}
@@ -558,9 +569,8 @@ func sshSavePublish(stage, final string, force bool) (sshSavePublishResult, erro
 			)
 		}
 		wrapperErr := sshSaveRemoveAll(wrapper)
-		state := sshSaveObservedState(stage, final, backup, wrapper)
-		return sshSavePublishResult{}, errors.Join(
-			fmt.Errorf("failed to publish stage %s to final %s; old snapshot restored (%s): %w", stage, final, state, err),
+		return sshSavePublishResult{recovery: &sshSaveRecoveryPaths{stage, final, backup, wrapper}}, errors.Join(
+			fmt.Errorf("failed to publish stage %s to final %s; old snapshot restored: %w", stage, final, err),
 			sshSaveCleanupError("backup wrapper", wrapper, wrapperErr),
 		)
 	}
@@ -588,7 +598,13 @@ func sshSaveObservedState(stage, final, backup, wrapper string) string {
 		}
 		return "unknown"
 	}
-	return fmt.Sprintf("stage=%s(%s) final=%s(%s) backup=%s(%s) wrapper=%s(%s)", stage, state(stage), final, state(final), backup, state(backup), wrapper, state(wrapper))
+	parts := []string{}
+	for _, item := range []struct{ name, path string }{{"stage", stage}, {"final", final}, {"backup", backup}, {"wrapper", wrapper}} {
+		if item.path != "" {
+			parts = append(parts, fmt.Sprintf("%s=%s(%s)", item.name, item.path, state(item.path)))
+		}
+	}
+	return strings.Join(parts, " ")
 }
 
 // LoadEnhancedConfig loads a saved SSH configuration.
@@ -728,16 +744,36 @@ func sshLoadKeyMode(name string, metadata *EnhancedSSHMetadata) os.FileMode {
 // 이름 충돌이나 no-force 대상 충돌 때문에 일부만 복원되는 것을 막는다.
 func preflightEnhancedLoad(configDir, configPath string, force bool) error {
 	destinations := []string{}
-	add := func(path string) error {
-		for _, old := range destinations {
+	reserved := []string{}
+	collides := func(paths []string, path string) (string, bool) {
+		for _, old := range paths {
 			if strings.EqualFold(old, path) {
-				return fmt.Errorf("snapshot restore destination collision: %s and %s", old, path)
+				return old, true
 			}
+		}
+		return "", false
+	}
+	addDestination := func(path string) error {
+		if old, ok := collides(destinations, path); ok {
+			return fmt.Errorf("snapshot restore destination collision: %s and %s", old, path)
+		}
+		if old, ok := collides(reserved, path); ok {
+			return fmt.Errorf("snapshot restore destination collision: reserved %s and %s", old, path)
 		}
 		destinations = append(destinations, path)
 		return nil
 	}
-	if err := add(configPath); err != nil {
+	addReserved := func(path string) error {
+		if old, ok := collides(destinations, path); ok {
+			return fmt.Errorf("snapshot restore destination collision: %s and reserved %s", old, path)
+		}
+		if old, ok := collides(reserved, path); ok {
+			return fmt.Errorf("snapshot restore destination collision: reserved %s and %s", old, path)
+		}
+		reserved = append(reserved, path)
+		return nil
+	}
+	if err := addDestination(configPath); err != nil {
 		return err
 	}
 	includeTarget := filepath.Join(filepath.Dir(configPath), "config.d")
@@ -763,6 +799,9 @@ func preflightEnhancedLoad(configDir, configPath string, force bool) error {
 			}
 		}
 		if spec.include && hasFiles {
+			if err := addReserved(includeTarget); err != nil {
+				return err
+			}
 			if info, lstatErr := os.Lstat(includeTarget); lstatErr == nil {
 				if info.Mode()&os.ModeSymlink != 0 || !info.IsDir() {
 					return fmt.Errorf("restore include container is not a real directory: %s", includeTarget)
@@ -779,7 +818,7 @@ func preflightEnhancedLoad(configDir, configPath string, force bool) error {
 			if spec.include {
 				name = sshLoadIncludeName(name)
 			}
-			if err := add(filepath.Join(spec.target, name)); err != nil {
+			if err := addDestination(filepath.Join(spec.target, name)); err != nil {
 				return err
 			}
 		}

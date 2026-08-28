@@ -548,19 +548,39 @@ func TestSSHSaveDedupeSymlinksAndUnicodeFold(t *testing.T) {
 	require.NoError(t, os.Mkdir(dir, 0o700))
 	_, err = sshSaveDedupe([]string{dir}, "key")
 	require.Error(t, err)
-	upper := filepath.Join(root, "\u212aey") // Kelvin sign folds with ASCII K.
-	lower := filepath.Join(root, "key")
+	require.NoError(t, os.Mkdir(filepath.Join(root, "one"), 0o700))
+	require.NoError(t, os.Mkdir(filepath.Join(root, "two"), 0o700))
+	upper := filepath.Join(root, "one", "\u212aey") // Kelvin sign folds with ASCII K.
+	lower := filepath.Join(root, "two", "key")
 	require.NoError(t, os.WriteFile(upper, []byte("one"), 0o600))
 	require.NoError(t, os.WriteFile(lower, []byte("two"), 0o600))
-	upperInfo, err := os.Stat(upper)
-	require.NoError(t, err)
-	lowerInfo, err := os.Stat(lower)
-	require.NoError(t, err)
-	if os.SameFile(upperInfo, lowerInfo) {
-		t.Skip("case-insensitive filesystem aliases Unicode-folded basenames")
-	}
 	_, err = sshSaveDedupe([]string{upper, lower}, "key")
 	require.Error(t, err)
+}
+
+func TestSSHSaveKeyPlanRolesAndCollisions(t *testing.T) {
+	root := t.TempDir()
+	privateDir, publicDir := filepath.Join(root, "private"), filepath.Join(root, "public")
+	require.NoError(t, os.Mkdir(privateDir, 0o700))
+	require.NoError(t, os.Mkdir(publicDir, 0o700))
+	private := filepath.Join(privateDir, "id")
+	alias := filepath.Join(publicDir, "other")
+	require.NoError(t, os.WriteFile(private, []byte("key"), 0o600))
+	require.NoError(t, os.Link(private, alias))
+	priv, pub, err := sshSaveKeyPlan([]string{private}, []string{alias})
+	require.NoError(t, err)
+	assert.Equal(t, []string{private}, priv)
+	assert.Equal(t, []string{alias}, pub, "same inode under distinct basenames remains distinct")
+	sameName := filepath.Join(publicDir, "id")
+	require.NoError(t, os.Link(private, sameName))
+	_, pub, err = sshSaveKeyPlan([]string{private}, []string{sameName})
+	require.NoError(t, err)
+	assert.Empty(t, pub, "private wins same restore basename")
+	different := filepath.Join(publicDir, "different-id")
+	require.NoError(t, os.WriteFile(different, []byte("different"), 0o600))
+	_, pub, err = sshSaveKeyPlan([]string{private}, []string{different})
+	require.NoError(t, err)
+	assert.Equal(t, []string{different}, pub)
 }
 
 func TestEnhancedSSHCommand_SaveCopyFaultMatrix(t *testing.T) {
@@ -778,6 +798,41 @@ func TestPreflightEnhancedLoadIncludeContainerAndForceDestinations(t *testing.T)
 	})
 }
 
+func TestPreflightEnhancedLoadReservedContainerCollisions(t *testing.T) {
+	newSnapshot := func(t *testing.T) (string, string) {
+		t.Helper()
+		root := t.TempDir()
+		snapshot, target := filepath.Join(root, "snapshot"), filepath.Join(root, "target", "config")
+		require.NoError(t, os.MkdirAll(filepath.Join(snapshot, "includes"), 0o700))
+		require.NoError(t, os.WriteFile(filepath.Join(snapshot, "includes", "include_0_hosts"), []byte("Host h"), 0o600))
+		return snapshot, target
+	}
+	t.Run("key config.d collides with reserved include container", func(t *testing.T) {
+		snapshot, target := newSnapshot(t)
+		require.NoError(t, os.Mkdir(filepath.Join(snapshot, "keys"), 0o700))
+		require.NoError(t, os.WriteFile(filepath.Join(snapshot, "keys", "config.d"), []byte("key"), 0o600))
+		require.Error(t, preflightEnhancedLoad(snapshot, target, true))
+	})
+	t.Run("main config.d collides with its own reserved include container", func(t *testing.T) {
+		snapshot, target := newSnapshot(t)
+		require.Error(t, preflightEnhancedLoad(snapshot, filepath.Join(filepath.Dir(target), "config.d"), true))
+	})
+	t.Run("key main exact and Unicode fold collisions", func(t *testing.T) {
+		for _, key := range []string{"config", "\u212aey"} {
+			t.Run(key, func(t *testing.T) {
+				snapshot, target := newSnapshot(t)
+				require.NoError(t, os.RemoveAll(filepath.Join(snapshot, "includes")))
+				require.NoError(t, os.Mkdir(filepath.Join(snapshot, "keys"), 0o700))
+				require.NoError(t, os.WriteFile(filepath.Join(snapshot, "keys", key), []byte("key"), 0o600))
+				if key == "\u212aey" {
+					target = filepath.Join(filepath.Dir(target), "Key")
+				}
+				require.Error(t, preflightEnhancedLoad(snapshot, target, true))
+			})
+		}
+	})
+}
+
 func TestSSHLoadKeyModeMetadataRoles(t *testing.T) {
 	metadata := &EnhancedSSHMetadata{PrivateKeys: []string{"/keys/secret.pub"}, PublicKeys: []string{"/keys/public.pub"}}
 	assert.Equal(t, os.FileMode(0o600), sshLoadKeyMode("secret.pub", metadata))
@@ -786,6 +841,33 @@ func TestSSHLoadKeyModeMetadataRoles(t *testing.T) {
 	// Private role wins if malformed metadata lists the same basename in both roles.
 	conflict := &EnhancedSSHMetadata{PrivateKeys: []string{"/keys/KEY"}, PublicKeys: []string{"/keys/key"}}
 	assert.Equal(t, os.FileMode(0o600), sshLoadKeyMode("KEY", conflict))
+}
+
+func TestEnhancedSSHCommand_LoadMetadataRoleModes(t *testing.T) {
+	root := t.TempDir()
+	store, snapshot := filepath.Join(root, "store"), filepath.Join(root, "store", "snapshot")
+	require.NoError(t, os.MkdirAll(filepath.Join(snapshot, "keys"), 0o700))
+	require.NoError(t, os.WriteFile(filepath.Join(snapshot, "config"), []byte("Host test"), 0o600))
+	for _, name := range []string{"secret.pub", "public.pub", "legacy.pub", "conflict"} {
+		require.NoError(t, os.WriteFile(filepath.Join(snapshot, "keys", name), []byte(name), 0o600))
+	}
+	metadata := EnhancedSSHMetadata{PrivateKeys: []string{"/old/secret.pub", "/old/CONFLICT"}, PublicKeys: []string{"/old/public.pub", "/old/conflict"}}
+	require.NoError(t, NewEnhancedSSHCommand().saveEnhancedMetadata(filepath.Join(snapshot, "metadata.json"), metadata))
+	target := filepath.Join(root, "target", "ssh", "config")
+	require.NoError(t, NewEnhancedSSHCommand().LoadEnhancedConfig(&EnhancedSSHOptions{Name: "snapshot", StorePath: store, ConfigPath: target}))
+	for path, mode := range map[string]os.FileMode{
+		filepath.Join(filepath.Dir(target), "secret.pub"): 0o600,
+		filepath.Join(filepath.Dir(target), "public.pub"): 0o644,
+		filepath.Join(filepath.Dir(target), "legacy.pub"): 0o600,
+		filepath.Join(filepath.Dir(target), "conflict"):   0o600,
+	} {
+		info, err := os.Stat(path)
+		require.NoError(t, err)
+		assertPrivateMode(t, info, mode)
+	}
+	// A legacy metadata with no role lists still uses the historical public suffix.
+	legacy := &EnhancedSSHMetadata{}
+	assert.Equal(t, os.FileMode(0o644), sshLoadKeyMode("legacy.pub", legacy))
 }
 
 func TestEnhancedSSHCommand_SavePublishFailureIntegration(t *testing.T) {
@@ -803,6 +885,7 @@ func TestEnhancedSSHCommand_SavePublishFailureIntegration(t *testing.T) {
 		opts, final := newForcedSave(t)
 		originalRemove, originalTemp := sshSaveRemoveAll, sshSaveMkdirTemp
 		var stage string
+		removedStage := false
 		sshSaveMkdirTemp = func(dir, pattern string) (string, error) {
 			path, err := originalTemp(dir, pattern)
 			if strings.HasPrefix(pattern, ".gzh-ssh-stage-") {
@@ -811,6 +894,9 @@ func TestEnhancedSSHCommand_SavePublishFailureIntegration(t *testing.T) {
 			return path, err
 		}
 		sshSaveRemoveAll = func(path string) error {
+			if path == stage {
+				removedStage = true
+			}
 			if strings.Contains(filepath.Base(path), ".gzh-ssh-backup-") {
 				return errors.New("backup cleanup")
 			}
@@ -822,15 +908,20 @@ func TestEnhancedSSHCommand_SavePublishFailureIntegration(t *testing.T) {
 		assert.NotContains(t, output, "saved successfully")
 		assert.DirExists(t, final)
 		assert.NoDirExists(t, stage)
+		assert.False(t, removedStage, "committed stage must not be passed to caller cleanup")
 	})
 	t.Run("rollback failure retains stage and suppresses success", func(t *testing.T) {
 		opts, final := newForcedSave(t)
 		originalRename, originalTemp := sshSaveRename, sshSaveMkdirTemp
 		var stage string
+		var wrapper string
 		sshSaveMkdirTemp = func(dir, pattern string) (string, error) {
 			path, err := originalTemp(dir, pattern)
 			if strings.HasPrefix(pattern, ".gzh-ssh-stage-") {
 				stage = path
+			}
+			if strings.HasPrefix(pattern, ".gzh-ssh-backup-") {
+				wrapper = path
 			}
 			return path, err
 		}
@@ -848,6 +939,8 @@ func TestEnhancedSSHCommand_SavePublishFailureIntegration(t *testing.T) {
 		require.Error(t, err)
 		assert.NotContains(t, output, "saved successfully")
 		assert.DirExists(t, stage)
+		assert.DirExists(t, wrapper)
+		assert.FileExists(t, filepath.Join(wrapper, filepath.Base(final), "config"))
 	})
 }
 
