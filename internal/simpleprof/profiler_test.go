@@ -12,8 +12,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -181,6 +183,27 @@ func TestStartProfileReservesUniqueTimestampSequenceNames(t *testing.T) {
 	}
 }
 
+func TestStartProfileUsesExclusive0600Reservation(t *testing.T) {
+	profiler := testProfiler(t.TempDir())
+	var gotFlags int
+	var gotMode os.FileMode
+	profiler.openFile = func(name string, flags int, mode os.FileMode) (*os.File, error) {
+		gotFlags = flags
+		gotMode = mode
+		return os.CreateTemp(t.TempDir(), "reserved")
+	}
+
+	if _, err := profiler.StartProfile(ProfileTypeMemory, 0); err != nil {
+		t.Fatalf("StartProfile() error: %v", err)
+	}
+	if want := os.O_WRONLY | os.O_CREATE | os.O_EXCL; gotFlags != want {
+		t.Errorf("OpenFile flags = %#x, want %#x", gotFlags, want)
+	}
+	if gotMode != 0o600 {
+		t.Errorf("OpenFile mode = %04o, want 0600", gotMode)
+	}
+}
+
 func TestStartProfileConcurrentReservationsAreUnique(t *testing.T) {
 	const workers = 32
 	profiler := testProfiler(t.TempDir())
@@ -312,6 +335,50 @@ func TestStartProfileCleansReservationAfterSynchronousWriteFailure(t *testing.T)
 	}
 }
 
+func TestStartProfileJoinsPrimaryCloseAndRemoveErrorsInOrder(t *testing.T) {
+	profiler := testProfiler(t.TempDir())
+	primaryErr := errors.New("write failed")
+	closeErr := errors.New("close failed")
+	removeErr := errors.New("remove failed")
+	var reservedFile *os.File
+	var order atomic.Int32
+	profiler.openFile = func(name string, flags int, mode os.FileMode) (*os.File, error) {
+		file, err := os.CreateTemp(t.TempDir(), "reserved")
+		reservedFile = file
+		return file, err
+	}
+	profiler.lookupProfile = func(string) profileWriter {
+		return profileWriterFunc(func(io.Writer, int) error { return primaryErr })
+	}
+	profiler.closeFile = func(*os.File) error {
+		if !order.CompareAndSwap(0, 1) {
+			t.Errorf("close order = %d, want first", order.Load())
+		}
+		return closeErr
+	}
+	profiler.removeFile = func(string) error {
+		if !order.CompareAndSwap(1, 2) {
+			t.Errorf("remove order = %d, want after close", order.Load())
+		}
+		return removeErr
+	}
+	t.Cleanup(func() {
+		if reservedFile != nil {
+			_ = reservedFile.Close()
+		}
+	})
+
+	_, err := profiler.StartProfile(ProfileTypeMemory, 0)
+	for _, want := range []error{primaryErr, closeErr, removeErr} {
+		if !errors.Is(err, want) {
+			t.Errorf("StartProfile() error = %v, want errors.Is(..., %v)", err, want)
+		}
+	}
+	if got := order.Load(); got != 2 {
+		t.Errorf("cleanup order final state = %d, want 2", got)
+	}
+}
+
 func TestStartProfileRejectsInvalidTypeBeforeReservation(t *testing.T) {
 	profiler := testProfiler(t.TempDir())
 	_, err := profiler.StartProfile(ProfileType("../memory"), 0)
@@ -337,13 +404,17 @@ func TestStartProfileCPUFailureCleansOnlyItsReservation(t *testing.T) {
 		}
 		return competingStartErr
 	}
+	done := make(chan struct{})
+	profiler.stopCPU = func() {}
+	profiler.sleep = func(time.Duration) {}
+	profiler.cpuDone = func() { close(done) }
 
-	first, err := profiler.StartProfile(ProfileTypeCPU, time.Millisecond)
+	first, err := profiler.StartProfile(ProfileTypeCPU, 0)
 	if err != nil {
 		t.Fatalf("first CPU StartProfile() error: %v", err)
 	}
 
-	second, err := profiler.StartProfile(ProfileTypeCPU, time.Millisecond)
+	second, err := profiler.StartProfile(ProfileTypeCPU, 0)
 	if second != "" {
 		t.Fatalf("second CPU filename = %q, want empty on competing start", second)
 	}
@@ -359,5 +430,149 @@ func TestStartProfileCPUFailureCleansOnlyItsReservation(t *testing.T) {
 	}
 	if len(entries) != 1 || entries[0] != first {
 		t.Fatalf("CPU reservations = %v, want only %q", entries, first)
+	}
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Fatal("CPU profile completion did not close its goroutine")
+	}
+}
+
+func TestProfileReservationHelperProcess(t *testing.T) {
+	if os.Getenv("SIMPLEPROF_HELPER") != "1" {
+		return
+	}
+
+	outputDir := os.Getenv("SIMPLEPROF_OUTPUT_DIR")
+	workerID := os.Getenv("SIMPLEPROF_WORKER_ID")
+	readyPath := os.Getenv("SIMPLEPROF_READY_PATH")
+	releasePath := os.Getenv("SIMPLEPROF_RELEASE_PATH")
+	if err := os.WriteFile(readyPath, []byte(workerID), 0o600); err != nil {
+		t.Fatalf("WriteFile(ready) error: %v", err)
+	}
+	for {
+		if _, err := os.Stat(releasePath); err == nil {
+			break
+		} else if !errors.Is(err, os.ErrNotExist) {
+			t.Fatalf("Stat(release) error: %v", err)
+		}
+		time.Sleep(time.Millisecond)
+	}
+
+	profiler := testProfiler(outputDir)
+	profiler.now = func() time.Time { return time.Date(2026, time.August, 29, 9, 30, 0, 0, time.UTC) }
+	var sequence atomic.Uint64
+	profiler.nextSequence = func() uint64 { return sequence.Add(1) }
+	profiler.lookupProfile = func(string) profileWriter {
+		return profileWriterFunc(func(writer io.Writer, _ int) error {
+			_, err := io.WriteString(writer, workerID)
+			return err
+		})
+	}
+	filename, err := profiler.StartProfile(ProfileTypeMemory, 0)
+	if err != nil {
+		t.Fatalf("StartProfile() error: %v", err)
+	}
+	fmt.Println(filename)
+}
+
+func TestStartProfileReservesAcrossHelperProcesses(t *testing.T) {
+	const workers = 4
+	outputDir := t.TempDir()
+	fixedTimestamp := "20260829_093000"
+	sentinel := filepath.Join(outputDir, "memory_"+fixedTimestamp+"_1.prof")
+	if err := os.WriteFile(sentinel, []byte("keep"), 0o600); err != nil {
+		t.Fatalf("WriteFile(sentinel) error: %v", err)
+	}
+	releasePath := filepath.Join(outputDir, "release")
+
+	type helperResult struct {
+		id       int
+		filename string
+		err      error
+	}
+	results := make(chan helperResult, workers)
+	for workerID := range workers {
+		workerID := workerID
+		go func() {
+			commandContext, cancel := context.WithTimeout(t.Context(), 45*time.Second)
+			defer cancel()
+			readyPath := filepath.Join(outputDir, fmt.Sprintf("ready-%d", workerID))
+			command := exec.CommandContext(commandContext, "go", "test", ".", "-run=^TestProfileReservationHelperProcess$", "-count=1", "-v")
+			command.Env = append(os.Environ(),
+				"SIMPLEPROF_HELPER=1",
+				"SIMPLEPROF_OUTPUT_DIR="+outputDir,
+				fmt.Sprintf("SIMPLEPROF_WORKER_ID=worker-%d", workerID),
+				"SIMPLEPROF_READY_PATH="+readyPath,
+				"SIMPLEPROF_RELEASE_PATH="+releasePath,
+			)
+			output, err := command.Output()
+			filename := ""
+			for _, line := range strings.Split(strings.TrimSpace(string(output)), "\n") {
+				if strings.HasSuffix(line, ".prof") {
+					filename = line
+					break
+				}
+			}
+			results <- helperResult{id: workerID, filename: filename, err: err}
+		}()
+	}
+
+	deadline := time.Now().Add(30 * time.Second)
+	for workerID := range workers {
+		readyPath := filepath.Join(outputDir, fmt.Sprintf("ready-%d", workerID))
+		for {
+			if _, err := os.Stat(readyPath); err == nil {
+				break
+			}
+			if time.Now().After(deadline) {
+				t.Fatalf("helper %d did not reach reservation barrier", workerID)
+			}
+			time.Sleep(time.Millisecond)
+		}
+	}
+	if err := os.WriteFile(releasePath, nil, 0o600); err != nil {
+		t.Fatalf("WriteFile(release) error: %v", err)
+	}
+
+	seen := make(map[string]struct{}, workers)
+	for range workers {
+		result := <-results
+		if result.err != nil {
+			t.Errorf("helper %d error: %v", result.id, result.err)
+			continue
+		}
+		if _, exists := seen[result.filename]; exists {
+			t.Errorf("duplicate helper filename %q", result.filename)
+		}
+		seen[result.filename] = struct{}{}
+		contents, err := os.ReadFile(result.filename)
+		if err != nil {
+			t.Errorf("ReadFile(%q) error: %v", result.filename, err)
+			continue
+		}
+		if want := fmt.Sprintf("worker-%d", result.id); string(contents) != want {
+			t.Errorf("helper %d contents = %q, want %q", result.id, contents, want)
+		}
+	}
+	if len(seen) != workers {
+		t.Errorf("unique helper files = %d, want %d", len(seen), workers)
+	}
+	root, err := os.OpenRoot(outputDir)
+	if err != nil {
+		t.Fatalf("OpenRoot() error: %v", err)
+	}
+	defer root.Close()
+	file, err := root.Open(filepath.Base(sentinel))
+	if err != nil {
+		t.Fatalf("Open(sentinel) error: %v", err)
+	}
+	contents, err := io.ReadAll(file)
+	closeErr := file.Close()
+	if err != nil || closeErr != nil {
+		t.Fatalf("ReadFile(sentinel) errors: read=%v close=%v", err, closeErr)
+	}
+	if string(contents) != "keep" {
+		t.Errorf("sentinel contents = %q, want preserved value", contents)
 	}
 }
