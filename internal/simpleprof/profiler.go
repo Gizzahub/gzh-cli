@@ -175,12 +175,10 @@ func (p *SimpleProfiler) saveGoroutineProfile(filename string) (string, error) {
 }
 
 func (p *SimpleProfiler) saveBlockProfile(filename string) (string, error) {
-	runtime.SetBlockProfileRate(1)
 	return p.saveProfile("block", filename)
 }
 
 func (p *SimpleProfiler) saveMutexProfile(filename string) (string, error) {
-	runtime.SetMutexProfileFraction(1)
 	return p.saveProfile("mutex", filename)
 }
 

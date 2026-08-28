@@ -8,6 +8,8 @@ import (
 	"math"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"runtime"
 	"testing"
 	"time"
 )
@@ -94,5 +96,37 @@ func TestStartHTTPServerUsesDedicatedIPv4LoopbackHandler(t *testing.T) {
 	}
 	if profiler.server.Handler == nil || profiler.server.Handler == http.DefaultServeMux {
 		t.Fatalf("server handler = %#v, want dedicated mux", profiler.server.Handler)
+	}
+}
+
+func TestStartProfileDoesNotMutateMutexProfileRate(t *testing.T) {
+	const mutexRateSentinel = 37
+
+	previousMutexRate := runtime.SetMutexProfileFraction(mutexRateSentinel)
+	t.Cleanup(func() {
+		runtime.SetMutexProfileFraction(previousMutexRate)
+	})
+	assertMutexRateSentinel := func() {
+		t.Helper()
+		if got := runtime.SetMutexProfileFraction(-1); got != mutexRateSentinel {
+			t.Fatalf("mutex profile rate = %d, want %d", got, mutexRateSentinel)
+		}
+	}
+
+	profiler := NewSimpleProfiler(t.TempDir())
+	for _, profileType := range []ProfileType{ProfileTypeBlock, ProfileTypeMutex} {
+		t.Run(string(profileType), func(t *testing.T) {
+			filename, err := profiler.StartProfile(profileType, 0)
+			if err != nil {
+				t.Fatalf("StartProfile(%q) error: %v", profileType, err)
+			}
+			if filename == "" {
+				t.Fatal("StartProfile() returned an empty filename")
+			}
+			if _, err := os.Stat(filename); err != nil {
+				t.Fatalf("profile file %q was not saved: %v", filename, err)
+			}
+			assertMutexRateSentinel()
+		})
 	}
 }
