@@ -4,6 +4,8 @@
 package devenv
 
 import (
+	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -11,6 +13,22 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestSSHConfigParser_ReportsCloseFailure(t *testing.T) {
+	root := t.TempDir()
+	config := filepath.Join(root, "config")
+	require.NoError(t, os.WriteFile(config, []byte("Host example\n"), 0o600))
+	closeErr := errors.New("parser close")
+	original := sshParserClose
+	sshParserClose = func(closer io.Closer) error {
+		_ = closer.Close()
+		return closeErr
+	}
+	t.Cleanup(func() { sshParserClose = original })
+	_, err := NewSSHConfigParser(config).Parse()
+	require.ErrorIs(t, err, closeErr)
+	assert.Contains(t, err.Error(), config)
+}
 
 func TestSSHConfigParser_Parse(t *testing.T) {
 	tests := []struct {

@@ -6,6 +6,7 @@ package devenv
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -15,6 +16,21 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func captureSSHSaveOutput(t *testing.T, action func() error) (string, error) {
+	t.Helper()
+	original := os.Stdout
+	reader, writer, err := os.Pipe()
+	require.NoError(t, err)
+	os.Stdout = writer
+	err = action()
+	require.NoError(t, writer.Close())
+	os.Stdout = original
+	output, readErr := io.ReadAll(reader)
+	require.NoError(t, readErr)
+	require.NoError(t, reader.Close())
+	return string(output), err
+}
 
 func TestEnhancedSSHCommand_SaveAndLoadConfig(t *testing.T) {
 	// Create temporary directories
@@ -434,7 +450,277 @@ func TestSSHSavePublishForceRestoresOldSnapshotOnPublishFailure(t *testing.T) {
 	content, readErr := os.ReadFile(filepath.Join(final, "config"))
 	require.NoError(t, readErr)
 	assert.Equal(t, "old", string(content))
-	assert.NoDirExists(t, stage)
+	// The caller owns stage cleanup; publish only owns its backup wrapper.
+	assert.DirExists(t, stage)
+}
+
+func TestSSHSavePublishFailureStatesAndOwnership(t *testing.T) {
+	newSnapshot := func(t *testing.T) (string, string) {
+		t.Helper()
+		root := t.TempDir()
+		final, stage := filepath.Join(root, "saved"), filepath.Join(root, "stage")
+		require.NoError(t, os.Mkdir(final, 0o700))
+		require.NoError(t, os.Mkdir(stage, 0o700))
+		return final, stage
+	}
+	t.Run("no force publish failure leaves stage for caller", func(t *testing.T) {
+		root := t.TempDir()
+		stage, final := filepath.Join(root, "stage"), filepath.Join(root, "saved")
+		require.NoError(t, os.Mkdir(stage, 0o700))
+		original := sshSaveRename
+		sshSaveRename = func(_, _ string) error { return errors.New("rename") }
+		t.Cleanup(func() { sshSaveRename = original })
+		result, err := sshSavePublish(stage, final, false)
+		require.Error(t, err)
+		assert.Equal(t, sshSaveStageCleanup, result.disposition)
+		assert.DirExists(t, stage)
+	})
+	t.Run("old to backup failure reports all observed paths", func(t *testing.T) {
+		final, stage := newSnapshot(t)
+		original := sshSaveRename
+		sshSaveRename = func(from, to string) error {
+			if from == final {
+				return errors.New("old-to-backup")
+			}
+			return original(from, to)
+		}
+		t.Cleanup(func() { sshSaveRename = original })
+		_, err := sshSavePublish(stage, final, true)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "stage="+stage)
+		assert.Contains(t, err.Error(), "final="+final)
+		assert.DirExists(t, stage)
+		assert.DirExists(t, final)
+	})
+	t.Run("rollback failure retains stage and backup", func(t *testing.T) {
+		final, stage := newSnapshot(t)
+		original := sshSaveRename
+		sshSaveRename = func(from, to string) error {
+			if from == stage && to == final {
+				return errors.New("publish")
+			}
+			if to == final {
+				return errors.New("rollback")
+			}
+			return original(from, to)
+		}
+		t.Cleanup(func() { sshSaveRename = original })
+		result, err := sshSavePublish(stage, final, true)
+		require.Error(t, err)
+		assert.Equal(t, sshSaveStageRetained, result.disposition)
+		assert.Contains(t, err.Error(), "wrapper=")
+		assert.DirExists(t, stage)
+		assert.NoDirExists(t, final)
+	})
+	t.Run("postcommit backup cleanup is reported without removing stage", func(t *testing.T) {
+		final, stage := newSnapshot(t)
+		original := sshSaveRemoveAll
+		sshSaveRemoveAll = func(path string) error {
+			if strings.Contains(filepath.Base(path), ".gzh-ssh-backup-") {
+				return errors.New("cleanup")
+			}
+			return original(path)
+		}
+		t.Cleanup(func() { sshSaveRemoveAll = original })
+		result, err := sshSavePublish(stage, final, true)
+		require.Error(t, err)
+		assert.Equal(t, sshSaveStageCommitted, result.disposition)
+		assert.Contains(t, err.Error(), "stage="+stage)
+		assert.Contains(t, err.Error(), "final="+final)
+		assert.DirExists(t, final)
+	})
+}
+
+func TestSSHSaveDedupeSymlinksAndUnicodeFold(t *testing.T) {
+	root := t.TempDir()
+	realFile := filepath.Join(root, "real")
+	alias := filepath.Join(root, "alias")
+	require.NoError(t, os.WriteFile(realFile, []byte("key"), 0o600))
+	require.NoError(t, os.Symlink(realFile, alias))
+	result, err := sshSaveDedupe([]string{realFile, alias}, "key")
+	require.NoError(t, err)
+	assert.ElementsMatch(t, []string{realFile, alias}, result, "different restore basenames must be preserved even for one inode")
+	dangling := filepath.Join(root, "dangling")
+	require.NoError(t, os.Symlink(filepath.Join(root, "missing"), dangling))
+	_, err = sshSaveDedupe([]string{dangling}, "key")
+	require.Error(t, err)
+	dir := filepath.Join(root, "directory")
+	require.NoError(t, os.Mkdir(dir, 0o700))
+	_, err = sshSaveDedupe([]string{dir}, "key")
+	require.Error(t, err)
+	upper := filepath.Join(root, "\u212aey") // Kelvin sign folds with ASCII K.
+	lower := filepath.Join(root, "key")
+	require.NoError(t, os.WriteFile(upper, []byte("one"), 0o600))
+	require.NoError(t, os.WriteFile(lower, []byte("two"), 0o600))
+	upperInfo, err := os.Stat(upper)
+	require.NoError(t, err)
+	lowerInfo, err := os.Stat(lower)
+	require.NoError(t, err)
+	if os.SameFile(upperInfo, lowerInfo) {
+		t.Skip("case-insensitive filesystem aliases Unicode-folded basenames")
+	}
+	_, err = sshSaveDedupe([]string{upper, lower}, "key")
+	require.Error(t, err)
+}
+
+func TestEnhancedSSHCommand_SaveCopyFaultMatrix(t *testing.T) {
+	newOptions := func(t *testing.T) *EnhancedSSHOptions {
+		t.Helper()
+		root := t.TempDir()
+		sshDir := filepath.Join(root, "ssh")
+		require.NoError(t, os.Mkdir(sshDir, 0o700))
+		includeDir := filepath.Join(sshDir, "config.d")
+		require.NoError(t, os.Mkdir(includeDir, 0o700))
+		require.NoError(t, os.WriteFile(filepath.Join(includeDir, "extra"), []byte("Host extra"), 0o600))
+		require.NoError(t, os.WriteFile(filepath.Join(sshDir, "id_key"), []byte("private"), 0o600))
+		require.NoError(t, os.WriteFile(filepath.Join(sshDir, "id_key.pub"), []byte("public"), 0o600))
+		config := filepath.Join(sshDir, "config")
+		require.NoError(t, os.WriteFile(config, []byte("Include config.d/*\nIdentityFile id_key\n"), 0o600))
+		return &EnhancedSSHOptions{Name: "snapshot", ConfigPath: config, StorePath: filepath.Join(root, "store"), IncludeKeys: true, IncludePublic: true}
+	}
+	for copyNumber, label := range []string{"main", "include", "private", "public"} {
+		t.Run(label+" copy error leaves no published snapshot", func(t *testing.T) {
+			opts := newOptions(t)
+			original := sshSaveCopyBytes
+			calls := 0
+			sshSaveCopyBytes = func(dst io.Writer, src io.Reader) (int64, error) {
+				calls++
+				if calls == copyNumber+1 {
+					return 0, errors.New(label + " copy")
+				}
+				return original(dst, src)
+			}
+			t.Cleanup(func() { sshSaveCopyBytes = original })
+			output, err := captureSSHSaveOutput(t, func() error { return NewEnhancedSSHCommand().SaveEnhancedConfig(opts) })
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), label+" copy")
+			assert.NotContains(t, output, "saved successfully")
+			assert.NoDirExists(t, filepath.Join(opts.StorePath, opts.Name))
+		})
+	}
+}
+
+func TestSSHSaveCopyAndMetadataFaultJoins(t *testing.T) {
+	root := t.TempDir()
+	source, destination := filepath.Join(root, "source"), filepath.Join(root, "destination")
+	require.NoError(t, os.WriteFile(source, []byte("source"), 0o600))
+	t.Run("source close failure", func(t *testing.T) {
+		original := sshSaveClose
+		sourceCloseErr := errors.New("source close")
+		sshSaveClose = func(closer io.Closer) error {
+			if file, ok := closer.(*os.File); ok && file.Name() == source {
+				_ = file.Close()
+				return sourceCloseErr
+			}
+			return original(closer)
+		}
+		t.Cleanup(func() { sshSaveClose = original })
+		err := sshSaveCopy(source, destination, 0o600)
+		require.ErrorIs(t, err, sourceCloseErr)
+		assert.Contains(t, err.Error(), source)
+	})
+	t.Run("chmod and destination close failures join", func(t *testing.T) {
+		dest := destination + "-chmod"
+		chmodErr, closeErr := errors.New("chmod"), errors.New("destination close")
+		originalChmod, originalClose := sshSaveChmod, sshSaveClose
+		sshSaveChmod = func(path string, mode os.FileMode) error {
+			if path == dest {
+				return chmodErr
+			}
+			return originalChmod(path, mode)
+		}
+		sshSaveClose = func(closer io.Closer) error {
+			if file, ok := closer.(*os.File); ok && file.Name() == dest {
+				_ = file.Close()
+				return closeErr
+			}
+			return originalClose(closer)
+		}
+		t.Cleanup(func() { sshSaveChmod, sshSaveClose = originalChmod, originalClose })
+		err := sshSaveCopy(source, dest, 0o600)
+		require.ErrorIs(t, err, chmodErr)
+		require.ErrorIs(t, err, closeErr)
+		assert.Contains(t, err.Error(), dest)
+	})
+	t.Run("metadata write chmod and close errors are contextual", func(t *testing.T) {
+		dest := filepath.Join(root, "metadata.json")
+		writeErr, closeErr := errors.New("write"), errors.New("metadata close")
+		originalWrite, originalClose := sshSaveWrite, sshSaveClose
+		sshSaveWrite = func(io.Writer, []byte) (int, error) { return 0, writeErr }
+		sshSaveClose = func(closer io.Closer) error { _ = closer.Close(); return closeErr }
+		t.Cleanup(func() { sshSaveWrite, sshSaveClose = originalWrite, originalClose })
+		err := sshSaveBytes(dest, []byte("metadata"), 0o600)
+		require.ErrorIs(t, err, writeErr)
+		require.ErrorIs(t, err, closeErr)
+		assert.Contains(t, err.Error(), dest)
+	})
+	t.Run("metadata chmod and close failures join", func(t *testing.T) {
+		dest := filepath.Join(root, "metadata-chmod.json")
+		chmodErr, closeErr := errors.New("metadata chmod"), errors.New("metadata close")
+		originalChmod, originalClose := sshSaveChmod, sshSaveClose
+		sshSaveChmod = func(path string, mode os.FileMode) error {
+			if path == dest {
+				return chmodErr
+			}
+			return originalChmod(path, mode)
+		}
+		sshSaveClose = func(closer io.Closer) error { _ = closer.Close(); return closeErr }
+		t.Cleanup(func() { sshSaveChmod, sshSaveClose = originalChmod, originalClose })
+		err := sshSaveBytes(dest, []byte("metadata"), 0o600)
+		require.ErrorIs(t, err, chmodErr)
+		require.ErrorIs(t, err, closeErr)
+		assert.Contains(t, err.Error(), dest)
+	})
+}
+
+func TestEnhancedSSHCommand_SaveMetadataAndStageCleanupFaults(t *testing.T) {
+	newOptions := func(t *testing.T) *EnhancedSSHOptions {
+		t.Helper()
+		root := t.TempDir()
+		config := filepath.Join(root, "config")
+		require.NoError(t, os.WriteFile(config, []byte("Host test"), 0o600))
+		return &EnhancedSSHOptions{Name: "snapshot", ConfigPath: config, StorePath: filepath.Join(root, "store")}
+	}
+	t.Run("metadata create failure", func(t *testing.T) {
+		opts := newOptions(t)
+		original := sshSaveOpenFile
+		sshSaveOpenFile = func(path string, flag int, mode os.FileMode) (*os.File, error) {
+			if filepath.Base(path) == "metadata.json" {
+				return nil, errors.New("metadata create")
+			}
+			return original(path, flag, mode)
+		}
+		t.Cleanup(func() { sshSaveOpenFile = original })
+		err := NewEnhancedSSHCommand().SaveEnhancedConfig(opts)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "metadata create")
+		assert.NoDirExists(t, filepath.Join(opts.StorePath, opts.Name))
+	})
+	t.Run("stage cleanup failure names stage and final", func(t *testing.T) {
+		opts := newOptions(t)
+		originalCopy, originalRemove, originalTemp := sshSaveCopyBytes, sshSaveRemoveAll, sshSaveMkdirTemp
+		var stage string
+		sshSaveMkdirTemp = func(dir, pattern string) (string, error) {
+			var err error
+			stage, err = originalTemp(dir, pattern)
+			return stage, err
+		}
+		sshSaveCopyBytes = func(io.Writer, io.Reader) (int64, error) { return 0, errors.New("copy") }
+		sshSaveRemoveAll = func(path string) error {
+			if path == stage {
+				return errors.New("stage cleanup")
+			}
+			return originalRemove(path)
+		}
+		t.Cleanup(func() {
+			sshSaveCopyBytes, sshSaveRemoveAll, sshSaveMkdirTemp = originalCopy, originalRemove, originalTemp
+			_ = os.RemoveAll(stage)
+		})
+		err := NewEnhancedSSHCommand().SaveEnhancedConfig(opts)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "stage="+stage)
+		assert.Contains(t, err.Error(), "final="+filepath.Join(opts.StorePath, opts.Name))
+	})
 }
 
 func TestEnhancedSSHCommand_RestoreEnhancedFileDestinationContract(t *testing.T) {

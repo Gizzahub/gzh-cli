@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -14,7 +15,10 @@ import (
 	"strings"
 )
 
-var sshParserOpen = os.Open
+var (
+	sshParserOpen  = os.Open
+	sshParserClose = func(closer io.Closer) error { return closer.Close() }
+)
 
 // SSHConfigParser handles parsing SSH config files and extracting includes and keys.
 type SSHConfigParser struct {
@@ -92,7 +96,7 @@ func (p *SSHConfigParser) parseConfigFile(configPath string, result *ParsedSSHCo
 		return nil, err
 	}
 	defer func() {
-		if closeErr := file.Close(); closeErr != nil {
+		if closeErr := sshParserClose(file); closeErr != nil {
 			err = errors.Join(err, fmt.Errorf("failed to close %s: %w", configPath, closeErr))
 		}
 	}()

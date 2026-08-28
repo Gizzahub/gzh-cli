@@ -195,13 +195,13 @@ func (c *EnhancedSSHCommand) SaveEnhancedConfig(opts *EnhancedSSHOptions) (err e
 		return fmt.Errorf("failed to create SSH staging directory: %w", err)
 	}
 	if err := sshSaveChmod(stage, 0o700); err != nil {
-		return errors.Join(fmt.Errorf("failed to secure staging directory %s: %w", stage, err), sshSaveRemoveAll(stage))
+		return errors.Join(fmt.Errorf("failed to secure staging directory %s: %w", stage, err), sshSaveCleanupError("stage", stage, sshSaveRemoveAll(stage)))
 	}
 	disposition := sshSaveStageCleanup
 	defer func() {
 		if disposition == sshSaveStageCleanup {
 			if cleanupErr := sshSaveRemoveAll(stage); cleanupErr != nil {
-				err = errors.Join(err, fmt.Errorf("failed to remove unpublished stage %s: %w", stage, cleanupErr))
+				err = errors.Join(err, fmt.Errorf("failed to remove unpublished stage %s (stage=%s final=%s): %w", stage, stage, configDir, cleanupErr))
 			}
 		}
 	}()
@@ -371,13 +371,19 @@ func sshSaveKeyPlan(privateSources, publicSources []string) ([]string, []string,
 	if err != nil {
 		return nil, nil, err
 	}
-	privateInfo := make(map[string]os.FileInfo, len(privateKeys))
+	privateInfo := make([]struct {
+		name string
+		info os.FileInfo
+	}, 0, len(privateKeys))
 	for _, path := range privateKeys {
 		info, err := os.Stat(path)
 		if err != nil {
 			return nil, nil, err
 		}
-		privateInfo[strings.ToLower(filepath.Base(path))] = info
+		privateInfo = append(privateInfo, struct {
+			name string
+			info os.FileInfo
+		}{name: filepath.Base(path), info: info})
 	}
 	actualPublic := make([]string, 0, len(publicKeys))
 	for _, path := range publicKeys {
@@ -385,13 +391,19 @@ func sshSaveKeyPlan(privateSources, publicSources []string) ([]string, []string,
 		if err != nil {
 			return nil, nil, err
 		}
-		if old, ok := privateInfo[strings.ToLower(filepath.Base(path))]; ok {
-			if os.SameFile(old, info) {
-				continue
+		duplicatePrivate := false
+		for _, old := range privateInfo {
+			if strings.EqualFold(old.name, filepath.Base(path)) {
+				if os.SameFile(old.info, info) {
+					duplicatePrivate = true
+					break
+				}
+				return nil, nil, fmt.Errorf("key basename collision for %q", filepath.Base(path))
 			}
-			return nil, nil, fmt.Errorf("key basename collision for %q", filepath.Base(path))
 		}
-		actualPublic = append(actualPublic, path)
+		if !duplicatePrivate {
+			actualPublic = append(actualPublic, path)
+		}
 	}
 	return privateKeys, actualPublic, nil
 }
@@ -471,16 +483,16 @@ func sshSaveBytes(destination string, data []byte, mode os.FileMode) error {
 	if _, err := sshSaveWrite(file, data); err != nil {
 		closeErr := sshSaveClose(file)
 		if closeErr != nil {
-			return errors.Join(err, closeErr)
+			return errors.Join(fmt.Errorf("failed to write metadata %s: %w", destination, err), fmt.Errorf("failed to close metadata %s: %w", destination, closeErr))
 		}
-		return err
+		return fmt.Errorf("failed to write metadata %s: %w", destination, err)
 	}
 	if err := sshSaveChmod(destination, mode); err != nil {
 		closeErr := sshSaveClose(file)
 		if closeErr != nil {
-			return errors.Join(err, closeErr)
+			return errors.Join(fmt.Errorf("failed to set mode on metadata %s: %w", destination, err), fmt.Errorf("failed to close metadata %s: %w", destination, closeErr))
 		}
-		return err
+		return fmt.Errorf("failed to set mode on metadata %s: %w", destination, err)
 	}
 	if err := sshSaveClose(file); err != nil {
 		return fmt.Errorf("failed to close metadata %s: %w", destination, err)
@@ -520,27 +532,45 @@ func sshSavePublish(stage, final string, force bool) (sshSavePublishResult, erro
 		return sshSavePublishResult{}, fmt.Errorf("failed to create backup wrapper beside %s: %w", final, err)
 	}
 	if err := sshSaveChmod(wrapper, 0o700); err != nil {
-		return sshSavePublishResult{}, errors.Join(fmt.Errorf("failed to secure backup wrapper %s: %w", wrapper, err), sshSaveRemoveAll(wrapper))
+		cleanupErr := sshSaveRemoveAll(wrapper)
+		return sshSavePublishResult{}, errors.Join(
+			fmt.Errorf("failed to secure backup wrapper %s (stage=%s final=%s wrapper=%s): %w", wrapper, stage, final, wrapper, err),
+			sshSaveCleanupError("backup wrapper", wrapper, cleanupErr),
+		)
 	}
 	backup := filepath.Join(wrapper, filepath.Base(final))
 	if err := sshSaveRename(final, backup); err != nil {
-		cleanupErr := sshSaveRemoveAll(stage)
 		wrapperErr := sshSaveRemoveAll(wrapper)
-		return sshSavePublishResult{}, errors.Join(fmt.Errorf("failed to move old snapshot %s to backup %s: %w", final, backup, err), cleanupErr, wrapperErr)
+		return sshSavePublishResult{}, errors.Join(
+			fmt.Errorf("failed to move old snapshot %s to backup %s (stage=%s final=%s backup=%s wrapper=%s): %w", final, backup, stage, final, backup, wrapper, err),
+			sshSaveCleanupError("backup wrapper", wrapper, wrapperErr),
+		)
 	}
 	if err := sshSaveRename(stage, final); err != nil {
 		rollbackErr := sshSaveRename(backup, final)
 		if rollbackErr != nil {
-			return sshSavePublishResult{disposition: sshSaveStageRetained}, errors.Join(fmt.Errorf("failed to publish stage %s to final %s; backup retained at %s (stage retained): %w", stage, final, backup, err), fmt.Errorf("failed to rollback backup %s to final %s: %w", backup, final, rollbackErr))
+			return sshSavePublishResult{disposition: sshSaveStageRetained}, errors.Join(
+				fmt.Errorf("failed to publish stage %s to final %s; backup retained at %s (stage retained; stage=%s final=%s backup=%s wrapper=%s): %w", stage, final, backup, stage, final, backup, wrapper, err),
+				fmt.Errorf("failed to rollback backup %s to final %s (stage=%s final=%s backup=%s wrapper=%s): %w", backup, final, stage, final, backup, wrapper, rollbackErr),
+			)
 		}
-		cleanupErr := sshSaveRemoveAll(stage)
 		wrapperErr := sshSaveRemoveAll(wrapper)
-		return sshSavePublishResult{}, errors.Join(fmt.Errorf("failed to publish stage %s to final %s; old snapshot restored: %w", stage, final, err), cleanupErr, wrapperErr)
+		return sshSavePublishResult{}, errors.Join(
+			fmt.Errorf("failed to publish stage %s to final %s; old snapshot restored (stage=%s final=%s backup=%s wrapper=%s): %w", stage, final, stage, final, backup, wrapper, err),
+			sshSaveCleanupError("backup wrapper", wrapper, wrapperErr),
+		)
 	}
 	if err := sshSaveRemoveAll(wrapper); err != nil {
-		return sshSavePublishResult{disposition: sshSaveStageCommitted}, fmt.Errorf("snapshot committed at %s but backup cleanup pending at %s: %w", final, backup, err)
+		return sshSavePublishResult{disposition: sshSaveStageCommitted}, fmt.Errorf("snapshot committed; backup cleanup pending (stage=%s final=%s backup=%s wrapper=%s): %w", stage, final, backup, wrapper, err)
 	}
 	return sshSavePublishResult{disposition: sshSaveStageCommitted}, nil
+}
+
+func sshSaveCleanupError(kind, path string, err error) error {
+	if err == nil {
+		return nil
+	}
+	return fmt.Errorf("failed to remove %s %s: %w", kind, path, err)
 }
 
 // LoadEnhancedConfig loads a saved SSH configuration.
@@ -673,13 +703,14 @@ func sshLoadKeyMode(name string, metadata *EnhancedSSHMetadata) os.FileMode {
 // preflightEnhancedLoad은 복원 전에 최종 경로 전체를 계산해, snapshot 내부의
 // 이름 충돌이나 no-force 대상 충돌 때문에 일부만 복원되는 것을 막는다.
 func preflightEnhancedLoad(configDir, configPath string, force bool) error {
-	destinations := map[string]string{}
+	destinations := []string{}
 	add := func(path string) error {
-		key := strings.ToLower(path)
-		if old, ok := destinations[key]; ok {
-			return fmt.Errorf("snapshot restore destination collision: %s and %s", old, path)
+		for _, old := range destinations {
+			if strings.EqualFold(old, path) {
+				return fmt.Errorf("snapshot restore destination collision: %s and %s", old, path)
+			}
 		}
-		destinations[key] = path
+		destinations = append(destinations, path)
 		return nil
 	}
 	if err := add(configPath); err != nil {
@@ -917,24 +948,6 @@ func (c *EnhancedSSHCommand) printDetailedEnhancedConfig(storePath, configName s
 	}
 
 	fmt.Println()
-}
-
-// copyFile copies a file from src to dst.
-func (c *EnhancedSSHCommand) copyFile(src, dst string) error {
-	sourceFile, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer sourceFile.Close()
-
-	destFile, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	defer destFile.Close()
-
-	_, err = io.Copy(destFile, sourceFile)
-	return err
 }
 
 // saveEnhancedMetadata saves enhanced metadata to a JSON file.
