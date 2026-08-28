@@ -135,7 +135,9 @@ an existing real directory can be replaced. The old directory is renamed to an o
 the completed stage is renamed to its final name. A failed publication attempts to restore the old
 directory; a rollback failure reports the exact stage, backup, and final paths without deleting
 them speculatively. If the new directory is committed but backup cleanup fails, Save returns a
-cleanup-pending error and retains that backup. Success is printed only after required cleanup.
+cleanup-pending error and reports the observed stage/final/backup/wrapper states; a partial
+directory cleanup is not reported as an intact retained backup. Success is printed only after
+required cleanup.
 
 The operation prevents ordinary partial snapshot publication, but it is not crash-atomic: Force
 has a brief final-path-absent window between the backup and publication renames. It assumes

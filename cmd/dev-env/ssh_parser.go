@@ -16,9 +16,14 @@ import (
 )
 
 var (
-	sshParserOpen  = os.Open
+	sshParserOpen  = func(path string) (sshParserFile, error) { return os.Open(path) }
 	sshParserClose = func(closer io.Closer) error { return closer.Close() }
 )
+
+type sshParserFile interface {
+	io.Reader
+	io.Closer
+}
 
 // SSHConfigParser handles parsing SSH config files and extracting includes and keys.
 type SSHConfigParser struct {

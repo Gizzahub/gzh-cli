@@ -541,27 +541,30 @@ func sshSavePublish(stage, final string, force bool) (sshSavePublishResult, erro
 	backup := filepath.Join(wrapper, filepath.Base(final))
 	if err := sshSaveRename(final, backup); err != nil {
 		wrapperErr := sshSaveRemoveAll(wrapper)
+		state := sshSaveObservedState(stage, final, backup, wrapper)
 		return sshSavePublishResult{}, errors.Join(
-			fmt.Errorf("failed to move old snapshot %s to backup %s (stage=%s final=%s backup=%s wrapper=%s): %w", final, backup, stage, final, backup, wrapper, err),
+			fmt.Errorf("failed to move old snapshot %s to backup %s (%s): %w", final, backup, state, err),
 			sshSaveCleanupError("backup wrapper", wrapper, wrapperErr),
 		)
 	}
 	if err := sshSaveRename(stage, final); err != nil {
 		rollbackErr := sshSaveRename(backup, final)
 		if rollbackErr != nil {
+			state := sshSaveObservedState(stage, final, backup, wrapper)
 			return sshSavePublishResult{disposition: sshSaveStageRetained}, errors.Join(
-				fmt.Errorf("failed to publish stage %s to final %s; backup retained at %s (stage retained; stage=%s final=%s backup=%s wrapper=%s): %w", stage, final, backup, stage, final, backup, wrapper, err),
-				fmt.Errorf("failed to rollback backup %s to final %s (stage=%s final=%s backup=%s wrapper=%s): %w", backup, final, stage, final, backup, wrapper, rollbackErr),
+				fmt.Errorf("failed to publish stage %s to final %s; backup may require recovery (stage retained; %s): %w", stage, final, state, err),
+				fmt.Errorf("failed to rollback backup %s to final %s (%s): %w", backup, final, state, rollbackErr),
 			)
 		}
 		wrapperErr := sshSaveRemoveAll(wrapper)
+		state := sshSaveObservedState(stage, final, backup, wrapper)
 		return sshSavePublishResult{}, errors.Join(
-			fmt.Errorf("failed to publish stage %s to final %s; old snapshot restored (stage=%s final=%s backup=%s wrapper=%s): %w", stage, final, stage, final, backup, wrapper, err),
+			fmt.Errorf("failed to publish stage %s to final %s; old snapshot restored (%s): %w", stage, final, state, err),
 			sshSaveCleanupError("backup wrapper", wrapper, wrapperErr),
 		)
 	}
 	if err := sshSaveRemoveAll(wrapper); err != nil {
-		return sshSavePublishResult{disposition: sshSaveStageCommitted}, fmt.Errorf("snapshot committed; backup cleanup pending (stage=%s final=%s backup=%s wrapper=%s): %w", stage, final, backup, wrapper, err)
+		return sshSavePublishResult{disposition: sshSaveStageCommitted}, fmt.Errorf("snapshot committed; backup cleanup pending (%s): %w", sshSaveObservedState(stage, final, backup, wrapper), err)
 	}
 	return sshSavePublishResult{disposition: sshSaveStageCommitted}, nil
 }
@@ -571,6 +574,20 @@ func sshSaveCleanupError(kind, path string, err error) error {
 		return nil
 	}
 	return fmt.Errorf("failed to remove %s %s: %w", kind, path, err)
+}
+
+// sshSaveObservedState reports the post-operation view without making recovery
+// claims when an OS cleanup can have removed only part of a directory tree.
+func sshSaveObservedState(stage, final, backup, wrapper string) string {
+	state := func(path string) string {
+		if _, err := os.Lstat(path); err == nil {
+			return "exists"
+		} else if os.IsNotExist(err) {
+			return "missing"
+		}
+		return "unknown"
+	}
+	return fmt.Sprintf("stage=%s(%s) final=%s(%s) backup=%s(%s) wrapper=%s(%s)", stage, state(stage), final, state(final), backup, state(backup), wrapper, state(wrapper))
 }
 
 // LoadEnhancedConfig loads a saved SSH configuration.
@@ -617,10 +634,19 @@ func (c *EnhancedSSHCommand) LoadEnhancedConfig(opts *EnhancedSSHOptions) error 
 			return fmt.Errorf("failed to read includes directory: %w", err)
 		}
 
-		// Include 파일은 대상 설정 디렉터리 아래에 복원한다.
 		configD := filepath.Join(filepath.Dir(opts.ConfigPath), "config.d")
-		if err := os.MkdirAll(configD, 0o755); err != nil {
-			return fmt.Errorf("failed to create includes directory: %w", err)
+		hasIncludeFiles := false
+		for _, entry := range entries {
+			if !entry.IsDir() {
+				hasIncludeFiles = true
+				break
+			}
+		}
+		if hasIncludeFiles {
+			// Include 파일은 대상 설정 디렉터리 아래에 복원한다.
+			if err := os.MkdirAll(configD, 0o755); err != nil {
+				return fmt.Errorf("failed to create includes directory: %w", err)
+			}
 		}
 
 		for _, entry := range entries {
@@ -630,10 +656,7 @@ func (c *EnhancedSSHCommand) LoadEnhancedConfig(opts *EnhancedSSHOptions) error 
 
 			srcPath := filepath.Join(includeDir, entry.Name())
 			// 저장 시 추가한 접두사를 제거한다.
-			originalName := strings.TrimPrefix(entry.Name(), "include_")
-			if idx := strings.Index(originalName, "_"); idx > 0 {
-				originalName = originalName[idx+1:]
-			}
+			originalName := sshLoadIncludeName(entry.Name())
 			destPath := filepath.Join(configD, originalName)
 			if err := c.restoreEnhancedFile(srcPath, destPath, 0o600, opts.Force); err != nil {
 				return fmt.Errorf("failed to load include file %s: %w", entry.Name(), err)
@@ -683,14 +706,14 @@ func (c *EnhancedSSHCommand) LoadEnhancedConfig(opts *EnhancedSSHOptions) error 
 }
 
 func sshLoadKeyMode(name string, metadata *EnhancedSSHMetadata) os.FileMode {
-	for _, path := range metadata.PublicKeys {
-		if filepath.Base(path) == name {
-			return 0o644
+	for _, path := range metadata.PrivateKeys {
+		if strings.EqualFold(filepath.Base(path), name) {
+			return 0o600
 		}
 	}
-	for _, path := range metadata.PrivateKeys {
-		if filepath.Base(path) == name {
-			return 0o600
+	for _, path := range metadata.PublicKeys {
+		if strings.EqualFold(filepath.Base(path), name) {
+			return 0o644
 		}
 	}
 	// 레거시 metadata에 역할 목록이 모두 없을 때만 과거 suffix 규칙을 사용한다.
@@ -716,14 +739,12 @@ func preflightEnhancedLoad(configDir, configPath string, force bool) error {
 	if err := add(configPath); err != nil {
 		return err
 	}
-	if err := add(filepath.Join(filepath.Dir(configPath), "config.d")); err != nil {
-		return err
-	}
+	includeTarget := filepath.Join(filepath.Dir(configPath), "config.d")
 	for _, spec := range []struct {
 		dir, target string
 		include     bool
 	}{
-		{filepath.Join(configDir, "includes"), filepath.Join(filepath.Dir(configPath), "config.d"), true},
+		{filepath.Join(configDir, "includes"), includeTarget, true},
 		{filepath.Join(configDir, "keys"), filepath.Dir(configPath), false},
 	} {
 		entries, err := os.ReadDir(spec.dir)
@@ -733,32 +754,56 @@ func preflightEnhancedLoad(configDir, configPath string, force bool) error {
 		if err != nil {
 			return fmt.Errorf("failed to inspect snapshot directory %s: %w", spec.dir, err)
 		}
+		hasFiles := false
+		for _, entry := range entries {
+			if !entry.IsDir() {
+				hasFiles = true
+				break
+			}
+		}
+		if spec.include && hasFiles {
+			if info, lstatErr := os.Lstat(includeTarget); lstatErr == nil {
+				if info.Mode()&os.ModeSymlink != 0 || !info.IsDir() {
+					return fmt.Errorf("restore include container is not a real directory: %s", includeTarget)
+				}
+			} else if !os.IsNotExist(lstatErr) {
+				return fmt.Errorf("failed to inspect restore include container %s: %w", includeTarget, lstatErr)
+			}
+		}
 		for _, entry := range entries {
 			if entry.IsDir() {
 				continue
 			}
 			name := entry.Name()
 			if spec.include {
-				name = strings.TrimPrefix(name, "include_")
-				if index := strings.Index(name, "_"); index > 0 {
-					name = name[index+1:]
-				}
+				name = sshLoadIncludeName(name)
 			}
 			if err := add(filepath.Join(spec.target, name)); err != nil {
 				return err
 			}
 		}
 	}
-	if !force {
-		for _, path := range destinations {
-			if _, err := os.Lstat(path); err == nil {
-				return fmt.Errorf("restore destination already exists: %s", path)
-			} else if !os.IsNotExist(err) {
-				return fmt.Errorf("failed to inspect restore destination %s: %w", path, err)
+	for _, path := range destinations {
+		if info, err := os.Lstat(path); err == nil {
+			if info.Mode()&os.ModeSymlink != 0 || !info.Mode().IsRegular() {
+				return fmt.Errorf("restore destination is not a regular file: %s", path)
 			}
+			if !force {
+				return fmt.Errorf("restore destination already exists: %s", path)
+			}
+		} else if !os.IsNotExist(err) {
+			return fmt.Errorf("failed to inspect restore destination %s: %w", path, err)
 		}
 	}
 	return nil
+}
+
+func sshLoadIncludeName(name string) string {
+	name = strings.TrimPrefix(name, "include_")
+	if index := strings.Index(name, "_"); index > 0 {
+		return name[index+1:]
+	}
+	return name
 }
 
 // restoreEnhancedFile은 저장된 SSH 파일 하나를 최종 대상에 복원한다.

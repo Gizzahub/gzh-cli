@@ -14,6 +14,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type sshParserFailingFile struct{ err error }
+
+func (f *sshParserFailingFile) Read([]byte) (int, error) { return 0, f.err }
+func (f *sshParserFailingFile) Close() error             { return nil }
+
 func TestSSHConfigParser_ReportsCloseFailure(t *testing.T) {
 	root := t.TempDir()
 	config := filepath.Join(root, "config")
@@ -28,6 +33,17 @@ func TestSSHConfigParser_ReportsCloseFailure(t *testing.T) {
 	_, err := NewSSHConfigParser(config).Parse()
 	require.ErrorIs(t, err, closeErr)
 	assert.Contains(t, err.Error(), config)
+}
+
+func TestSSHConfigParser_JoinsScanAndCloseFailures(t *testing.T) {
+	scanErr, closeErr := errors.New("scan"), errors.New("close")
+	originalOpen, originalClose := sshParserOpen, sshParserClose
+	sshParserOpen = func(string) (sshParserFile, error) { return &sshParserFailingFile{err: scanErr}, nil }
+	sshParserClose = func(io.Closer) error { return closeErr }
+	t.Cleanup(func() { sshParserOpen, sshParserClose = originalOpen, originalClose })
+	_, err := NewSSHConfigParser(filepath.Join(t.TempDir(), "config")).parseConfigFile("synthetic", &ParsedSSHConfig{})
+	require.ErrorIs(t, err, scanErr)
+	require.ErrorIs(t, err, closeErr)
 }
 
 func TestSSHConfigParser_Parse(t *testing.T) {
