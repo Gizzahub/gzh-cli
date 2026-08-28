@@ -5,6 +5,7 @@ package devenv
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,6 +13,8 @@ import (
 	"sort"
 	"strings"
 )
+
+var sshParserOpen = os.Open
 
 // SSHConfigParser handles parsing SSH config files and extracting includes and keys.
 type SSHConfigParser struct {
@@ -83,14 +86,18 @@ func (p *SSHConfigParser) parseConfigTree(configPath string, result *ParsedSSHCo
 }
 
 // parseConfigFile parses a single SSH config file.
-func (p *SSHConfigParser) parseConfigFile(configPath string, result *ParsedSSHConfig) ([]string, error) {
-	file, err := os.Open(configPath)
+func (p *SSHConfigParser) parseConfigFile(configPath string, result *ParsedSSHConfig) (includes []string, err error) {
+	file, err := sshParserOpen(configPath)
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil {
+			err = errors.Join(err, fmt.Errorf("failed to close %s: %w", configPath, closeErr))
+		}
+	}()
 
-	includes := []string{}
+	includes = []string{}
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())

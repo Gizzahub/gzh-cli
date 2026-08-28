@@ -194,9 +194,9 @@ func (c *EnhancedSSHCommand) SaveEnhancedConfig(opts *EnhancedSSHOptions) (err e
 	if err := sshSaveChmod(stage, 0o700); err != nil {
 		return errors.Join(fmt.Errorf("failed to secure staging directory %s: %w", stage, err), sshSaveRemoveAll(stage))
 	}
-	published := false
+	disposition := sshSaveStageCleanup
 	defer func() {
-		if !published {
+		if disposition == sshSaveStageCleanup {
 			if cleanupErr := sshSaveRemoveAll(stage); cleanupErr != nil {
 				err = errors.Join(err, fmt.Errorf("failed to remove unpublished stage %s: %w", stage, cleanupErr))
 			}
@@ -236,13 +236,10 @@ func (c *EnhancedSSHCommand) SaveEnhancedConfig(opts *EnhancedSSHOptions) (err e
 		return fmt.Errorf("failed to stage metadata: %w", err)
 	}
 	publish, err := sshSavePublish(stage, configDir, opts.Force)
+	disposition = publish.disposition
 	if err != nil {
-		if publish.retainStage {
-			published = true
-		}
 		return err
 	}
-	published = publish.published
 
 	fmt.Printf("✅ SSH configuration '%s' saved successfully\n", opts.Name)
 	if opts.Description != "" {
@@ -324,8 +321,11 @@ func sshSaveRegularSource(path string) (string, error) {
 // source만 최초 순서로 한 번 저장하므로 복원 결과도 결정적이다.
 func sshSaveDedupe(paths []string, kind string) ([]string, error) {
 	result := make([]string, 0, len(paths))
-	byName := map[string]os.FileInfo{}
-	seen := []os.FileInfo{}
+	type savedName struct {
+		name string
+		info os.FileInfo
+	}
+	byName := []savedName{}
 	for _, path := range paths {
 		_, err := sshSaveRegularSource(path)
 		if err != nil {
@@ -336,50 +336,24 @@ func sshSaveDedupe(paths []string, kind string) ([]string, error) {
 			return nil, fmt.Errorf("failed to stat %s source %s: %w", kind, path, err)
 		}
 		name := filepath.Base(path)
-		key := strings.ToLower(name)
-		if prior, ok := byName[key]; ok {
-			if !os.SameFile(prior, info) {
-				return nil, fmt.Errorf("%s basename collision for %q", kind, name)
-			}
-			continue
-		}
-		duplicate := false
-		for _, prior := range seen {
-			if os.SameFile(prior, info) {
-				duplicate = true
+		matched := false
+		for _, prior := range byName {
+			if strings.EqualFold(prior.name, name) {
+				matched = true
+				if !os.SameFile(prior.info, info) {
+					return nil, fmt.Errorf("%s basename collision for %q", kind, name)
+				}
 				break
 			}
 		}
-		if duplicate {
+		if matched {
 			continue
 		}
-		byName[key] = info
-		seen = append(seen, info)
+		byName = append(byName, savedName{name: name, info: info})
 		result = append(result, path)
 	}
 	sort.Strings(result)
 	return result, nil
-}
-
-func sshSaveCrossKeyCollision(privateKeys, publicKeys []string) error {
-	seen := make(map[string]string, len(privateKeys))
-	for _, path := range privateKeys {
-		resolved, err := sshSaveRegularSource(path)
-		if err != nil {
-			return err
-		}
-		seen[strings.ToLower(filepath.Base(path))] = resolved
-	}
-	for _, path := range publicKeys {
-		resolved, err := sshSaveRegularSource(path)
-		if err != nil {
-			return err
-		}
-		if previous, ok := seen[strings.ToLower(filepath.Base(path))]; ok && previous != resolved {
-			return fmt.Errorf("key basename collision for %q", filepath.Base(path))
-		}
-	}
-	return nil
 }
 
 // sshSaveKeyPlan은 keys/ 한 디렉터리의 실제 게시 대상을 하나의 계획으로 만든다.
@@ -511,21 +485,29 @@ func sshSaveBytes(destination string, data []byte, mode os.FileMode) error {
 	return nil
 }
 
-type sshSavePublishResult struct{ published, retainStage bool }
+type sshSaveStageDisposition uint8
+
+const (
+	sshSaveStageCleanup sshSaveStageDisposition = iota
+	sshSaveStageRetained
+	sshSaveStageCommitted
+)
+
+type sshSavePublishResult struct{ disposition sshSaveStageDisposition }
 
 func sshSavePublish(stage, final string, force bool) (sshSavePublishResult, error) {
 	if !force {
 		if err := sshSaveRename(stage, final); err != nil {
 			return sshSavePublishResult{}, fmt.Errorf("failed to publish staged snapshot %s to %s: %w", stage, final, err)
 		}
-		return sshSavePublishResult{published: true}, nil
+		return sshSavePublishResult{disposition: sshSaveStageCommitted}, nil
 	}
 	info, err := os.Lstat(final)
 	if os.IsNotExist(err) {
 		if err := sshSaveRename(stage, final); err != nil {
 			return sshSavePublishResult{}, fmt.Errorf("failed to publish staged snapshot %s to %s: %w", stage, final, err)
 		}
-		return sshSavePublishResult{published: true}, nil
+		return sshSavePublishResult{disposition: sshSaveStageCommitted}, nil
 	}
 	if err != nil || info.Mode()&os.ModeSymlink != 0 || !info.IsDir() {
 		return sshSavePublishResult{}, fmt.Errorf("force destination changed or is not a real directory: %s", final)
@@ -546,16 +528,16 @@ func sshSavePublish(stage, final string, force bool) (sshSavePublishResult, erro
 	if err := sshSaveRename(stage, final); err != nil {
 		rollbackErr := sshSaveRename(backup, final)
 		if rollbackErr != nil {
-			return sshSavePublishResult{retainStage: true}, errors.Join(fmt.Errorf("failed to publish stage %s to final %s; backup retained at %s (stage retained): %w", stage, final, backup, err), fmt.Errorf("failed to rollback backup %s to final %s: %w", backup, final, rollbackErr))
+			return sshSavePublishResult{disposition: sshSaveStageRetained}, errors.Join(fmt.Errorf("failed to publish stage %s to final %s; backup retained at %s (stage retained): %w", stage, final, backup, err), fmt.Errorf("failed to rollback backup %s to final %s: %w", backup, final, rollbackErr))
 		}
 		cleanupErr := sshSaveRemoveAll(stage)
 		wrapperErr := sshSaveRemoveAll(wrapper)
 		return sshSavePublishResult{}, errors.Join(fmt.Errorf("failed to publish stage %s to final %s; old snapshot restored: %w", stage, final, err), cleanupErr, wrapperErr)
 	}
 	if err := sshSaveRemoveAll(wrapper); err != nil {
-		return sshSavePublishResult{published: true}, fmt.Errorf("snapshot committed at %s but backup cleanup pending at %s: %w", final, backup, err)
+		return sshSavePublishResult{disposition: sshSaveStageCommitted}, fmt.Errorf("snapshot committed at %s but backup cleanup pending at %s: %w", final, backup, err)
 	}
-	return sshSavePublishResult{published: true}, nil
+	return sshSavePublishResult{disposition: sshSaveStageCommitted}, nil
 }
 
 // LoadEnhancedConfig loads a saved SSH configuration.
@@ -576,6 +558,9 @@ func (c *EnhancedSSHCommand) LoadEnhancedConfig(opts *EnhancedSSHOptions) error 
 	metadata, err := c.loadEnhancedMetadata(metadataFile)
 	if err != nil {
 		return fmt.Errorf("failed to load metadata: %w", err)
+	}
+	if err := preflightEnhancedLoad(configDir, opts.ConfigPath, opts.Force); err != nil {
+		return err
 	}
 
 	// Create target directory
@@ -664,6 +649,63 @@ func (c *EnhancedSSHCommand) LoadEnhancedConfig(opts *EnhancedSSHOptions) error 
 	fmt.Printf("   Files restored: %d\n", loadedFiles)
 	fmt.Printf("   Loaded to: %s\n", opts.ConfigPath)
 
+	return nil
+}
+
+// preflightEnhancedLoad은 복원 전에 최종 경로 전체를 계산해, snapshot 내부의
+// 이름 충돌이나 no-force 대상 충돌 때문에 일부만 복원되는 것을 막는다.
+func preflightEnhancedLoad(configDir, configPath string, force bool) error {
+	destinations := map[string]string{}
+	add := func(path string) error {
+		key := strings.ToLower(path)
+		if old, ok := destinations[key]; ok {
+			return fmt.Errorf("snapshot restore destination collision: %s and %s", old, path)
+		}
+		destinations[key] = path
+		return nil
+	}
+	if err := add(configPath); err != nil {
+		return err
+	}
+	for _, spec := range []struct {
+		dir, target string
+		include     bool
+	}{
+		{filepath.Join(configDir, "includes"), filepath.Join(filepath.Dir(configPath), "config.d"), true},
+		{filepath.Join(configDir, "keys"), filepath.Dir(configPath), false},
+	} {
+		entries, err := os.ReadDir(spec.dir)
+		if os.IsNotExist(err) {
+			continue
+		}
+		if err != nil {
+			return fmt.Errorf("failed to inspect snapshot directory %s: %w", spec.dir, err)
+		}
+		for _, entry := range entries {
+			if entry.IsDir() {
+				continue
+			}
+			name := entry.Name()
+			if spec.include {
+				name = strings.TrimPrefix(name, "include_")
+				if index := strings.Index(name, "_"); index > 0 {
+					name = name[index+1:]
+				}
+			}
+			if err := add(filepath.Join(spec.target, name)); err != nil {
+				return err
+			}
+		}
+	}
+	if !force {
+		for _, path := range destinations {
+			if _, err := os.Lstat(path); err == nil {
+				return fmt.Errorf("restore destination already exists: %s", path)
+			} else if !os.IsNotExist(err) {
+				return fmt.Errorf("failed to inspect restore destination %s: %w", path, err)
+			}
+		}
+	}
 	return nil
 }
 
