@@ -17,7 +17,7 @@ ENHANCED FEATURES:
 - Automatically parses and includes all files referenced by Include directives
 - Backs up private keys referenced by IdentityFile directives
 - Backs up corresponding public keys (.pub files)
-- Preserves directory structure and file relationships
+- Publishes a normalized, private snapshot compatible with the ssh load command
 - Maintains proper file permissions (600 for private keys, 644 for public keys)
 
 WHAT GETS SAVED:

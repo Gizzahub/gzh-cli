@@ -12,7 +12,7 @@ The `gz dev-env ssh` command provides comprehensive SSH configuration management
 - **Glob Pattern Support**: Handles complex include patterns like `config.d/*` and `~/.ssh/configs/*.conf`
 - **IdentityFile Detection**: Automatically detects and backs up private keys referenced by `IdentityFile` directives
 - **Public Key Pairing**: Automatically includes corresponding `.pub` files for each private key
-- **Directory Structure Preservation**: Maintains relative paths and directory relationships
+- **Normalized Snapshot Layout**: Uses Load-compatible normalized filenames rather than preserving source directories
 
 ### 🔐 Advanced Key Management
 

@@ -39,7 +39,7 @@ Host test.com
     IdentityFile test_key`
 
 	configPath := filepath.Join(sshDir, "config")
-	require.NoError(t, os.WriteFile(configPath, []byte(mainConfig), 0o644))
+	require.NoError(t, os.WriteFile(configPath, []byte(mainConfig), 0o600))
 
 	// Create include files
 	includeContent := `Host work.internal
@@ -50,7 +50,7 @@ Host test.com
 	require.NoError(t, os.WriteFile(
 		filepath.Join(sshDir, "config.d", "work.conf"),
 		[]byte(includeContent),
-		0o644,
+		0o600,
 	))
 
 	// Create key files
@@ -59,11 +59,11 @@ Host test.com
 		permissions os.FileMode
 	}{
 		"id_rsa":       {"private key content", 0o600},
-		"id_rsa.pub":   {"public key content", 0o644},
+		"id_rsa.pub":   {"public key content", 0o600},
 		"test_key":     {"test private key", 0o600},
-		"test_key.pub": {"test public key", 0o644},
+		"test_key.pub": {"test public key", 0o600},
 		"work_key":     {"work private key", 0o600},
-		"work_key.pub": {"work public key", 0o644},
+		"work_key.pub": {"work public key", 0o600},
 	}
 
 	for keyName, info := range keyFiles {
@@ -216,7 +216,7 @@ func TestEnhancedSSHCommand_SaveWithoutKeys(t *testing.T) {
     User simpleuser`
 
 	configPath := filepath.Join(sshDir, "config")
-	require.NoError(t, os.WriteFile(configPath, []byte(simpleConfig), 0o644))
+	require.NoError(t, os.WriteFile(configPath, []byte(simpleConfig), 0o600))
 
 	// Create enhanced SSH command
 	cmd := NewEnhancedSSHCommand()
@@ -317,7 +317,7 @@ func TestEnhancedSSHCommand_OverwriteProtection(t *testing.T) {
     User myuser`
 
 	configPath := filepath.Join(sshDir, "config")
-	require.NoError(t, os.WriteFile(configPath, []byte(configContent), 0o644))
+	require.NoError(t, os.WriteFile(configPath, []byte(configContent), 0o600))
 
 	cmd := NewEnhancedSSHCommand()
 
@@ -353,7 +353,7 @@ func TestEnhancedSSHCommand_SaveSnapshotContract(t *testing.T) {
 	config := filepath.Join(sshDir, "config")
 	key := filepath.Join(sshDir, "id_test")
 	require.NoError(t, os.WriteFile(key, []byte("private"), 0o600))
-	require.NoError(t, os.WriteFile(key+".pub", []byte("public"), 0o644))
+	require.NoError(t, os.WriteFile(key+".pub", []byte("public"), 0o600))
 	require.NoError(t, os.WriteFile(config, []byte("Host test\n IdentityFile id_test\n"), 0o600))
 
 	command := NewEnhancedSSHCommand()
@@ -429,7 +429,7 @@ func TestSSHSavePublishForceRestoresOldSnapshotOnPublishFailure(t *testing.T) {
 	}
 	t.Cleanup(func() { sshSaveRename = originalRename })
 
-	err := sshSavePublish(stage, final, true)
+	_, err := sshSavePublish(stage, final, true)
 	require.ErrorIs(t, err, publishErr)
 	content, readErr := os.ReadFile(filepath.Join(final, "config"))
 	require.NoError(t, readErr)

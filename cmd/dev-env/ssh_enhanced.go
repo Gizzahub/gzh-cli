@@ -24,6 +24,7 @@ var (
 	sshSaveRename    = os.Rename
 	sshSaveRemoveAll = os.RemoveAll
 	sshSaveChmod     = os.Chmod
+	sshSaveMkdirTemp = os.MkdirTemp
 )
 
 // EnhancedSSHOptions represents options for enhanced SSH commands.
@@ -83,8 +84,9 @@ func (c *EnhancedSSHCommand) CreateEnhancedSaveCommand() *cobra.Command {
 - All private keys referenced by IdentityFile directives
 - Corresponding public keys (optional)
 
-The configuration is saved as a directory structure to preserve
-relative paths and file relationships.`,
+The configuration is published as one normalized, private snapshot.
+Include files are stored with Load-compatible names; their source tree
+layout is not preserved.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return c.SaveEnhancedConfig(opts)
 		},
@@ -115,7 +117,7 @@ func (c *EnhancedSSHCommand) CreateEnhancedLoadCommand() *cobra.Command {
 - All included configuration files
 - All private and public keys
 
-The configuration is restored maintaining the original directory structure.`,
+The configuration is restored from the normalized snapshot layout.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return c.LoadEnhancedConfig(opts)
 		},
@@ -173,25 +175,19 @@ func (c *EnhancedSSHCommand) SaveEnhancedConfig(opts *EnhancedSSHOptions) (err e
 	if err != nil {
 		return err
 	}
-	privateKeys := []string{}
-	if opts.IncludeKeys {
-		privateKeys, err = sshSaveDedupe(parsed.PrivateKeys, "key")
-		if err != nil {
-			return err
-		}
+	privateSources, publicSources := parsed.PrivateKeys, parsed.PublicKeys
+	if !opts.IncludeKeys {
+		privateSources = nil
 	}
-	publicKeys := []string{}
-	if opts.IncludePublic {
-		publicKeys, err = sshSaveDedupe(parsed.PublicKeys, "key")
-		if err != nil {
-			return err
-		}
+	if !opts.IncludePublic {
+		publicSources = nil
 	}
-	if err := sshSaveCrossKeyCollision(privateKeys, publicKeys); err != nil {
+	privateKeys, publicKeys, err := sshSaveKeyPlan(privateSources, publicSources)
+	if err != nil {
 		return err
 	}
 
-	stage, err := os.MkdirTemp(opts.StorePath, ".gzh-ssh-stage-")
+	stage, err := sshSaveMkdirTemp(opts.StorePath, ".gzh-ssh-stage-")
 	if err != nil {
 		return fmt.Errorf("failed to create SSH staging directory: %w", err)
 	}
@@ -239,10 +235,14 @@ func (c *EnhancedSSHCommand) SaveEnhancedConfig(opts *EnhancedSSHOptions) (err e
 	if err := sshSaveBytes(filepath.Join(stage, "metadata.json"), append(metadataBytes, '\n'), 0o600); err != nil {
 		return fmt.Errorf("failed to stage metadata: %w", err)
 	}
-	if err := sshSavePublish(stage, configDir, opts.Force); err != nil {
+	publish, err := sshSavePublish(stage, configDir, opts.Force)
+	if err != nil {
+		if publish.retainStage {
+			published = true
+		}
 		return err
 	}
-	published = true
+	published = publish.published
 
 	fmt.Printf("✅ SSH configuration '%s' saved successfully\n", opts.Name)
 	if opts.Description != "" {
@@ -324,21 +324,37 @@ func sshSaveRegularSource(path string) (string, error) {
 // source만 최초 순서로 한 번 저장하므로 복원 결과도 결정적이다.
 func sshSaveDedupe(paths []string, kind string) ([]string, error) {
 	result := make([]string, 0, len(paths))
-	byName := map[string]string{}
+	byName := map[string]os.FileInfo{}
+	seen := []os.FileInfo{}
 	for _, path := range paths {
-		resolved, err := sshSaveRegularSource(path)
+		_, err := sshSaveRegularSource(path)
 		if err != nil {
 			return nil, fmt.Errorf("invalid %s source %s: %w", kind, path, err)
+		}
+		info, err := os.Stat(path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to stat %s source %s: %w", kind, path, err)
 		}
 		name := filepath.Base(path)
 		key := strings.ToLower(name)
 		if prior, ok := byName[key]; ok {
-			if prior != resolved {
+			if !os.SameFile(prior, info) {
 				return nil, fmt.Errorf("%s basename collision for %q", kind, name)
 			}
 			continue
 		}
-		byName[key] = resolved
+		duplicate := false
+		for _, prior := range seen {
+			if os.SameFile(prior, info) {
+				duplicate = true
+				break
+			}
+		}
+		if duplicate {
+			continue
+		}
+		byName[key] = info
+		seen = append(seen, info)
 		result = append(result, path)
 	}
 	sort.Strings(result)
@@ -364,6 +380,43 @@ func sshSaveCrossKeyCollision(privateKeys, publicKeys []string) error {
 		}
 	}
 	return nil
+}
+
+// sshSaveKeyPlan은 keys/ 한 디렉터리의 실제 게시 대상을 하나의 계획으로 만든다.
+// 동일 inode는 private 0600을 우선해 한 번만 저장하고, 다른 inode의 대소문자
+// 무시 basename 충돌은 Load 시 모호해지므로 거부한다.
+func sshSaveKeyPlan(privateSources, publicSources []string) ([]string, []string, error) {
+	privateKeys, err := sshSaveDedupe(privateSources, "key")
+	if err != nil {
+		return nil, nil, err
+	}
+	publicKeys, err := sshSaveDedupe(publicSources, "key")
+	if err != nil {
+		return nil, nil, err
+	}
+	privateInfo := make(map[string]os.FileInfo, len(privateKeys))
+	for _, path := range privateKeys {
+		info, err := os.Stat(path)
+		if err != nil {
+			return nil, nil, err
+		}
+		privateInfo[strings.ToLower(filepath.Base(path))] = info
+	}
+	actualPublic := make([]string, 0, len(publicKeys))
+	for _, path := range publicKeys {
+		info, err := os.Stat(path)
+		if err != nil {
+			return nil, nil, err
+		}
+		if old, ok := privateInfo[strings.ToLower(filepath.Base(path))]; ok {
+			if os.SameFile(old, info) {
+				continue
+			}
+			return nil, nil, fmt.Errorf("key basename collision for %q", filepath.Base(path))
+		}
+		actualPublic = append(actualPublic, path)
+	}
+	return privateKeys, actualPublic, nil
 }
 
 func sshSaveMkdir(path string, needed bool) error {
@@ -458,40 +511,51 @@ func sshSaveBytes(destination string, data []byte, mode os.FileMode) error {
 	return nil
 }
 
-func sshSavePublish(stage, final string, force bool) error {
+type sshSavePublishResult struct{ published, retainStage bool }
+
+func sshSavePublish(stage, final string, force bool) (sshSavePublishResult, error) {
 	if !force {
 		if err := sshSaveRename(stage, final); err != nil {
-			return fmt.Errorf("failed to publish staged snapshot %s to %s: %w", stage, final, err)
+			return sshSavePublishResult{}, fmt.Errorf("failed to publish staged snapshot %s to %s: %w", stage, final, err)
 		}
-		return nil
+		return sshSavePublishResult{published: true}, nil
 	}
 	info, err := os.Lstat(final)
 	if os.IsNotExist(err) {
 		if err := sshSaveRename(stage, final); err != nil {
-			return fmt.Errorf("failed to publish staged snapshot %s to %s: %w", stage, final, err)
+			return sshSavePublishResult{}, fmt.Errorf("failed to publish staged snapshot %s to %s: %w", stage, final, err)
 		}
-		return nil
+		return sshSavePublishResult{published: true}, nil
 	}
 	if err != nil || info.Mode()&os.ModeSymlink != 0 || !info.IsDir() {
-		return fmt.Errorf("force destination changed or is not a real directory: %s", final)
+		return sshSavePublishResult{}, fmt.Errorf("force destination changed or is not a real directory: %s", final)
 	}
-	backup := filepath.Join(filepath.Dir(final), ".gzh-ssh-backup-"+filepath.Base(final)+"-"+fmt.Sprint(time.Now().UnixNano()))
+	wrapper, err := sshSaveMkdirTemp(filepath.Dir(final), ".gzh-ssh-backup-")
+	if err != nil {
+		return sshSavePublishResult{}, fmt.Errorf("failed to create backup wrapper beside %s: %w", final, err)
+	}
+	if err := sshSaveChmod(wrapper, 0o700); err != nil {
+		return sshSavePublishResult{}, errors.Join(fmt.Errorf("failed to secure backup wrapper %s: %w", wrapper, err), sshSaveRemoveAll(wrapper))
+	}
+	backup := filepath.Join(wrapper, filepath.Base(final))
 	if err := sshSaveRename(final, backup); err != nil {
 		cleanupErr := sshSaveRemoveAll(stage)
-		return errors.Join(fmt.Errorf("failed to move old snapshot %s to backup %s: %w", final, backup, err), cleanupErr)
+		wrapperErr := sshSaveRemoveAll(wrapper)
+		return sshSavePublishResult{}, errors.Join(fmt.Errorf("failed to move old snapshot %s to backup %s: %w", final, backup, err), cleanupErr, wrapperErr)
 	}
 	if err := sshSaveRename(stage, final); err != nil {
 		rollbackErr := sshSaveRename(backup, final)
 		if rollbackErr != nil {
-			return errors.Join(fmt.Errorf("failed to publish stage %s to final %s; backup retained at %s (stage/final states must be inspected): %w", stage, final, backup, err), fmt.Errorf("failed to rollback backup %s to final %s: %w", backup, final, rollbackErr))
+			return sshSavePublishResult{retainStage: true}, errors.Join(fmt.Errorf("failed to publish stage %s to final %s; backup retained at %s (stage retained): %w", stage, final, backup, err), fmt.Errorf("failed to rollback backup %s to final %s: %w", backup, final, rollbackErr))
 		}
 		cleanupErr := sshSaveRemoveAll(stage)
-		return errors.Join(fmt.Errorf("failed to publish stage %s to final %s; old snapshot restored: %w", stage, final, err), cleanupErr)
+		wrapperErr := sshSaveRemoveAll(wrapper)
+		return sshSavePublishResult{}, errors.Join(fmt.Errorf("failed to publish stage %s to final %s; old snapshot restored: %w", stage, final, err), cleanupErr, wrapperErr)
 	}
-	if err := sshSaveRemoveAll(backup); err != nil {
-		return fmt.Errorf("snapshot committed at %s but backup cleanup pending at %s: %w", final, backup, err)
+	if err := sshSaveRemoveAll(wrapper); err != nil {
+		return sshSavePublishResult{published: true}, fmt.Errorf("snapshot committed at %s but backup cleanup pending at %s: %w", final, backup, err)
 	}
-	return nil
+	return sshSavePublishResult{published: true}, nil
 }
 
 // LoadEnhancedConfig loads a saved SSH configuration.

@@ -119,13 +119,13 @@ Host example
 
 			// Create main config file
 			configPath := filepath.Join(sshDir, "config")
-			require.NoError(t, os.WriteFile(configPath, []byte(tt.config), 0o644))
+			require.NoError(t, os.WriteFile(configPath, []byte(tt.config), 0o600))
 
 			// Create include files
 			for relPath, content := range tt.includeFiles {
 				fullPath := filepath.Join(sshDir, relPath)
 				require.NoError(t, os.MkdirAll(filepath.Dir(fullPath), 0o755))
-				require.NoError(t, os.WriteFile(fullPath, []byte(content), 0o644))
+				require.NoError(t, os.WriteFile(fullPath, []byte(content), 0o600))
 			}
 
 			// Create key files
@@ -167,8 +167,8 @@ func TestSSHConfigParser_ParseIncludeLine(t *testing.T) {
 	// Create test files
 	configDir := filepath.Join(sshDir, "config.d")
 	require.NoError(t, os.MkdirAll(configDir, 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(configDir, "file1.conf"), []byte("test"), 0o644))
-	require.NoError(t, os.WriteFile(filepath.Join(configDir, "file2.conf"), []byte("test"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(configDir, "file1.conf"), []byte("test"), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(configDir, "file2.conf"), []byte("test"), 0o600))
 
 	parser := NewSSHConfigParser(filepath.Join(sshDir, "config"))
 	result := &ParsedSSHConfig{}
@@ -222,7 +222,7 @@ func TestSSHConfigParser_ParseIdentityFileLine(t *testing.T) {
 
 	// Create test key files
 	require.NoError(t, os.WriteFile(filepath.Join(sshDir, "test_key"), []byte("private"), 0o600))
-	require.NoError(t, os.WriteFile(filepath.Join(sshDir, "test_key.pub"), []byte("public"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(sshDir, "test_key.pub"), []byte("public"), 0o600))
 	require.NoError(t, os.WriteFile(filepath.Join(sshDir, "no_pub_key"), []byte("private"), 0o600))
 
 	parser := NewSSHConfigParser(filepath.Join(sshDir, "config"))

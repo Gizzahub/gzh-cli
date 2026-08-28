@@ -76,8 +76,7 @@ func (p *SSHConfigParser) parseConfigTree(configPath string, result *ParsedSSHCo
 	for _, includeFile := range includes {
 		result.IncludeFiles = append(result.IncludeFiles, includeFile)
 		if err := p.parseConfigTree(includeFile, result, seen); err != nil {
-			// 기존 명령 계약대로 발견한 Include를 읽지 못해도 전체 저장은 중단하지 않는다.
-			fmt.Printf("Warning: failed to parse include file %s: %v\n", includeFile, err)
+			return fmt.Errorf("failed to parse discovered include %s: %w", includeFile, err)
 		}
 	}
 	return nil
@@ -104,18 +103,20 @@ func (p *SSHConfigParser) parseConfigFile(configPath string, result *ParsedSSHCo
 		// Parse Include directives
 		includeResult := &ParsedSSHConfig{}
 		if err := p.parseIncludeLine(line, includeResult); err != nil {
-			fmt.Printf("Warning: failed to parse include line '%s': %v\n", line, err)
-		} else {
-			includes = append(includes, includeResult.IncludeFiles...)
+			return nil, fmt.Errorf("invalid Include in %s: %w", configPath, err)
 		}
+		includes = append(includes, includeResult.IncludeFiles...)
 
 		// Parse IdentityFile directives
 		if err := p.parseIdentityFileLine(line, result); err != nil {
-			fmt.Printf("Warning: failed to parse identity file line '%s': %v\n", line, err)
+			return nil, fmt.Errorf("invalid IdentityFile in %s: %w", configPath, err)
 		}
 	}
 
-	return includes, scanner.Err()
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("failed to scan %s: %w", configPath, err)
+	}
+	return includes, nil
 }
 
 // parseIncludeLine parses Include directives.
@@ -151,10 +152,14 @@ func (p *SSHConfigParser) parseIncludeLine(line string, result *ParsedSSHConfig)
 	}
 
 	for _, match := range globMatches {
-		// Only include regular files
-		if stat, err := os.Stat(match); err == nil && stat.Mode().IsRegular() {
-			result.IncludeFiles = append(result.IncludeFiles, match)
+		stat, err := os.Stat(match)
+		if err != nil {
+			return fmt.Errorf("failed to stat discovered include %s: %w", match, err)
 		}
+		if !stat.Mode().IsRegular() {
+			return fmt.Errorf("discovered include is not regular: %s", match)
+		}
+		result.IncludeFiles = append(result.IncludeFiles, match)
 	}
 	sort.Strings(result.IncludeFiles)
 
@@ -188,14 +193,24 @@ func (p *SSHConfigParser) parseIdentityFileLine(line string, result *ParsedSSHCo
 	}
 
 	// Check if private key file exists
-	if stat, err := os.Stat(keyPath); err == nil && stat.Mode().IsRegular() {
+	if stat, err := os.Stat(keyPath); err == nil {
+		if !stat.Mode().IsRegular() {
+			return fmt.Errorf("IdentityFile is not regular: %s", keyPath)
+		}
 		result.PrivateKeys = append(result.PrivateKeys, keyPath)
 
 		// Also check for corresponding public key
 		pubKeyPath := keyPath + ".pub"
-		if stat, err := os.Stat(pubKeyPath); err == nil && stat.Mode().IsRegular() {
+		if stat, err := os.Stat(pubKeyPath); err == nil {
+			if !stat.Mode().IsRegular() {
+				return fmt.Errorf("public key is not regular: %s", pubKeyPath)
+			}
 			result.PublicKeys = append(result.PublicKeys, pubKeyPath)
+		} else if !os.IsNotExist(err) {
+			return fmt.Errorf("failed to stat public key %s: %w", pubKeyPath, err)
 		}
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("failed to stat IdentityFile %s: %w", keyPath, err)
 	}
 
 	return nil
