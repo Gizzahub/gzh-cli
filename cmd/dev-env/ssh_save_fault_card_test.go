@@ -98,15 +98,23 @@ func TestSSHSaveFaultCardFullSaveOutputSuppression(t *testing.T) {
 	})
 	t.Run("destination-close", func(t *testing.T) {
 		opts := sshSaveFaultOptions(t, false, false)
-		original := sshSaveClose
+		original, originalTemp := sshSaveClose, sshSaveMkdirTemp
+		var stage string
+		sshSaveMkdirTemp = func(dir, pattern string) (string, error) {
+			path, err := originalTemp(dir, pattern)
+			if strings.HasPrefix(pattern, ".gzh-ssh-stage-") {
+				stage = path
+			}
+			return path, err
+		}
 		sshSaveClose = func(closer io.Closer) error {
-			if file, ok := closer.(*os.File); ok && filepath.Base(file.Name()) == "config" {
+			if file, ok := closer.(*os.File); ok && file.Name() == filepath.Join(stage, "config") {
 				_ = file.Close()
 				return errors.New("destination close")
 			}
 			return original(closer)
 		}
-		t.Cleanup(func() { sshSaveClose = original })
+		t.Cleanup(func() { sshSaveClose, sshSaveMkdirTemp = original, originalTemp })
 		requireSaveFault(t, opts)
 	})
 	for _, fault := range []string{"create", "write", "chmod"} {

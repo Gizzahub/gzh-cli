@@ -581,6 +581,18 @@ func TestSSHSaveKeyPlanRolesAndCollisions(t *testing.T) {
 	_, pub, err = sshSaveKeyPlan([]string{private}, []string{different})
 	require.NoError(t, err)
 	assert.Equal(t, []string{different}, pub)
+	otherDir := filepath.Join(publicDir, "other-dir")
+	require.NoError(t, os.Mkdir(otherDir, 0o700))
+	otherSameName := filepath.Join(otherDir, "id")
+	require.NoError(t, os.WriteFile(otherSameName, []byte("other"), 0o600))
+	_, _, err = sshSaveKeyPlan([]string{private}, []string{otherSameName})
+	require.Error(t, err)
+	unicodePrivate := filepath.Join(privateDir, "\u212aey")
+	unicodePublic := filepath.Join(publicDir, "Key")
+	require.NoError(t, os.WriteFile(unicodePrivate, []byte("private"), 0o600))
+	require.NoError(t, os.WriteFile(unicodePublic, []byte("public"), 0o600))
+	_, _, err = sshSaveKeyPlan([]string{unicodePrivate}, []string{unicodePublic})
+	require.Error(t, err)
 }
 
 func TestEnhancedSSHCommand_SaveCopyFaultMatrix(t *testing.T) {
@@ -833,6 +845,24 @@ func TestPreflightEnhancedLoadReservedContainerCollisions(t *testing.T) {
 	})
 }
 
+func TestEnhancedSSHCommand_LoadReservedCollisionHasNoWritesOrSuccess(t *testing.T) {
+	root := t.TempDir()
+	store, snapshot := filepath.Join(root, "store"), filepath.Join(root, "store", "snapshot")
+	require.NoError(t, os.MkdirAll(filepath.Join(snapshot, "includes"), 0o700))
+	require.NoError(t, os.Mkdir(filepath.Join(snapshot, "keys"), 0o700))
+	require.NoError(t, os.WriteFile(filepath.Join(snapshot, "config"), []byte("Host test"), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(snapshot, "includes", "include_0_hosts"), []byte("Host include"), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(snapshot, "keys", "config.d"), []byte("key"), 0o600))
+	require.NoError(t, NewEnhancedSSHCommand().saveEnhancedMetadata(filepath.Join(snapshot, "metadata.json"), EnhancedSSHMetadata{}))
+	target := filepath.Join(root, "target", "ssh", "config")
+	output, err := captureSSHSaveOutput(t, func() error {
+		return NewEnhancedSSHCommand().LoadEnhancedConfig(&EnhancedSSHOptions{Name: "snapshot", StorePath: store, ConfigPath: target, Force: true})
+	})
+	require.Error(t, err)
+	assert.NotContains(t, output, "loaded successfully")
+	assert.NoDirExists(t, filepath.Dir(target))
+}
+
 func TestSSHLoadKeyModeMetadataRoles(t *testing.T) {
 	metadata := &EnhancedSSHMetadata{PrivateKeys: []string{"/keys/secret.pub"}, PublicKeys: []string{"/keys/public.pub"}}
 	assert.Equal(t, os.FileMode(0o600), sshLoadKeyMode("secret.pub", metadata))
@@ -868,6 +898,16 @@ func TestEnhancedSSHCommand_LoadMetadataRoleModes(t *testing.T) {
 	// A legacy metadata with no role lists still uses the historical public suffix.
 	legacy := &EnhancedSSHMetadata{}
 	assert.Equal(t, os.FileMode(0o644), sshLoadKeyMode("legacy.pub", legacy))
+	legacySnapshot := filepath.Join(store, "legacy")
+	require.NoError(t, os.MkdirAll(filepath.Join(legacySnapshot, "keys"), 0o700))
+	require.NoError(t, os.WriteFile(filepath.Join(legacySnapshot, "config"), []byte("Host legacy"), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(legacySnapshot, "keys", "legacy.pub"), []byte("legacy"), 0o600))
+	require.NoError(t, NewEnhancedSSHCommand().saveEnhancedMetadata(filepath.Join(legacySnapshot, "metadata.json"), EnhancedSSHMetadata{}))
+	legacyTarget := filepath.Join(root, "legacy-target", "ssh", "config")
+	require.NoError(t, NewEnhancedSSHCommand().LoadEnhancedConfig(&EnhancedSSHOptions{Name: "legacy", StorePath: store, ConfigPath: legacyTarget}))
+	legacyInfo, err := os.Stat(filepath.Join(filepath.Dir(legacyTarget), "legacy.pub"))
+	require.NoError(t, err)
+	assertPrivateMode(t, legacyInfo, 0o644)
 }
 
 func TestEnhancedSSHCommand_SavePublishFailureIntegration(t *testing.T) {
@@ -941,6 +981,33 @@ func TestEnhancedSSHCommand_SavePublishFailureIntegration(t *testing.T) {
 		assert.DirExists(t, stage)
 		assert.DirExists(t, wrapper)
 		assert.FileExists(t, filepath.Join(wrapper, filepath.Base(final), "config"))
+	})
+	t.Run("old to backup failure reports state after caller stage cleanup", func(t *testing.T) {
+		opts, final := newForcedSave(t)
+		originalRename, originalTemp := sshSaveRename, sshSaveMkdirTemp
+		var stage string
+		sshSaveMkdirTemp = func(dir, pattern string) (string, error) {
+			path, err := originalTemp(dir, pattern)
+			if strings.HasPrefix(pattern, ".gzh-ssh-stage-") {
+				stage = path
+			}
+			return path, err
+		}
+		sshSaveRename = func(from, to string) error {
+			if from == final {
+				return errors.New("old backup")
+			}
+			return originalRename(from, to)
+		}
+		t.Cleanup(func() { sshSaveRename, sshSaveMkdirTemp = originalRename, originalTemp; _ = os.RemoveAll(stage) })
+		output, err := captureSSHSaveOutput(t, func() error { return NewEnhancedSSHCommand().SaveEnhancedConfig(opts) })
+		require.Error(t, err)
+		assert.NotContains(t, output, "saved successfully")
+		assert.Contains(t, err.Error(), "stage="+stage+"(missing)")
+		assert.NoDirExists(t, stage)
+		content, readErr := os.ReadFile(filepath.Join(final, "config"))
+		require.NoError(t, readErr)
+		assert.Equal(t, "Host old", string(content))
 	})
 }
 

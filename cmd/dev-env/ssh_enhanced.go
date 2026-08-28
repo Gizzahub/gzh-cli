@@ -554,7 +554,7 @@ func sshSavePublish(stage, final string, force bool) (sshSavePublishResult, erro
 	if err := sshSaveRename(final, backup); err != nil {
 		wrapperErr := sshSaveRemoveAll(wrapper)
 		state := sshSaveObservedState(stage, final, backup, wrapper)
-		return sshSavePublishResult{}, errors.Join(
+		return sshSavePublishResult{recovery: &sshSaveRecoveryPaths{stage, final, backup, wrapper}}, errors.Join(
 			fmt.Errorf("failed to move old snapshot %s to backup %s (%s): %w", final, backup, state, err),
 			sshSaveCleanupError("backup wrapper", wrapper, wrapperErr),
 		)
