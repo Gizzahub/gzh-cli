@@ -473,12 +473,16 @@ func TestProfileReservationHelperProcess(t *testing.T) {
 	if err != nil {
 		t.Fatalf("StartProfile() error: %v", err)
 	}
-	fmt.Println(filename)
+	fmt.Printf("SIMPLEPROF_RESULT=%s\n", filename)
 }
 
 func TestStartProfileReservesAcrossHelperProcesses(t *testing.T) {
 	const workers = 4
 	outputDir := t.TempDir()
+	testExecutable, err := os.Executable()
+	if err != nil {
+		t.Fatalf("Executable() error: %v", err)
+	}
 	fixedTimestamp := "20260829_093000"
 	sentinel := filepath.Join(outputDir, "memory_"+fixedTimestamp+"_1.prof")
 	if err := os.WriteFile(sentinel, []byte("keep"), 0o600); err != nil {
@@ -489,6 +493,7 @@ func TestStartProfileReservesAcrossHelperProcesses(t *testing.T) {
 	type helperResult struct {
 		id       int
 		filename string
+		output   string
 		err      error
 	}
 	results := make(chan helperResult, workers)
@@ -498,7 +503,7 @@ func TestStartProfileReservesAcrossHelperProcesses(t *testing.T) {
 			commandContext, cancel := context.WithTimeout(t.Context(), 45*time.Second)
 			defer cancel()
 			readyPath := filepath.Join(outputDir, fmt.Sprintf("ready-%d", workerID))
-			command := exec.CommandContext(commandContext, "go", "test", ".", "-run=^TestProfileReservationHelperProcess$", "-count=1", "-v")
+			command := exec.CommandContext(commandContext, testExecutable, "-test.run=^TestProfileReservationHelperProcess$", "-test.v")
 			command.Env = append(os.Environ(),
 				"SIMPLEPROF_HELPER=1",
 				"SIMPLEPROF_OUTPUT_DIR="+outputDir,
@@ -506,15 +511,15 @@ func TestStartProfileReservesAcrossHelperProcesses(t *testing.T) {
 				"SIMPLEPROF_READY_PATH="+readyPath,
 				"SIMPLEPROF_RELEASE_PATH="+releasePath,
 			)
-			output, err := command.Output()
+			output, err := command.CombinedOutput()
 			filename := ""
 			for _, line := range strings.Split(strings.TrimSpace(string(output)), "\n") {
-				if strings.HasSuffix(line, ".prof") {
-					filename = line
+				if candidate, found := strings.CutPrefix(line, "SIMPLEPROF_RESULT="); found {
+					filename = candidate
 					break
 				}
 			}
-			results <- helperResult{id: workerID, filename: filename, err: err}
+			results <- helperResult{id: workerID, filename: filename, output: string(output), err: err}
 		}()
 	}
 
@@ -539,7 +544,11 @@ func TestStartProfileReservesAcrossHelperProcesses(t *testing.T) {
 	for range workers {
 		result := <-results
 		if result.err != nil {
-			t.Errorf("helper %d error: %v", result.id, result.err)
+			t.Errorf("helper %d error: %v\noutput:\n%s", result.id, result.err, result.output)
+			continue
+		}
+		if result.filename == "" {
+			t.Errorf("helper %d returned no result marker\noutput:\n%s", result.id, result.output)
 			continue
 		}
 		if _, exists := seen[result.filename]; exists {

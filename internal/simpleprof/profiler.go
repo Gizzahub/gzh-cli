@@ -222,12 +222,12 @@ func (p *SimpleProfiler) startCPUProfile(filename string, file *os.File, duratio
 		p.sleep(duration)
 		p.stopCPU()
 		if err := p.closeFile(file); err != nil {
-			log.Printf("could not close CPU profile: %v", err)
+			log.Printf("could not close CPU profile %s: %v", filename, err)
 		}
 		if p.cpuDone != nil {
 			p.cpuDone()
 		}
-		log.Print("CPU profile saved")
+		log.Printf("CPU profile saved to %s", filename)
 	}()
 
 	return filename, nil
@@ -247,7 +247,7 @@ func (p *SimpleProfiler) saveProfile(profileName, filename string, file *os.File
 		return "", p.removeReservedProfile(filename, fmt.Errorf("could not close %s profile: %w", profileName, err))
 	}
 
-	log.Print("profile saved")
+	log.Printf("%s profile saved to %s", profileName, filename)
 	return filename, nil
 }
 
