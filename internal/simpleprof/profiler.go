@@ -222,11 +222,13 @@ func (p *SimpleProfiler) startCPUProfile(filename string, file *os.File, duratio
 		p.sleep(duration)
 		p.stopCPU()
 		if err := p.closeFile(file); err != nil {
+			//nolint:gosec // ProfileType 검증 후 앱 소유 경로·고정 시각·원자 순번으로 만든 파일명이며 기존 경로 진단을 보존하고 외부 입력 로그 노출을 넓히지 않는다.
 			log.Printf("could not close CPU profile %s: %v", filename, err)
 		}
 		if p.cpuDone != nil {
 			p.cpuDone()
 		}
+		//nolint:gosec // ProfileType 검증 후 앱 소유 경로·고정 시각·원자 순번으로 만든 파일명이며 기존 경로 진단을 보존하고 외부 입력 로그 노출을 넓히지 않는다.
 		log.Printf("CPU profile saved to %s", filename)
 	}()
 
@@ -247,6 +249,7 @@ func (p *SimpleProfiler) saveProfile(profileName, filename string, file *os.File
 		return "", p.removeReservedProfile(filename, fmt.Errorf("could not close %s profile: %w", profileName, err))
 	}
 
+	//nolint:gosec // ProfileType 검증 후 앱 소유 경로·고정 시각·원자 순번으로 만든 파일명이며 기존 경로 진단을 보존하고 외부 입력 로그 노출을 넓히지 않는다.
 	log.Printf("%s profile saved to %s", profileName, filename)
 	return filename, nil
 }
