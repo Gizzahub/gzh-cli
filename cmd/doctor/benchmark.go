@@ -228,6 +228,14 @@ func runBenchmarkAnalysis(ctx context.Context, flags *cli.CommonFlags, opts benc
 		OutputDir:   "tmp/profiles",
 		AutoProfile: false,
 	})
+	if err := profiler.Start(ctx); err != nil {
+		return fmt.Errorf("failed to start benchmark profiler: %w", err)
+	}
+	defer func() {
+		if err := profiler.Stop(); err != nil {
+			logger.Warn("Failed to stop benchmark profiler", "error", err)
+		}
+	}()
 
 	benchmarkSuite := profiling.NewBenchmarkSuite(profiler)
 

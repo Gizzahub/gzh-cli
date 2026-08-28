@@ -63,6 +63,56 @@ func TestNewProfiler_DisabledPreservesCPUProfileConfiguration(t *testing.T) {
 	assert.False(t, profiler.config.Enabled)
 }
 
+func TestNewProfiler_DoesNotCreateOutputDirectory(t *testing.T) {
+	outputDir := filepath.Join(t.TempDir(), "profiles")
+
+	profiler := NewProfiler(&ProfileConfig{Enabled: true, OutputDir: outputDir})
+
+	require.NotNil(t, profiler)
+	_, err := os.Stat(outputDir)
+	assert.True(t, os.IsNotExist(err))
+}
+
+func TestProfiler_Start_DisabledDoesNotCreateOutputDirectory(t *testing.T) {
+	outputDir := filepath.Join(t.TempDir(), "profiles")
+	profiler := NewProfiler(&ProfileConfig{Enabled: false, OutputDir: outputDir})
+
+	require.NoError(t, profiler.Start(context.Background()))
+	_, err := os.Stat(outputDir)
+	assert.True(t, os.IsNotExist(err))
+}
+
+func TestProfiler_Start_CreatesOutputDirectory(t *testing.T) {
+	outputDir := filepath.Join(t.TempDir(), "profiles")
+	profiler := NewProfiler(&ProfileConfig{Enabled: true, OutputDir: outputDir})
+
+	require.NoError(t, profiler.Start(context.Background()))
+	t.Cleanup(func() {
+		require.NoError(t, profiler.Stop())
+	})
+
+	info, err := os.Stat(outputDir)
+	require.NoError(t, err)
+	assert.True(t, info.IsDir())
+}
+
+func TestProfiler_Start_ReturnsOutputDirectoryErrorBeforeStartingGoroutines(t *testing.T) {
+	blocker := filepath.Join(t.TempDir(), "blocker")
+	require.NoError(t, os.WriteFile(blocker, nil, 0o600))
+	profiler := NewProfiler(&ProfileConfig{
+		Enabled:     true,
+		HTTPPort:    6060,
+		OutputDir:   filepath.Join(blocker, "profiles"),
+		AutoProfile: true,
+	})
+
+	err := profiler.Start(context.Background())
+
+	require.Error(t, err)
+	assert.ErrorContains(t, err, "failed to create profile output directory")
+	assert.Nil(t, profiler.server)
+}
+
 func TestProfiler_LifecycleDoesNotMutateRuntimeProfileRates(t *testing.T) {
 	const mutexRateSentinel = 37
 

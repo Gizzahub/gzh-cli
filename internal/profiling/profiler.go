@@ -93,11 +93,6 @@ func NewProfiler(config *ProfileConfig) *Profiler {
 		outputDir: config.OutputDir,
 	}
 
-	// Create output directory if it doesn't exist
-	if err := os.MkdirAll(p.outputDir, 0o755); err != nil {
-		p.logger.Warn("Failed to create profile output directory", "dir", p.outputDir, "error", err)
-	}
-
 	return p
 }
 
@@ -106,6 +101,10 @@ func (p *Profiler) Start(ctx context.Context) error {
 	if !p.config.Enabled {
 		p.logger.Debug("Profiling is disabled")
 		return nil
+	}
+
+	if err := os.MkdirAll(p.outputDir, 0o755); err != nil {
+		return fmt.Errorf("failed to create profile output directory %q: %w", p.outputDir, err)
 	}
 
 	// Start HTTP server for pprof endpoints
