@@ -17,11 +17,10 @@ func TestCompareFixtures(t *testing.T) {
 }
 
 func TestCompareIsStableAcrossInputPermutation(t *testing.T) {
-	testCase := loadFixture(t, "permutation remains stable")
+	testCase := loadFixture(t, "one baseline to two candidates permutation remains fail closed")
 	first, err := compare(testCase.Expected, testCase.Baseline, testCase.Candidate)
 	require.NoError(t, err)
 
-	testCase.Baseline.Findings[0], testCase.Baseline.Findings[1] = testCase.Baseline.Findings[1], testCase.Baseline.Findings[0]
 	testCase.Candidate.Findings[0], testCase.Candidate.Findings[1] = testCase.Candidate.Findings[1], testCase.Candidate.Findings[0]
 	second, err := compare(testCase.Expected, testCase.Baseline, testCase.Candidate)
 	require.NoError(t, err)
@@ -29,7 +28,12 @@ func TestCompareIsStableAcrossInputPermutation(t *testing.T) {
 }
 
 func TestCompareRejectsTamperedEnvelopeMetadata(t *testing.T) {
-	for _, field := range []string{"baseline SHA", "candidate SHA", "scanner version", "config hash", "flags hash"} {
+	for _, field := range []string{
+		"baseline SHA", "candidate SHA",
+		"baseline scanner version", "candidate scanner version",
+		"baseline config hash", "candidate config hash",
+		"baseline flags hash", "candidate flags hash",
+	} {
 		t.Run(field, func(t *testing.T) {
 			testCase := loadFixture(t, "different revisions match trusted policy")
 			switch field {
@@ -37,11 +41,17 @@ func TestCompareRejectsTamperedEnvelopeMetadata(t *testing.T) {
 				testCase.Baseline.SourceSHA = "tampered"
 			case "candidate SHA":
 				testCase.Candidate.SourceSHA = "tampered"
-			case "scanner version":
+			case "baseline scanner version":
+				testCase.Baseline.ScannerVersion = "tampered"
+			case "candidate scanner version":
 				testCase.Candidate.ScannerVersion = "tampered"
-			case "config hash":
+			case "baseline config hash":
+				testCase.Baseline.ConfigHash = "tampered"
+			case "candidate config hash":
 				testCase.Candidate.ConfigHash = "tampered"
-			case "flags hash":
+			case "baseline flags hash":
+				testCase.Baseline.FlagsHash = "tampered"
+			case "candidate flags hash":
 				testCase.Candidate.FlagsHash = "tampered"
 			}
 			_, err := compare(testCase.Expected, testCase.Baseline, testCase.Candidate)

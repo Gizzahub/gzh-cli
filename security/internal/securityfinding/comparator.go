@@ -76,22 +76,25 @@ func compare(expected expectation, baseline, candidate *reportEnvelope) (compari
 		baselineBySemanticKey[key] = append(baselineBySemanticKey[key], current)
 	}
 
-	used := make(map[string]bool, len(baselineBySemanticKey))
+	candidateBySemanticKey := make(map[string][]finding, len(candidateFindings))
 	for _, current := range candidateFindings {
 		key, keyErr := current.semanticKey()
 		if keyErr != nil {
 			return comparison{}, keyErr
 		}
+		candidateBySemanticKey[key] = append(candidateBySemanticKey[key], current)
+	}
+
+	for key, candidates := range candidateBySemanticKey {
 		matches := baselineBySemanticKey[key]
 		switch {
 		case len(matches) == 0:
-			result.New = append(result.New, current)
-		case len(matches) != 1 || used[key]:
-			// A many-to-one match would hide a changed finding, so do not classify it as known.
-			result.Unclassified = append(result.Unclassified, current)
+			result.New = append(result.New, candidates...)
+		case len(matches) == 1 && len(candidates) == 1:
+			result.Known = append(result.Known, candidates[0])
 		default:
-			used[key] = true
-			result.Known = append(result.Known, current)
+			// Any non-bijective semantic group could conceal a changed finding.
+			result.Unclassified = append(result.Unclassified, candidates...)
 		}
 	}
 

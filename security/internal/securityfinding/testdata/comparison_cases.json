@@ -42,11 +42,25 @@
     "want": {"BaselineRawCount":2, "CandidateRawCount":1, "Known":[], "New":[], "Unclassified":[{"Rule":"G304", "Path":"cmd/app/main.go", "StartLine":30, "StartColumn":3, "Message":"file inclusion", "SourceSnippet":"os\u0000.\u0000Open\u0000(\u0000name\u0000)"}]}
   },
   {
-    "name": "cardinality reuse fails closed",
+    "name": "one baseline to two candidates fails closed",
     "expected": {"BaselineSHA": "baseline-sha", "CandidateSHA": "candidate-sha", "ScannerVersion": "gosec-v2.28.0", "ConfigHash": "config-hash", "FlagsHash": "flags-hash"},
     "baseline": {"SourceSHA": "baseline-sha", "ScannerVersion": "gosec-v2.28.0", "ConfigHash": "config-hash", "FlagsHash": "flags-hash", "Findings": [{"Rule":"G304", "Path":"cmd/app/main.go", "StartLine":10, "StartColumn":3, "Message":"file inclusion", "SourceSnippet":"os.Open(name)"}]},
     "candidate": {"SourceSHA": "candidate-sha", "ScannerVersion": "gosec-v2.28.0", "ConfigHash": "config-hash", "FlagsHash": "flags-hash", "Findings": [{"Rule":"G304", "Path":"cmd/app/main.go", "StartLine":30, "StartColumn":3, "Message":"file inclusion", "SourceSnippet":"os.Open(name)"}, {"Rule":"G304", "Path":"cmd/app/main.go", "StartLine":40, "StartColumn":3, "Message":"file inclusion", "SourceSnippet":"os.Open(name)"}]},
-    "want": {"BaselineRawCount":1, "CandidateRawCount":2, "Known":[{"Rule":"G304", "Path":"cmd/app/main.go", "StartLine":30, "StartColumn":3, "Message":"file inclusion", "SourceSnippet":"os\u0000.\u0000Open\u0000(\u0000name\u0000)"}], "New":[], "Unclassified":[{"Rule":"G304", "Path":"cmd/app/main.go", "StartLine":40, "StartColumn":3, "Message":"file inclusion", "SourceSnippet":"os\u0000.\u0000Open\u0000(\u0000name\u0000)"}]}
+    "want": {"BaselineRawCount":1, "CandidateRawCount":2, "Known":[], "New":[], "Unclassified":[{"Rule":"G304", "Path":"cmd/app/main.go", "StartLine":30, "StartColumn":3, "Message":"file inclusion", "SourceSnippet":"os\u0000.\u0000Open\u0000(\u0000name\u0000)"}, {"Rule":"G304", "Path":"cmd/app/main.go", "StartLine":40, "StartColumn":3, "Message":"file inclusion", "SourceSnippet":"os\u0000.\u0000Open\u0000(\u0000name\u0000)"}]}
+  },
+  {
+    "name": "one baseline to two candidates permutation remains fail closed",
+    "expected": {"BaselineSHA": "baseline-sha", "CandidateSHA": "candidate-sha", "ScannerVersion": "gosec-v2.28.0", "ConfigHash": "config-hash", "FlagsHash": "flags-hash"},
+    "baseline": {"SourceSHA": "baseline-sha", "ScannerVersion": "gosec-v2.28.0", "ConfigHash": "config-hash", "FlagsHash": "flags-hash", "Findings": [{"Rule":"G304", "Path":"cmd/app/main.go", "StartLine":10, "StartColumn":3, "Message":"file inclusion", "SourceSnippet":"os.Open(name)"}]},
+    "candidate": {"SourceSHA": "candidate-sha", "ScannerVersion": "gosec-v2.28.0", "ConfigHash": "config-hash", "FlagsHash": "flags-hash", "Findings": [{"Rule":"G304", "Path":"cmd/app/main.go", "StartLine":40, "StartColumn":3, "Message":"file inclusion", "SourceSnippet":"os.Open(name)"}, {"Rule":"G304", "Path":"cmd/app/main.go", "StartLine":30, "StartColumn":3, "Message":"file inclusion", "SourceSnippet":"os.Open(name)"}]},
+    "want": {"BaselineRawCount":1, "CandidateRawCount":2, "Known":[], "New":[], "Unclassified":[{"Rule":"G304", "Path":"cmd/app/main.go", "StartLine":30, "StartColumn":3, "Message":"file inclusion", "SourceSnippet":"os\u0000.\u0000Open\u0000(\u0000name\u0000)"}, {"Rule":"G304", "Path":"cmd/app/main.go", "StartLine":40, "StartColumn":3, "Message":"file inclusion", "SourceSnippet":"os\u0000.\u0000Open\u0000(\u0000name\u0000)"}]}
+  },
+  {
+    "name": "two baselines to two candidates fails closed",
+    "expected": {"BaselineSHA": "baseline-sha", "CandidateSHA": "candidate-sha", "ScannerVersion": "gosec-v2.28.0", "ConfigHash": "config-hash", "FlagsHash": "flags-hash"},
+    "baseline": {"SourceSHA": "baseline-sha", "ScannerVersion": "gosec-v2.28.0", "ConfigHash": "config-hash", "FlagsHash": "flags-hash", "Findings": [{"Rule":"G304", "Path":"cmd/app/main.go", "StartLine":10, "StartColumn":3, "Message":"file inclusion", "SourceSnippet":"os.Open(name)"}, {"Rule":"G304", "Path":"cmd/app/main.go", "StartLine":20, "StartColumn":3, "Message":"file inclusion", "SourceSnippet":"os.Open(name)"}]},
+    "candidate": {"SourceSHA": "candidate-sha", "ScannerVersion": "gosec-v2.28.0", "ConfigHash": "config-hash", "FlagsHash": "flags-hash", "Findings": [{"Rule":"G304", "Path":"cmd/app/main.go", "StartLine":30, "StartColumn":3, "Message":"file inclusion", "SourceSnippet":"os.Open(name)"}, {"Rule":"G304", "Path":"cmd/app/main.go", "StartLine":40, "StartColumn":3, "Message":"file inclusion", "SourceSnippet":"os.Open(name)"}]},
+    "want": {"BaselineRawCount":2, "CandidateRawCount":2, "Known":[], "New":[], "Unclassified":[{"Rule":"G304", "Path":"cmd/app/main.go", "StartLine":30, "StartColumn":3, "Message":"file inclusion", "SourceSnippet":"os\u0000.\u0000Open\u0000(\u0000name\u0000)"}, {"Rule":"G304", "Path":"cmd/app/main.go", "StartLine":40, "StartColumn":3, "Message":"file inclusion", "SourceSnippet":"os\u0000.\u0000Open\u0000(\u0000name\u0000)"}]}
   },
   {
     "name": "permutation remains stable",
