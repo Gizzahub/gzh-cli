@@ -64,18 +64,25 @@ make install-gosec
 
 ### Excluding False Positives
 
-Use `#nosec` comments to exclude specific lines:
+The pinned standalone scanner is gosec v2.28.0. Its repository configuration
+sets `global.nosec` to `false`; therefore, ordinary `#nosec` comments are
+inactive for the standalone scan. Do not add new `#nosec` comments or assume an
+existing one suppresses a standalone result.
+
+After the security policy owner has approved an accepted-risk entry, the
+approved standalone mechanism will be a directive with a registered accepted
+risk identifier:
 
 ```go
-// Legitimate use of command execution
-cmd := exec.Command("git", "status") // #nosec G204
-
-// Controlled file path usage
-file, err := os.Open(configPath) // #nosec G304
-
-// Deliberate weak crypto for compatibility
-hash := md5.Sum(data) // #nosec G401
+//gosec:disable G304 -- AR-0000: approved reason with immutable review evidence.
+file, err := os.Open(configPath)
 ```
+
+`AR-0000` is illustrative only. Stage A0 does not grant any accepted-risk
+identifier, activate legacy comments, or change scanner configuration. Until a
+policy owner and approval evidence are recorded, remediate the finding or leave
+it visible. See the [gosec suppression inventory](../90-maintenance/94-gosec-suppression-inventory.md)
+for the current directives and the approval blocker.
 
 ## Security Guidelines
 
@@ -227,9 +234,12 @@ if err := json.Unmarshal(data, &result); err != nil {
 
 1. **Too many false positives**
 
-   - Use `#nosec` comments for legitimate cases
-   - Update exclude rules in `.gosec.json`
-   - Adjust confidence/severity thresholds
+   - Do not use `#nosec`: it is inactive in the standalone policy.
+   - First remediate the finding or document why it is not a finding.
+   - A `gosec:disable` directive requires a policy-owner-approved accepted-risk
+     record; do not create an AR ID locally.
+   - Do not broaden `.gosec.json` exclusions or lower thresholds to silence a
+     result without a separately approved policy change.
 
 1. **Performance issues**
 
