@@ -46,20 +46,23 @@ make security-json
 # Install the pinned repository-local scanner
 make install-gosec
 
-# Run gosec with the repository config
-./bin/tools/gosec -conf=.gosec.json ./...
+# Prefer make security-code. This direct form is policy-equivalent only while
+# every pinned flag below stays identical to GOSEC_SCAN_FLAGS.
+./bin/tools/gosec -conf=.gosec.json -exclude-generated -exclude-dir=vendor -exclude-dir=node_modules -exclude-dir=.git -exclude-dir=tmp -tests -confidence=medium -severity=medium -no-fail ./...
 
-# Run with specific rules only
+# Policy-equivalent text diagnostics with the same pinned scan scope.
+./bin/tools/gosec -conf=.gosec.json -exclude-generated -exclude-dir=vendor -exclude-dir=node_modules -exclude-dir=.git -exclude-dir=tmp -tests -confidence=medium -severity=medium -no-fail -verbose=text ./...
+
+# Advisory partial diagnosis only: this filters rules and is not the repository policy scan.
 ./bin/tools/gosec -include=G101,G102,G104 ./...
 
-# Run with verbose output
-./bin/tools/gosec -verbose=text ./...
-
-# Generate different output formats
-./bin/tools/gosec -fmt=json ./...        # JSON format
-./bin/tools/gosec -fmt=yaml ./...        # YAML format
-./bin/tools/gosec -fmt=csv ./...         # CSV format
-./bin/tools/gosec -fmt=junit-xml ./...   # JUnit XML
+# Advisory output-format demonstrations only: they omit the pinned scan flags
+# and must not be used for policy or CI evidence. Use make security-json for
+# the validated SARIF report.
+./bin/tools/gosec -fmt=json ./...
+./bin/tools/gosec -fmt=yaml ./...
+./bin/tools/gosec -fmt=csv ./...
+./bin/tools/gosec -fmt=junit-xml ./...
 ```
 
 ### Excluding False Positives
@@ -244,7 +247,8 @@ if err := json.Unmarshal(data, &result); err != nil {
 1. **Performance issues**
 
    - Use `--exclude-dir` to skip large directories
-   - Run on specific packages: `./bin/tools/gosec ./pkg/...`
+   - Advisory partial diagnosis only: run a specific package with
+     `./bin/tools/gosec ./pkg/...`; do not treat it as a policy scan.
    - Tune concurrency with `-concurrency`
 
 ### Reporting Security Issues
@@ -270,9 +274,9 @@ Track these metrics over time:
 ### Integration with Metrics
 
 ```bash
-# Generate metrics for reporting
-./bin/tools/gosec -fmt=json ./... | jq '.Issues | length'
-./bin/tools/gosec -fmt=json ./... | jq '.Issues | group_by(.severity) | map({severity: .[0].severity, count: length})'
+# Policy-equivalent local metrics. Prefer make security-json for CI SARIF.
+./bin/tools/gosec -conf=.gosec.json -exclude-generated -exclude-dir=vendor -exclude-dir=node_modules -exclude-dir=.git -exclude-dir=tmp -tests -confidence=medium -severity=medium -no-fail -fmt=json ./... | jq '.Issues | length'
+./bin/tools/gosec -conf=.gosec.json -exclude-generated -exclude-dir=vendor -exclude-dir=node_modules -exclude-dir=.git -exclude-dir=tmp -tests -confidence=medium -severity=medium -no-fail -fmt=json ./... | jq '.Issues | group_by(.severity) | map({severity: .[0].severity, count: length})'
 ```
 
 ## Best Practices
@@ -282,7 +286,7 @@ Track these metrics over time:
 1. **Review gosec output manually** - Don't rely solely on automation
 1. **Keep security tools updated** - Regular updates catch new vulnerabilities
 1. **Train team on secure coding** - Prevention is better than detection
-1. **Document exceptions** - Use clear `#nosec` comments with explanations
+1. **Document exceptions** - Follow the accepted-risk policy; `#nosec` is inactive for the standalone scan
 1. **Validate user input** - Never trust external data
 1. **Use principle of least privilege** - Minimal file permissions and access
 1. **Regular security reviews** - Periodic manual code reviews for security

@@ -102,8 +102,8 @@ Run these read-only commands from the repository root and update the counts and
 paths together in a reviewed change:
 
 ```bash
-rg -n -i -g '*.go' '//\\s*gosec:disable'
+rg -n -i -g '*.go' '//\s*gosec:disable'
 rg -n -i -g '*.go' '#nosec'
-rg -i -g '*.go' -c '//\\s*nolint:gosec'
+rg -i -g '*.go' -c '//\s*nolint:gosec'
 rg -n 'G[0-9]{3}|gosec' .golangci.yml
 ```
