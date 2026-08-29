@@ -84,7 +84,7 @@ standalone gosec suppression mechanism.
 
 The configuration contains 9 rule exclusions (`G104`, `G204`, `G304`, `G306`,
 `G301`, `G101`, `G702`, `G703`, and `G118`) at lines 136–146. It also excludes
-gosec for two broad paths: `_test\\.go` at line 256 and `cmd/` at line 394.
+gosec for two broad paths: `_test\.go` at line 258 and `cmd/` at line 399.
 These are golangci-lint-only exclusions; they do not change the standalone
 gosec policy governed by `.gosec.json` and `GOSEC_SCAN_FLAGS`.
 
@@ -106,4 +106,5 @@ rg -n -i -g '*.go' '//\s*gosec:disable'
 rg -n -i -g '*.go' '#nosec'
 rg -i -g '*.go' -c '//\s*nolint:gosec'
 rg -n 'G[0-9]{3}|gosec' .golangci.yml
+rg -n -B 8 -A 5 '^[[:space:]]*-[[:space:]]+gosec$' .golangci.yml
 ```
