@@ -1,0 +1,57 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "informationUri": "https://github.com/securego/gosec/",
+          "name": "gosec",
+          "version": "dev"
+        }
+      },
+      "results": [
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {"uri": "test/e2e/helpers/filesystem.go"},
+                "region": {
+                  "endColumn": 37,
+                  "endLine": 248,
+                  "snippet": {"text": "require.NoError(env.t, os.WriteFile(dstPath, srcContent, 0o600))"},
+                  "sourceLanguage": "go",
+                  "startColumn": 37,
+                  "startLine": 248
+                }
+              }
+            }
+          ],
+          "message": {"text": "Path traversal via taint analysis"},
+          "ruleId": "G703"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {"uri": "test/e2e/helpers/filesystem.go"},
+                "region": {
+                  "endColumn": 37,
+                  "endLine": 248,
+                  "snippet": {"text": "require.NoError(env.t, os.WriteFile(dstPath, srcContent, 0o600))"},
+                  "sourceLanguage": "go",
+                  "startColumn": 37,
+                  "startLine": 248
+                }
+              }
+            }
+          ],
+          "message": {"text": "Path traversal via taint analysis"},
+          "ruleId": "G703"
+        }
+      ]
+    }
+  ]
+}
