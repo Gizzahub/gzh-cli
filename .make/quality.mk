@@ -202,9 +202,12 @@ lint-status: install-golangci-lint ## comprehensive lint status report
 
 lint-diff: install-golangci-lint ## lint only changed files (fast, for pre-commit)
 	@echo -e "$(CYAN)🔍 Linting changed files only...$(RESET)"
-	@CHANGED_FILES=$$(git diff --name-only --diff-filter=d HEAD | grep '\.go$$' || true); \
-	if [ -n "$$CHANGED_FILES" ]; then \
-		echo "$$CHANGED_FILES" | tr '\n' ' ' | xargs -r "$(GOLANGCI_LINT)" run $(GOLANGCI_LINT_RUN_FLAGS) -c .golangci.yml --new-from-rev=HEAD~1 || echo -e "$(YELLOW)⚠️  Some issues found in changed files$(RESET)"; \
+	@set -eu; \
+	CHANGED_FILES=$$(mktemp "$${TMPDIR:-/tmp}/gzh-cli-lint-diff.XXXXXX"); \
+	trap 'rm -f "$$CHANGED_FILES"' EXIT HUP INT TERM; \
+	git diff --name-only -z --diff-filter=d HEAD -- '*.go' >"$$CHANGED_FILES"; \
+	if [ -s "$$CHANGED_FILES" ]; then \
+		xargs -0 "$(GOLANGCI_LINT)" run $(GOLANGCI_LINT_RUN_FLAGS) -c .golangci.yml --new-from-rev=HEAD~1 <"$$CHANGED_FILES"; \
 	else \
 		echo -e "$(YELLOW)No Go files changed$(RESET)"; \
 	fi
