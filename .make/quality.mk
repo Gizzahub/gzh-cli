@@ -207,7 +207,7 @@ lint-diff: install-golangci-lint ## lint only changed files (fast, for pre-commi
 	trap 'rm -f "$$CHANGED_FILES"' EXIT HUP INT TERM; \
 	git diff --name-only -z --diff-filter=d HEAD -- '*.go' >"$$CHANGED_FILES"; \
 	if [ -s "$$CHANGED_FILES" ]; then \
-		xargs -0 "$(GOLANGCI_LINT)" run $(GOLANGCI_LINT_RUN_FLAGS) -c .golangci.yml --new-from-rev=HEAD~1 <"$$CHANGED_FILES"; \
+		xargs -0 "$(GOLANGCI_LINT)" run $(GOLANGCI_LINT_RUN_FLAGS) -c .golangci.yml --new-from-rev=HEAD~1 -- <"$$CHANGED_FILES"; \
 	else \
 		echo -e "$(YELLOW)No Go files changed$(RESET)"; \
 	fi
