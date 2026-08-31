@@ -84,6 +84,9 @@ func TestCompareRejectsMalformedFindings(t *testing.T) {
 		{"invalid snippet", func(report *reportEnvelope) {
 			report.Findings = []finding{{Rule: "G304", Path: "cmd/app/main.go", StartLine: 1, StartColumn: 1, Message: "message", SourceSnippet: "\"unterminated"}}
 		}},
+		{"canonical delimiter in untrusted snippet", func(report *reportEnvelope) {
+			report.Findings = []finding{{Rule: "G304", Path: "cmd/app/main.go", StartLine: 1, StartColumn: 1, Message: "message", SourceSnippet: "os\x00.\x00Open\x00(\x00name\x00)"}}
+		}},
 		{"conflicting same location", func(report *reportEnvelope) {
 			report.Findings = []finding{{Rule: "G304", Path: "cmd/app/main.go", StartLine: 1, StartColumn: 1, Message: "first", SourceSnippet: "os.Open(one)"}, {Rule: "G304", Path: "cmd/app/main.go", StartLine: 1, StartColumn: 1, Message: "second", SourceSnippet: "os.Open(two)"}}
 		}},

@@ -161,6 +161,8 @@ func findingFromSARIFResult(result sarifResult, resolver sourceResolver) (findin
 	if err != nil {
 		return finding{}, err
 	}
+	// comparator가 신뢰 메타데이터 경계에서 snippet token normalization을 수행한다.
+	canonical.SourceSnippet = snippet
 	return canonical, nil
 }
 

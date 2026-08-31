@@ -40,7 +40,7 @@ func TestIngestSARIFConvertsGosecResultsAndCountsTopology(t *testing.T) {
 	require.Len(t, report.Findings, 2)
 	require.NotNil(t, report.Findings)
 	require.Equal(t, "test%2Ffoo.go", report.Findings[0].Path)
-	require.Equal(t, "os\x00.\x00Open\x00(\x00name\x00)", report.Findings[0].SourceSnippet)
+	require.Equal(t, "os.Open(name)", report.Findings[0].SourceSnippet)
 }
 
 func TestIngestSARIFActualGosecReportExcerpts(t *testing.T) {
@@ -60,6 +60,51 @@ func TestIngestSARIFActualGosecReportExcerpts(t *testing.T) {
 			require.Equal(t, "test/e2e/helpers/filesystem.go", report.Findings[0].Path)
 		})
 	}
+}
+
+func TestIngestSARIFActualGosecReportExcerptsReconcile(t *testing.T) {
+	baseline, err := ingestSARIF(historicalGosecSARIFExcerpt, nil)
+	require.NoError(t, err)
+	candidate, err := ingestSARIF(currentGosecSARIFExcerpt, nil)
+	require.NoError(t, err)
+
+	expected := expectation{
+		BaselineSHA:    "fcdbaf253b61b4968297c3652aa04fe4ee4e8cb7",
+		CandidateSHA:   "b43b053e8994e3e781d2c5c7c82baae4389a8a1d",
+		ScannerVersion: "gosec-v2.28.0",
+		ConfigHash:     "task116-fixture-config",
+		FlagsHash:      "task116-fixture-flags",
+	}
+	result, err := compare(
+		expected,
+		&reportEnvelope{
+			SourceSHA:      expected.BaselineSHA,
+			ScannerVersion: expected.ScannerVersion,
+			ConfigHash:     expected.ConfigHash,
+			FlagsHash:      expected.FlagsHash,
+			Findings:       baseline.Findings,
+		},
+		&reportEnvelope{
+			SourceSHA:      expected.CandidateSHA,
+			ScannerVersion: expected.ScannerVersion,
+			ConfigHash:     expected.ConfigHash,
+			FlagsHash:      expected.FlagsHash,
+			Findings:       candidate.Findings,
+		},
+	)
+
+	require.NoError(t, err)
+	require.Equal(t, 2, baseline.RawResultCount)
+	require.Equal(t, 1, baseline.LocationUniqueCount)
+	require.Equal(t, 2, candidate.RawResultCount)
+	require.Equal(t, 1, candidate.LocationUniqueCount)
+	require.Equal(t, 2, result.BaselineRawCount)
+	require.Equal(t, 2, result.CandidateRawCount)
+	known, err := candidate.Findings[0].canonical()
+	require.NoError(t, err)
+	require.Equal(t, []finding{known}, result.Known)
+	require.Empty(t, result.New)
+	require.Empty(t, result.Unclassified)
 }
 
 func TestIngestSARIFAcceptsExplicitEmptyResults(t *testing.T) {
@@ -118,9 +163,16 @@ func TestIngestSARIFResolvesMissingOrInvalidSnippet(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			report, err := ingestSARIF(sarifDocumentWithResults("["+result+"]"), resolver)
 			require.NoError(t, err)
-			require.Equal(t, "os\x00.\x00Open\x00(\x00name\x00)", report.Findings[0].SourceSnippet)
+			require.Equal(t, "\tos.Open(name)", report.Findings[0].SourceSnippet)
 		})
 	}
+}
+
+func TestIngestSARIFRejectsNULSnippet(t *testing.T) {
+	_, err := ingestSARIF(sarifDocumentWithResults(`[
+		{"ruleId":"G304","message":{"text":"file inclusion"},"locations":[{"physicalLocation":{"artifactLocation":{"uri":"cmd/app/main.go"},"region":{"startLine":1,"startColumn":1,"snippet":{"text":"os\u0000.Open(name)"}}}}]}
+	]`), nil)
+	require.Error(t, err)
 }
 
 func TestIngestSARIFFailsClosedWhenSnippetCannotBeResolved(t *testing.T) {
