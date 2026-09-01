@@ -24,13 +24,13 @@ func TestGiteaProvider_CreateRepository(t *testing.T) {
 			require.NoError(t, json.NewDecoder(r.Body).Decode(&createdBody))
 			w.WriteHeader(http.StatusCreated)
 			_ = json.NewEncoder(w).Encode(map[string]any{
-				"id":            7,
-				"name":          createdBody["name"],
-				"full_name":     "acme/" + createdBody["name"].(string),
-				"private":       createdBody["private"],
-				"clone_url":     "https://gitea.example/acme/widget.git",
-				"ssh_url":       "git@gitea.example:acme/widget.git",
-				"html_url":      "https://gitea.example/acme/widget",
+				"id":             7,
+				"name":           createdBody["name"],
+				"full_name":      "acme/" + createdBody["name"].(string),
+				"private":        createdBody["private"],
+				"clone_url":      "https://gitea.example/acme/widget.git",
+				"ssh_url":        "git@gitea.example:acme/widget.git",
+				"html_url":       "https://gitea.example/acme/widget",
 				"default_branch": "main",
 			})
 		default:

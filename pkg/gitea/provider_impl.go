@@ -168,14 +168,14 @@ func (g *GiteaProvider) CreateRepository(ctx context.Context, req provider.Creat
 	}
 
 	payload := map[string]any{
-		"name":          req.Name,
-		"description":   req.Description,
-		"private":       req.Private,
-		"auto_init":     req.AutoInit,
+		"name":           req.Name,
+		"description":    req.Description,
+		"private":        req.Private,
+		"auto_init":      req.AutoInit,
 		"default_branch": req.DefaultBranch,
-		"has_issues":    req.HasIssues,
-		"has_wiki":      req.HasWiki,
-		"has_projects":  req.HasProjects,
+		"has_issues":     req.HasIssues,
+		"has_wiki":       req.HasWiki,
+		"has_projects":   req.HasProjects,
 	}
 
 	var repo giteaRepo

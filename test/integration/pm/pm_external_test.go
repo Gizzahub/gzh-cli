@@ -14,9 +14,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gizzahub/gzh-cli/test/integration/internal/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/gizzahub/gzh-cli/test/integration/internal/testutil"
 )
 
 // TestPMExternalCLI verifies the PM command surface when built with -tags pm_external.

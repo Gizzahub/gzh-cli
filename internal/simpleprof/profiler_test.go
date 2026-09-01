@@ -504,7 +504,8 @@ func TestStartProfileReservesAcrossHelperProcesses(t *testing.T) {
 			defer cancel()
 			readyPath := filepath.Join(outputDir, fmt.Sprintf("ready-%d", workerID))
 			command := exec.CommandContext(commandContext, testExecutable, "-test.run=^TestProfileReservationHelperProcess$", "-test.v")
-			command.Env = append(os.Environ(),
+			command.Env = append(
+				os.Environ(),
 				"SIMPLEPROF_HELPER=1",
 				"SIMPLEPROF_OUTPUT_DIR="+outputDir,
 				fmt.Sprintf("SIMPLEPROF_WORKER_ID=worker-%d", workerID),

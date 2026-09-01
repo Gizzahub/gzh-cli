@@ -25,8 +25,8 @@ type GitTarget struct {
 	Flatten    bool     `yaml:"flatten,omitempty" json:"flatten,omitempty"`       // Flatten directory structure
 	Match      string   `yaml:"match,omitempty" json:"match,omitempty"`           // Regex pattern filter
 	CloneDir   string   `yaml:"clone_dir,omitempty" json:"clone_dir,omitempty"`
-	Exclude    []string `yaml:"exclude,omitempty" json:"exclude,omitempty"`       // Repos to exclude
-	Strategy   string   `yaml:"strategy,omitempty" json:"strategy,omitempty"`     // reset, pull, fetch
+	Exclude    []string `yaml:"exclude,omitempty" json:"exclude,omitempty"`   // Repos to exclude
+	Strategy   string   `yaml:"strategy,omitempty" json:"strategy,omitempty"` // reset, pull, fetch
 }
 
 // Visibility constants.

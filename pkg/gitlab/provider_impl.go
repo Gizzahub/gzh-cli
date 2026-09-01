@@ -352,11 +352,11 @@ func (g *GitLabProvider) SearchRepositories(ctx context.Context, query provider.
 
 // gitlabProjectHook is the GitLab project hook API shape.
 type gitlabProjectHook struct {
-	ID        int      `json:"id"`
-	URL       string   `json:"url"`
-	PushEvents bool    `json:"push_events"`
-	EnableSSL  bool    `json:"enable_ssl_verification"`
-	CreatedAt  string  `json:"created_at"`
+	ID         int    `json:"id"`
+	URL        string `json:"url"`
+	PushEvents bool   `json:"push_events"`
+	EnableSSL  bool   `json:"enable_ssl_verification"`
+	CreatedAt  string `json:"created_at"`
 }
 
 // Webhook management — GitLab project hooks API.

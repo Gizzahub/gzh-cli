@@ -200,7 +200,8 @@ func createRealGitRepo(t *testing.T, workDir, relativePath, remoteURL string) {
 		t.Helper()
 		cmd := exec.Command("git", args...)
 		cmd.Dir = repoPath
-		cmd.Env = append(os.Environ(),
+		cmd.Env = append(
+			os.Environ(),
 			"GIT_CONFIG_NOSYSTEM=1",
 			"GIT_AUTHOR_NAME=e2e",
 			"GIT_AUTHOR_EMAIL=e2e@example.com",

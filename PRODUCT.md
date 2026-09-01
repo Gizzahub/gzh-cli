@@ -20,12 +20,12 @@ gzh-cli is the **thin assembling surface** of the gzh-cli library federation. Th
 This document sits below [SOUL.md](SOUL.md) (philosophy) and is the repo-level
 contract. It replaces a full PRD.
 
-| 제공하는 것 (Is)                          | 되지 않을 것 (Is Not)                       |
-| ----------------------------------------- | ------------------------------------------- |
-| 라이브러리 연합의 단일 진입점 (`gz`)      | 독립 실행 로직을 품은 모놀리식 앱           |
-| 얇은 wrapper를 통한 CLI 통합              | 핵심 로직을 wrapper에 구현                  |
-| bulk-first·dry-run 표준 장비              | git/brew/asdf 등 하위 도구 재구현           |
-| 여러 도구를 감싸는 편의 계층              | GUI·웹·IDE 플러그인·고급 TUI                |
+| 제공하는 것 (Is)                     | 되지 않을 것 (Is Not)             |
+| ------------------------------------ | --------------------------------- |
+| 라이브러리 연합의 단일 진입점 (`gz`) | 독립 실행 로직을 품은 모놀리식 앱 |
+| 얇은 wrapper를 통한 CLI 통합         | 핵심 로직을 wrapper에 구현        |
+| bulk-first·dry-run 표준 장비         | git/brew/asdf 등 하위 도구 재구현 |
+| 여러 도구를 감싸는 편의 계층         | GUI·웹·IDE 플러그인·고급 TUI      |
 
 ______________________________________________________________________
 

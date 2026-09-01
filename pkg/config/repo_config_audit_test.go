@@ -212,7 +212,7 @@ func TestRunComplianceAudit_RecommendedOnlyIsCompliant(t *testing.T) {
 			Name:         "advisory-only",
 			Private:      true,
 			Files:        []string{"LICENSE", "README.md"}, // required OK; no CHANGELOG
-			Workflows:    []string{},                      // recommended fails
+			Workflows:    []string{},                       // recommended fails
 			LastModified: time.Now(),
 		},
 		"required-fail": {

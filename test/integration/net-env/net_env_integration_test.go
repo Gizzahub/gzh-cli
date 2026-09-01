@@ -15,9 +15,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gizzahub/gzh-cli/test/integration/internal/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/gizzahub/gzh-cli/test/integration/internal/testutil"
 )
 
 // testBinary holds the path to a freshly built gz binary for this package.

@@ -141,7 +141,7 @@ func TestGzhYamlReposFromPlan(t *testing.T) {
 			{Type: reposync.ActionUpdate, Repo: reposync.RepoSpec{Name: "b", CloneURL: "https://x/b.git"}},
 			{Type: reposync.ActionDelete, Repo: reposync.RepoSpec{Name: "orphan", CloneURL: ""}},
 			{Type: reposync.ActionClone, Repo: reposync.RepoSpec{Name: "a", CloneURL: "https://x/a-dup.git"}}, // duplicate name
-			{Type: reposync.ActionSkip, Repo: reposync.RepoSpec{Name: ""}},                                  // empty name
+			{Type: reposync.ActionSkip, Repo: reposync.RepoSpec{Name: ""}},                                    // empty name
 		},
 	}
 

@@ -29,9 +29,11 @@ type mutationAPIClient struct {
 func (m *mutationAPIClient) GetRepository(ctx context.Context, owner, repo string) (*RepositoryInfo, error) {
 	return nil, nil
 }
+
 func (m *mutationAPIClient) ListOrganizationRepositories(ctx context.Context, org string) ([]RepositoryInfo, error) {
 	return nil, nil
 }
+
 func (m *mutationAPIClient) GetDefaultBranch(ctx context.Context, owner, repo string) (string, error) {
 	return "main", nil
 }
@@ -39,48 +41,57 @@ func (m *mutationAPIClient) SetToken(ctx context.Context, token string) error { 
 func (m *mutationAPIClient) GetRateLimit(ctx context.Context) (*RateLimit, error) {
 	return &RateLimit{}, nil
 }
+
 func (m *mutationAPIClient) GetRepositoryConfiguration(ctx context.Context, owner, repo string) (*RepositoryConfig, error) {
 	return nil, nil
 }
+
 func (m *mutationAPIClient) UpdateRepositoryConfiguration(ctx context.Context, owner, repo string, config *RepositoryConfig) error {
 	return nil
 }
+
 func (m *mutationAPIClient) CreateRepository(ctx context.Context, owner string, opts *CreateRepositoryOptions) (*RepositoryInfo, error) {
 	if m.createFn != nil {
 		return m.createFn(ctx, owner, opts)
 	}
 	return nil, nil
 }
+
 func (m *mutationAPIClient) UpdateRepository(ctx context.Context, owner, repo string, opts *UpdateRepositoryOptions) (*RepositoryInfo, error) {
 	if m.updateFn != nil {
 		return m.updateFn(ctx, owner, repo, opts)
 	}
 	return &RepositoryInfo{Name: repo, FullName: owner + "/" + repo}, nil
 }
+
 func (m *mutationAPIClient) ForkRepository(ctx context.Context, owner, repo string, opts *ForkRepositoryOptions) (*RepositoryInfo, error) {
 	if m.forkFn != nil {
 		return m.forkFn(ctx, owner, repo, opts)
 	}
 	return &RepositoryInfo{Name: repo, FullName: "forker/" + repo}, nil
 }
+
 func (m *mutationAPIClient) DeleteRepository(ctx context.Context, owner, repo string) error {
 	if m.deleteFn != nil {
 		return m.deleteFn(ctx, owner, repo)
 	}
 	return nil
 }
+
 func (m *mutationAPIClient) ArchiveRepository(ctx context.Context, owner, repo string) error {
 	if m.archiveFn != nil {
 		return m.archiveFn(ctx, owner, repo)
 	}
 	return nil
 }
+
 func (m *mutationAPIClient) UnarchiveRepository(ctx context.Context, owner, repo string) error {
 	if m.unarchiveFn != nil {
 		return m.unarchiveFn(ctx, owner, repo)
 	}
 	return nil
 }
+
 func (m *mutationAPIClient) SearchRepositories(ctx context.Context, query string, opts *SearchRepositoriesOptions) (*RepositorySearchResult, error) {
 	if m.searchFn != nil {
 		return m.searchFn(ctx, query, opts)
@@ -93,9 +104,11 @@ type noopCloneService struct{}
 func (n *noopCloneService) CloneRepository(ctx context.Context, repo RepositoryInfo, targetPath, strategy string) error {
 	return nil
 }
+
 func (n *noopCloneService) RefreshAll(ctx context.Context, targetPath, orgName, strategy string) error {
 	return nil
 }
+
 func (n *noopCloneService) CloneOrganization(ctx context.Context, orgName, targetPath, strategy string) error {
 	return nil
 }
@@ -118,8 +131,8 @@ func TestGitHubProvider_CreateRepository(t *testing.T) {
 		{
 			name: "owner set creates under owner",
 			req: provider.CreateRepoRequest{
-				Owner:  "acme",
-				Name:   "widget",
+				Owner:   "acme",
+				Name:    "widget",
 				Private: true,
 			},
 			client: &mutationAPIClient{

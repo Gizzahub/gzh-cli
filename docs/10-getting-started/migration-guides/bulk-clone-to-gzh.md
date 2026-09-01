@@ -36,13 +36,13 @@ version: "1.0.0"
 
 ### Structure Changes
 
-| bulk-clone.yaml            | gzh.yaml                               | Notes                               |
-| -------------------------- | -------------------------------------- | ----------------------------------- |
+| bulk-clone.yaml            | gzh.yaml                               | Notes                                                  |
+| -------------------------- | -------------------------------------- | ------------------------------------------------------ |
 | `repo_roots[]`             | `providers.{provider}.organizations[]` | Canonical key (`orgs` is a deprecated load-time alias) |
-| `ignore_names[]`           | `exclude[]` per organization           | Per-organization exclusion patterns |
-| `default.github.root_path` | `clone_dir` per organization           | More flexible path management       |
-| `protocol`                 | Removed                                | Authentication handled via tokens   |
-| `org_name`                 | `name`                                 | Simpler naming                      |
+| `ignore_names[]`           | `exclude[]` per organization           | Per-organization exclusion patterns                    |
+| `default.github.root_path` | `clone_dir` per organization           | More flexible path management                          |
+| `protocol`                 | Removed                                | Authentication handled via tokens                      |
+| `org_name`                 | `name`                                 | Simpler naming                                         |
 
 ### Authentication
 

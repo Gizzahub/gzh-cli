@@ -313,12 +313,12 @@ go test ./cmd/git -run "TestSpecific" -v
 
 ### Integration Libraries (External Dependencies)
 
-| Library | Wrapper Location | Purpose |
-|---------|-----------------|---------|
-| gzh-cli-gitforge | cmd/git/repo/\*\_wrapper.go | Local Git ops |
-| gzh-cli-quality | cmd/quality_wrapper.go | Code quality |
-| gzh-cli-package-manager | cmd/pm_wrapper.go | Package mgmt |
-| gzh-cli-shellforge | cmd/shellforge_wrapper.go | Shell configs |
+| Library                 | Wrapper Location            | Purpose       |
+| ----------------------- | --------------------------- | ------------- |
+| gzh-cli-gitforge        | cmd/git/repo/\*\_wrapper.go | Local Git ops |
+| gzh-cli-quality         | cmd/quality_wrapper.go      | Code quality  |
+| gzh-cli-package-manager | cmd/pm_wrapper.go           | Package mgmt  |
+| gzh-cli-shellforge      | cmd/shellforge_wrapper.go   | Shell configs |
 
 ## Module-Specific Guides (Links)
 
@@ -369,11 +369,12 @@ go install github.com/gizzahub/gzh-cli-gitforge/cmd/gzh-git@latest
 - `gz git repo pull-all` → gzh-cli-gitforge 사용
 
 **차이점**:
-| 기능 | 독립 실행 | gzh-cli 통합 |
-|-----|---------|-------------|
-| 명령어 | `gzh-git clone` | `gz git repo clone-or-update` |
-| 설정 파일 | `git-config.yaml` | `gzh.yaml` (통합 설정) |
-| 인증 | 별도 토큰 | gzh-cli 토큰 공유 |
+
+| 기능      | 독립 실행         | gzh-cli 통합                  |
+| --------- | ----------------- | ----------------------------- |
+| 명령어    | `gzh-git clone`   | `gz git repo clone-or-update` |
+| 설정 파일 | `git-config.yaml` | `gzh.yaml` (통합 설정)        |
+| 인증      | 별도 토큰         | gzh-cli 토큰 공유             |
 
 ______________________________________________________________________
 
@@ -654,13 +655,13 @@ ______________________________________________________________________
 
 ### 📈 정량적 개선
 
-| 메트릭 | 현재 | 목표 | 개선율 |
-|-------|------|------|--------|
-| README.md 길이 | 1,032줄 | 300줄 | -70% |
-| CLAUDE.md 길이 | 475줄 | 300줄 | -37% |
-| 하위 프로젝트 문서 | 없음 | 1개 가이드 | +100% |
-| 기능 설명 중복 | 높음 | 낮음 | -80% |
-| 문서 발견 시간 | ~5분 | ~1분 | -80% |
+| 메트릭             | 현재    | 목표       | 개선율 |
+| ------------------ | ------- | ---------- | ------ |
+| README.md 길이     | 1,032줄 | 300줄      | -70%   |
+| CLAUDE.md 길이     | 475줄   | 300줄      | -37%   |
+| 하위 프로젝트 문서 | 없음    | 1개 가이드 | +100%  |
+| 기능 설명 중복     | 높음    | 낮음       | -80%   |
+| 문서 발견 시간     | ~5분    | ~1분       | -80%   |
 
 ### 🎯 정성적 개선
 

@@ -210,11 +210,11 @@ policies:
 
 #### Policy `enforcement` levels
 
-| Level | Audit effect |
-|-------|----------------|
-| `required` | Violation **fails** repository compliance (`Compliant = false`) |
+| Level         | Audit effect                                                     |
+| ------------- | ---------------------------------------------------------------- |
+| `required`    | Violation **fails** repository compliance (`Compliant = false`)  |
 | `recommended` | Violation is recorded (advisory); repository stays **compliant** |
-| `optional` | Same as recommended — recorded, non-blocking |
+| `optional`    | Same as recommended — recorded, non-blocking                     |
 
 Only **required** findings lower compliance percentage and appear under “Non-Compliant Repositories”. Recommended/optional findings are listed under “Advisory Findings” and counted in `advisoryFindings`. Use `required` for gate-style checks (CI/merge gates); use `recommended`/`optional` for guidance that should not fail an audit.
 

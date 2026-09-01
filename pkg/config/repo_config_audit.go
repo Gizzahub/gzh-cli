@@ -73,11 +73,11 @@ type RepoAuditResult struct {
 
 // PolicyViolation represents a specific policy violation.
 type PolicyViolation struct {
-	PolicyName  string `yaml:"policy" json:"policy"`
-	RuleName    string `yaml:"rule" json:"rule"`
-	Type        string `yaml:"type" json:"type"`
-	Expected    any    `yaml:"expected" json:"expected"`
-	Actual      any    `yaml:"actual,omitempty" json:"actual,omitempty"`
+	PolicyName string `yaml:"policy" json:"policy"`
+	RuleName   string `yaml:"rule" json:"rule"`
+	Type       string `yaml:"type" json:"type"`
+	Expected   any    `yaml:"expected" json:"expected"`
+	Actual     any    `yaml:"actual,omitempty" json:"actual,omitempty"`
 	// Enforcement is the rule level: required | recommended | optional.
 	Enforcement string `yaml:"enforcement,omitempty" json:"enforcement,omitempty"`
 	Severity    string `yaml:"severity" json:"severity"`
