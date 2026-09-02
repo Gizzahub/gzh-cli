@@ -2,6 +2,8 @@ package acceptedrisk
 
 import (
 	"fmt"
+	"io/fs"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -10,6 +12,17 @@ import (
 )
 
 const approvedSHA = "0123456789abcdef0123456789abcdef01234567"
+
+// registeredSigningKey is the fingerprint validPolicyYAML trusts. It is an
+// obvious placeholder: no real key fingerprint belongs in test fixtures.
+const registeredSigningKey = "SHA256:example-fingerprint-for-accepted-risk-tests"
+
+// defaultApprovalMessage names every identifier the tests approve, because the
+// validator requires an approval commit to name the record it ratifies.
+const defaultApprovalMessage = "security: approve AR-2026-001 and AR-2026-002"
+
+// toolsMakefilePath holds the pinned gosec scan flags the scan scope derives from.
+const toolsMakefilePath = ".make/tools.mk"
 
 const validPolicyYAML = `version: 1
 organization:
@@ -20,6 +33,8 @@ approvers:
     login: archmagece
     type: User
     role: repository-owner
+    signing_keys:
+      - SHA256:example-fingerprint-for-accepted-risk-tests
 evidence:
   accepted_types:
     - signed-commit
@@ -101,6 +116,30 @@ func testRecords(t *testing.T, specs ...recordSpec) []record {
 	return records
 }
 
+// testScanScope derives the scan scope from the repository's real pinned flags,
+// so a change to GOSEC_SCAN_FLAGS is visible to every test that scans a tree.
+func testScanScope(t *testing.T) scanScope {
+	t.Helper()
+	contents, err := fs.ReadFile(os.DirFS(repositoryRoot), toolsMakefilePath)
+	require.NoError(t, err)
+	scope, err := gosecScanScope(contents)
+	require.NoError(t, err)
+	return scope
+}
+
+// testBlanketTokens derives the blanket tags from the repository's real
+// .gosec.json for the same reason testScanScope reads the real tool flags: the
+// tags gosec honors are a property of that file, and a test that supplied its
+// own would stop noticing when the file and the scanner disagreed.
+func testBlanketTokens(t *testing.T) blanketTokens {
+	t.Helper()
+	contents, err := fs.ReadFile(os.DirFS(repositoryRoot), gosecConfigPath)
+	require.NoError(t, err)
+	tokens, err := gosecBlanketTokens(contents)
+	require.NoError(t, err)
+	return tokens
+}
+
 func testDate(t *testing.T, value string) time.Time {
 	t.Helper()
 	parsed, err := time.Parse(dateLayout, value)
@@ -108,12 +147,20 @@ func testDate(t *testing.T, value string) time.Time {
 	return parsed
 }
 
-// fakeVerifier stands in for `git verify-commit`. The zero value reports a
-// verified signature for whatever commit it is asked about.
+// fakeVerifier stands in for a production verifier. The zero value reports a
+// signature that verifies, was made with the key validPolicyYAML registers, and
+// covers a message naming the identifiers the tests approve.
 type fakeVerifier struct {
-	err        error
-	unverified bool
-	reportSHA  string
+	err             error
+	unverified      bool
+	reportSHA       string
+	signerKey       string
+	signerAccountID int64
+	message         string
+	// noSignerKey and noMessage distinguish "the verifier established nothing"
+	// from "the test did not override the default".
+	noSignerKey bool
+	noMessage   bool
 }
 
 func (f fakeVerifier) VerifyCommit(sha string) (verifiedCommit, error) {
@@ -124,7 +171,21 @@ func (f fakeVerifier) VerifyCommit(sha string) (verifiedCommit, error) {
 	if reported == "" {
 		reported = sha
 	}
-	return verifiedCommit{SHA: reported, Verified: !f.unverified}, nil
+	signerKey := f.signerKey
+	if signerKey == "" && !f.noSignerKey {
+		signerKey = registeredSigningKey
+	}
+	message := f.message
+	if message == "" && !f.noMessage {
+		message = defaultApprovalMessage
+	}
+	return verifiedCommit{
+		SHA:                     reported,
+		Verified:                !f.unverified,
+		VerifiedSignerKey:       signerKey,
+		VerifiedSignerAccountID: f.signerAccountID,
+		Message:                 message,
+	}, nil
 }
 
 // suppressionFor builds the directive a valid record expects.

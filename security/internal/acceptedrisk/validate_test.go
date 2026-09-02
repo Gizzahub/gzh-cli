@@ -2,6 +2,7 @@ package acceptedrisk
 
 import (
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -121,6 +122,47 @@ func TestValidateRegistryRejectsUnauthorizedApprovals(t *testing.T) {
 			verifier: fakeVerifier{reportSHA: "89abcdef0123456789abcdef0123456789abcdef"},
 			want:     codeEvidenceUnverified,
 		},
+		{
+			name:     "signature verifies but the signer is not registered to the approver",
+			verifier: fakeVerifier{signerKey: "SHA256:a-key-that-verifies-but-is-not-registered"},
+			want:     codeSignerNotAuthorized,
+		},
+		{
+			name:     "verifier could not establish which key signed",
+			verifier: fakeVerifier{noSignerKey: true},
+			want:     codeSignerNotAuthorized,
+		},
+		{
+			name:     "signature resolves to a different forge account",
+			verifier: fakeVerifier{signerAccountID: 424242},
+			want:     codeSignerNotAuthorized,
+		},
+		{
+			name:     "approver has no registered signing key",
+			policy:   policyWithoutSigningKeys(t),
+			verifier: fakeVerifier{},
+			want:     codeSignerNotAuthorized,
+		},
+		{
+			name:     "approval commit does not name the record",
+			verifier: fakeVerifier{message: "security: approve the accepted risks"},
+			want:     codeApprovalScopeMismatch,
+		},
+		{
+			name:     "approval commit names a different record",
+			verifier: fakeVerifier{message: "security: approve AR-2026-002"},
+			want:     codeApprovalScopeMismatch,
+		},
+		{
+			name:     "approval commit names a longer identifier that merely starts the same",
+			verifier: fakeVerifier{message: "security: approve AR-2026-0012"},
+			want:     codeApprovalScopeMismatch,
+		},
+		{
+			name:     "verifier reported no commit message",
+			verifier: fakeVerifier{noMessage: true},
+			want:     codeApprovalScopeMismatch,
+		},
 	}
 
 	for _, testCase := range cases {
@@ -179,6 +221,21 @@ func TestValidateRegistryEnforcesCadence(t *testing.T) {
 			now:  "2027-03-02",
 			want: []string{codeHardSunsetExpired, codeRenewalAfterHardSunset},
 		},
+		// A postdated review silently buys a full review interval, and a postdated
+		// creation pushes the hard sunset out by the same amount. Both are answered
+		// against the evaluation instant the cadence rules already use.
+		{
+			name: "review dated in the future",
+			spec: withDates(spec, "2026-09-02", "2027-01-01"),
+			now:  "2026-09-02",
+			want: []string{codeRecordDateInFuture},
+		},
+		{
+			name: "creation dated in the future",
+			spec: withDates(spec, "2026-12-01", "2026-12-01"),
+			now:  "2026-09-02",
+			want: []string{codeRecordDateInFuture, codeRecordDateInFuture},
+		},
 	}
 
 	for _, testCase := range cases {
@@ -228,6 +285,17 @@ func TestValidateRegistryEnforcesSuppressionLinkage(t *testing.T) {
 				{Path: "cmd/example/example.go", Line: 9, Raw: "//gosec:disable G304 -- no identifier"},
 			},
 			want: []string{codeSuppressionMalformed},
+		},
+		// The blanket form is not a directive that failed to parse; it carries no
+		// identifier and can never carry one, so it is reported in its own right.
+		{
+			name:    "blanket suppression",
+			records: []recordSpec{spec},
+			suppressions: []suppression{
+				suppressionFor(spec, 42),
+				{Path: "cmd/example/example.go", Line: 9, Raw: "#nosec G304", Blanket: true},
+			},
+			want: []string{codeSuppressionBlanket},
 		},
 		{
 			name:         "two sites share one record",
@@ -297,6 +365,41 @@ func TestValidateRegistrySortsViolationsIndependentlyOfInputOrder(t *testing.T) 
 	require.Len(t, forward, 2)
 	assert.Equal(t, "AR-2026-001", forward[0].Subject)
 	assert.Equal(t, "AR-2026-002", forward[1].Subject)
+}
+
+// TestValidateRegistryAcceptsOnlyTheRegisteredSigner is the positive companion
+// to the unauthorized-signer cases: the same record flips from accepted to
+// rejected purely on which key the verifier established.
+func TestValidateRegistryAcceptsOnlyTheRegisteredSigner(t *testing.T) {
+	spec := defaultSpec()
+	input := func(verifier commitVerifier) validationInput {
+		return validationInput{
+			Policy:       testPolicy(t),
+			Records:      testRecords(t, spec),
+			Suppressions: []suppression{suppressionFor(spec, 42)},
+			Verifier:     verifier,
+			Now:          testDate(t, "2026-09-02"),
+		}
+	}
+
+	accepted, err := validateRegistry(input(fakeVerifier{signerKey: registeredSigningKey}))
+	require.NoError(t, err)
+	assert.Empty(t, accepted)
+
+	rejected, err := validateRegistry(input(fakeVerifier{signerKey: registeredSigningKey + "-x"}))
+	require.NoError(t, err)
+	assert.Equal(t, []string{codeSignerNotAuthorized}, violationCodes(rejected))
+}
+
+// policyWithoutSigningKeys returns the trusted base as it actually stands today:
+// a valid policy whose only approver has no registered key.
+func policyWithoutSigningKeys(t *testing.T) *policy {
+	t.Helper()
+	contents := strings.Replace(validPolicyYAML,
+		"    signing_keys:\n      - "+registeredSigningKey+"\n", "    signing_keys: []\n", 1)
+	decoded, err := decodePolicy([]byte(contents))
+	require.NoError(t, err)
+	return decoded
 }
 
 func withApprover(spec recordSpec, id int64, login string) recordSpec {

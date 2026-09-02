@@ -102,8 +102,8 @@ func decodeRegistry(contents []byte) ([]record, error) {
 	if err := decoder.Decode(&decoded); err != nil {
 		return nil, fmt.Errorf("decode accepted-risk registry: %w", err)
 	}
-	if err := decoder.Decode(new(registry)); err == nil {
-		return nil, fmt.Errorf("accepted-risk registry must contain exactly one document")
+	if err := requireSingleDocument(decoder, "accepted-risk registry"); err != nil {
+		return nil, err
 	}
 	if decoded.Version != supportedSchemaVersion {
 		return nil, fmt.Errorf("accepted-risk registry version must be %d", supportedSchemaVersion)

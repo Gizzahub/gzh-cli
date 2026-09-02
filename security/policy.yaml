@@ -8,6 +8,12 @@
 # is a mutable display label and is never the matching key. Bot and agent
 # identities can never appear here and can never approve an accepted risk.
 #
+# signing_keys is the trust mapping from an approver to the keys they may sign
+# approval commits with. A signature that merely verifies proves only that
+# somebody signed: anyone who can push to the trusted base can sign a commit with
+# their own key. An approval counts only when the key the verifier established
+# from the signature is registered to that record's approver here.
+#
 # Approved by the repository owner on 2026-09-02 (TASK-116).
 version: 1
 
@@ -20,12 +26,21 @@ approvers:
     login: archmagece
     type: User
     role: repository-owner
+    # No key fingerprint is registered yet, and none is invented here. An empty
+    # list means no signature can satisfy this approver, so every accepted risk
+    # fails closed until the owner registers the fingerprint of the key they
+    # actually sign with. This mirrors the pending-owner-approval sentinel in
+    # security/accepted-risks.yaml.
+    signing_keys: []
 
 evidence:
   # A GitHub Issue or pull request URL is deliberately NOT accepted: its body is
   # editable after the fact, so it is not immutable approval evidence.
   accepted_types:
     - signed-commit
+  # The approval commit's message must name the accepted-risk identifier it
+  # approves. The signature covers the message, so one signed commit cannot
+  # silently ratify every record in the registry.
 
 cadence:
   # review_by = last_reviewed_at + review_interval_days

@@ -120,6 +120,29 @@ func TestDecodeRegistryFailsClosed(t *testing.T) {
 			contents: registryDoc(defaultSpec()) + "---\n" + registryDoc(defaultSpec()),
 			message:  "exactly one document",
 		},
+		// As in the policy decoder, trailing content is rejected on its presence.
+		// A shape that fails to decode into a registry is exactly the shape an
+		// appended document takes, so it must not read as a clean end of stream.
+		{
+			name:     "trailing scalar document",
+			contents: registryDoc(defaultSpec()) + "--- 42\n",
+			message:  "exactly one document",
+		},
+		{
+			name:     "trailing sequence document",
+			contents: registryDoc(defaultSpec()) + "---\n- AR-2026-002\n",
+			message:  "exactly one document",
+		},
+		{
+			name:     "trailing wrong-typed document",
+			contents: registryDoc(defaultSpec()) + "---\nrecords: 1\n",
+			message:  "exactly one document",
+		},
+		{
+			name:     "trailing document with unknown fields",
+			contents: registryDoc(defaultSpec()) + "---\nreviewed_by: someone\n",
+			message:  "exactly one document",
+		},
 	}
 
 	for _, testCase := range cases {
