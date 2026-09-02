@@ -137,13 +137,18 @@ jobs:
           go-version: '1.26.7'
           cache: true
 
+      # 도구 바이너리 전용 캐시. setup-go가 관리하는 module/build 캐시
+      # (~/go/pkg/mod, ~/.cache/go-build)와 경로가 겹치지 않는다.
+      # bin/tools 는 .make/tools.mk 가 pin 한 golangci-lint/gosec 설치 위치이며,
+      # pin 이 바뀌면 key 가 바뀌어 새 캐시 항목으로 저장된다.
       - name: Cache tool binaries
         uses: actions/cache@v5
         with:
           path: |
             ~/.local/bin
             ~/go/bin
-          key: ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-${{ hashFiles('Makefile') }}
+            bin/tools
+          key: ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-${{ hashFiles('Makefile', '.make/tools.mk') }}
           restore-keys: |
             ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-
 
