@@ -19,7 +19,7 @@ The project uses a fully automated release pipeline that:
 | Platform       | Package Manager | Installation Command                                                                     |
 | -------------- | --------------- | ---------------------------------------------------------------------------------------- |
 | **macOS**      | Homebrew Cask   | `brew install --cask gizzahub/tap/gz`                                                    |
-| **Windows**    | Chocolatey      | `choco install gz`                                                                       |
+| **Windows**    | Chocolatey      | _Not supported_ — see [Chocolatey: explicitly unsupported](#chocolatey-explicitly-unsupported) |
 | **Windows**    | Scoop           | `scoop bucket add gizzahub https://github.com/gizzahub/scoop-bucket && scoop install gz` |
 | **Arch Linux** | AUR             | `yay -S gz-bin`                                                                          |
 | **Linux**      | APT (deb)       | `dpkg -i gz_*.deb`                                                                       |
@@ -73,18 +73,133 @@ external release validation steps.
 For testing releases locally:
 
 ```bash
-# Install goreleaser
-make install-goreleaser
+# Install the exact pinned toolchain into bin/tools (gitignored)
+make install-release-tools
 
-# Check configuration
+# Fail fast if any pinned tool is missing or has drifted
+make verify-release-tools
+
+# Same check plus `goreleaser healthcheck`, which asks GoReleaser itself
+# which external binaries the configured pipes need
+make release-healthcheck
+
+# Validate .goreleaser.yml with the pinned GoReleaser
 make release-check
 
-# Dry run (no publishing)
+# Dry run: builds and Docker images, no publish, no signing
 make release-dry-run
 
-# Create snapshot (local testing)
+# Snapshot: publish, Docker and signing excluded — the routine local gate
 make release-snapshot
 ```
+
+`sign` is excluded from both local targets deliberately. Cosign signing here is
+keyless: it mints a Fulcio certificate from an ambient OIDC token and writes an
+entry to the public Rekor transparency log, which cannot be undone. The release
+job has that ambient token (`id-token: write`); a laptop does not, so locally
+cosign would fall back to an interactive browser flow and, if completed, would
+publish a throwaway snapshot to a public log. The signing configuration is
+instead gated by `goreleaser check` and by `release-healthcheck`, which fail if
+cosign is absent.
+
+## Release Toolchain Pins
+
+The release is only reproducible if every tool in it is an exact version. None
+of these resolve to `latest`.
+
+| Tool           | Pinned version | Upstream evidence                                                                    |
+| -------------- | -------------- | ------------------------------------------------------------------------------------ |
+| **GoReleaser** | `v2.18.0`      | [Release v2.18.0](https://github.com/goreleaser/goreleaser/releases/tag/v2.18.0) — latest stable |
+| **syft**       | `v1.51.1`      | [Release v1.51.1](https://github.com/anchore/syft/releases/tag/v1.51.1) — latest stable |
+| **cosign**     | `v3.1.3`       | [Release v3.1.3](https://github.com/sigstore/cosign/releases/tag/v3.1.3) — latest stable |
+
+Each version is declared in exactly two places, which must be changed together:
+
+| Where                            | How                                                                       |
+| -------------------------------- | ------------------------------------------------------------------------- |
+| `.make/tools.mk`                 | `GORELEASER_VERSION` / `SYFT_VERSION` / `COSIGN_VERSION`                   |
+| `.github/workflows/release.yml`  | the job-level `env:` block of the same three names                         |
+
+Locally the tools are installed into the gitignored `bin/tools/` with
+`go install <module>@<version>` and verified with `go version -m`, which reports
+the true module version even for a binary built without the upstream release
+ldflags. CI installs the official release binaries through pinned actions and
+verifies them with each tool's own `version` output. Both paths are exact.
+
+### Why GoReleaser v2.18.0
+
+- The module path for GoReleaser v2 is `github.com/goreleaser/goreleaser/v2`.
+  The unsuffixed `github.com/goreleaser/goreleaser` module stops at `v1.26.2`,
+  so a `go install github.com/goreleaser/goreleaser@latest` silently installs
+  **v1**, which cannot read a `version: 2` config.
+- `homebrew_casks[].binary` was replaced by `binaries` in v2.13.0 and is now a
+  hard `goreleaser check` failure ("configuration is valid, but uses deprecated
+  properties"), so the config uses `binaries`.
+- v2.18.0 carries fixes that matter to this config directly: `fix(sign):
+  artifacts: none masks real signing failures`, `fix(cask): a cask without a
+  repository stops the ones after it`, and `fix(cask): emit Casks that pass brew
+  style`.
+
+### Why cosign v3.1.3 changed the signing config
+
+cosign 3.x removed the working `--output-certificate` / `--output-signature`
+path for `sign-blob`; invoking it now fails with `must specify --bundle with
+--new-bundle-format`. The `signs` block therefore follows the current upstream
+GoReleaser example and emits a single Sigstore bundle:
+
+```yaml
+signs:
+  - cmd: cosign
+    signature: "${artifact}.sigstore.json"
+    args: ["sign-blob", "--bundle=${signature}", "${artifact}", "--yes"]
+    artifacts: checksum
+```
+
+This changes the published signature artifact from `checksums.txt.pem` plus
+`checksums.txt.sig` to a single `checksums.txt.sigstore.json`. No public release
+has shipped yet, so no existing verification instructions break.
+
+### Chocolatey: explicitly unsupported
+
+The `chocolateys` pipe shells out to the `choco` CLI, which GoReleaser does not
+install ("GoReleaser will not install `chocolatey`/`choco` nor any of its
+dependencies for you"). `choco` is a Windows-only .NET tool and is not present
+on the `ubuntu-latest` release runner, so with the section configured
+`goreleaser healthcheck` exits 1 with `choco - not present in path`.
+
+Splitting the pipe into a separate Windows job requires `goreleaser release
+--split` plus `goreleaser continue`, which are GoReleaser **Pro** features and
+are unavailable to this OSS distribution.
+
+**Decision**: Chocolatey is an explicitly unsupported publish channel. The
+`chocolateys` section has been removed from `.goreleaser.yml` rather than
+skipped at run time with `--skip=chocolatey`, so the configuration and the
+healthcheck agree on what the release actually ships and nothing is dropped
+silently.
+
+To adopt it later: move the release job (or a dedicated packaging job) to a
+`windows-latest` runner with `choco` on `PATH`, restore the `chocolateys`
+section from git history (it is preserved in the commit that removed it, and
+`.goreleaser.yml` carries a pointer comment at the removal site), and add
+`CHOCOLATEY_API_KEY` to the job env and to the credential preflight list.
+
+### Toolchain failure vs. missing credentials
+
+The release job runs two separate preflights so the two failure classes can
+never be confused:
+
+1. **`Preflight — publishing credentials`** runs first, before any tool is
+   installed. It asserts that every secret `.goreleaser.yml` consumes is
+   non-empty, reports all missing names at once, and never echoes a value. Its
+   messages are prefixed `CREDENTIAL FAILURE` and state explicitly that the
+   toolchain is fine.
+2. **`Preflight — release toolchain`** runs after installation. It asserts the
+   exact version of each tool on `PATH` and then runs `goreleaser healthcheck`,
+   which fails on any binary the configured pipes need. Its messages are
+   prefixed `TOOLCHAIN FAILURE`.
+
+A missing secret therefore never looks like a broken toolchain, and a drifted
+tool never looks like a missing secret.
 
 ## Versioning
 
@@ -145,17 +260,34 @@ fields.
 
 All release artifacts are signed with [Cosign](https://github.com/sigstore/cosign):
 
-- **Checksums**: Signed with keyless signing
+- **Checksums**: Signed with keyless signing, emitted as a `.sigstore.json` bundle
 - **Container Images**: Signed with OIDC identity
 - **Verification**: Public transparency log
 
+Keyless verification has no public key to pin, so cosign requires you to say
+*which signer identity you trust*; it refuses to run without one rather than
+accepting any valid Sigstore signature from anyone. Both commands therefore
+carry `--certificate-identity-regexp` (the workflow that signed the release) and
+`--certificate-oidc-issuer` (the OIDC provider that vouched for it). Omitting
+either fails immediately with `--certificate-identity or
+--certificate-identity-regexp is required for verification in keyless mode`.
+
 ```bash
 # Verify container image signature
-cosign verify ghcr.io/gizzahub/gzh-cli:v1.0.0
+cosign verify ghcr.io/gizzahub/gzh-cli:v1.0.0 \
+  --certificate-identity-regexp 'https://github.com/Gizzahub/gzh-cli/.*' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
 
-# Verify checksum signature
-cosign verify-blob --certificate checksums.txt.pem --signature checksums.txt.sig checksums.txt
+# Verify checksum signature (Sigstore bundle; see "Why cosign v3.1.3" above)
+cosign verify-blob --bundle checksums.txt.sigstore.json \
+  --certificate-identity-regexp 'https://github.com/Gizzahub/gzh-cli/.*' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  checksums.txt
 ```
+
+The regexp is deliberately scoped to this repository. Widening it to `.*` would
+accept a signature from any GitHub Actions workflow anywhere, which verifies
+that *something* signed the artifact but not that *we* did.
 
 ### Supply Chain Security
 
@@ -168,14 +300,53 @@ cosign verify-blob --certificate checksums.txt.pem --signature checksums.txt.sig
 
 Required secrets for automated releases:
 
-| Secret                      | Purpose                   | Required |
-| --------------------------- | ------------------------- | -------- |
-| `GITHUB_TOKEN`              | GitHub API access         | ✅       |
-| `DOCKERHUB_USERNAME`        | Docker Hub publishing     | ✅       |
-| `DOCKERHUB_TOKEN`           | Docker Hub authentication | ✅       |
-| `HOMEBREW_TAP_GITHUB_TOKEN` | Homebrew Cask updates     | Optional |
-| `SCOOP_BUCKET_GITHUB_TOKEN` | Scoop manifest updates    | Optional |
-| `AUR_KEY`                   | Arch Linux AUR publishing | Optional |
+| Secret                        | Consumed by                              | Required |
+| ----------------------------- | ---------------------------------------- | -------- |
+| `GITHUB_TOKEN`                | GitHub Release, provided automatically   | ✅       |
+| `DOCKERHUB_USERNAME`          | `docker login` for the `dockers` pipes   | ✅       |
+| `DOCKERHUB_TOKEN`             | `docker login` for the `dockers` pipes   | ✅       |
+| `HOMEBREW_TAP_GITHUB_TOKEN`   | `homebrew_casks[].repository.token`      | ✅       |
+| `SCOOP_BUCKET_GITHUB_TOKEN`   | `scoops[].repository.token`              | ✅       |
+| `AUR_KEY`                     | `aurs[].private_key`                     | ✅       |
+| `GORELEASER_MAINTAINER_EMAIL` | nothing yet — see below                  | ⚠️ not yet consumed |
+
+The credential preflight enforces exactly **five** of these before any tool is
+installed: `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`, `HOMEBREW_TAP_GITHUB_TOKEN`,
+`SCOOP_BUCKET_GITHUB_TOKEN` and `AUR_KEY`. Each is referenced unconditionally by
+a configured pipe in `.goreleaser.yml`, so a missing value is a failed release,
+not a skipped channel. A value that is only whitespace counts as missing. If a
+channel should genuinely not ship, remove its pipe from `.goreleaser.yml` rather
+than leaving its secret unset.
+
+The other two rows are not preflight-checked, for different reasons:
+
+- `GITHUB_TOKEN` is injected by the Actions runner, so it is always present and
+  there is nothing for a preflight to catch. What can go wrong is its
+  *permissions*, not its existence — hence the job-level `packages: write` and
+  `id-token: write` grants. A rejected login is reported by the registry login
+  step as a `CREDENTIAL FAILURE`.
+- `GORELEASER_MAINTAINER_EMAIL` is not consumed by anything yet — see below.
+
+`GORELEASER_MAINTAINER_EMAIL` is the exception and is **not** enforced by the
+preflight. `nfpms[].maintainer` and `aurs[].maintainers` reference it as
+shell-style `${GORELEASER_MAINTAINER_EMAIL}`, and GoReleaser does not expand
+that form — it expands `{{ .Env.X }}`, the way every other secret in the file is
+written. The literal `${GORELEASER_MAINTAINER_EMAIL}` string is therefore what
+ends up in the published `.deb`/`.rpm` metadata and in the AUR PKGBUILD, as the
+snapshot artifacts confirm:
+
+```text
+dist/aur/gz-bin.pkgbuild:2:# Maintainer: Gizzahub <${GORELEASER_MAINTAINER_EMAIL}>
+dist/config.yaml:207:    maintainer: Gizzahub <${GORELEASER_MAINTAINER_EMAIL}>
+```
+
+Blocking a release on a secret whose value is provably discarded would be a
+false gate, so the preflight does not require it. The workflow still passes it
+to GoReleaser, so nothing needs rewiring once the templating is fixed.
+**TASK-126** tracks that fix and will restore the preflight requirement at the
+same time; the two must move together, because requiring the secret without
+fixing the template gates a release on nothing, and fixing the template without
+requiring the secret ships an empty maintainer field.
 
 Slack and Discord announcements are deliberately disabled in
 `.goreleaser.yml`. Enabling them requires a separately approved protected
@@ -281,15 +452,20 @@ After release:
 ### Debug Commands
 
 ```bash
-# Verbose goreleaser output
-goreleaser release --debug
+# Which external binaries do the configured pipes need?
+bin/tools/goreleaser healthcheck
 
-# Test specific publisher
-goreleaser release --publisher docker
+# Verbose goreleaser output
+bin/tools/goreleaser release --verbose
 
 # Skip specific steps
-goreleaser release --skip=docker,homebrew
+bin/tools/goreleaser release --skip=docker,homebrew
 ```
+
+Always invoke the pinned copy in `bin/tools/` rather than whatever `goreleaser`
+resolves to on `PATH`; the make targets do this for you and additionally put
+`bin/tools` first on `PATH` so GoReleaser picks up the pinned `syft` and
+`cosign` when it shells out to them by name.
 
 ## Best Practices
 

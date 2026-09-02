@@ -4,18 +4,86 @@ on:
   push:
     tags: ["v*"]
 
+# Least privilege by default; the release job elevates only what it needs.
 permissions:
-  contents: write
-  packages: write
-  id-token: write
+  contents: read
 
 env:
   REGISTRY: ghcr.io
+  # Release toolchain pins.
+  #
+  # These MUST stay in sync with the pins in .make/tools.mk — that file is the
+  # local half of the same contract, and drift between the two means CI is no
+  # longer releasing what a developer validated with `make release-snapshot`.
+  # Bump both together. Evidence for each pin: docs/70-deployment/70-releases.md
+  GORELEASER_VERSION: v2.18.0
+  SYFT_VERSION: v1.51.1
+  COSIGN_VERSION: v3.1.3
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the GitHub Release and upload artifacts
+      packages: write # push images to ghcr.io
+      id-token: write # keyless cosign signing via the ambient OIDC token
     steps:
+      # ----------------------------------------------------------------------
+      # Preflight 1/2 — publishing credentials.
+      #
+      # Runs before any tool is installed so that a missing or unshared secret
+      # can never be mistaken for a broken toolchain. It only tests for
+      # emptiness and never echoes a value.
+      # ----------------------------------------------------------------------
+      - name: Preflight — publishing credentials
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+          SCOOP_BUCKET_GITHUB_TOKEN: ${{ secrets.SCOOP_BUCKET_GITHUB_TOKEN }}
+          AUR_KEY: ${{ secrets.AUR_KEY }}
+        run: |
+          set -euo pipefail
+          missing=()
+          # This list is exactly the secrets a configured pipe will actually
+          # consume. GORELEASER_MAINTAINER_EMAIL is deliberately NOT here: the
+          # only two places that reference it (nfpms[].maintainer and
+          # aurs[].maintainers) spell it as shell-style ${...}, which GoReleaser
+          # does not expand, so its value is discarded and the literal string is
+          # published. Requiring it would hard-block a release on a secret that
+          # provably changes nothing. TASK-126 fixes the templating and will add
+          # the name back here once the value is genuinely live — please do not
+          # re-add it before then.
+          for name in DOCKERHUB_USERNAME DOCKERHUB_TOKEN HOMEBREW_TAP_GITHUB_TOKEN \
+                      SCOOP_BUCKET_GITHUB_TOKEN AUR_KEY; do
+            # Compare against a whitespace-stripped copy: a secret set to
+            # spaces or a stray newline is a paste accident, not a value, and
+            # it would otherwise sail through here and fail deep inside a
+            # publish step with no category.
+            value="${!name:-}"
+            if [ -z "${value//[[:space:]]/}" ]; then
+              missing+=("$name")
+            fi
+          done
+          if [ ${#missing[@]} -ne 0 ]; then
+            echo "::error title=Missing publishing credentials::${missing[*]}"
+            echo "CREDENTIAL FAILURE: the release toolchain is fine; these secrets are not set on this repository:" >&2
+            printf '  - %s\n' "${missing[@]}" >&2
+            echo "" >&2
+            echo "Each one is consumed by .goreleaser.yml:" >&2
+            echo "  DOCKERHUB_USERNAME / DOCKERHUB_TOKEN  -> docker login for the dockers/docker_manifests pipes" >&2
+            echo "  HOMEBREW_TAP_GITHUB_TOKEN             -> homebrew_casks[].repository.token" >&2
+            echo "  SCOOP_BUCKET_GITHUB_TOKEN             -> scoops[].repository.token" >&2
+            echo "  AUR_KEY                               -> aurs[].private_key" >&2
+            echo "" >&2
+            echo "Add them under Settings > Secrets and variables > Actions, or drop the" >&2
+            echo "corresponding pipe from .goreleaser.yml. Do not work around this by" >&2
+            echo "skipping the pipe at run time: a half-published release is worse than" >&2
+            echo "a failed one." >&2
+            exit 1
+          fi
+          echo "All publishing credentials are present."
+
       - name: Checkout
         uses: actions/checkout@v6
         with:
@@ -29,27 +97,130 @@ jobs:
       - name: Docker setup
         uses: docker/setup-buildx-action@v4
 
-      - name: Login registries
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+      # ----------------------------------------------------------------------
+      # Exact toolchain. Every version is pinned; nothing resolves to "latest".
+      # ----------------------------------------------------------------------
+      - name: Install cosign ${{ env.COSIGN_VERSION }}
+        uses: sigstore/cosign-installer@v4.1.2
+        with:
+          cosign-release: ${{ env.COSIGN_VERSION }}
 
-      - name: Install cosign
-        uses: sigstore/cosign-installer@v3
+      - name: Install syft ${{ env.SYFT_VERSION }}
+        uses: anchore/sbom-action/download-syft@v0.24.2
+        with:
+          syft-version: ${{ env.SYFT_VERSION }}
 
-      - name: Prepare scripts
-        run: |
-          chmod +x scripts/manpages.sh scripts/completions.sh
-
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v7
+      - name: Install GoReleaser ${{ env.GORELEASER_VERSION }}
+        uses: goreleaser/goreleaser-action@v7.2.3
         with:
           distribution: goreleaser
-          version: latest
-          args: release --clean
+          version: ${{ env.GORELEASER_VERSION }}
+          install-only: true
+
+      # ----------------------------------------------------------------------
+      # Preflight 2/2 — release toolchain.
+      #
+      # Asserts the exact versions actually on PATH, then lets GoReleaser itself
+      # declare which external binaries its configured pipes need. `goreleaser
+      # healthcheck` exits 1 on a missing tool, so a stripped-down runner fails
+      # here rather than producing a release that quietly has no SBOM or no
+      # signature. Failures from this step are toolchain failures, never
+      # credential failures — those already fired in Preflight 1/2.
+      # ----------------------------------------------------------------------
+      - name: Preflight — release toolchain
+        run: |
+          set -euo pipefail
+          fail() {
+            echo "::error title=Release toolchain mismatch::$1"
+            echo "TOOLCHAIN FAILURE: $1" >&2
+            echo "This is a tool/config problem, not a missing secret." >&2
+            exit 1
+          }
+
+          command -v goreleaser >/dev/null 2>&1 || fail "goreleaser is not on PATH"
+          command -v syft >/dev/null 2>&1 || fail "syft is not on PATH (SBOM generation would be skipped)"
+          command -v cosign >/dev/null 2>&1 || fail "cosign is not on PATH (artifact signing would be skipped)"
+
+          # Each tool reports its own version in its own shape, and none of the
+          # three promises a stable "v" prefix. `|| true` keeps a tool that
+          # errors or changes its JSON schema from aborting here through
+          # `set -e` with no explanation; the empty result is caught below and
+          # reported as a parse failure instead.
+          got_goreleaser="$(goreleaser --version | awk '/^GitVersion:/ { print $2 }' || true)"
+          got_syft="$(syft version -o json | jq -r '.version' || true)"
+          got_cosign="$(cosign version --json | jq -r '.gitVersion' || true)"
+
+          # Raw values, so a genuine mismatch shows exactly what was found.
+          echo "goreleaser: ${got_goreleaser:-<unparsed>} (want ${GORELEASER_VERSION})"
+          echo "syft:       ${got_syft:-<unparsed>} (want ${SYFT_VERSION})"
+          echo "cosign:     ${got_cosign:-<unparsed>} (want ${COSIGN_VERSION})"
+
+          # Comparison is prefix-insensitive: a leading "v" is stripped from
+          # both sides. This is NOT a loosening — 1.51.0 still fails against
+          # 1.51.1 — it only stops an upstream tool switching between "1.51.1"
+          # and "v1.51.1" in its own output from aborting a real release with a
+          # TOOLCHAIN FAILURE that is really a parsing bug. The hosted format is
+          # the one that matters and it is not assumed here, so please do not
+          # "tighten" this back into an exact string compare.
+          norm() { printf '%s' "${1#v}"; }
+
+          check_version() { # <tool> <found> <want>
+            case "${2:-}" in
+              "" | null | "[not provided]")
+                fail "could not read the $1 version from its own output (got '${2:-}'); the tool errored or changed its output format, so this check cannot vouch for what is installed" ;;
+            esac
+            [ "$(norm "$2")" = "$(norm "$3")" ] || fail "$1 is $2, want $3"
+          }
+
+          check_version goreleaser "${got_goreleaser}" "${GORELEASER_VERSION}"
+          check_version syft       "${got_syft}"       "${SYFT_VERSION}"
+          check_version cosign     "${got_cosign}"     "${COSIGN_VERSION}"
+
+          # `check` and `healthcheck` answer different questions and neither
+          # substitutes for the other:
+          #   check       - is the CONFIG valid and free of deprecated keys?
+          #   healthcheck - are the external BINARIES the configured pipes need
+          #                 present on PATH?
+          # A config using a deprecated key passes healthcheck with rc=0 while
+          # only printing a DEPRECATED line, so without `check` a schema
+          # regression reaches a real release unnoticed. `check` runs first
+          # because a broken config makes the dependency list meaningless.
+          goreleaser check || fail "goreleaser check rejected .goreleaser.yml (deprecated or invalid keys — see above)"
+
+          # Let GoReleaser enumerate the dependencies of the configured pipes.
+          goreleaser healthcheck || fail "goreleaser healthcheck reported a missing dependency (see above)"
+
+      - name: Login registries
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # The credential preflight proves these secrets are non-empty; only a
+          # login proves they are valid. Without this wrapper a wrong-but-set
+          # token fails here with a bare docker error and no category, which is
+          # exactly the ambiguity this workflow exists to remove.
+          cred_fail() {
+            echo "::error title=Registry login failed::$1"
+            echo "CREDENTIAL FAILURE: $1" >&2
+            echo "The secret is set but was rejected by the registry — check its value and scopes, not the toolchain." >&2
+            exit 1
+          }
+
+          echo "${GITHUB_TOKEN}" | docker login "${REGISTRY}" -u "${GITHUB_ACTOR}" --password-stdin \
+            || cred_fail "docker login to ${REGISTRY} was rejected (GITHUB_TOKEN / packages: write permission)"
+          echo "${DOCKERHUB_TOKEN}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin \
+            || cred_fail "docker login to Docker Hub was rejected (DOCKERHUB_USERNAME / DOCKERHUB_TOKEN)"
+
+      - name: Run GoReleaser
+        run: goreleaser release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
-          COSIGN_EXPERIMENTAL: 1
+          SCOOP_BUCKET_GITHUB_TOKEN: ${{ secrets.SCOOP_BUCKET_GITHUB_TOKEN }}
+          AUR_KEY: ${{ secrets.AUR_KEY }}
+          GORELEASER_MAINTAINER_EMAIL: ${{ secrets.GORELEASER_MAINTAINER_EMAIL }}

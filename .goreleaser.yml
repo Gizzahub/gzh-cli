@@ -151,7 +151,8 @@ homebrew_casks:
   - name: gz
     ids:
       - default
-    binary: gz
+    binaries:
+      - gz
     repository:
       owner: Gizzahub
       name: homebrew-tap
@@ -168,29 +169,24 @@ homebrew_casks:
             system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/gz"]
           end
 
-chocolateys:
-  - name: gz
-    ids:
-      - default
-    owners: Gizzahub
-    title: gz CLI Tool
-    authors: Gizzahub
-    project_url: https://github.com/Gizzahub/gzh-cli
-    url_template: "https://github.com/Gizzahub/gzh-cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-    icon_url: "https://raw.githubusercontent.com/Gizzahub/gzh-cli/main/assets/logo.png"
-    copyright: 2025 Gizzahub
-    license_url: https://github.com/Gizzahub/gzh-cli/blob/main/LICENSE
-    require_license_acceptance: false
-    project_source_url: https://github.com/Gizzahub/gzh-cli
-    docs_url: https://github.com/Gizzahub/gzh-cli/blob/main/README.md
-    bug_tracker_url: https://github.com/Gizzahub/gzh-cli/issues
-    tags: "cli devops git development"
-    summary: Comprehensive CLI tool for managing development environments and Git repositories
-    description: |
-      gz is a comprehensive CLI tool for managing development environments and Git repositories across multiple platforms.
-      It provides bulk operations for cloning organizations, package management, network environment transitions,
-      IDE settings monitoring, and development environment configuration management.
-    release_notes: "https://github.com/Gizzahub/gzh-cli/releases/tag/v{{ .Version }}"
+# Chocolatey is an explicitly UNSUPPORTED publish channel for now.
+#
+# The `chocolateys` pipe shells out to the `choco` CLI (GoReleaser does not
+# install it), and `choco` is a Windows-only .NET tool that is not present on
+# the `ubuntu-latest` release runner. `goreleaser healthcheck` therefore exits
+# 1 with "choco - not present in path" whenever this section is configured.
+#
+# Splitting the pipe into a separate Windows job needs `goreleaser release
+# --split` + `goreleaser continue`, which are GoReleaser Pro features and are
+# not available to this OSS distribution. Rather than silently skipping the
+# pipe (`--skip=chocolatey`), the section is removed so that the toolchain
+# contract and the healthcheck agree on what this release actually ships.
+#
+# To re-enable: move the release job (or a dedicated packaging job) to a
+# `windows-latest` runner with `choco` on PATH, restore the `chocolateys`
+# section from git history (see the commit that removed it), and add
+# CHOCOLATEY_API_KEY to the release job env and to the credential preflight.
+# See docs/70-deployment/70-releases.md.
 
 scoops:
   - name: gz
@@ -241,32 +237,41 @@ checksum:
   name_template: "checksums.txt"
 
 sboms:
+  # `cmd: syft` is GoReleaser's default; it is spelled out here because the
+  # release job pins an exact syft version and fail-fast checks for it.
   - artifacts: archive
+    cmd: syft
 
 signs:
+  # Keyless (Fulcio/Rekor) signing with the pinned cosign 3.x.
+  # cosign 3 removed the working --output-certificate/--output-signature path
+  # (it now errors with "must specify --bundle with --new-bundle-format"), so
+  # the certificate and signature are emitted together as a Sigstore bundle.
+  # Verifying needs an explicit signer identity (keyless has no key to pin);
+  # without one cosign refuses to run. See docs/70-deployment/70-releases.md:
+  #   cosign verify-blob --bundle checksums.txt.sigstore.json \
+  #     --certificate-identity-regexp 'https://github.com/Gizzahub/gzh-cli/.*' \
+  #     --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  #     checksums.txt
   - cmd: cosign
-    env:
-      - COSIGN_EXPERIMENTAL=1
-    certificate: "${artifact}.pem"
+    signature: "${artifact}.sigstore.json"
     args:
       - sign-blob
-      - "--output-certificate=${certificate}"
-      - "--output-signature=${signature}"
+      - "--bundle=${signature}"
       - "${artifact}"
-      - "--yes" # needed on cosign 2.0.0+
+      - "--yes"
     artifacts: checksum
     output: true
 
 docker_signs:
+  # COSIGN_EXPERIMENTAL is a no-op since cosign 2.0; keyless is the default.
   - cmd: cosign
-    env:
-      - COSIGN_EXPERIMENTAL=1
     artifacts: images
     output: true
     args:
       - "sign"
       - "${artifact}@${digest}"
-      - "--yes" # needed on cosign 2.0.0+
+      - "--yes"
 
 changelog:
   sort: asc
@@ -326,6 +331,13 @@ milestones:
     fail_on_error: false
     name_template: "{{ .Tag }}"
 
+# Announcements are fail-closed disabled.
+#
+# Enabling them requires the provider-specific credential names of the pinned
+# GoReleaser version (SLACK_WEBHOOK / DISCORD_WEBHOOK_ID + DISCORD_WEBHOOK_TOKEN),
+# an owner for those secrets, and a documented behaviour for missing/invalid
+# credentials. Until that is approved, both stay `enabled: "false"` so a missing
+# secret can never turn into a half-announced release.
 announce:
   slack:
     enabled: "false"

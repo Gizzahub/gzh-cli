@@ -46,6 +46,7 @@ endif
 VERSION_FILE := internal/version/version.go
 
 .PHONY: build install run bootstrap clean release-dry-run release-snapshot release-check deploy bump-version
+.PHONY: release-healthcheck
 
 ## bump-version: Bump patch version if there are changes or new commit
 bump-version:
@@ -110,20 +111,37 @@ clean: ## clean up environment
 # Release Targets
 # ==============================================================================
 
-release-dry-run: ## run goreleaser in dry-run mode
-	@echo -e "$(CYAN)Running goreleaser in dry-run mode...$(RESET)"
-	@command -v goreleaser >/dev/null 2>&1 || { echo -e "$(RED)goreleaser not found. Install with: make install-goreleaser$(RESET)"; exit 1; }
-	@goreleaser release --snapshot --clean --skip=publish
+# Every release target runs against the pinned toolchain only. `bin/tools` is
+# prepended to PATH because GoReleaser resolves `syft` and `cosign` by name, and
+# an unpinned copy earlier on the developer's PATH would silently win.
+# verify-release-tools and release-healthcheck live in .make/tools.mk / here so
+# that a missing or drifted tool fails before any artifact is produced, instead
+# of GoReleaser quietly dropping the SBOM or signature stage.
 
-release-snapshot: ## create a snapshot release
-	@echo -e "$(CYAN)Creating snapshot release...$(RESET)"
-	@command -v goreleaser >/dev/null 2>&1 || { echo -e "$(RED)goreleaser not found. Install with: make install-goreleaser$(RESET)"; exit 1; }
-	@goreleaser release --snapshot --clean
+release-healthcheck: verify-release-tools verify-release-pins ## fail fast on tools GoReleaser itself needs
+	@echo -e "$(CYAN)Running goreleaser healthcheck...$(RESET)"
+	@PATH="$(RELEASE_PATH)" "$(GORELEASER)" healthcheck
 
-release-check: ## check goreleaser configuration
-	@echo -e "$(CYAN)Checking goreleaser configuration...$(RESET)"
-	@command -v goreleaser >/dev/null 2>&1 || { echo -e "$(RED)goreleaser not found. Install with: make install-goreleaser$(RESET)"; exit 1; }
-	@goreleaser check
+# `sign` is excluded from both local targets on purpose. Signing is keyless: it
+# mints a Fulcio certificate from an ambient OIDC token and writes an entry to
+# the public Rekor transparency log, which is irreversible. The release job has
+# that ambient token (id-token: write); a laptop does not, so locally cosign
+# would fall back to an interactive browser flow and, if completed, would
+# publish a throwaway snapshot to a public log. The signing contract is instead
+# gated by `goreleaser check` and by release-healthcheck, which fail if cosign
+# is missing or the config is invalid.
+
+release-dry-run: release-healthcheck ## dry-run release: builds and Docker images, no publish, no signing
+	@echo -e "$(CYAN)Running goreleaser in dry-run mode (publish and sign excluded)...$(RESET)"
+	@PATH="$(RELEASE_PATH)" "$(GORELEASER)" release --snapshot --clean --skip=publish,sign
+
+release-snapshot: release-healthcheck ## snapshot release with publish, Docker and signing excluded
+	@echo -e "$(CYAN)Creating snapshot release (publish, docker and sign excluded)...$(RESET)"
+	@PATH="$(RELEASE_PATH)" "$(GORELEASER)" release --snapshot --clean --skip=publish,docker,sign
+
+release-check: install-goreleaser ## check goreleaser configuration with the pinned version
+	@echo -e "$(CYAN)Checking goreleaser configuration with $(GORELEASER_VERSION)...$(RESET)"
+	@"$(GORELEASER)" check
 
 deploy: release-dry-run ## alias for release-dry-run
 
@@ -157,6 +175,7 @@ build-info: ## show build information and current configuration
 	@echo -e "  • $(CYAN)run$(RESET)                 Run the application"
 	@echo -e "  • $(CYAN)bootstrap$(RESET)           Install build dependencies"
 	@echo -e "  • $(CYAN)clean$(RESET)               Clean up build artifacts"
-	@echo -e "  • $(CYAN)release-dry-run$(RESET)     Test goreleaser configuration"
-	@echo -e "  • $(CYAN)release-snapshot$(RESET)    Create snapshot release"
+	@echo -e "  • $(CYAN)release-healthcheck$(RESET) Verify the pinned release toolchain"
+	@echo -e "  • $(CYAN)release-dry-run$(RESET)     Dry-run release, publish and sign excluded"
+	@echo -e "  • $(CYAN)release-snapshot$(RESET)    Snapshot release, publish/docker/sign excluded"
 	@echo -e "  • $(CYAN)release-check$(RESET)       Check goreleaser configuration"

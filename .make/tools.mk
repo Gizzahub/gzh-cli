@@ -18,14 +18,71 @@ GOSEC_DIR := $(CURDIR)/bin/tools
 GOSEC := $(GOSEC_DIR)/gosec$(shell go env GOEXE)
 GOSEC_SCAN_FLAGS := -conf=.gosec.json -exclude-generated -exclude-dir=vendor -exclude-dir=node_modules -exclude-dir=.git -exclude-dir=tmp -tests -confidence=medium -severity=medium
 
+# ------------------------------------------------------------------------------
+# Release toolchain pins
+# ------------------------------------------------------------------------------
+# These are the local half of the release toolchain contract. The CI half lives
+# in .github/workflows/release.yml and MUST pin the same three versions.
+# Bump both together and re-run `make release-check release-snapshot`.
+# Rationale and the upstream evidence for each pin: docs/70-deployment/70-releases.md
+#
+# Locally the tools are `go install`ed into bin/tools and verified through
+# `go version -m`, which reports the true module version even when the binary
+# was not built with the project's release ldflags. CI installs the official
+# release binaries instead and verifies them with each tool's own `version`
+# output. Both paths are exact; neither falls back to "latest".
+RELEASE_TOOLS_DIR := $(CURDIR)/bin/tools
+
+# The CI half of the pin contract. verify-release-pins enforces that the two
+# files agree, so the "MUST stay in sync" comments below are checkable rather
+# than aspirational.
+RELEASE_WORKFLOW := $(CURDIR)/.github/workflows/release.yml
+
+GORELEASER_VERSION := v2.18.0
+GORELEASER_MODULE := github.com/goreleaser/goreleaser/v2
+GORELEASER_INSTALL := $(GORELEASER_MODULE)@$(GORELEASER_VERSION)
+GORELEASER := $(RELEASE_TOOLS_DIR)/goreleaser$(shell go env GOEXE)
+
+SYFT_VERSION := v1.51.1
+SYFT_MODULE := github.com/anchore/syft
+SYFT_INSTALL := $(SYFT_MODULE)/cmd/syft@$(SYFT_VERSION)
+SYFT := $(RELEASE_TOOLS_DIR)/syft$(shell go env GOEXE)
+
+COSIGN_VERSION := v3.1.3
+COSIGN_MODULE := github.com/sigstore/cosign/v3
+COSIGN_INSTALL := $(COSIGN_MODULE)/cmd/cosign@$(COSIGN_VERSION)
+COSIGN := $(RELEASE_TOOLS_DIR)/cosign$(shell go env GOEXE)
+
+# GoReleaser shells out to `syft` and `cosign` by name, so the pinned copies
+# must win over anything else on the developer's PATH.
+RELEASE_PATH := $(RELEASE_TOOLS_DIR):$(PATH)
+
+# Each *_VERSION_OK is a shell test that exits 0 only when the binary really was
+# built from the pinned module version. `go version -m` is authoritative here:
+# unlike `<tool> version`, it cannot report "unknown" just because the binary was
+# built without the upstream release ldflags.
+GORELEASER_VERSION_OK = go version -m "$(GORELEASER)" 2>/dev/null | \
+	awk '$$1 == "mod" && $$2 == "$(GORELEASER_MODULE)" && $$3 == "$(GORELEASER_VERSION)" { found = 1 } END { exit !found }'
+SYFT_VERSION_OK = go version -m "$(SYFT)" 2>/dev/null | \
+	awk '$$1 == "mod" && $$2 == "$(SYFT_MODULE)" && $$3 == "$(SYFT_VERSION)" { found = 1 } END { exit !found }'
+COSIGN_VERSION_OK = go version -m "$(COSIGN)" 2>/dev/null | \
+	awk '$$1 == "mod" && $$2 == "$(COSIGN_MODULE)" && $$3 == "$(COSIGN_VERSION)" { found = 1 } END { exit !found }'
+
+# Reported version of a pinned tool, or empty when it is missing/unreadable.
+GORELEASER_FOUND = $$(go version -m "$(GORELEASER)" 2>/dev/null | awk '$$1 == "mod" && $$2 == "$(GORELEASER_MODULE)" { print $$3 }')
+SYFT_FOUND = $$(go version -m "$(SYFT)" 2>/dev/null | awk '$$1 == "mod" && $$2 == "$(SYFT_MODULE)" { print $$3 }')
+COSIGN_FOUND = $$(go version -m "$(COSIGN)" 2>/dev/null | awk '$$1 == "mod" && $$2 == "$(COSIGN_MODULE)" { print $$3 }')
+
 # ==============================================================================
 # Core Tool Installation
 # ==============================================================================
 
 .PHONY: install-tools install-format-tools install-analysis-tools install-goreleaser
 .PHONY: install-golangci-lint install-gosec install-pre-commit-tools install-docs-tools
+.PHONY: install-syft install-cosign install-release-tools verify-release-tools
+.PHONY: verify-release-pins
 
-install-tools: install-format-tools install-analysis-tools install-golangci-lint install-goreleaser ## install all development tools
+install-tools: install-format-tools install-analysis-tools install-golangci-lint install-release-tools ## install all development tools
 	@echo -e "$(GREEN)✅ All development tools installed!$(RESET)"
 
 install-format-tools: ## install advanced formatting tools
@@ -86,10 +143,105 @@ install-gosec: ## install the pinned gosec release
 		exit 1; \
 	}
 
-install-goreleaser: ## install goreleaser
-	@echo -e "$(CYAN)Installing goreleaser...$(RESET)"
-	@go install github.com/goreleaser/goreleaser@latest
-	@echo -e "$(GREEN)✅ goreleaser installed$(RESET)"
+install-goreleaser: ## install the pinned GoReleaser v2 release
+	@echo -e "$(CYAN)Ensuring goreleaser $(GORELEASER_VERSION)...$(RESET)"
+	@mkdir -p "$(RELEASE_TOOLS_DIR)"
+	@if [ ! -x "$(GORELEASER)" ] || ! $(GORELEASER_VERSION_OK); then \
+		echo "Installing goreleaser $(GORELEASER_VERSION) to $(GORELEASER)..."; \
+		GOBIN="$(RELEASE_TOOLS_DIR)" go install $(GORELEASER_INSTALL); \
+	fi
+	@$(GORELEASER_VERSION_OK) || { \
+		echo "goreleaser installation did not produce $(GORELEASER_MODULE) $(GORELEASER_VERSION): $(GORELEASER)" >&2; \
+		exit 1; \
+	}
+
+install-syft: ## install the pinned syft release (SBOM generation)
+	@echo -e "$(CYAN)Ensuring syft $(SYFT_VERSION)...$(RESET)"
+	@mkdir -p "$(RELEASE_TOOLS_DIR)"
+	@if [ ! -x "$(SYFT)" ] || ! $(SYFT_VERSION_OK); then \
+		echo "Installing syft $(SYFT_VERSION) to $(SYFT)..."; \
+		GOBIN="$(RELEASE_TOOLS_DIR)" go install $(SYFT_INSTALL); \
+	fi
+	@$(SYFT_VERSION_OK) || { \
+		echo "syft installation did not produce $(SYFT_MODULE) $(SYFT_VERSION): $(SYFT)" >&2; \
+		exit 1; \
+	}
+
+install-cosign: ## install the pinned cosign release (artifact signing)
+	@echo -e "$(CYAN)Ensuring cosign $(COSIGN_VERSION)...$(RESET)"
+	@mkdir -p "$(RELEASE_TOOLS_DIR)"
+	@if [ ! -x "$(COSIGN)" ] || ! $(COSIGN_VERSION_OK); then \
+		echo "Installing cosign $(COSIGN_VERSION) to $(COSIGN)..."; \
+		GOBIN="$(RELEASE_TOOLS_DIR)" go install $(COSIGN_INSTALL); \
+	fi
+	@$(COSIGN_VERSION_OK) || { \
+		echo "cosign installation did not produce $(COSIGN_MODULE) $(COSIGN_VERSION): $(COSIGN)" >&2; \
+		exit 1; \
+	}
+
+install-release-tools: install-goreleaser install-syft install-cosign ## install the exact pinned release toolchain
+	@echo -e "$(GREEN)✅ Release toolchain installed$(RESET)"
+
+verify-release-tools: ## fail fast unless the exact pinned release toolchain is present
+	@echo -e "$(CYAN)Verifying pinned release toolchain...$(RESET)"
+	@failed=0; \
+	if $(GORELEASER_VERSION_OK); then echo "  ✓ goreleaser $(GORELEASER_VERSION)"; \
+	elif [ ! -x "$(GORELEASER)" ]; then \
+		echo "release toolchain: goreleaser is missing at $(GORELEASER) (want $(GORELEASER_VERSION)); run: make install-goreleaser" >&2; \
+		failed=1; \
+	else \
+		echo "release toolchain: goreleaser at $(GORELEASER) is '$(GORELEASER_FOUND)' but $(GORELEASER_VERSION) is pinned; run: make install-goreleaser" >&2; \
+		failed=1; \
+	fi; \
+	if $(SYFT_VERSION_OK); then echo "  ✓ syft $(SYFT_VERSION)"; \
+	elif [ ! -x "$(SYFT)" ]; then \
+		echo "release toolchain: syft is missing at $(SYFT) (want $(SYFT_VERSION)); run: make install-syft" >&2; \
+		failed=1; \
+	else \
+		echo "release toolchain: syft at $(SYFT) is '$(SYFT_FOUND)' but $(SYFT_VERSION) is pinned; run: make install-syft" >&2; \
+		failed=1; \
+	fi; \
+	if $(COSIGN_VERSION_OK); then echo "  ✓ cosign $(COSIGN_VERSION)"; \
+	elif [ ! -x "$(COSIGN)" ]; then \
+		echo "release toolchain: cosign is missing at $(COSIGN) (want $(COSIGN_VERSION)); run: make install-cosign" >&2; \
+		failed=1; \
+	else \
+		echo "release toolchain: cosign at $(COSIGN) is '$(COSIGN_FOUND)' but $(COSIGN_VERSION) is pinned; run: make install-cosign" >&2; \
+		failed=1; \
+	fi; \
+	if [ "$$failed" -ne 0 ]; then \
+		echo -e "$(RED)Release toolchain verification failed: refusing to run a release step that would silently skip SBOM or signing.$(RESET)" >&2; \
+		exit 1; \
+	fi
+	@echo -e "$(GREEN)✅ Release toolchain matches the pinned versions$(RESET)"
+
+verify-release-pins: ## fail unless the release workflow pins the same versions as this file
+	@echo -e "$(CYAN)Verifying release pin parity with the workflow...$(RESET)"
+	@[ -f "$(RELEASE_WORKFLOW)" ] || { \
+		echo "release pins: workflow not found at $(RELEASE_WORKFLOW)" >&2; \
+		exit 1; \
+	}
+	@failed=0; \
+	check_pin() { \
+		got=$$(awk -v k="$$1:" '$$1 == k { print $$2; exit }' "$(RELEASE_WORKFLOW)"); \
+		if [ -z "$$got" ]; then \
+			echo "release pins: $$1 is not pinned in $(RELEASE_WORKFLOW) (.make/tools.mk pins $$2)" >&2; \
+			return 1; \
+		fi; \
+		if [ "$$got" != "$$2" ]; then \
+			echo "release pins: $$1 is $$got in the workflow but $$2 in .make/tools.mk; CI would not release what make validated" >&2; \
+			return 1; \
+		fi; \
+		echo "  ✓ $$1 $$2"; \
+	}; \
+	check_pin GORELEASER_VERSION "$(GORELEASER_VERSION)" || failed=1; \
+	check_pin SYFT_VERSION "$(SYFT_VERSION)" || failed=1; \
+	check_pin COSIGN_VERSION "$(COSIGN_VERSION)" || failed=1; \
+	if [ "$$failed" -ne 0 ]; then \
+		echo -e "$(RED)Release pin verification failed: .make/tools.mk and .github/workflows/release.yml must pin the same versions.$(RESET)" >&2; \
+		exit 1; \
+	fi
+	@echo -e "$(GREEN)✅ Release pins match the workflow$(RESET)"
 
 # ==============================================================================
 # Mock and Generation Tools
@@ -204,8 +356,13 @@ tools-status: ## show installed tool status
 	@printf "  %-20s " "go:"; go version 2>/dev/null | cut -d' ' -f3 || echo -e "$(RED)Not found$(RESET)"
 	@printf "  %-20s " "git:"; git --version 2>/dev/null | cut -d' ' -f3 || echo -e "$(RED)Not found$(RESET)"
 	@echo ""
-	@echo -e "$(GREEN)🔧 Build Tools:$(RESET)"
-	@printf "  %-20s " "goreleaser:"; goreleaser --version 2>/dev/null | head -1 | awk '{print $3}' || echo -e "$(RED)Not installed$(RESET)"
+	@echo -e "$(GREEN)🔧 Release Toolchain (pinned):$(RESET)"
+	@printf "  %-20s " "goreleaser:"; VERSION=$$(go version -m "$(GORELEASER)" 2>/dev/null | awk '$$1 == "mod" && $$2 == "$(GORELEASER_MODULE)" { print $$3 }'); \
+		if [ -n "$$VERSION" ]; then echo "$$VERSION (want $(GORELEASER_VERSION))"; else echo -e "$(RED)Not installed$(RESET) (want $(GORELEASER_VERSION))"; fi
+	@printf "  %-20s " "syft:"; VERSION=$$(go version -m "$(SYFT)" 2>/dev/null | awk '$$1 == "mod" && $$2 == "$(SYFT_MODULE)" { print $$3 }'); \
+		if [ -n "$$VERSION" ]; then echo "$$VERSION (want $(SYFT_VERSION))"; else echo -e "$(RED)Not installed$(RESET) (want $(SYFT_VERSION))"; fi
+	@printf "  %-20s " "cosign:"; VERSION=$$(go version -m "$(COSIGN)" 2>/dev/null | awk '$$1 == "mod" && $$2 == "$(COSIGN_MODULE)" { print $$3 }'); \
+		if [ -n "$$VERSION" ]; then echo "$$VERSION (want $(COSIGN_VERSION))"; else echo -e "$(RED)Not installed$(RESET) (want $(COSIGN_VERSION))"; fi
 	@echo ""
 	@echo -e "$(GREEN)✨ Format Tools:$(RESET)"
 	@printf "  %-20s " "gofumpt:"; gofumpt --version 2>/dev/null || echo -e "$(RED)Not installed$(RESET)"
@@ -235,7 +392,7 @@ tools-info: ## show comprehensive tool information
 	@echo -e "  • $(CYAN)Format Tools$(RESET)        Code formatting (gofumpt, gci)"
 	@echo -e "  • $(CYAN)Analysis Tools$(RESET)      Static analysis (staticcheck, gosec)"
 	@echo -e "  • $(CYAN)Lint Tools$(RESET)          Code linting (golangci-lint)"
-	@echo -e "  • $(CYAN)Build Tools$(RESET)         Build and release (goreleaser)"
+	@echo -e "  • $(CYAN)Release Tools$(RESET)       Pinned release toolchain (goreleaser, syft, cosign)"
 	@echo -e "  • $(CYAN)Mock Tools$(RESET)          Mock generation (mockgen)"
 	@echo -e "  • $(CYAN)Security Tools$(RESET)      Security scanning (gosec, govulncheck)"
 	@echo -e "  • $(CYAN)Git Hooks$(RESET)           Pre-commit hooks and validation"
@@ -249,4 +406,7 @@ tools-info: ## show comprehensive tool information
 	@echo -e "  $(CYAN)make install-format-tools$(RESET)     Format tools only"
 	@echo -e "  $(CYAN)make install-analysis-tools$(RESET)   Analysis tools only"
 	@echo -e "  $(CYAN)make install-security-tools$(RESET)   Security tools only"
+	@echo -e "  $(CYAN)make install-release-tools$(RESET)    Pinned release toolchain only"
+	@echo -e "  $(CYAN)make verify-release-tools$(RESET)     Fail fast on a drifted release toolchain"
+	@echo -e "  $(CYAN)make verify-release-pins$(RESET)      Fail fast when local and CI pins disagree"
 	@echo -e "  $(CYAN)make install-mock-tools$(RESET)       Mock generation tools only"
