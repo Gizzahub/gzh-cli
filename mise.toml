@@ -1,0 +1,17 @@
+[tools]
+# Pinned to go.mod's `toolchain go1.26.7`, not to whatever the workstation has.
+#
+# Task worktrees live under ~/worktrees, outside the devbox tree, so the
+# devbox-level mise.toml never applies to them and the machine-global config
+# (go = "1.27.0") wins instead. `make lint` then runs a golangci-lint that was
+# built with go1.26.7 against a GOROOT of 1.27.0, and go/types dies mid-run:
+#
+#   panic: file requires newer Go version go1.27 (application built with go1.26)
+#
+# The gate reports that as a lint failure, and on the run where the type
+# checker degrades into diagnostics instead of a panic it reports GOROOT paths
+# as "branch diagnostics reference paths outside the repository". Neither
+# message names the toolchain, which is why this took eight disproved
+# hypotheses to find. gzh-cli-gitforge carries the same pin (907201a) and is
+# the only repo in the family whose branches have been integrating cleanly.
+go = "1.26.7"
