@@ -6,7 +6,8 @@
 # ==============================================================================
 
 GOLANGCI_LINT_VERSION := v2.13.1
-GOLANGCI_LINT_RELEASE_VERSION := $(patsubst v%,%,$(GOLANGCI_LINT_VERSION))
+GOLANGCI_LINT_MODULE := github.com/golangci/golangci-lint/v2
+GOLANGCI_LINT_INSTALL := $(GOLANGCI_LINT_MODULE)/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
 GOLANGCI_LINT_DIR := $(CURDIR)/bin/tools
 GOLANGCI_LINT := $(GOLANGCI_LINT_DIR)/golangci-lint$(shell go env GOEXE)
 GOLANGCI_LINT_RUN_FLAGS := --allow-serial-runners
@@ -41,15 +42,33 @@ install-analysis-tools: install-gosec ## install code analysis tools
 	@command -v staticcheck >/dev/null 2>&1 || { echo "Installing staticcheck..." && go install honnef.co/go/tools/cmd/staticcheck@latest; }
 	@echo -e "$(GREEN)✅ All analysis tools installed!$(RESET)"
 
+# The freshness check reads build info, not the release string alone. `go
+# install` builds with the *active* toolchain and ignores go.mod's `toolchain`
+# directive, so the Go that built this binary is decided by whatever mise
+# resolves — which differs between the devbox tree and a ~/worktrees task
+# worktree. When those disagree, golangci-lint's go/types reads a stdlib it
+# cannot parse and the run dies mid-analysis instead of reporting findings:
+#
+#   panic: file requires newer Go version go1.27 (application built with go1.26)
+#
+# Comparing only the release string cannot see that: the version never moved,
+# so the old check printed "Ensuring golangci-lint v2.13.1..." and reinstalled
+# nothing, leaving the mismatched binary in place (measured 2026-09-02 —
+# cold install under go1.26.7, then `mise exec go@1.27.0 -- make
+# install-golangci-lint` skipped the reinstall and left a go1.26.7 binary).
+# install-gosec below already reads `go version -m`; this makes golangci-lint
+# match its sibling rather than introduce a second idiom.
 install-golangci-lint: ## install the pinned golangci-lint v2 release
 	@echo -e "$(CYAN)Ensuring golangci-lint $(GOLANGCI_LINT_VERSION)...$(RESET)"
 	@mkdir -p "$(GOLANGCI_LINT_DIR)"
-	@if [ ! -x "$(GOLANGCI_LINT)" ] || ! "$(GOLANGCI_LINT)" version --short 2>/dev/null | grep -qxF "$(GOLANGCI_LINT_RELEASE_VERSION)"; then \
+	@if [ ! -x "$(GOLANGCI_LINT)" ] || ! go version -m "$(GOLANGCI_LINT)" 2>/dev/null | \
+		awk -v want="$$(go env GOVERSION)" 'NR == 1 { built = $$NF } $$1 == "mod" && $$2 == "$(GOLANGCI_LINT_MODULE)" && $$3 == "$(GOLANGCI_LINT_VERSION)" { found = 1 } END { exit !(found && built == want) }'; then \
 		echo "Installing golangci-lint $(GOLANGCI_LINT_VERSION) to $(GOLANGCI_LINT)..."; \
-		GOBIN="$(GOLANGCI_LINT_DIR)" go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION); \
+		GOBIN="$(GOLANGCI_LINT_DIR)" go install $(GOLANGCI_LINT_INSTALL); \
 	fi
-	@"$(GOLANGCI_LINT)" version --short 2>/dev/null | grep -qxF "$(GOLANGCI_LINT_RELEASE_VERSION)" || { \
-		echo "golangci-lint installation did not produce $(GOLANGCI_LINT_VERSION): $(GOLANGCI_LINT)" >&2; \
+	@go version -m "$(GOLANGCI_LINT)" 2>/dev/null | \
+		awk -v want="$$(go env GOVERSION)" 'NR == 1 { built = $$NF } $$1 == "mod" && $$2 == "$(GOLANGCI_LINT_MODULE)" && $$3 == "$(GOLANGCI_LINT_VERSION)" { found = 1 } END { exit !(found && built == want) }' || { \
+		echo "golangci-lint installation did not produce $(GOLANGCI_LINT_MODULE) $(GOLANGCI_LINT_VERSION) built with $$(go env GOVERSION): $(GOLANGCI_LINT)" >&2; \
 		exit 1; \
 	}
 
