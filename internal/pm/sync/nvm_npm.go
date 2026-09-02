@@ -188,7 +188,7 @@ func (nns *NvmNpmSynchronizer) getExpectedNpmVersion(ctx context.Context, nodeVe
 	}
 
 	// Try to get npm version bundled with Node.js
-	cmd := exec.CommandContext(ctx, "bash", "-c", fmt.Sprintf("nvm use %s && npm --version", nodeVersion)) // #nosec G204
+	cmd := exec.CommandContext(ctx, "bash", "-c", fmt.Sprintf("nvm use %s && npm --version", nodeVersion))
 	output, err := cmd.Output()
 	if err != nil {
 		nns.logger.Debug("Failed to get bundled npm version for Node.js %s: %v", nodeVersion, err)
@@ -233,7 +233,8 @@ func (nns *NvmNpmSynchronizer) syncToNodeVersion(ctx context.Context, nodeVersio
 	}
 
 	// Install the specific npm version
-	cmd := exec.CommandContext(ctx, "npm", "install", "-g", fmt.Sprintf("npm@%s", expectedNpmVersion)) // #nosec G204
+	// Argument vector form: no shell is involved, so the version string cannot inject a command.
+	cmd := exec.CommandContext(ctx, "npm", "install", "-g", fmt.Sprintf("npm@%s", expectedNpmVersion))
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to install npm@%s: %w", expectedNpmVersion, err)
 	}

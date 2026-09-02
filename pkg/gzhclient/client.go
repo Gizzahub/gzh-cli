@@ -586,7 +586,7 @@ func (h *httpClientWrapper) Do(req *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	// #nosec G704 -- the initial request and every redirect are restricted to the configured origin.
+	// The initial request and every redirect are restricted to the configured origin.
 	return h.client.Do(req)
 }
 

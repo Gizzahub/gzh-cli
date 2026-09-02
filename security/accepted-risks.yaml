@@ -1,0 +1,169 @@
+# Accepted-risk registry for gzh-cli standalone gosec suppressions.
+#
+# Every active `//gosec:disable` directive in the repository must reference
+# exactly one record here, and every record here must be referenced by exactly
+# one directive. The validator in security/internal/acceptedrisk enforces both
+# directions, the approver authority declared in security/policy.yaml, and the
+# 90-day review / 180-day hard-sunset cadence.
+#
+# APPROVAL STATE: every record below carries the explicit sentinel
+# `pending-owner-approval` in place of a signed-commit SHA. The repository owner
+# approved the authority SSOT, the evidence format and the cadence on
+# 2026-09-02, but has NOT yet approved any individual accepted risk. The
+# validator rejects the sentinel, so the registry intentionally does not pass
+# validation yet. Do not replace the sentinel with anything other than the SHA
+# of a real signed approval commit.
+version: 1
+
+records:
+  - id: AR-2026-001
+    rule: G304
+    path: cmd/selfupdate/selfupdate.go
+    symbol: Updater.DownloadAsset
+    threat: >-
+      os.OpenFile is called with a caller-supplied destination path, so a
+      caller that passes an attacker-influenced path could direct the download
+      at an unintended location.
+    compensating_control: >-
+      호출자가 권한을 가진 새 destination만 배타 생성하며 내부 Update는 실행파일
+      디렉터리만 사용한다. The call uses O_CREATE|O_EXCL at 0o600, so an existing
+      file, a symlink or any other colliding path fails instead of being
+      overwritten.
+    owner: archmagece
+    approver:
+      id: 1732826
+      login: archmagece
+    created_at: "2026-09-02"
+    last_reviewed_at: "2026-09-02"
+    evidence:
+      type: signed-commit
+      sha: pending-owner-approval
+    test_evidence: >-
+      cmd/selfupdate: TestUpdater_DownloadAssetCreatesExclusively,
+      TestUpdater_DownloadAssetCleansOnlyOwnedFile,
+      TestUpdater_DownloadAssetForTargetCleansFailedStage.
+
+  - id: AR-2026-002
+    rule: G302
+    path: cmd/selfupdate/selfupdate.go
+    symbol: Updater.downloadAsset
+    threat: >-
+      Chmod(0o755) grants group and world execute on the downloaded release
+      binary, which is wider than the 0o600 the file was created with.
+    compensating_control: >-
+      릴리스 바이너리를 실행 가능하게 설치하는 기능 계약상 0755가 필요하다. The
+      mode is a fixed literal on a file the process itself created exclusively
+      under its own directory, and it is applied only on non-Windows targets.
+    owner: archmagece
+    approver:
+      id: 1732826
+      login: archmagece
+    created_at: "2026-09-02"
+    last_reviewed_at: "2026-09-02"
+    evidence:
+      type: signed-commit
+      sha: pending-owner-approval
+    test_evidence: >-
+      cmd/selfupdate: TestUpdater_DownloadAssetFileOperationOrder,
+      TestUpdater_DownloadAssetPropagatesFileErrors.
+
+  - id: AR-2026-003
+    rule: G304
+    path: cmd/selfupdate/selfupdate_test.go
+    symbol: readTestFile
+    threat: >-
+      os.ReadFile is called with a variable path inside a test helper.
+    compensating_control: >-
+      각 테스트가 t.TempDir 아래에 직접 생성한 경로만 읽는다. The helper is test-only
+      code and every caller passes a path the test itself created under
+      t.TempDir, so no external input reaches it.
+    owner: archmagece
+    approver:
+      id: 1732826
+      login: archmagece
+    created_at: "2026-09-02"
+    last_reviewed_at: "2026-09-02"
+    evidence:
+      type: signed-commit
+      sha: pending-owner-approval
+    test_evidence: >-
+      The helper itself is only reachable from cmd/selfupdate tests; the
+      surrounding assertions are TestUpdater_DownloadAssetCreatesExclusively
+      and TestReplaceBinary.
+
+  - id: AR-2026-004
+    rule: G117
+    path: cmd/dev-env/ssh_enhanced.go
+    symbol: sshSaveStage metadata marshal
+    threat: >-
+      json.MarshalIndent serializes EnhancedSSHMetadata, whose PrivateKeys field
+      is name-matched as key material and could leak secrets into metadata.json.
+    compensating_control: >-
+      PrivateKeys에는 키 내용이 아닌 선택되어 저장된 원본 경로만 기록한다. The field
+      holds only the selected source file paths; key bytes are copied separately
+      by sshSaveCopy and never enter the struct. metadata.json is written at
+      0o600.
+    owner: archmagece
+    approver:
+      id: 1732826
+      login: archmagece
+    created_at: "2026-09-02"
+    last_reviewed_at: "2026-09-02"
+    evidence:
+      type: signed-commit
+      sha: pending-owner-approval
+    test_evidence: >-
+      cmd/dev-env: TestEnhancedSSHCommand_SaveSnapshotContract asserts the
+      0o600 metadata.json mode, and TestEnhancedSSHCommand_SaveAndLoadConfig
+      round-trips the metadata contents.
+
+  - id: AR-2026-005
+    rule: G117
+    path: cmd/dev-env/ssh_enhanced.go
+    symbol: EnhancedSSHCommand.saveEnhancedMetadata
+    threat: >-
+      json.Encoder.Encode serializes the same EnhancedSSHMetadata struct, so the
+      PrivateKeys field is flagged as potential key material on the encode path
+      as well.
+    compensating_control: >-
+      PrivateKeys는 키 내용이 아니라 원본 파일 경로만 포함한다. Same struct contract
+      as AR-2026-004; this record covers the separate encoder call site so a new
+      G117 suppression in this file cannot inherit an existing approval.
+    owner: archmagece
+    approver:
+      id: 1732826
+      login: archmagece
+    created_at: "2026-09-02"
+    last_reviewed_at: "2026-09-02"
+    evidence:
+      type: signed-commit
+      sha: pending-owner-approval
+    test_evidence: >-
+      cmd/dev-env: TestSSHLoadKeyModeMetadataRoles and
+      TestEnhancedSSHCommand_LoadMetadataRoleModes exercise the encoded
+      metadata roles.
+
+  - id: AR-2026-006
+    rule: G118
+    path: internal/workerpool/pool.go
+    symbol: New
+    threat: >-
+      context.WithCancel's cancel function is stored on the struct instead of
+      being deferred at the call site, so a leaked Pool would leak the context.
+    compensating_control: >-
+      Pool.Stop이 cancel을 호출한다. 취소 함수의 소유권은 Pool로 이전되며 Stop에서
+      해제한다. Stop is idempotent and always calls cancel.
+    owner: archmagece
+    approver:
+      id: 1732826
+      login: archmagece
+    created_at: "2026-09-02"
+    last_reviewed_at: "2026-09-02"
+    evidence:
+      type: signed-commit
+      sha: pending-owner-approval
+    test_evidence: >-
+      internal/workerpool: TestPool_StopBeforeStartCancelsContext,
+      TestPool_StopCancelsInFlightJob,
+      TestRepositoryWorkerPoolStopIsIdempotent,
+      TestRepositoryWorkerPoolStopDoesNotHang.

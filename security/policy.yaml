@@ -1,0 +1,36 @@
+# Trusted-base security authority SSOT for gzh-cli.
+#
+# This file is the only place that grants authority to approve an accepted risk.
+# It is read from the trusted base revision, never from the candidate revision,
+# and the loader rejects any field that is not declared below.
+#
+# Approver identity is matched on the immutable GitHub numeric user ID. A login
+# is a mutable display label and is never the matching key. Bot and agent
+# identities can never appear here and can never approve an accepted risk.
+#
+# Approved by the repository owner on 2026-09-02 (TASK-116).
+version: 1
+
+organization:
+  id: 157453618
+  login: Gizzahub
+
+approvers:
+  - id: 1732826
+    login: archmagece
+    type: User
+    role: repository-owner
+
+evidence:
+  # A GitHub Issue or pull request URL is deliberately NOT accepted: its body is
+  # editable after the fact, so it is not immutable approval evidence.
+  accepted_types:
+    - signed-commit
+
+cadence:
+  # review_by = last_reviewed_at + review_interval_days
+  review_interval_days: 90
+  # hard sunset = created_at + hard_sunset_days. After the hard sunset an
+  # accepted-risk ID is not renewable: a new risk analysis, a new approval and a
+  # new AR ID are required.
+  hard_sunset_days: 180

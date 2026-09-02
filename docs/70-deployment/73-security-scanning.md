@@ -65,27 +65,82 @@ make install-gosec
 ./bin/tools/gosec -fmt=junit-xml ./...
 ```
 
-### Excluding False Positives
+### Accepted Risks (the replacement for `#nosec`)
 
-The pinned standalone scanner is gosec v2.28.0. Its repository configuration
-sets `global.nosec` to `false`; therefore, ordinary `#nosec` comments are
-inactive for the standalone scan. Do not add new `#nosec` comments or assume an
-existing one suppresses a standalone result.
+The pinned standalone scanner is gosec v2.28.0 (`GOSEC_VERSION` in
+`.make/tools.mk`). Its repository configuration sets `global.nosec` to `false`,
+so `#nosec` comments are inert for the standalone scan. `#nosec` is therefore
+not a suppression mechanism in this repository: do not add one, and do not read
+an existing one as evidence that a finding has been handled. The legacy `#nosec`
+comments that used to be in the tree have been removed for that reason.
 
-After the security policy owner has approved an accepted-risk entry, the
-approved standalone mechanism will be a directive with a registered accepted
-risk identifier:
+The only mechanism that suppresses a standalone result is a `gosec:disable`
+directive naming a registered accepted-risk identifier:
 
 ```go
-//gosec:disable G304 -- AR-0000: approved reason with immutable review evidence.
+//gosec:disable G304 -- AR-2026-003 each test reads only paths it created under t.TempDir.
 file, err := os.Open(configPath)
 ```
 
-`AR-0000` is illustrative only. Stage A0 does not grant any accepted-risk
-identifier, activate legacy comments, or change scanner configuration. Until a
-policy owner and approval evidence are recorded, remediate the finding or leave
-it visible. See the [gosec suppression inventory](../90-maintenance/94-gosec-suppression-inventory.md)
-for the current directives and the approval blocker.
+#### Trusted base
+
+| File | Contents |
+| ---- | -------- |
+| `security/policy.yaml` | Who may approve, which evidence formats count, and the review cadence |
+| `security/accepted-risks.yaml` | One immutable `AR-YYYY-NNN` record per suppressed site |
+| `security/internal/acceptedrisk` | The fail-closed validator over both files and the source directives |
+
+`security/policy.yaml` matches an approver on the **immutable GitHub numeric
+user id**, never on the login, which is renameable. `type: Bot` and any
+automation or agent identity can never approve. The single accepted evidence
+format is `signed-commit`: a 40-character lowercase hex commit id whose
+signature verifies. A GitHub Issue or pull request URL is deliberately **not**
+accepted, because both remain editable after the fact.
+
+#### Procedure
+
+1. **Remediate first.** A suppression is the last option, not the first. Fix the
+   finding, or restructure the code so the pattern no longer occurs.
+1. **Register the risk.** Add a record to `security/accepted-risks.yaml` with a
+   new, never-reused `AR-YYYY-NNN` identifier and every required field: `rule`,
+   `path` (repository-relative), `symbol`, `threat`, `compensating_control`,
+   `owner`, `approver` (`id` and `login`), `created_at`, `last_reviewed_at`,
+   `evidence`, and `test_evidence` naming the tests that hold the compensating
+   control in place. Leave `evidence.sha` as the sentinel
+   `pending-owner-approval` until step 3; the validator rejects that sentinel, so
+   an unapproved record cannot pass.
+1. **Obtain owner approval.** The policy owner approves by making a signed
+   commit and recording its full SHA in `evidence.sha`. Never write a SHA you
+   did not obtain from a real signed approval commit.
+1. **Link the suppression.** Exactly one directive references the record, and
+   the record covers exactly one site. Its rule and file path must match the
+   record; a second directive sharing an identifier is a violation, as is a
+   record no directive references.
+1. **Review and sunset.** `review_by` is derived as `last_reviewed_at + 90 days`
+   and is never stored. The hard sunset is `created_at + 180 days`. Past the hard
+   sunset the identifier is **not** renewable: bumping `last_reviewed_at` is
+   rejected, and the risk needs a fresh analysis, a fresh approval and a new
+   `AR-YYYY-NNN` identifier.
+
+#### What the validator rejects
+
+`go test ./security/internal/acceptedrisk/...` fails closed on an approver who
+is absent from `security/policy.yaml`, an approver that is a bot or agent, a
+registry login that has drifted from the policy, missing or malformed approval
+evidence, a SHA that is not full lowercase hex or whose signature does not
+verify, a duplicate `AR-YYYY-NNN`, a directive referencing an unregistered
+identifier, a malformed directive, a record no directive references, an overdue
+review, a passed hard sunset, and a renewal attempted after the hard sunset.
+
+#### Current state
+
+Every record in `security/accepted-risks.yaml` carries
+`sha: pending-owner-approval`. The owner has approved the authority SSOT, the
+evidence format and the cadence, but has not yet approved any individual
+accepted risk, so the registry does not validate yet and that is the intended
+state. See the
+[gosec suppression inventory](../90-maintenance/94-gosec-suppression-inventory.md)
+for the per-site listing.
 
 ## Security Guidelines
 
@@ -247,12 +302,16 @@ workflow and this document together, which is out of scope here.
 
 1. **Too many false positives**
 
-   - Do not use `#nosec`: it is inactive in the standalone policy.
+   - Do not use `#nosec`: it is inert under `global.nosec: false`.
    - First remediate the finding or document why it is not a finding.
-   - A `gosec:disable` directive requires a policy-owner-approved accepted-risk
-     record; do not create an AR ID locally.
+   - A `gosec:disable` directive requires a record in
+     `security/accepted-risks.yaml` approved by the owner declared in
+     `security/policy.yaml` with a verifying signed commit. Never issue an AR ID
+     and mark it approved yourself.
    - Do not broaden `.gosec.json` exclusions or lower thresholds to silence a
      result without a separately approved policy change.
+   - See [Accepted Risks](#accepted-risks-the-replacement-for-nosec) for the
+     full procedure.
 
 1. **Performance issues**
 
@@ -296,7 +355,7 @@ Track these metrics over time:
 1. **Review gosec output manually** - Don't rely solely on automation
 1. **Keep security tools updated** - Regular updates catch new vulnerabilities
 1. **Train team on secure coding** - Prevention is better than detection
-1. **Document exceptions** - Follow the accepted-risk policy; `#nosec` is inactive for the standalone scan
+1. **Document exceptions** - Register them in `security/accepted-risks.yaml` under an owner-approved `AR-YYYY-NNN`; `#nosec` suppresses nothing
 1. **Validate user input** - Never trust external data
 1. **Use principle of least privilege** - Minimal file permissions and access
 1. **Regular security reviews** - Periodic manual code reviews for security
