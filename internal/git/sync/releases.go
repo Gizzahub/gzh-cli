@@ -182,7 +182,7 @@ func (s *ReleaseSyncer) createRelease(ctx context.Context, repoID string, srcRel
 }
 
 // updateRelease updates an existing release in the destination repository.
-func (s *ReleaseSyncer) updateRelease(ctx context.Context, repoID string, srcRelease provider.Release, destRelease provider.Release) error {
+func (s *ReleaseSyncer) updateRelease(ctx context.Context, repoID string, srcRelease, destRelease provider.Release) error {
 	req := provider.UpdateReleaseRequest{
 		Name:       &srcRelease.Name,
 		Body:       &srcRelease.Body,

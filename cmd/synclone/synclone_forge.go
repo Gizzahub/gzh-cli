@@ -17,13 +17,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/gizzahub/gzh-cli-gitforge/pkg/reposync"
-
 	"github.com/gizzahub/gzh-cli-gitforge/pkg/gitea"
 	"github.com/gizzahub/gzh-cli-gitforge/pkg/github"
 	"github.com/gizzahub/gzh-cli-gitforge/pkg/gitlab"
 	"github.com/gizzahub/gzh-cli-gitforge/pkg/provider"
-
+	"github.com/gizzahub/gzh-cli-gitforge/pkg/reposync"
 	"github.com/gizzahub/gzh-cli/internal/app"
 )
 

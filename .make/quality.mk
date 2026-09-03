@@ -30,9 +30,17 @@ format-md: install-mdformat ## format all markdown files with mdformat
 	@find . -name "*.md" -type f -not -path "./vendor/*" -not -path "./.git/*" | xargs -r mdformat
 	@echo -e "$(GREEN)✅ Markdown formatting complete!$(RESET)"
 
+# The `|| echo` this replaced turned a check into a report: mdformat --check named
+# the unformatted file, the recipe printed a warning, and make still exited 0, so
+# nothing downstream could act on it -- "checked and clean" and "checked and dirty"
+# were the same exit code. The pipeline's status is xargs's, and xargs reports a
+# non-zero status when mdformat does (measured here: rc=1 on an unformatted file,
+# rc=0 once formatted), so dropping the `|| echo` is the entire fix.
+# pipefail is deliberately not added: it is not portable across the shells make may
+# pick, and it would only cover `find` itself failing, not this target's job.
 format-md-check: install-mdformat ## check markdown files that need formatting
 	@echo -e "$(CYAN)📋 Checking markdown formatting...$(RESET)"
-	@find . -name "*.md" -type f -not -path "./vendor/*" -not -path "./.git/*" | xargs -r mdformat --check || echo -e "$(YELLOW)Some markdown files need formatting$(RESET)"
+	@find . -name "*.md" -type f -not -path "./vendor/*" -not -path "./.git/*" | xargs -r mdformat --check
 
 format-md-diff: install-mdformat ## format only changed markdown files
 	@echo -e "$(CYAN)🚀 Formatting changed markdown files...$(RESET)"

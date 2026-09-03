@@ -941,7 +941,7 @@ type BulkApplyOptions struct {
 	// IncludeRepositories contains repository names to include (if empty, all repos are included)
 	IncludeRepositories []string
 	// OnProgress callback function called for each repository processed
-	OnProgress func(repo string, current int, total int, err error)
+	OnProgress func(repo string, current, total int, err error)
 	// ConfirmationPrompt enables interactive confirmation for sensitive changes
 	ConfirmationPrompt *ConfirmationPrompt
 }

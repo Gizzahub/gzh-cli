@@ -15,13 +15,13 @@ type HTTPClient interface {
 	Get(ctx context.Context, url string) (*http.Response, error)
 
 	// Post performs a POST request
-	Post(ctx context.Context, url string, contentType string, body io.Reader) (*http.Response, error)
+	Post(ctx context.Context, url, contentType string, body io.Reader) (*http.Response, error)
 
 	// Put performs a PUT request
-	Put(ctx context.Context, url string, contentType string, body io.Reader) (*http.Response, error)
+	Put(ctx context.Context, url, contentType string, body io.Reader) (*http.Response, error)
 
 	// Patch performs a PATCH request
-	Patch(ctx context.Context, url string, contentType string, body io.Reader) (*http.Response, error)
+	Patch(ctx context.Context, url, contentType string, body io.Reader) (*http.Response, error)
 
 	// Delete performs a DELETE request
 	Delete(ctx context.Context, url string) (*http.Response, error)

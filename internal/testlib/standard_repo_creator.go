@@ -86,7 +86,7 @@ func (c *StandardRepoCreator) CreateDevelopmentRepo(ctx context.Context, repoPat
 }
 
 // CreateProjectRepo creates a repository with project-like structure.
-func (c *StandardRepoCreator) CreateProjectRepo(ctx context.Context, repoPath string, projectType string) error {
+func (c *StandardRepoCreator) CreateProjectRepo(ctx context.Context, repoPath, projectType string) error {
 	if err := c.createBaseRepo(ctx, repoPath); err != nil {
 		return fmt.Errorf("failed to create base repository: %w", err)
 	}

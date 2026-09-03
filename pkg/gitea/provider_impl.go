@@ -707,7 +707,7 @@ func (g *GiteaProvider) apiBase() string {
 }
 
 // doJSON performs an authenticated JSON request against this provider's base URL.
-func (g *GiteaProvider) doJSON(ctx context.Context, method, endpoint string, payload any, out any, wantStatuses ...int) error {
+func (g *GiteaProvider) doJSON(ctx context.Context, method, endpoint string, payload, out any, wantStatuses ...int) error {
 	var bodyReader io.Reader
 	if payload != nil {
 		encoded, err := json.Marshal(payload)

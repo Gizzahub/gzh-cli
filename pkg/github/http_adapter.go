@@ -48,7 +48,7 @@ func (a *HTTPClientAdapter) Get(ctx context.Context, url string) (*http.Response
 }
 
 // Post performs a POST request.
-func (a *HTTPClientAdapter) Post(ctx context.Context, url string, contentType string, body io.Reader) (*http.Response, error) {
+func (a *HTTPClientAdapter) Post(ctx context.Context, url, contentType string, body io.Reader) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, body)
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func (a *HTTPClientAdapter) Post(ctx context.Context, url string, contentType st
 }
 
 // Put performs a PUT request.
-func (a *HTTPClientAdapter) Put(ctx context.Context, url string, contentType string, body io.Reader) (*http.Response, error) {
+func (a *HTTPClientAdapter) Put(ctx context.Context, url, contentType string, body io.Reader) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodPut, url, body)
 	if err != nil {
 		return nil, err
@@ -72,7 +72,7 @@ func (a *HTTPClientAdapter) Put(ctx context.Context, url string, contentType str
 }
 
 // Patch performs a PATCH request.
-func (a *HTTPClientAdapter) Patch(ctx context.Context, url string, contentType string, body io.Reader) (*http.Response, error) {
+func (a *HTTPClientAdapter) Patch(ctx context.Context, url, contentType string, body io.Reader) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodPatch, url, body)
 	if err != nil {
 		return nil, err

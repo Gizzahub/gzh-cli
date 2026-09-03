@@ -149,7 +149,7 @@ func (te *TemplateEngine) mergeWithDefaults(config *TemplateConfig, variables ma
 }
 
 // processTemplate processes a template with variables.
-func (te *TemplateEngine) processTemplate(templateData map[string]any, variables map[string]any) (map[string]any, error) {
+func (te *TemplateEngine) processTemplate(templateData, variables map[string]any) (map[string]any, error) {
 	// Convert template data to YAML string for processing
 	yamlData, err := yaml.Marshal(templateData)
 	if err != nil {

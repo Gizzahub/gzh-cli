@@ -16,15 +16,15 @@ The project uses a fully automated release pipeline that:
 
 ### Package Managers
 
-| Platform       | Package Manager | Installation Command                                                                     |
-| -------------- | --------------- | ---------------------------------------------------------------------------------------- |
-| **macOS**      | Homebrew Cask   | `brew install --cask gizzahub/tap/gz`                                                    |
+| Platform       | Package Manager | Installation Command                                                                           |
+| -------------- | --------------- | ---------------------------------------------------------------------------------------------- |
+| **macOS**      | Homebrew Cask   | `brew install --cask gizzahub/tap/gz`                                                          |
 | **Windows**    | Chocolatey      | _Not supported_ — see [Chocolatey: explicitly unsupported](#chocolatey-explicitly-unsupported) |
-| **Windows**    | Scoop           | `scoop bucket add gizzahub https://github.com/gizzahub/scoop-bucket && scoop install gz` |
-| **Arch Linux** | AUR             | `yay -S gz-bin`                                                                          |
-| **Linux**      | APT (deb)       | `dpkg -i gz_*.deb`                                                                       |
-| **Linux**      | YUM/DNF (rpm)   | `rpm -i gz_*.rpm`                                                                        |
-| **Alpine**     | APK             | `apk add gz_*.apk`                                                                       |
+| **Windows**    | Scoop           | `scoop bucket add gizzahub https://github.com/gizzahub/scoop-bucket && scoop install gz`       |
+| **Arch Linux** | AUR             | `yay -S gz-bin`                                                                                |
+| **Linux**      | APT (deb)       | `dpkg -i gz_*.deb`                                                                             |
+| **Linux**      | YUM/DNF (rpm)   | `rpm -i gz_*.rpm`                                                                              |
+| **Alpine**     | APK             | `apk add gz_*.apk`                                                                             |
 
 Upgrade a Cask installation with `brew upgrade --cask gz`.
 
@@ -107,18 +107,18 @@ cosign is absent.
 The release is only reproducible if every tool in it is an exact version. None
 of these resolve to `latest`.
 
-| Tool           | Pinned version | Upstream evidence                                                                    |
-| -------------- | -------------- | ------------------------------------------------------------------------------------ |
+| Tool           | Pinned version | Upstream evidence                                                                                |
+| -------------- | -------------- | ------------------------------------------------------------------------------------------------ |
 | **GoReleaser** | `v2.18.0`      | [Release v2.18.0](https://github.com/goreleaser/goreleaser/releases/tag/v2.18.0) — latest stable |
-| **syft**       | `v1.51.1`      | [Release v1.51.1](https://github.com/anchore/syft/releases/tag/v1.51.1) — latest stable |
-| **cosign**     | `v3.1.3`       | [Release v3.1.3](https://github.com/sigstore/cosign/releases/tag/v3.1.3) — latest stable |
+| **syft**       | `v1.51.1`      | [Release v1.51.1](https://github.com/anchore/syft/releases/tag/v1.51.1) — latest stable          |
+| **cosign**     | `v3.1.3`       | [Release v3.1.3](https://github.com/sigstore/cosign/releases/tag/v3.1.3) — latest stable         |
 
 Each version is declared in exactly two places, which must be changed together:
 
-| Where                            | How                                                                       |
-| -------------------------------- | ------------------------------------------------------------------------- |
-| `.make/tools.mk`                 | `GORELEASER_VERSION` / `SYFT_VERSION` / `COSIGN_VERSION`                   |
-| `.github/workflows/release.yml`  | the job-level `env:` block of the same three names                         |
+| Where                           | How                                                      |
+| ------------------------------- | -------------------------------------------------------- |
+| `.make/tools.mk`                | `GORELEASER_VERSION` / `SYFT_VERSION` / `COSIGN_VERSION` |
+| `.github/workflows/release.yml` | the job-level `env:` block of the same three names       |
 
 Locally the tools are installed into the gitignored `bin/tools/` with
 `go install <module>@<version>` and verified with `go version -m`, which reports
@@ -135,16 +135,12 @@ verifies them with each tool's own `version` output. Both paths are exact.
 - `homebrew_casks[].binary` was replaced by `binaries` in v2.13.0 and is now a
   hard `goreleaser check` failure ("configuration is valid, but uses deprecated
   properties"), so the config uses `binaries`.
-- v2.18.0 carries fixes that matter to this config directly: `fix(sign):
-  artifacts: none masks real signing failures`, `fix(cask): a cask without a
-  repository stops the ones after it`, and `fix(cask): emit Casks that pass brew
-  style`.
+- v2.18.0 carries fixes that matter to this config directly: `fix(sign): artifacts: none masks real signing failures`, `fix(cask): a cask without a repository stops the ones after it`, and `fix(cask): emit Casks that pass brew style`.
 
 ### Why cosign v3.1.3 changed the signing config
 
 cosign 3.x removed the working `--output-certificate` / `--output-signature`
-path for `sign-blob`; invoking it now fails with `must specify --bundle with
---new-bundle-format`. The `signs` block therefore follows the current upstream
+path for `sign-blob`; invoking it now fails with `must specify --bundle with --new-bundle-format`. The `signs` block therefore follows the current upstream
 GoReleaser example and emits a single Sigstore bundle:
 
 ```yaml
@@ -167,8 +163,7 @@ dependencies for you"). `choco` is a Windows-only .NET tool and is not present
 on the `ubuntu-latest` release runner, so with the section configured
 `goreleaser healthcheck` exits 1 with `choco - not present in path`.
 
-Splitting the pipe into a separate Windows job requires `goreleaser release
---split` plus `goreleaser continue`, which are GoReleaser **Pro** features and
+Splitting the pipe into a separate Windows job requires `goreleaser release --split` plus `goreleaser continue`, which are GoReleaser **Pro** features and
 are unavailable to this OSS distribution.
 
 **Decision**: Chocolatey is an explicitly unsupported publish channel. The
@@ -193,7 +188,7 @@ never be confused:
    non-empty, reports all missing names at once, and never echoes a value. Its
    messages are prefixed `CREDENTIAL FAILURE` and state explicitly that the
    toolchain is fine.
-2. **`Preflight — release toolchain`** runs after installation. It asserts the
+1. **`Preflight — release toolchain`** runs after installation. It asserts the
    exact version of each tool on `PATH` and then runs `goreleaser healthcheck`,
    which fails on any binary the configured pipes need. Its messages are
    prefixed `TOOLCHAIN FAILURE`.
@@ -269,8 +264,7 @@ Keyless verification has no public key to pin, so cosign requires you to say
 accepting any valid Sigstore signature from anyone. Both commands therefore
 carry `--certificate-identity-regexp` (the workflow that signed the release) and
 `--certificate-oidc-issuer` (the OIDC provider that vouched for it). Omitting
-either fails immediately with `--certificate-identity or
---certificate-identity-regexp is required for verification in keyless mode`.
+either fails immediately with `--certificate-identity or --certificate-identity-regexp is required for verification in keyless mode`.
 
 ```bash
 # Verify container image signature
@@ -300,15 +294,15 @@ that *something* signed the artifact but not that *we* did.
 
 Required secrets for automated releases:
 
-| Secret                        | Consumed by                              | Required |
-| ----------------------------- | ---------------------------------------- | -------- |
-| `GITHUB_TOKEN`                | GitHub Release, provided automatically   | ✅       |
-| `DOCKERHUB_USERNAME`          | `docker login` for the `dockers` pipes   | ✅       |
-| `DOCKERHUB_TOKEN`             | `docker login` for the `dockers` pipes   | ✅       |
-| `HOMEBREW_TAP_GITHUB_TOKEN`   | `homebrew_casks[].repository.token`      | ✅       |
-| `SCOOP_BUCKET_GITHUB_TOKEN`   | `scoops[].repository.token`              | ✅       |
-| `AUR_KEY`                     | `aurs[].private_key`                     | ✅       |
-| `GORELEASER_MAINTAINER_EMAIL` | nothing yet — see below                  | ⚠️ not yet consumed |
+| Secret                        | Consumed by                            | Required            |
+| ----------------------------- | -------------------------------------- | ------------------- |
+| `GITHUB_TOKEN`                | GitHub Release, provided automatically | ✅                  |
+| `DOCKERHUB_USERNAME`          | `docker login` for the `dockers` pipes | ✅                  |
+| `DOCKERHUB_TOKEN`             | `docker login` for the `dockers` pipes | ✅                  |
+| `HOMEBREW_TAP_GITHUB_TOKEN`   | `homebrew_casks[].repository.token`    | ✅                  |
+| `SCOOP_BUCKET_GITHUB_TOKEN`   | `scoops[].repository.token`            | ✅                  |
+| `AUR_KEY`                     | `aurs[].private_key`                   | ✅                  |
+| `GORELEASER_MAINTAINER_EMAIL` | nothing yet — see below                | ⚠️ not yet consumed |
 
 The credential preflight enforces exactly **five** of these before any tool is
 installed: `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`, `HOMEBREW_TAP_GITHUB_TOKEN`,

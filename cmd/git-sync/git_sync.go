@@ -3,10 +3,9 @@ package gitsync
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/gizzahub/gzh-cli/internal/app"
-
 	"github.com/gizzahub/gzh-cli-gitforge/pkg/reposync"
 	"github.com/gizzahub/gzh-cli-gitforge/pkg/reposynccli"
+	"github.com/gizzahub/gzh-cli/internal/app"
 )
 
 // NewGitSyncCmd는 `gz git-sync` 커맨드를 생성합니다.

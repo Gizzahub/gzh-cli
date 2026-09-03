@@ -25,7 +25,7 @@ func TempDir(t *testing.T, pattern string) (dir string, cleanup func()) {
 		}
 	}
 
-	return
+	return dir, cleanup
 }
 
 // CreateTempFile creates a temporary file with the given content.

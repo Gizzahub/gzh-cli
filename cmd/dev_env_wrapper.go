@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/cobra"
 
 	devenvcmd "github.com/gizzahub/gzh-cli-dev-env/cmd/devenv"
-
 	"github.com/gizzahub/gzh-cli/cmd/registry"
 	"github.com/gizzahub/gzh-cli/internal/app"
 )

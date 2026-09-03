@@ -542,7 +542,7 @@ func (g *GitHubProvider) ValidateWebhookURL(_ context.Context, webhookURL string
 
 // doWebhookJSON performs an authenticated JSON request against the provider API base URL.
 // Used for webhook CRUD so callers do not need webhook methods on APIClient.
-func (g *GitHubProvider) doWebhookJSON(ctx context.Context, method, path string, payload any, out any, wantStatus int) error {
+func (g *GitHubProvider) doWebhookJSON(ctx context.Context, method, path string, payload, out any, wantStatus int) error {
 	var bodyReader io.Reader
 	if payload != nil {
 		encoded, err := json.Marshal(payload)

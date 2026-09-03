@@ -11,7 +11,7 @@ import (
 )
 
 // RefreshAllWithWorkerPool performs bulk repository refresh using worker pools.
-func RefreshAllWithWorkerPool(ctx context.Context, targetPath, group, strategy string, parallel int, maxRetries int) error {
+func RefreshAllWithWorkerPool(ctx context.Context, targetPath, group, strategy string, parallel, maxRetries int) error {
 	config := workerpool.DefaultRepositoryPoolConfig()
 
 	// Override defaults with user-specified values

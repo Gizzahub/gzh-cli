@@ -62,7 +62,7 @@ type ConfigurationService interface {
 
 	// Configuration Management
 	SaveConfiguration(ctx context.Context, config *Config, filename string) error
-	MergeConfigurations(base *Config, overlay *Config) (*Config, error)
+	MergeConfigurations(base, overlay *Config) (*Config, error)
 }
 
 // BulkOperationService handles bulk operations across multiple repositories/providers.

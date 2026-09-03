@@ -15,7 +15,6 @@ import (
 
 	gitinternal "github.com/gizzahub/gzh-cli/internal/git"
 	"github.com/gizzahub/gzh-cli/internal/git/clone"
-
 	"github.com/gizzahub/gzh-cli/internal/git/provider/mock"
 	"github.com/gizzahub/gzh-cli/pkg/git/provider"
 )

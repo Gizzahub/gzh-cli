@@ -8,10 +8,9 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
+	pmcmd "github.com/gizzahub/gzh-cli-package-manager/cmd/gz-pm/command"
 	"github.com/gizzahub/gzh-cli/cmd/registry"
 	"github.com/gizzahub/gzh-cli/internal/app"
-
-	pmcmd "github.com/gizzahub/gzh-cli-package-manager/cmd/gz-pm/command"
 )
 
 // NewPMCmd creates the package manager command by wrapping gzh-cli-package-manager.

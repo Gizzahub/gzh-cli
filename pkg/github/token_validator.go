@@ -163,7 +163,7 @@ func (tv *TokenValidator) ValidateForOperation(ctx context.Context, operation st
 }
 
 // ValidateForRepository validates permissions for a specific repository.
-func (tv *TokenValidator) ValidateForRepository(ctx context.Context, owner, repo string, operation string) (*ValidationResult, error) {
+func (tv *TokenValidator) ValidateForRepository(ctx context.Context, owner, repo, operation string) (*ValidationResult, error) {
 	result, err := tv.ValidateForOperation(ctx, operation)
 	if err != nil {
 		return result, err

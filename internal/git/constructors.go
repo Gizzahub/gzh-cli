@@ -140,7 +140,7 @@ func (g *ClientImpl) Pull(ctx context.Context, repoPath string, options PullOpti
 }
 
 // Fetch implements Client interface.
-func (g *ClientImpl) Fetch(ctx context.Context, repoPath string, remote string) (*OperationResult, error) {
+func (g *ClientImpl) Fetch(ctx context.Context, repoPath, remote string) (*OperationResult, error) {
 	g.logger.Debug("Fetching repository", "path", repoPath, "remote", remote)
 
 	args := []string{"fetch"}

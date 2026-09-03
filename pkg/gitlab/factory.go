@@ -99,7 +99,7 @@ func (g *gitLabClonerImpl) CloneGroup(ctx context.Context, groupName, targetPath
 }
 
 // CloneProject clones a specific project.
-func (g *gitLabClonerImpl) CloneProject(_ context.Context, _, _ string, targetPath, strategy string) error {
+func (g *gitLabClonerImpl) CloneProject(_ context.Context, _, _, targetPath, strategy string) error {
 	// Set token as environment variable if provided
 	if g.Token != "" {
 		_ = g.Environment.Set(env.CommonEnvironmentKeys.GitLabToken, g.Token) // Log error but don't fail the operation

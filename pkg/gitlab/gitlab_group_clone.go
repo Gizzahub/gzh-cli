@@ -42,7 +42,7 @@ type GitLabRepoInfo struct {
 //
 // Returns the default branch name (e.g., "main", "master") or an error if the
 // project doesn't exist, access is denied, or the API request fails.
-func GetDefaultBranch(ctx context.Context, group string, repo string) (string, error) {
+func GetDefaultBranch(ctx context.Context, group, repo string) (string, error) {
 	encoded := url.PathEscape(fmt.Sprintf("%s/%s", group, repo))
 	url := buildAPIURL(fmt.Sprintf("projects/%s", encoded))
 
@@ -212,7 +212,7 @@ func List(ctx context.Context, group string) ([]string, error) {
 //
 // Returns an error if the clone operation fails due to network issues,
 // authentication problems, or local file system errors.
-func Clone(ctx context.Context, targetPath string, group string, repo string, branch string) error {
+func Clone(ctx context.Context, targetPath, group, repo, branch string) error {
 	if branch == "" {
 		defaultBranch, err := GetDefaultBranch(ctx, group, repo)
 		if err != nil {
@@ -262,7 +262,7 @@ func Clone(ctx context.Context, targetPath string, group string, repo string, br
 //
 // Note: For better performance with large numbers of repositories, consider using RefreshAllWithWorkerPool
 // from the bulk_operations.go file, which provides configurable worker pools and better resource management.
-func RefreshAll(ctx context.Context, targetPath string, group string, strategy string) error {
+func RefreshAll(ctx context.Context, targetPath, group, strategy string) error {
 	// Get all directories inside targetPath
 	targetRepos, err := getDirectories(targetPath)
 	if err != nil {

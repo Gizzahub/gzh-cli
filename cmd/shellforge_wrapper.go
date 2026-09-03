@@ -6,10 +6,9 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
+	shellcmd "github.com/gizzahub/gzh-cli-shellforge/pkg/cmd"
 	"github.com/gizzahub/gzh-cli/cmd/registry"
 	"github.com/gizzahub/gzh-cli/internal/app"
-
-	shellcmd "github.com/gizzahub/gzh-cli-shellforge/pkg/cmd"
 )
 
 // NewShellforgeCmd creates the shellforge command by wrapping gzh-cli-shellforge.

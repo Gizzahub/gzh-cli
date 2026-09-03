@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/cobra"
 
 	netenvcmd "github.com/gizzahub/gzh-cli-net-env/cmd/netenv"
-
 	"github.com/gizzahub/gzh-cli/cmd/registry"
 	"github.com/gizzahub/gzh-cli/internal/app"
 )

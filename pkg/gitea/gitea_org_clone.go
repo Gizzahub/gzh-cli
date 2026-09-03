@@ -31,7 +31,7 @@ type RepoInfo struct {
 //
 // Returns the default branch name (e.g., "main", "master") or an error if the
 // repository doesn't exist, access is denied, or the API request fails.
-func GetDefaultBranch(ctx context.Context, org string, repo string) (string, error) {
+func GetDefaultBranch(ctx context.Context, org, repo string) (string, error) {
 	url := fmt.Sprintf("https://gitea.com/api/v1/repos/%s/%s", org, repo)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
@@ -128,7 +128,7 @@ func List(ctx context.Context, org string) ([]string, error) {
 //
 // Returns an error if the clone operation fails due to network issues,
 // authentication problems, or local file system errors.
-func Clone(ctx context.Context, targetPath string, org string, repo string, branch string) error {
+func Clone(ctx context.Context, targetPath, org, repo, branch string) error {
 	if branch == "" {
 		defaultBranch, err := GetDefaultBranch(ctx, org, repo)
 		if err != nil {
@@ -158,7 +158,7 @@ func Clone(ctx context.Context, targetPath string, org string, repo string, bran
 //
 // Note: For better performance with large numbers of repositories, consider using RefreshAllWithWorkerPool
 // from the bulk_operations.go file, which provides configurable worker pools and better resource management.
-func RefreshAll(ctx context.Context, targetPath string, org string) error {
+func RefreshAll(ctx context.Context, targetPath, org string) error {
 	repos, err := List(ctx, org)
 	if err != nil {
 		return fmt.Errorf("failed to list repositories: %w", err)

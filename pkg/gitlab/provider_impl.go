@@ -667,7 +667,7 @@ func (g *GitLabProvider) apiBase() string {
 // Any of wantStatuses is treated as success.
 // endpoint may include PathEscape'd segments (projects/acme%2Frepo) and query strings.
 // url.Parse preserves %2F via RawPath so GitLab receives a single project path segment.
-func (g *GitLabProvider) doJSON(ctx context.Context, method, endpoint string, payload any, out any, wantStatuses ...int) error {
+func (g *GitLabProvider) doJSON(ctx context.Context, method, endpoint string, payload, out any, wantStatuses ...int) error {
 	var bodyReader io.Reader
 	if payload != nil {
 		encoded, err := json.Marshal(payload)

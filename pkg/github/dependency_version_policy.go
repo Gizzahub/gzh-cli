@@ -409,7 +409,7 @@ func (dvm *DependencyVersionPolicyManager) CreateDependencyVersionPolicy(ctx con
 }
 
 // AnalyzeDependencyVersionUpdate analyzes a proposed dependency version update.
-func (dvm *DependencyVersionPolicyManager) AnalyzeDependencyVersionUpdate(ctx context.Context, policyID string, dependencyName, currentVersion, proposedVersion, ecosystem string) (*DependencyVersionAnalysis, error) {
+func (dvm *DependencyVersionPolicyManager) AnalyzeDependencyVersionUpdate(ctx context.Context, policyID, dependencyName, currentVersion, proposedVersion, ecosystem string) (*DependencyVersionAnalysis, error) {
 	dvm.logger.Debug("Analyzing dependency version update",
 		"policy_id", policyID,
 		"dependency", dependencyName,

@@ -72,7 +72,7 @@ type Client interface {
 	// Repository operations
 	Clone(ctx context.Context, options CloneOptions) (*OperationResult, error)
 	Pull(ctx context.Context, repoPath string, options PullOptions) (*OperationResult, error)
-	Fetch(ctx context.Context, repoPath string, remote string) (*OperationResult, error)
+	Fetch(ctx context.Context, repoPath, remote string) (*OperationResult, error)
 	Reset(ctx context.Context, repoPath string, options ResetOptions) (*OperationResult, error)
 
 	// Repository status

@@ -216,7 +216,7 @@ func (b *BulkOperationsManager) executeGitOperation(ctx context.Context,
 }
 
 // RefreshAllWithWorkerPoolWrapper provides a drop-in replacement for the original RefreshAll.
-func RefreshAllWithWorkerPool(ctx context.Context, targetPath, org, strategy string, parallel int, maxRetries int) error {
+func RefreshAllWithWorkerPool(ctx context.Context, targetPath, org, strategy string, parallel, maxRetries int) error {
 	config := DefaultBulkOperationsConfig()
 
 	// Override defaults with user-specified values
