@@ -19,6 +19,63 @@ GOSEC := $(GOSEC_DIR)/gosec$(shell go env GOEXE)
 GOSEC_SCAN_FLAGS := -conf=.gosec.json -exclude-generated -exclude-dir=vendor -exclude-dir=node_modules -exclude-dir=.git -exclude-dir=tmp -tests -confidence=medium -severity=medium
 
 # ------------------------------------------------------------------------------
+# Format toolchain pins
+# ------------------------------------------------------------------------------
+# These MUST equal the versions the pinned golangci-lint embeds. `make lint` runs
+# golangci-lint's own copies of gofumpt/gci and the x/tools import machinery;
+# `make fmt` and `make format-strict` run these standalone binaries. When the two
+# drift, the formatter that writes the file and the formatter that judges it are
+# different programs, and the repository oscillates. verify-format-pins turns that
+# requirement into a check instead of a comment — run it after bumping
+# GOLANGCI_LINT_VERSION.
+#
+# Before this pin the installers guarded with `which <tool>`, which only asks
+# whether a binary exists. On the machine this was written on that had already
+# drifted: gofumpt v0.10.0 / gci v0.14.0 / x-tools v0.38.0 on PATH against the
+# v0.11.0 / v0.13.7 / v0.49.0 that golangci-lint v2.13.1 actually uses.
+FORMAT_TOOLS_DIR := $(CURDIR)/bin/tools
+
+GOFUMPT_VERSION := v0.11.0
+GOFUMPT_MODULE := mvdan.cc/gofumpt
+GOFUMPT_INSTALL := $(GOFUMPT_MODULE)@$(GOFUMPT_VERSION)
+GOFUMPT := $(FORMAT_TOOLS_DIR)/gofumpt$(shell go env GOEXE)
+
+GCI_VERSION := v0.13.7
+GCI_MODULE := github.com/daixiang0/gci
+GCI_INSTALL := $(GCI_MODULE)@$(GCI_VERSION)
+GCI := $(FORMAT_TOOLS_DIR)/gci$(shell go env GOEXE)
+
+# goimports ships from the x/tools module, so `go version -m` reports the module
+# path rather than the command path. The version below is x/tools', not a
+# separate goimports version.
+GOIMPORTS_VERSION := v0.49.0
+GOIMPORTS_MODULE := golang.org/x/tools
+GOIMPORTS_INSTALL := $(GOIMPORTS_MODULE)/cmd/goimports@$(GOIMPORTS_VERSION)
+GOIMPORTS := $(FORMAT_TOOLS_DIR)/goimports$(shell go env GOEXE)
+
+# mdformat is a Python package, so it cannot live in bin/tools next to the Go
+# binaries. `pip install --user` puts the launcher in ~/.local/bin and the
+# package in ~/.local/lib/python3.X/site-packages. Those are two directories, and
+# CI caches only the first — a restored launcher whose site-packages are gone
+# passes `which mdformat` and then dies with ModuleNotFoundError. Verifying with
+# `mdformat --version` instead of `which` catches both that and a stale pin,
+# because a broken install cannot print its version.
+MDFORMAT_VERSION := 0.7.22
+MDFORMAT_GFM_VERSION := 1.0.0
+MDFORMAT_TABLES_VERSION := 1.0.0
+
+# Exit 0 only when the installed binary really is the pinned module version and
+# was built with the current Go toolchain — same test install-golangci-lint uses.
+GOFUMPT_VERSION_OK = go version -m "$(GOFUMPT)" 2>/dev/null | \
+	awk -v want="$$(go env GOVERSION)" 'NR == 1 { built = $$NF } $$1 == "mod" && $$2 == "$(GOFUMPT_MODULE)" && $$3 == "$(GOFUMPT_VERSION)" { found = 1 } END { exit !(found && built == want) }'
+GCI_VERSION_OK = go version -m "$(GCI)" 2>/dev/null | \
+	awk -v want="$$(go env GOVERSION)" 'NR == 1 { built = $$NF } $$1 == "mod" && $$2 == "$(GCI_MODULE)" && $$3 == "$(GCI_VERSION)" { found = 1 } END { exit !(found && built == want) }'
+GOIMPORTS_VERSION_OK = go version -m "$(GOIMPORTS)" 2>/dev/null | \
+	awk -v want="$$(go env GOVERSION)" 'NR == 1 { built = $$NF } $$1 == "mod" && $$2 == "$(GOIMPORTS_MODULE)" && $$3 == "$(GOIMPORTS_VERSION)" { found = 1 } END { exit !(found && built == want) }'
+MDFORMAT_VERSION_OK = mdformat --version 2>/dev/null | \
+	grep -Fq "mdformat $(MDFORMAT_VERSION) (mdformat_tables $(MDFORMAT_TABLES_VERSION), mdformat-gfm $(MDFORMAT_GFM_VERSION))"
+
+# ------------------------------------------------------------------------------
 # Release toolchain pins
 # ------------------------------------------------------------------------------
 # These are the local half of the release toolchain contract. The CI half lives
@@ -78,6 +135,7 @@ COSIGN_FOUND = $$(go version -m "$(COSIGN)" 2>/dev/null | awk '$$1 == "mod" && $
 # ==============================================================================
 
 .PHONY: install-tools install-format-tools install-analysis-tools install-goreleaser
+.PHONY: install-gofumpt install-gci install-goimports install-mdformat verify-format-pins
 .PHONY: install-golangci-lint install-gosec install-pre-commit-tools install-docs-tools
 .PHONY: install-syft install-cosign install-release-tools verify-release-tools
 .PHONY: verify-release-pins
@@ -85,11 +143,74 @@ COSIGN_FOUND = $$(go version -m "$(COSIGN)" 2>/dev/null | awk '$$1 == "mod" && $
 install-tools: install-format-tools install-analysis-tools install-golangci-lint install-release-tools ## install all development tools
 	@echo -e "$(GREEN)✅ All development tools installed!$(RESET)"
 
-install-format-tools: ## install advanced formatting tools
-	@echo -e "$(CYAN)Installing formatting tools...$(RESET)"
-	@which gofumpt > /dev/null || (echo "Installing gofumpt..." && go install mvdan.cc/gofumpt@latest)
-	@which gci > /dev/null || (echo "Installing gci..." && go install github.com/daixiang0/gci@latest)
+install-format-tools: install-gofumpt install-gci install-goimports install-mdformat ## install the exact pinned formatting toolchain
 	@echo -e "$(GREEN)✅ All formatting tools installed!$(RESET)"
+
+install-gofumpt: ## install the pinned gofumpt release
+	@mkdir -p "$(FORMAT_TOOLS_DIR)"
+	@if ! $(GOFUMPT_VERSION_OK); then \
+		echo "Installing gofumpt $(GOFUMPT_VERSION) to $(GOFUMPT)..."; \
+		GOBIN="$(FORMAT_TOOLS_DIR)" go install $(GOFUMPT_INSTALL); \
+	fi
+	@$(GOFUMPT_VERSION_OK) || { \
+		echo "gofumpt installation did not produce $(GOFUMPT_MODULE) $(GOFUMPT_VERSION) built with $$(go env GOVERSION): $(GOFUMPT)" >&2; \
+		exit 1; \
+	}
+
+install-gci: ## install the pinned gci release
+	@mkdir -p "$(FORMAT_TOOLS_DIR)"
+	@if ! $(GCI_VERSION_OK); then \
+		echo "Installing gci $(GCI_VERSION) to $(GCI)..."; \
+		GOBIN="$(FORMAT_TOOLS_DIR)" go install $(GCI_INSTALL); \
+	fi
+	@$(GCI_VERSION_OK) || { \
+		echo "gci installation did not produce $(GCI_MODULE) $(GCI_VERSION) built with $$(go env GOVERSION): $(GCI)" >&2; \
+		exit 1; \
+	}
+
+install-goimports: ## install the pinned goimports (x/tools) release
+	@mkdir -p "$(FORMAT_TOOLS_DIR)"
+	@if ! $(GOIMPORTS_VERSION_OK); then \
+		echo "Installing goimports from $(GOIMPORTS_MODULE) $(GOIMPORTS_VERSION) to $(GOIMPORTS)..."; \
+		GOBIN="$(FORMAT_TOOLS_DIR)" go install $(GOIMPORTS_INSTALL); \
+	fi
+	@$(GOIMPORTS_VERSION_OK) || { \
+		echo "goimports installation did not produce $(GOIMPORTS_MODULE) $(GOIMPORTS_VERSION) built with $$(go env GOVERSION): $(GOIMPORTS)" >&2; \
+		exit 1; \
+	}
+
+install-mdformat: ## install the pinned mdformat and its plugins
+	@if ! $(MDFORMAT_VERSION_OK); then \
+		echo "Installing mdformat $(MDFORMAT_VERSION)..."; \
+		pip install --user --upgrade \
+			"mdformat==$(MDFORMAT_VERSION)" \
+			"mdformat-gfm==$(MDFORMAT_GFM_VERSION)" \
+			"mdformat-tables==$(MDFORMAT_TABLES_VERSION)"; \
+	fi
+	@$(MDFORMAT_VERSION_OK) || { \
+		echo "mdformat is not the pinned $(MDFORMAT_VERSION) (mdformat_tables $(MDFORMAT_TABLES_VERSION), mdformat-gfm $(MDFORMAT_GFM_VERSION)); got: $$(mdformat --version 2>&1 || echo 'not runnable')" >&2; \
+		exit 1; \
+	}
+
+verify-format-pins: ## fail unless the format pins match what the pinned golangci-lint embeds
+	@if [ ! -x "$(GOLANGCI_LINT)" ]; then \
+		echo "verify-format-pins needs the pinned golangci-lint; run 'make install-golangci-lint' first" >&2; \
+		exit 1; \
+	fi
+	@status=0; \
+	for spec in "$(GOFUMPT_MODULE) $(GOFUMPT_VERSION)" "$(GCI_MODULE) $(GCI_VERSION)" "$(GOIMPORTS_MODULE) $(GOIMPORTS_VERSION)"; do \
+		module=$${spec%% *}; want=$${spec##* }; \
+		got=$$(go version -m "$(GOLANGCI_LINT)" 2>/dev/null | awk -v m="$$module" '$$1 == "dep" && $$2 == m { print $$3 }'); \
+		if [ -z "$$got" ]; then \
+			echo "verify-format-pins: golangci-lint $(GOLANGCI_LINT_VERSION) does not depend on $$module" >&2; \
+			status=1; \
+		elif [ "$$got" != "$$want" ]; then \
+			echo "verify-format-pins: $$module pinned to $$want here but golangci-lint $(GOLANGCI_LINT_VERSION) embeds $$got" >&2; \
+			status=1; \
+		fi; \
+	done; \
+	exit $$status
+	@echo -e "$(GREEN)✅ Format pins match golangci-lint $(GOLANGCI_LINT_VERSION)$(RESET)"
 
 install-analysis-tools: install-gosec ## install code analysis tools
 	@echo -e "$(CYAN)Installing code analysis tools...$(RESET)"
@@ -365,8 +486,8 @@ tools-status: ## show installed tool status
 		if [ -n "$$VERSION" ]; then echo "$$VERSION (want $(COSIGN_VERSION))"; else echo -e "$(RED)Not installed$(RESET) (want $(COSIGN_VERSION))"; fi
 	@echo ""
 	@echo -e "$(GREEN)✨ Format Tools:$(RESET)"
-	@printf "  %-20s " "gofumpt:"; gofumpt --version 2>/dev/null || echo -e "$(RED)Not installed$(RESET)"
-	@printf "  %-20s " "gci:"; gci --version 2>/dev/null || echo -e "$(RED)Not installed$(RESET)"
+	@printf "  %-20s " "gofumpt:"; "$(GOFUMPT)" --version 2>/dev/null || echo -e "$(RED)Not installed$(RESET)"
+	@printf "  %-20s " "gci:"; "$(GCI)" --version 2>/dev/null || echo -e "$(RED)Not installed$(RESET)"
 	@echo ""
 	@echo -e "$(GREEN)🔍 Lint Tools:$(RESET)"
 	@printf "  %-20s " "golangci-lint:"; "$(GOLANGCI_LINT)" version --short 2>/dev/null || echo -e "$(RED)Not installed$(RESET)"
