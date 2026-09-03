@@ -97,7 +97,7 @@ require (
 	github.com/cristalhq/acmd v0.12.0 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
-	github.com/gizzahub/gzh-cli-package-manager v0.0.0-20260716161846-77a2d2d72cb5
+	github.com/gizzahub/gzh-cli-package-manager v0.0.0-20260903070642-f1ed624e1b64
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-toolsmith/astcast v1.1.0 // indirect

@@ -120,8 +120,8 @@ github.com/gizzahub/gzh-cli-gitforge v0.0.0-20260820073008-842c21ff7a6a h1:LQOse
 github.com/gizzahub/gzh-cli-gitforge v0.0.0-20260820073008-842c21ff7a6a/go.mod h1:mPKVY6ab8m7Qs7kHunIatsAoIYzy14Bq8tjA5wdR1uI=
 github.com/gizzahub/gzh-cli-net-env v0.0.0-20260716161846-3361f665ac30 h1:80KRcs6crjDEgcANTSSlnD6EDJ1ffUIZxu5Jjncjb8I=
 github.com/gizzahub/gzh-cli-net-env v0.0.0-20260716161846-3361f665ac30/go.mod h1:kSFntqmjjixB4GtWZL9wbcu33oH+9UILfwbZJX2GfGw=
-github.com/gizzahub/gzh-cli-package-manager v0.0.0-20260716161846-77a2d2d72cb5 h1:/l0RQvNdJ37VULWCkkmMPv9QDdjAm+hft0JFsNP8xZ8=
-github.com/gizzahub/gzh-cli-package-manager v0.0.0-20260716161846-77a2d2d72cb5/go.mod h1:2kKPBtWujfwBdneRMTRepLAfD+XgHbMkF46qmTB27zs=
+github.com/gizzahub/gzh-cli-package-manager v0.0.0-20260903070642-f1ed624e1b64 h1:H+OsZebqYZ3gtZ8NAZGUr9ZoNIN+oPQTbdYq3kt9Xss=
+github.com/gizzahub/gzh-cli-package-manager v0.0.0-20260903070642-f1ed624e1b64/go.mod h1:3ccYNH17oF9Y/KN8TYpTRF6FbuYBs7CqT4lFkW9PWKk=
 github.com/gizzahub/gzh-cli-shellforge v0.0.0-20260716160554-2ce77b442b09 h1:G7fHQzrJ8VkVX5enwLKP55LMAIqw7oNjvFTE0P7VEPU=
 github.com/gizzahub/gzh-cli-shellforge v0.0.0-20260716160554-2ce77b442b09/go.mod h1:6xXFT4Ke4Vqb88cQy9R+KBqZApada83MGBWjdXE18YE=
 github.com/go-critic/go-critic v0.14.4 h1:dSX4C3pWSeuMVxvQh6yG8U0ReSf3YOmKi4nwX5q7n/8=
