@@ -225,6 +225,16 @@ if err := json.Unmarshal(data, &result); err != nil {
     fi
 ```
 
+### Report File Naming
+
+`gosec-report.json` contains a SARIF 2.1.0 document, not gosec's native JSON
+output. `make security-json` validates gosec's native JSON internally, then
+moves the SARIF report to `gosec-report.json` and discards the native JSON.
+The `.json` extension is misleading, but the name is retained deliberately:
+the CI upload step above consumes the file as `sarif_file:`
+(`.github/workflows/main.yml`), and renaming it would require updating that
+workflow and this document together, which is out of scope here.
+
 ## Troubleshooting
 
 ### Common Issues

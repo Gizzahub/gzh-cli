@@ -7,6 +7,9 @@
 .serena/
 /data/
 lint-report.json
+gosec-report.json
+.gosec-report.*
+coverage.html
 /results/
 benchmark-artifacts/
 .last_built_commit
