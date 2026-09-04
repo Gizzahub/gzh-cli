@@ -504,14 +504,11 @@ verify-release-pins: ## fail unless the release workflow pins the same versions 
 install-mock-tools: install-mockgen ## install mock generation tools
 	@echo -e "$(GREEN)✅ Mock generation tools installed!$(RESET)"
 
-# This target is now the only pinned way to regenerate mocks, and it is not the
-# only way that exists. Three sources still carry `//go:generate mockgen ...`
+# This target is now the only way to regenerate mocks: the three sources that
+# used to carry their own `//go:generate mockgen ...` directive
 # (internal/analysis/quality_analyzer.go, pkg/config/interfaces.go,
-# pkg/synclone/facade.go), and `go generate` resolves that name from PATH, not
-# from bin/tools. Nothing in this Makefile runs `go generate ./...` -- bootstrap
-# runs only `go generate -tags tools tools/tools.go` -- so the two paths do not
-# collide today. They would collide the moment someone runs `go generate ./...`
-# by hand: same destination files, different generator version. Use this target.
+# pkg/synclone/facade.go) have those directives folded in below, so `go
+# generate` no longer resolves a second, unpinned mockgen from PATH.
 generate-mocks: install-mock-tools ## generate all mock files using gomock (the pinned path; see note above)
 	@echo -e "$(CYAN)Generating mocks...$(RESET)"
 	@echo "Generating GitHub interface mocks..."
@@ -541,6 +538,27 @@ generate-mocks: install-mock-tools ## generate all mock files using gomock (the 
 		echo "  ✅ Git mocks generated"; \
 	else \
 		echo "  ⚠️  internal/git/interfaces.go not found"; \
+	fi
+	@echo "Generating quality analyzer interface mocks..."
+	@if [ -f "internal/analysis/quality_analyzer.go" ]; then \
+		"$(MOCKGEN)" -source=internal/analysis/quality_analyzer.go -destination=internal/analysis/mocks/quality_analyzer_mock.go -package=mocks; \
+		echo "  ✅ Quality analyzer mocks generated"; \
+	else \
+		echo "  ⚠️  internal/analysis/quality_analyzer.go not found"; \
+	fi
+	@echo "Generating config interface mocks..."
+	@if [ -f "pkg/config/interfaces.go" ]; then \
+		"$(MOCKGEN)" -source=pkg/config/interfaces.go -destination=pkg/config/mocks/config_mocks.go -package=mocks; \
+		echo "  ✅ Config mocks generated"; \
+	else \
+		echo "  ⚠️  pkg/config/interfaces.go not found"; \
+	fi
+	@echo "Generating synclone facade interface mocks..."
+	@if [ -f "pkg/synclone/facade.go" ]; then \
+		"$(MOCKGEN)" -source=pkg/synclone/facade.go -destination=pkg/synclone/mocks/bulk_clone_manager_mock.go -package=mocks; \
+		echo "  ✅ Synclone facade mocks generated"; \
+	else \
+		echo "  ⚠️  pkg/synclone/facade.go not found"; \
 	fi
 	@echo -e "$(GREEN)✅ Mock generation complete!$(RESET)"
 

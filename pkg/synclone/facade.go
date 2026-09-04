@@ -3,8 +3,6 @@
 
 package bulkclone
 
-//go:generate mockgen -source=facade.go -destination=mocks/bulk_clone_manager_mock.go -package=mocks Manager
-
 import (
 	"context"
 	"time"

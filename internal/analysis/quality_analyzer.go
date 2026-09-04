@@ -4,8 +4,6 @@
 // Package analysis provides shared quality analysis types and interfaces for repository analysis
 package analysis
 
-//go:generate mockgen -source=quality_analyzer.go -destination=mocks/quality_analyzer_mock.go -package=mocks QualityAnalyzer
-
 import (
 	"context"
 

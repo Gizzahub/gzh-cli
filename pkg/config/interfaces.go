@@ -3,8 +3,6 @@
 
 package config
 
-//go:generate mockgen -source=interfaces.go -destination=mocks/config_mocks.go -package=mocks Loader,Validator,Watcher,ConfigProvider
-
 import (
 	"context"
 	"io"
