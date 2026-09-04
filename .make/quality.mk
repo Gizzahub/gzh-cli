@@ -310,20 +310,17 @@ security-json: install-gosec ## run security analysis and output JSON/SARIF repo
 analyze: analyze-complexity analyze-unused analyze-dupl ## run comprehensive code analysis
 	@echo -e "$(GREEN)✅ Code analysis complete!$(RESET)"
 
-analyze-complexity: ## analyze code complexity
+analyze-complexity: install-gocyclo ## analyze code complexity
 	@echo -e "$(CYAN)Analyzing code complexity...$(RESET)"
-	@command -v gocyclo >/dev/null 2>&1 || { echo "Installing gocyclo..." && go install github.com/fzipp/gocyclo/cmd/gocyclo@latest; }
-	@gocyclo -over 10 -avg .
+	@$(GOCYCLO) -over 10 -avg .
 
-analyze-unused: ## find unused code
+analyze-unused: install-staticcheck ## find unused code
 	@echo -e "$(CYAN)Finding unused code...$(RESET)"
-	@command -v staticcheck >/dev/null 2>&1 || { echo "Installing staticcheck..." && go install honnef.co/go/tools/cmd/staticcheck@latest; }
-	@staticcheck -checks U1000 ./...
+	@$(STATICCHECK) -checks U1000 ./...
 
-analyze-dupl: ## find duplicate code
+analyze-dupl: install-dupl ## find duplicate code
 	@echo -e "$(CYAN)Checking for duplicate code...$(RESET)"
-	@command -v dupl >/dev/null 2>&1 || { echo "Installing dupl..." && go install github.com/mibk/dupl@latest; }
-	@dupl -threshold 50 .
+	@$(DUPL) -threshold 50 .
 
 # ==============================================================================
 # Pre-commit Integration

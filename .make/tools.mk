@@ -212,12 +212,138 @@ verify-format-pins: ## fail unless the format pins match what the pinned golangc
 	exit $$status
 	@echo -e "$(GREEN)✅ Format pins match golangci-lint $(GOLANGCI_LINT_VERSION)$(RESET)"
 
-install-analysis-tools: install-gosec ## install code analysis tools
-	@echo -e "$(CYAN)Installing code analysis tools...$(RESET)"
-	@command -v gocyclo >/dev/null 2>&1 || { echo "Installing gocyclo..." && go install github.com/fzipp/gocyclo/cmd/gocyclo@latest; }
-	@command -v ineffassign >/dev/null 2>&1 || { echo "Installing ineffassign..." && go install github.com/gordonklaus/ineffassign@latest; }
-	@command -v dupl >/dev/null 2>&1 || { echo "Installing dupl..." && go install github.com/mibk/dupl@latest; }
-	@command -v staticcheck >/dev/null 2>&1 || { echo "Installing staticcheck..." && go install honnef.co/go/tools/cmd/staticcheck@latest; }
+# ------------------------------------------------------------------------------
+# Analysis, mock and docs toolchain pins
+# ------------------------------------------------------------------------------
+# Before this, all seven of these installed with `@latest` behind a `command -v`
+# guard, so the version any given machine ran was decided by the date it first
+# happened to be missing the binary. Two machines, or one machine before and
+# after a cache eviction, could disagree about what `make analyze` even means.
+# The guard made it worse rather than better: `command -v` only asks whether a
+# name resolves on PATH, so an ancient binary from an unrelated project silently
+# satisfied it forever.
+#
+# CI made that non-determinism durable. The tool cache key hashes Makefile and
+# .make/tools.mk, but gocyclo/staticcheck/dupl were installed from
+# .make/quality.mk and benchstat from .make/test.mk, into the cached ~/go/bin.
+# Whatever `@latest` resolved to on the first install then survived under a key
+# that could not see it. Installing everything from here, into bin/tools with
+# GOBIN, puts the pins back under the key that already covers them -- no
+# workflow edit needed, because the file that decides the version is the file
+# the key hashes.
+#
+# Versions resolved with `go list -m -versions` on 2026-09-04 and recorded here
+# rather than left to resolution time. One is not a guess at all: mockgen ships
+# from go.uber.org/mock, already a direct dependency in go.mod, so its pin is
+# read off go.mod rather than chosen. godoc looked like it would be the same
+# story against GOIMPORTS_VERSION and turned out not to be -- see its own note.
+ANALYSIS_TOOLS_DIR := $(CURDIR)/bin/tools
+
+GOCYCLO_VERSION := v0.6.0
+GOCYCLO_MODULE := github.com/fzipp/gocyclo
+GOCYCLO_INSTALL := $(GOCYCLO_MODULE)/cmd/gocyclo@$(GOCYCLO_VERSION)
+GOCYCLO := $(ANALYSIS_TOOLS_DIR)/gocyclo$(shell go env GOEXE)
+
+STATICCHECK_VERSION := v0.8.1
+STATICCHECK_MODULE := honnef.co/go/tools
+STATICCHECK_INSTALL := $(STATICCHECK_MODULE)/cmd/staticcheck@$(STATICCHECK_VERSION)
+STATICCHECK := $(ANALYSIS_TOOLS_DIR)/staticcheck$(shell go env GOEXE)
+
+DUPL_VERSION := v1.1.0
+DUPL_MODULE := github.com/mibk/dupl
+DUPL_INSTALL := $(DUPL_MODULE)@$(DUPL_VERSION)
+DUPL := $(ANALYSIS_TOOLS_DIR)/dupl$(shell go env GOEXE)
+
+INEFFASSIGN_VERSION := v0.2.0
+INEFFASSIGN_MODULE := github.com/gordonklaus/ineffassign
+INEFFASSIGN_INSTALL := $(INEFFASSIGN_MODULE)@$(INEFFASSIGN_VERSION)
+INEFFASSIGN := $(ANALYSIS_TOOLS_DIR)/ineffassign$(shell go env GOEXE)
+
+# Must equal go.mod's go.uber.org/mock. The generated mocks and the library that
+# runs them come from one module; a mockgen from a different release can emit
+# code the vendored gomock does not accept.
+MOCKGEN_VERSION := v0.6.0
+MOCKGEN_MODULE := go.uber.org/mock
+MOCKGEN_INSTALL := $(MOCKGEN_MODULE)/mockgen@$(MOCKGEN_VERSION)
+MOCKGEN := $(ANALYSIS_TOOLS_DIR)/mockgen$(shell go env GOEXE)
+
+# golang.org/x/perf has never been tagged -- `go list -m -versions` returns an
+# empty list -- so a pseudo-version is the only exact pin available. It is still
+# exact; it names one commit.
+BENCHSTAT_VERSION := v0.0.0-20260825160852-19be9d8e6c70
+BENCHSTAT_MODULE := golang.org/x/perf
+BENCHSTAT_INSTALL := $(BENCHSTAT_MODULE)/cmd/benchstat@$(BENCHSTAT_VERSION)
+BENCHSTAT := $(ANALYSIS_TOOLS_DIR)/benchstat$(shell go env GOEXE)
+
+# Not $(GOIMPORTS_VERSION), even though the import path still starts with
+# golang.org/x/tools. cmd/godoc was split into its own nested module and tagged
+# `v0.1.0-deprecated`; the main x/tools module no longer contains the package, so
+# `go install golang.org/x/tools/cmd/godoc@v0.49.0` fails outright.
+#
+# This is the sharpest evidence for the whole card. `@latest` here never resolved
+# to the x/tools version this repo pins -- it silently walked off to a separate,
+# upstream-deprecated module, and the `command -v` guard meant nobody would ever
+# see it happen. The pin is exact; whether a deprecated godoc should still be a
+# make target at all is a separate call and not made here.
+GODOC_VERSION := v0.1.0-deprecated
+GODOC_MODULE := golang.org/x/tools/cmd/godoc
+GODOC_INSTALL := $(GODOC_MODULE)@$(GODOC_VERSION)
+GODOC := $(ANALYSIS_TOOLS_DIR)/godoc$(shell go env GOEXE)
+
+# The same freshness test install-golangci-lint and the format pins already use,
+# parameterised so seven more tools do not need seven more copies of the awk.
+# $(1)=binary  $(2)=module  $(3)=version
+tool_version_ok = go version -m "$(1)" 2>/dev/null | \
+	awk -v want="$$(go env GOVERSION)" -v mod="$(2)" -v ver="$(3)" 'NR == 1 { built = $$NF } $$1 == "mod" && $$2 == mod && $$3 == ver { found = 1 } END { exit !(found && built == want) }'
+
+# Canned recipe: install the pin if the binary is not already exactly it, then
+# verify. The second check is the one that matters -- it is what makes a missing
+# or wrong tool a non-zero exit instead of a target that quietly did nothing.
+#
+# The `rm -f` is load-bearing, and measured rather than assumed: `go install`
+# overwrites an existing Go binary happily, but refuses a target path that is not
+# an object file at all ("build output ... already exists and is not an object
+# file"), so a truncated or half-written file in bin/tools would otherwise wedge
+# the target forever behind an error that does not name its own fix.
+# $(1)=display name  $(2)=binary  $(3)=module  $(4)=version  $(5)=install spec
+define install_pinned_tool
+@mkdir -p "$(ANALYSIS_TOOLS_DIR)"
+@if ! $(call tool_version_ok,$(2),$(3),$(4)); then \
+	echo "Installing $(1) $(4) to $(2)..."; \
+	rm -f "$(2)"; \
+	GOBIN="$(ANALYSIS_TOOLS_DIR)" go install $(5); \
+fi
+@$(call tool_version_ok,$(2),$(3),$(4)) || { \
+	echo "$(1) installation did not produce $(3) $(4) built with $$(go env GOVERSION): $(2)" >&2; \
+	exit 1; \
+}
+endef
+
+.PHONY: install-gocyclo install-staticcheck install-dupl install-ineffassign
+.PHONY: install-mockgen install-benchstat install-godoc
+
+install-gocyclo: ## install the pinned gocyclo
+	$(call install_pinned_tool,gocyclo,$(GOCYCLO),$(GOCYCLO_MODULE),$(GOCYCLO_VERSION),$(GOCYCLO_INSTALL))
+
+install-staticcheck: ## install the pinned staticcheck
+	$(call install_pinned_tool,staticcheck,$(STATICCHECK),$(STATICCHECK_MODULE),$(STATICCHECK_VERSION),$(STATICCHECK_INSTALL))
+
+install-dupl: ## install the pinned dupl
+	$(call install_pinned_tool,dupl,$(DUPL),$(DUPL_MODULE),$(DUPL_VERSION),$(DUPL_INSTALL))
+
+install-ineffassign: ## install the pinned ineffassign
+	$(call install_pinned_tool,ineffassign,$(INEFFASSIGN),$(INEFFASSIGN_MODULE),$(INEFFASSIGN_VERSION),$(INEFFASSIGN_INSTALL))
+
+install-mockgen: ## install the pinned mockgen
+	$(call install_pinned_tool,mockgen,$(MOCKGEN),$(MOCKGEN_MODULE),$(MOCKGEN_VERSION),$(MOCKGEN_INSTALL))
+
+install-benchstat: ## install the pinned benchstat
+	$(call install_pinned_tool,benchstat,$(BENCHSTAT),$(BENCHSTAT_MODULE),$(BENCHSTAT_VERSION),$(BENCHSTAT_INSTALL))
+
+install-godoc: ## install the pinned godoc
+	$(call install_pinned_tool,godoc,$(GODOC),$(GODOC_MODULE),$(GODOC_VERSION),$(GODOC_INSTALL))
+
+install-analysis-tools: install-gosec install-gocyclo install-ineffassign install-dupl install-staticcheck ## install code analysis tools
 	@echo -e "$(GREEN)✅ All analysis tools installed!$(RESET)"
 
 # The freshness check reads build info, not the release string alone. `go
@@ -370,37 +496,35 @@ verify-release-pins: ## fail unless the release workflow pins the same versions 
 
 .PHONY: install-mock-tools generate-mocks clean-mocks regenerate-mocks
 
-install-mock-tools: ## install mock generation tools
-	@echo -e "$(CYAN)Installing mock generation tools...$(RESET)"
-	@command -v mockgen >/dev/null 2>&1 || { echo "Installing mockgen..." && go install go.uber.org/mock/mockgen@latest; }
+install-mock-tools: install-mockgen ## install mock generation tools
 	@echo -e "$(GREEN)✅ Mock generation tools installed!$(RESET)"
 
 generate-mocks: install-mock-tools ## generate all mock files using gomock
 	@echo -e "$(CYAN)Generating mocks...$(RESET)"
 	@echo "Generating GitHub interface mocks..."
 	@if [ -f "pkg/github/interfaces.go" ]; then \
-		mockgen -source=pkg/github/interfaces.go -destination=pkg/github/mocks/github_mocks.go -package=mocks; \
+		$(MOCKGEN) -source=pkg/github/interfaces.go -destination=pkg/github/mocks/github_mocks.go -package=mocks; \
 		echo "  ✅ GitHub mocks generated"; \
 	else \
 		echo "  ⚠️  pkg/github/interfaces.go not found"; \
 	fi
 	@echo "Generating filesystem interface mocks..."
 	@if [ -f "internal/filesystem/interfaces.go" ]; then \
-		mockgen -source=internal/filesystem/interfaces.go -destination=internal/filesystem/mocks/filesystem_mocks.go -package=mocks; \
+		$(MOCKGEN) -source=internal/filesystem/interfaces.go -destination=internal/filesystem/mocks/filesystem_mocks.go -package=mocks; \
 		echo "  ✅ Filesystem mocks generated"; \
 	else \
 		echo "  ⚠️  internal/filesystem/interfaces.go not found"; \
 	fi
 	@echo "Generating HTTP client interface mocks..."
 	@if [ -f "internal/httpclient/interfaces.go" ]; then \
-		mockgen -source=internal/httpclient/interfaces.go -destination=internal/httpclient/mocks/httpclient_mocks.go -package=mocks; \
+		$(MOCKGEN) -source=internal/httpclient/interfaces.go -destination=internal/httpclient/mocks/httpclient_mocks.go -package=mocks; \
 		echo "  ✅ HTTP client mocks generated"; \
 	else \
 		echo "  ⚠️  internal/httpclient/interfaces.go not found"; \
 	fi
 	@echo "Generating Git interface mocks..."
 	@if [ -f "internal/git/interfaces.go" ]; then \
-		mockgen -source=internal/git/interfaces.go -destination=internal/git/mocks/git_mocks.go -package=mocks; \
+		$(MOCKGEN) -source=internal/git/interfaces.go -destination=internal/git/mocks/git_mocks.go -package=mocks; \
 		echo "  ✅ Git mocks generated"; \
 	else \
 		echo "  ⚠️  internal/git/interfaces.go not found"; \
@@ -435,10 +559,12 @@ install-pre-commit-tools: ## install pre-commit and related tools
 
 .PHONY: install-docs-tools
 
-install-docs-tools: ## install documentation tools
+# benchstat and godoc used to be installed here unconditionally on every
+# invocation -- no guard at all, so this target reinstalled two tools from
+# `@latest` every time anything depended on it. They are now ordinary pinned
+# prerequisites, which also means they are no-ops once present.
+install-docs-tools: install-benchstat install-godoc ## install documentation tools
 	@echo -e "$(CYAN)Installing documentation tools...$(RESET)"
-	@go install golang.org/x/perf/cmd/benchstat@latest
-	@go install golang.org/x/tools/cmd/godoc@latest
 	@which git-chglog >/dev/null 2>&1 || echo -e "$(YELLOW)Consider installing git-chglog for changelog generation$(RESET)"
 	@which mkdocs >/dev/null 2>&1 || echo -e "$(YELLOW)Consider installing mkdocs for documentation: pip install mkdocs mkdocs-material$(RESET)"
 	@echo -e "$(GREEN)✅ Documentation tools installed$(RESET)"

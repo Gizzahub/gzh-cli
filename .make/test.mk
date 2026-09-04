@@ -111,12 +111,11 @@ bench-mem: ## run memory benchmarks with profiling
 	@echo -e "$(GREEN)✅ Memory benchmarks completed$(RESET)"
 	@echo -e "$(YELLOW)Use 'go tool pprof mem.prof' to analyze$(RESET)"
 
-bench-compare: ## compare benchmarks (requires benchstat)
+bench-compare: install-benchstat ## compare benchmarks (requires benchstat)
 	@echo -e "$(CYAN)Comparing benchmarks...$(RESET)"
-	@command -v benchstat >/dev/null 2>&1 || { echo "Installing benchstat..." && go install golang.org/x/perf/cmd/benchstat@latest; }
 	@go test -bench=. -count=5 ./... > new.bench
 	@echo -e "$(GREEN)✅ Benchmark comparison data generated: new.bench$(RESET)"
-	@echo -e "$(YELLOW)Run 'benchstat old.bench new.bench' to compare$(RESET)"
+	@echo -e "$(YELLOW)Run '$(BENCHSTAT) old.bench new.bench' to compare$(RESET)"
 
 # ==============================================================================
 # Test Utilities
