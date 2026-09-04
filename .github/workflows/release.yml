@@ -42,20 +42,16 @@ jobs:
           HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
           SCOOP_BUCKET_GITHUB_TOKEN: ${{ secrets.SCOOP_BUCKET_GITHUB_TOKEN }}
           AUR_KEY: ${{ secrets.AUR_KEY }}
+          GORELEASER_MAINTAINER_EMAIL: ${{ secrets.GORELEASER_MAINTAINER_EMAIL }}
         run: |
           set -euo pipefail
           missing=()
           # This list is exactly the secrets a configured pipe will actually
-          # consume. GORELEASER_MAINTAINER_EMAIL is deliberately NOT here: the
-          # only two places that reference it (nfpms[].maintainer and
-          # aurs[].maintainers) spell it as shell-style ${...}, which GoReleaser
-          # does not expand, so its value is discarded and the literal string is
-          # published. Requiring it would hard-block a release on a secret that
-          # provably changes nothing. TASK-126 fixes the templating and will add
-          # the name back here once the value is genuinely live — please do not
-          # re-add it before then.
+          # consume. nfpms[].maintainer and aurs[].maintainers expand
+          # {{ .Env.GORELEASER_MAINTAINER_EMAIL }}; a missing value is a
+          # failed template, not a skipped channel.
           for name in DOCKERHUB_USERNAME DOCKERHUB_TOKEN HOMEBREW_TAP_GITHUB_TOKEN \
-                      SCOOP_BUCKET_GITHUB_TOKEN AUR_KEY; do
+                      SCOOP_BUCKET_GITHUB_TOKEN AUR_KEY GORELEASER_MAINTAINER_EMAIL; do
             # Compare against a whitespace-stripped copy: a secret set to
             # spaces or a stray newline is a paste accident, not a value, and
             # it would otherwise sail through here and fail deep inside a
@@ -75,6 +71,7 @@ jobs:
             echo "  HOMEBREW_TAP_GITHUB_TOKEN             -> homebrew_casks[].repository.token" >&2
             echo "  SCOOP_BUCKET_GITHUB_TOKEN             -> scoops[].repository.token" >&2
             echo "  AUR_KEY                               -> aurs[].private_key" >&2
+            echo "  GORELEASER_MAINTAINER_EMAIL           -> nfpms[].maintainer / aurs[].maintainers" >&2
             echo "" >&2
             echo "Add them under Settings > Secrets and variables > Actions, or drop the" >&2
             echo "corresponding pipe from .goreleaser.yml. Do not work around this by" >&2

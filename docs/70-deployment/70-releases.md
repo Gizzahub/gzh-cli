@@ -302,45 +302,26 @@ Required secrets for automated releases:
 | `HOMEBREW_TAP_GITHUB_TOKEN`   | `homebrew_casks[].repository.token`    | ✅                  |
 | `SCOOP_BUCKET_GITHUB_TOKEN`   | `scoops[].repository.token`            | ✅                  |
 | `AUR_KEY`                     | `aurs[].private_key`                   | ✅                  |
-| `GORELEASER_MAINTAINER_EMAIL` | nothing yet — see below                | ⚠️ not yet consumed |
+| `GORELEASER_MAINTAINER_EMAIL` | `nfpms[].maintainer`, `aurs[].maintainers` | ✅              |
 
-The credential preflight enforces exactly **five** of these before any tool is
+The credential preflight enforces exactly **six** of these before any tool is
 installed: `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`, `HOMEBREW_TAP_GITHUB_TOKEN`,
-`SCOOP_BUCKET_GITHUB_TOKEN` and `AUR_KEY`. Each is referenced unconditionally by
-a configured pipe in `.goreleaser.yml`, so a missing value is a failed release,
-not a skipped channel. A value that is only whitespace counts as missing. If a
-channel should genuinely not ship, remove its pipe from `.goreleaser.yml` rather
-than leaving its secret unset.
+`SCOOP_BUCKET_GITHUB_TOKEN`, `AUR_KEY` and `GORELEASER_MAINTAINER_EMAIL`. Each is
+referenced unconditionally by a configured pipe in `.goreleaser.yml`, so a
+missing value is a failed release, not a skipped channel. A value that is only
+whitespace counts as missing. If a channel should genuinely not ship, remove
+its pipe from `.goreleaser.yml` rather than leaving its secret unset.
 
-The other two rows are not preflight-checked, for different reasons:
+`GITHUB_TOKEN` is not preflight-checked: it is injected by the Actions runner,
+so it is always present and there is nothing for a preflight to catch. What can
+go wrong is its *permissions*, not its existence — hence the job-level
+`packages: write` and `id-token: write` grants. A rejected login is reported by
+the registry login step as a `CREDENTIAL FAILURE`.
 
-- `GITHUB_TOKEN` is injected by the Actions runner, so it is always present and
-  there is nothing for a preflight to catch. What can go wrong is its
-  *permissions*, not its existence — hence the job-level `packages: write` and
-  `id-token: write` grants. A rejected login is reported by the registry login
-  step as a `CREDENTIAL FAILURE`.
-- `GORELEASER_MAINTAINER_EMAIL` is not consumed by anything yet — see below.
-
-`GORELEASER_MAINTAINER_EMAIL` is the exception and is **not** enforced by the
-preflight. `nfpms[].maintainer` and `aurs[].maintainers` reference it as
-shell-style `${GORELEASER_MAINTAINER_EMAIL}`, and GoReleaser does not expand
-that form — it expands `{{ .Env.X }}`, the way every other secret in the file is
-written. The literal `${GORELEASER_MAINTAINER_EMAIL}` string is therefore what
-ends up in the published `.deb`/`.rpm` metadata and in the AUR PKGBUILD, as the
-snapshot artifacts confirm:
-
-```text
-dist/aur/gz-bin.pkgbuild:2:# Maintainer: Gizzahub <${GORELEASER_MAINTAINER_EMAIL}>
-dist/config.yaml:207:    maintainer: Gizzahub <${GORELEASER_MAINTAINER_EMAIL}>
-```
-
-Blocking a release on a secret whose value is provably discarded would be a
-false gate, so the preflight does not require it. The workflow still passes it
-to GoReleaser, so nothing needs rewiring once the templating is fixed.
-**TASK-126** tracks that fix and will restore the preflight requirement at the
-same time; the two must move together, because requiring the secret without
-fixing the template gates a release on nothing, and fixing the template without
-requiring the secret ships an empty maintainer field.
+`nfpms[].maintainer` and `aurs[].maintainers` use `{{ .Env.GORELEASER_MAINTAINER_EMAIL }}`.
+GoReleaser errors if that key is unset, so a local `make release-snapshot`
+without the env fails closed instead of publishing a literal `${...}` string.
+Export a value for local snapshots; CI gets it from the repository secret.
 
 Slack and Discord announcements are deliberately disabled in
 `.goreleaser.yml`. Enabling them requires a separately approved protected
