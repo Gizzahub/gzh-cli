@@ -31,7 +31,27 @@ logs:                         ## show recent log files
 # Development Workflow Targets
 # ==============================================================================
 
-.PHONY: dev dev-fast verify ci-local pr-check
+.PHONY: check dev dev-fast verify ci-local pr-check
+
+# The gate the DevBox CLAUDE.md documents as gzh-cli's pre-commit step, and the
+# one the integration launcher picks up when a repository defines it. Until
+# 103c8da it did not exist at all: the match-anything rule in .make/build.mk
+# answered `make check` with success, so the documented gate and a typo produced
+# the same exit code.
+#
+# `format-check`, not `fmt`. Every other composite target in this file starts by
+# rewriting the tree, which is the wrong thing for a gate to do to the working
+# copy it is only supposed to judge -- and worse once the gate runs during
+# integration. `lint-check` rather than its `lint` alias, because the explicit
+# name says the exit code is the verdict.
+#
+# `test` depends on `clean`, but `clean` only removes coverage output, dist/, the
+# built binary and the lint/gosec reports -- not the Go build cache and not
+# bin/tools. So the cost of running this at integration time is the test suite
+# itself: measured at 49s here on a warm cache. On a cold one it is minutes, and
+# lint-check can exceed the 5m timeout in .golangci.yml before it finishes.
+check: format-check lint-check test ## pre-commit gate: format + lint + test (non-mutating)
+	@echo -e "$(GREEN)✅ check passed - formatting, lint and tests are clean$(RESET)"
 
 dev: fmt lint-check test ## run standard development workflow (format, lint, test)
 	@echo -e "$(GREEN)✅ Standard development workflow completed!$(RESET)"
