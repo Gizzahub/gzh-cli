@@ -617,14 +617,14 @@ tools-status: ## show installed tool status
 	@echo ""
 	@echo -e "$(GREEN)🔍 Lint Tools:$(RESET)"
 	@printf "  %-20s " "golangci-lint:"; "$(GOLANGCI_LINT)" version --short 2>/dev/null || echo -e "$(RED)Not installed$(RESET)"
-	@printf "  %-20s " "staticcheck:"; staticcheck -version 2>/dev/null || echo -e "$(RED)Not installed$(RESET)"
+	@printf "  %-20s " "staticcheck:"; "$(STATICCHECK)" -version 2>/dev/null || echo -e "$(RED)Not installed$(RESET) (want $(STATICCHECK_VERSION))"
 	@echo ""
 	@echo -e "$(GREEN)🛡️  Security Tools:$(RESET)"
 	@printf "  %-20s " "gosec:"; VERSION=$$(go version -m "$(GOSEC)" 2>/dev/null | awk '$$1 == "mod" && $$2 == "$(GOSEC_MODULE)" { print $$3 }'); \
 		if [ -n "$$VERSION" ]; then echo "$$VERSION"; else echo -e "$(RED)Not installed$(RESET)"; fi
 	@echo ""
 	@echo -e "$(GREEN)🎭 Mock Tools:$(RESET)"
-	@printf "  %-20s " "mockgen:"; mockgen --version 2>/dev/null || echo -e "$(RED)Not installed$(RESET)"
+	@printf "  %-20s " "mockgen:"; "$(MOCKGEN)" --version 2>/dev/null || echo -e "$(RED)Not installed$(RESET) (want $(MOCKGEN_VERSION))"
 	@echo ""
 	@echo -e "$(GREEN)🎣 Git Hooks:$(RESET)"
 	@printf "  %-20s " "pre-commit:"; pre-commit --version 2>/dev/null || echo -e "$(RED)Not installed$(RESET)"
