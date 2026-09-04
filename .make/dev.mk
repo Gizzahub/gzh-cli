@@ -130,7 +130,7 @@ docs-build: ## build documentation site
 
 godoc: install-godoc ## run godoc server
 	@echo -e "$(CYAN)Starting godoc server on http://localhost:6060$(RESET)"
-	@$(GODOC) -http=:6060
+	@"$(GODOC)" -http=:6060
 
 docs-check: ## check for missing package documentation
 	@echo -e "$(CYAN)Checking for missing package documentation...$(RESET)"

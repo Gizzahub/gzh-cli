@@ -312,15 +312,15 @@ analyze: analyze-complexity analyze-unused analyze-dupl ## run comprehensive cod
 
 analyze-complexity: install-gocyclo ## analyze code complexity
 	@echo -e "$(CYAN)Analyzing code complexity...$(RESET)"
-	@$(GOCYCLO) -over 10 -avg .
+	@"$(GOCYCLO)" -over 10 -avg .
 
 analyze-unused: install-staticcheck ## find unused code
 	@echo -e "$(CYAN)Finding unused code...$(RESET)"
-	@$(STATICCHECK) -checks U1000 ./...
+	@"$(STATICCHECK)" -checks U1000 ./...
 
 analyze-dupl: install-dupl ## find duplicate code
 	@echo -e "$(CYAN)Checking for duplicate code...$(RESET)"
-	@$(DUPL) -threshold 50 .
+	@"$(DUPL)" -threshold 50 .
 
 # ==============================================================================
 # Pre-commit Integration

@@ -223,14 +223,19 @@ verify-format-pins: ## fail unless the format pins match what the pinned golangc
 # name resolves on PATH, so an ancient binary from an unrelated project silently
 # satisfied it forever.
 #
-# CI made that non-determinism durable. The tool cache key hashes Makefile and
-# .make/tools.mk, but gocyclo/staticcheck/dupl were installed from
-# .make/quality.mk and benchstat from .make/test.mk, into the cached ~/go/bin.
-# Whatever `@latest` resolved to on the first install then survived under a key
-# that could not see it. Installing everything from here, into bin/tools with
-# GOBIN, puts the pins back under the key that already covers them -- no
-# workflow edit needed, because the file that decides the version is the file
-# the key hashes.
+# The drift this fixes is a local-workstation one, not a CI one. An earlier
+# draft of this comment blamed CI's tool cache; that was wrong and an
+# independent review caught it. CI's four make invocations are format-strict,
+# lint-check, security-json (main.yml) and release-snapshot (release.yml), and
+# `make -n` on each shows none of them reaches any of these seven -- they pull
+# gci/gofumpt/goimports, golangci-lint and gosec only. So `@latest` was never
+# resolved on a runner at all. It was resolved once per developer machine, into
+# ~/go/bin, and then never again, because `command -v` kept finding it.
+#
+# Installing from here into bin/tools with GOBIN is still the right place for
+# the pins: main.yml's tool cache key already hashes Makefile and .make/tools.mk
+# and its paths already include bin/tools, so if CI ever does run `make analyze`
+# the version is decided by a file the key can see -- no workflow edit needed.
 #
 # Versions resolved with `go list -m -versions` on 2026-09-04 and recorded here
 # rather than left to resolution time. One is not a guess at all: mockgen ships
@@ -499,32 +504,40 @@ verify-release-pins: ## fail unless the release workflow pins the same versions 
 install-mock-tools: install-mockgen ## install mock generation tools
 	@echo -e "$(GREEN)✅ Mock generation tools installed!$(RESET)"
 
-generate-mocks: install-mock-tools ## generate all mock files using gomock
+# This target is now the only pinned way to regenerate mocks, and it is not the
+# only way that exists. Three sources still carry `//go:generate mockgen ...`
+# (internal/analysis/quality_analyzer.go, pkg/config/interfaces.go,
+# pkg/synclone/facade.go), and `go generate` resolves that name from PATH, not
+# from bin/tools. Nothing in this Makefile runs `go generate ./...` -- bootstrap
+# runs only `go generate -tags tools tools/tools.go` -- so the two paths do not
+# collide today. They would collide the moment someone runs `go generate ./...`
+# by hand: same destination files, different generator version. Use this target.
+generate-mocks: install-mock-tools ## generate all mock files using gomock (the pinned path; see note above)
 	@echo -e "$(CYAN)Generating mocks...$(RESET)"
 	@echo "Generating GitHub interface mocks..."
 	@if [ -f "pkg/github/interfaces.go" ]; then \
-		$(MOCKGEN) -source=pkg/github/interfaces.go -destination=pkg/github/mocks/github_mocks.go -package=mocks; \
+		"$(MOCKGEN)" -source=pkg/github/interfaces.go -destination=pkg/github/mocks/github_mocks.go -package=mocks; \
 		echo "  ✅ GitHub mocks generated"; \
 	else \
 		echo "  ⚠️  pkg/github/interfaces.go not found"; \
 	fi
 	@echo "Generating filesystem interface mocks..."
 	@if [ -f "internal/filesystem/interfaces.go" ]; then \
-		$(MOCKGEN) -source=internal/filesystem/interfaces.go -destination=internal/filesystem/mocks/filesystem_mocks.go -package=mocks; \
+		"$(MOCKGEN)" -source=internal/filesystem/interfaces.go -destination=internal/filesystem/mocks/filesystem_mocks.go -package=mocks; \
 		echo "  ✅ Filesystem mocks generated"; \
 	else \
 		echo "  ⚠️  internal/filesystem/interfaces.go not found"; \
 	fi
 	@echo "Generating HTTP client interface mocks..."
 	@if [ -f "internal/httpclient/interfaces.go" ]; then \
-		$(MOCKGEN) -source=internal/httpclient/interfaces.go -destination=internal/httpclient/mocks/httpclient_mocks.go -package=mocks; \
+		"$(MOCKGEN)" -source=internal/httpclient/interfaces.go -destination=internal/httpclient/mocks/httpclient_mocks.go -package=mocks; \
 		echo "  ✅ HTTP client mocks generated"; \
 	else \
 		echo "  ⚠️  internal/httpclient/interfaces.go not found"; \
 	fi
 	@echo "Generating Git interface mocks..."
 	@if [ -f "internal/git/interfaces.go" ]; then \
-		$(MOCKGEN) -source=internal/git/interfaces.go -destination=internal/git/mocks/git_mocks.go -package=mocks; \
+		"$(MOCKGEN)" -source=internal/git/interfaces.go -destination=internal/git/mocks/git_mocks.go -package=mocks; \
 		echo "  ✅ Git mocks generated"; \
 	else \
 		echo "  ⚠️  internal/git/interfaces.go not found"; \
