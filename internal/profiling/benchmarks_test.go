@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"math"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -172,10 +173,12 @@ func TestBenchmarkSuite_RunBenchmark_WithDuration(t *testing.T) {
 func TestBenchmarkSuite_RunBenchmark_Concurrent(t *testing.T) {
 	suite := NewBenchmarkSuite(nil)
 
+	const concurrency = 4
+
 	opts := &BenchmarkOptions{
 		Iterations:      100,
 		WarmupRuns:      0,
-		Concurrency:     4,
+		Concurrency:     concurrency,
 		MemoryProfiling: false,
 		CPUProfiling:    false,
 	}
@@ -183,11 +186,47 @@ func TestBenchmarkSuite_RunBenchmark_Concurrent(t *testing.T) {
 	executed := 0
 	executedMutex := make(chan struct{}, 1)
 
+	// The claim under test is that the runner honors Concurrency, and the way to
+	// see that directly is to catch `concurrency` operations in flight at the
+	// same moment. What used to stand here inferred it from wall-clock time
+	// instead -- `result.Duration < 100ms` for 100 operations that each sleep 1ms
+	// -- which makes a loaded machine, a cold CPU or a coarse scheduler
+	// indistinguishable from a runner that lost its concurrency. That is the
+	// wrong thing for a correctness test to be sensitive to.
+	//
+	// The barrier below blocks the first `concurrency` arrivals until all of them
+	// have arrived. runConcurrentBenchmark spawns every worker goroutine before
+	// it waits on any of them and gives each worker 100/4 = 25 iterations, so all
+	// four arrivals are structurally guaranteed and a correct runner can never
+	// deadlock here. A serial runner never fills the barrier: the waiters hit the
+	// timeout, overlapTimedOut is set, and the test reports a verdict instead of
+	// hanging. A slow machine only makes the arrivals later, never fewer, so
+	// there is no speed threshold left to lose.
+	var (
+		arrived         atomic.Int32
+		overlapTimedOut atomic.Bool
+		overlapped      = make(chan struct{})
+	)
+
 	result, err := suite.RunBenchmark(context.Background(), "concurrent-benchmark", func(ctx context.Context) error {
 		// Thread-safe increment
 		executedMutex <- struct{}{}
 		executed++
 		<-executedMutex
+
+		// Add returns a distinct value per call, so exactly one operation sees
+		// n == concurrency and the close happens exactly once.
+		if n := arrived.Add(1); n <= concurrency {
+			if n == concurrency {
+				close(overlapped)
+			}
+
+			select {
+			case <-overlapped:
+			case <-time.After(5 * time.Second):
+				overlapTimedOut.Store(true)
+			}
+		}
 
 		time.Sleep(1 * time.Millisecond)
 		return nil
@@ -198,10 +237,8 @@ func TestBenchmarkSuite_RunBenchmark_Concurrent(t *testing.T) {
 	assert.Equal(t, 100, executed)
 	assert.Equal(t, "concurrent-benchmark", result.Name)
 	assert.Equal(t, 100, result.Operations)
-
-	// Concurrent execution should be faster than sequential
-	expectedSequentialTime := 100 * time.Millisecond
-	assert.Less(t, result.Duration, expectedSequentialTime)
+	assert.False(t, overlapTimedOut.Load(),
+		"fewer than %d operations were ever in flight at once: the runner did not honor Concurrency", concurrency)
 }
 
 func TestBenchmarkSuite_RunBenchmark_WithErrors(t *testing.T) {
