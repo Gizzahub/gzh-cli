@@ -364,7 +364,8 @@ func (rd *RepoDiscoverer) getRemoteURL(ctx context.Context, repoPath string) (st
 		if !isValidRemoteName(remoteName) {
 			return "", fmt.Errorf("invalid remote name: %s", remoteName)
 		}
-		// #nosec G204 - remoteName is validated for safety
+		// remoteName is validated by isValidRemoteName above and is passed as an
+		// argument vector element, not through a shell.
 		cmd = exec.CommandContext(ctx, "git", "-C", repoPath, "remote", "get-url", remoteName)
 		output, err = cmd.Output()
 		if err != nil {

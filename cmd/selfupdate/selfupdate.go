@@ -127,7 +127,7 @@ func (u *Updater) GetAssetName() string {
 func (u *Updater) DownloadAsset(ctx context.Context, downloadURL, tempPath string) error {
 	u.logger.Info("Downloading update", map[string]any{"url": downloadURL})
 
-	//gosec:disable G304 -- 호출자가 권한을 가진 새 destination만 배타 생성하며 내부 Update는 실행파일 디렉터리만 사용한다.
+	//gosec:disable G304 -- AR-2026-001 호출자가 권한을 가진 새 destination만 배타 생성하며 내부 Update는 실행파일 디렉터리만 사용한다.
 	tempFile, err := os.OpenFile(tempPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 	if err != nil {
 		return fmt.Errorf("creating temporary file: %w", err)
@@ -180,7 +180,7 @@ func (u *Updater) downloadAsset(ctx context.Context, downloadURL string, tempFil
 	}
 
 	if runtime.GOOS != "windows" {
-		//gosec:disable G302 -- 릴리스 바이너리를 실행 가능하게 설치하는 기능 계약상 0755가 필요하다.
+		//gosec:disable G302 -- AR-2026-002 릴리스 바이너리를 실행 가능하게 설치하는 기능 계약상 0755가 필요하다.
 		if err := tempFile.Chmod(0o755); err != nil {
 			return fmt.Errorf("setting executable permissions: %w", err)
 		}

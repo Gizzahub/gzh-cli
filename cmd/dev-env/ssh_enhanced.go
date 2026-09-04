@@ -236,7 +236,7 @@ func (c *EnhancedSSHCommand) SaveEnhancedConfig(opts *EnhancedSSHOptions) (err e
 		}
 	}
 	metadata := EnhancedSSHMetadata{Description: opts.Description, SavedAt: time.Now(), SourcePath: opts.ConfigPath, IncludeFiles: includes, PrivateKeys: privateKeys, PublicKeys: publicKeys, HasIncludes: len(includes) > 0, HasKeys: len(privateKeys)+len(publicKeys) > 0}
-	//gosec:disable G117 -- PrivateKeys에는 키 내용이 아닌 선택되어 저장된 원본 경로만 기록한다.
+	//gosec:disable G117 -- AR-2026-004 PrivateKeys에는 키 내용이 아닌 선택되어 저장된 원본 경로만 기록한다.
 	metadataBytes, err := json.MarshalIndent(metadata, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal metadata: %w", err)
@@ -1045,7 +1045,7 @@ func (c *EnhancedSSHCommand) saveEnhancedMetadata(filename string, metadata Enha
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
-	//gosec:disable G117 -- PrivateKeys는 키 내용이 아니라 원본 파일 경로만 포함한다.
+	//gosec:disable G117 -- AR-2026-005 PrivateKeys는 키 내용이 아니라 원본 파일 경로만 포함한다.
 	return encoder.Encode(metadata)
 }
 

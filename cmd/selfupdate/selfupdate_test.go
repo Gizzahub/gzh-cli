@@ -30,7 +30,7 @@ type fakeDownloadFile struct {
 
 func readTestFile(t *testing.T, path string) []byte {
 	t.Helper()
-	//gosec:disable G304 -- 각 테스트가 t.TempDir 아래에 직접 생성한 경로만 읽는다.
+	//gosec:disable G304 -- AR-2026-003 각 테스트가 t.TempDir 아래에 직접 생성한 경로만 읽는다.
 	content, err := os.ReadFile(path)
 	require.NoError(t, err)
 	return content
