@@ -199,8 +199,18 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version: '1.26.7'
+          cache: true
+      - name: Cache tool binaries
+        uses: actions/cache@v5
+        with:
+          path: bin/tools
+          key: ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-${{ hashFiles('Makefile', '.make/tools.mk') }}
+          restore-keys: |
+            ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-
+      - name: Install govulncheck
+        run: make install-govulncheck
       - name: govulncheck
-        run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+        run: ./bin/tools/govulncheck ./...
 
   # 🚀 성능 벤치마크 (PR 또는 [benchmark] 커밋 메시지)
   benchmark:

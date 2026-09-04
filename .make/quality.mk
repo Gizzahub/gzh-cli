@@ -277,9 +277,9 @@ lint-json: install-golangci-lint ## export lint results to JSON for further anal
 security: security-deps security-code ## run all security checks
 	@echo -e "$(GREEN)✅ Security checks completed!$(RESET)"
 
-security-deps: ## check dependencies for vulnerabilities
+security-deps: install-govulncheck ## check dependencies for vulnerabilities
 	@echo -e "$(CYAN)Checking dependencies for vulnerabilities...$(RESET)"
-	@go run golang.org/x/vuln/cmd/govulncheck@latest ./... || echo -e "$(RED)❌ Vulnerabilities found$(RESET)"
+	@"$(GOVULNCHECK)" ./...
 
 security-code: install-gosec ## run security code analysis
 	@echo -e "$(CYAN)Running security code analysis with gosec...$(RESET)"

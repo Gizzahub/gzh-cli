@@ -282,6 +282,13 @@ BENCHSTAT_MODULE := golang.org/x/perf
 BENCHSTAT_INSTALL := $(BENCHSTAT_MODULE)/cmd/benchstat@$(BENCHSTAT_VERSION)
 BENCHSTAT := $(ANALYSIS_TOOLS_DIR)/benchstat$(shell go env GOEXE)
 
+# golang.org/x/vuln is tagged, unlike x/perf. security-deps, deps-security,
+# and CI vulncheck must share this pin; @latest moves the vuln DB cutoff.
+GOVULNCHECK_VERSION := v1.7.0
+GOVULNCHECK_MODULE := golang.org/x/vuln
+GOVULNCHECK_INSTALL := $(GOVULNCHECK_MODULE)/cmd/govulncheck@$(GOVULNCHECK_VERSION)
+GOVULNCHECK := $(ANALYSIS_TOOLS_DIR)/govulncheck$(shell go env GOEXE)
+
 # Not $(GOIMPORTS_VERSION), even though the import path still starts with
 # golang.org/x/tools. cmd/godoc was split into its own nested module and tagged
 # `v0.1.0-deprecated`; the main x/tools module no longer contains the package, so
@@ -352,7 +359,7 @@ fi
 endef
 
 .PHONY: install-gocyclo install-staticcheck install-dupl install-ineffassign
-.PHONY: install-mockgen install-benchstat install-godoc
+.PHONY: install-mockgen install-benchstat install-godoc install-govulncheck
 
 install-gocyclo: ## install the pinned gocyclo
 	$(call install_pinned_tool,gocyclo,$(GOCYCLO),$(GOCYCLO_MODULE),$(GOCYCLO_VERSION),$(GOCYCLO_INSTALL))
@@ -374,6 +381,9 @@ install-benchstat: ## install the pinned benchstat
 
 install-godoc: ## install the pinned godoc
 	$(call install_pinned_tool,godoc,$(GODOC),$(GODOC_MODULE),$(GODOC_VERSION),$(GODOC_INSTALL))
+
+install-govulncheck: ## install the pinned govulncheck
+	$(call install_pinned_tool,govulncheck,$(GOVULNCHECK),$(GOVULNCHECK_MODULE),$(GOVULNCHECK_VERSION),$(GOVULNCHECK_INSTALL))
 
 install-analysis-tools: install-gosec install-gocyclo install-ineffassign install-dupl install-staticcheck ## install code analysis tools
 	@echo -e "$(GREEN)✅ All analysis tools installed!$(RESET)"
@@ -643,9 +653,8 @@ install-security-tools: install-gosec ## install security analysis tools
 
 .PHONY: install-vuln-tools
 
-install-vuln-tools: ## install vulnerability scanning tools
+install-vuln-tools: install-govulncheck ## install vulnerability scanning tools
 	@echo -e "$(CYAN)Installing vulnerability scanning tools...$(RESET)"
-	@echo "govulncheck is available as: go run golang.org/x/vuln/cmd/govulncheck@latest"
 	@echo -e "$(GREEN)✅ Vulnerability tools ready!$(RESET)"
 
 # ==============================================================================
