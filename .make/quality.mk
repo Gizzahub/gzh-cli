@@ -5,7 +5,7 @@
 # Quality Configuration
 # ==============================================================================
 
-.PHONY: fmt format format-all format-check format-diff format-imports format-simplify format-ci format-strict format-list format-file format-install-tools format-md format-md-check format-md-diff
+.PHONY: fmt fmt-check format format-all format-check format-diff format-imports format-simplify format-ci format-strict format-list format-file format-install-tools format-md format-md-check format-md-diff
 .PHONY: pre-commit-install dev dev-fast verify ci-local pr-check lint-help fmt-diff lint-diff quality-fast quality-push
 
 # ==============================================================================
@@ -41,6 +41,36 @@ format-md: install-mdformat ## format all markdown files with mdformat
 format-md-check: install-mdformat ## check markdown files that need formatting
 	@echo -e "$(CYAN)📋 Checking markdown formatting...$(RESET)"
 	@find . -name "*.md" -type f -not -path "./vendor/*" -not -path "./.git/*" | xargs -r mdformat --check
+
+# `.PHONY` above has listed format-check since this file was written and no rule
+# ever stood behind it, and scripts/pre-commit-lint.sh has called `make fmt-check`
+# just as long. Both were answered by the match-anything rule in .make/build.mk,
+# which returned success for any undefined target -- so step 1 of that hook, the
+# format check, has never checked anything. This is the target both of them meant.
+#
+# Non-mutating on purpose. `fmt` and `format-strict` rewrite the tree, which is
+# the wrong thing for a gate to do to a working copy it is only supposed to
+# judge. It checks with the same two pinned tools format-strict applies, in the
+# same modes, so what it verifies is exactly what `make format-strict` produces.
+format-check: format-install-tools ## fail if Go files are not formatted (non-mutating)
+	@echo -e "$(CYAN)📋 Checking Go formatting...$(RESET)"
+	@unformatted="$$("$(GOFUMPT)" -l -extra .)"; \
+	if [ -n "$$unformatted" ]; then \
+		echo -e "$(RED)❌ gofumpt: not formatted:$(RESET)"; \
+		printf '%s\n' "$$unformatted"; \
+		echo "   Run: make format-strict"; \
+		exit 1; \
+	fi
+	@imports="$$("$(GCI)" diff --skip-generated -s standard -s default -s "prefix(github.com/gizzahub/gzh-cli)" .)"; \
+	if [ -n "$$imports" ]; then \
+		echo -e "$(RED)❌ gci: import grouping not normalized:$(RESET)"; \
+		printf '%s\n' "$$imports"; \
+		echo "   Run: make format-strict"; \
+		exit 1; \
+	fi
+	@echo -e "$(GREEN)✅ Go files are properly formatted$(RESET)"
+
+fmt-check: format-check ## alias for format-check (the name pre-commit-lint.sh uses)
 
 format-md-diff: install-mdformat ## format only changed markdown files
 	@echo -e "$(CYAN)🚀 Formatting changed markdown files...$(RESET)"

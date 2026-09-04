@@ -93,9 +93,27 @@ run: ## run the application (usage: make run [args...] or ARGS="args" make run)
 		go run ./cmd/gz; \
 	fi
 
-# Prevent make from interpreting arguments as targets
+# `run` and `format-file` take their arguments as extra goals on the command
+# line (`make run version`, `make format-file a.go`), so make tries to build
+# those words as targets and this rule is what absorbs them.
+#
+# It used to absorb everything. A `%:` rule whose recipe is `@:` answers EVERY
+# undefined target with success, so `make check` exited 0 while no `check`
+# target was defined anywhere in this repository -- and the DevBox CLAUDE.md
+# documents `make check` as gzh-cli's pre-commit gate. A mistyped target name
+# and a passing gate produced the same exit code, which is the one thing a gate
+# must never do. `make fmt-check`, called by scripts/pre-commit-lint.sh, and
+# `make format-check`, listed in quality.mk's .PHONY, were absorbed the same way.
+#
+# Now the words are absorbed only when the FIRST goal is a target that actually
+# takes arguments. Everything else stops. The stop is `$(error ...)` rather than
+# a recipe that exits 2, because make expands a recipe even under `-n`: an
+# exiting recipe would let `make -n mistyped-target` still report success, while
+# this fails in dry-run too.
+ARG_TAKING_TARGETS := run format-file
+
 %:
-	@:
+	$(if $(filter $(firstword $(MAKECMDGOALS)),$(ARG_TAKING_TARGETS)),@:,$(error No rule to make target '$@'))
 
 bootstrap: ## install build dependencies
 	@echo -e "$(CYAN)Installing build dependencies...$(RESET)"
