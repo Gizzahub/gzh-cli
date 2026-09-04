@@ -215,9 +215,11 @@ verify-format-pins: ## fail unless the format pins match what the pinned golangc
 # ------------------------------------------------------------------------------
 # Analysis, mock and docs toolchain pins
 # ------------------------------------------------------------------------------
-# Before this, all seven of these installed with `@latest` behind a `command -v`
-# guard, so the version any given machine ran was decided by the date it first
-# happened to be missing the binary. Two machines, or one machine before and
+# Before this, all seven of these installed with `@latest`: five behind a
+# `command -v` guard and two (benchstat, godoc) with no guard at all, reinstalled
+# on every invocation -- see install-docs-tools below. Either way the version any
+# given machine ran was decided by the date it first happened to be missing the
+# binary. Two machines, or one machine before and
 # after a cache eviction, could disagree about what `make analyze` even means.
 # The guard made it worse rather than better: `command -v` only asks whether a
 # name resolves on PATH, so an ancient binary from an unrelated project silently
@@ -310,12 +312,37 @@ tool_version_ok = go version -m "$(1)" 2>/dev/null | \
 # an object file at all ("build output ... already exists and is not an object
 # file"), so a truncated or half-written file in bin/tools would otherwise wedge
 # the target forever behind an error that does not name its own fix.
+#
+# It is gated on exactly that condition, and no wider one. An unconditional `rm`
+# turns every install failure -- offline, proxy 5xx, a version that does not
+# exist, a bad GOFLAGS -- into the loss of a working pinned binary, because the
+# file is already gone when `go install` starts and nothing replaces it. Gated,
+# the failure mode is "the old binary is still there and the pin check fails
+# loudly", which is recoverable; ungated it is "the tool is gone and `make lint`
+# stops working", which is not.
+#
+# The gate reads `go version`'s stdout, not its exit status, because the exit
+# status does not answer the question. Measured with stderr discarded, go1.26.7:
+#
+#   input               rc  stdout                         `: go`?
+#   text file            0  (empty)                        no
+#   /bin/echo            0  (empty)                        no
+#   real Go binary       0  "bin/tools/gocyclo: go1.26.7"  YES
+#   missing file         1  (empty)                        no
+#
+# rc is 0 for three of the four, including the text file -- the one case the
+# `rm` exists for -- so gating on rc would break self-healing outright. The
+# diagnostics ("not a Go executable", "unrecognized file format") go to stderr,
+# which the pipe already discards, so stdout is either a version line or nothing
+# and `: go` separates all four.
 # $(1)=display name  $(2)=binary  $(3)=module  $(4)=version  $(5)=install spec
 define install_pinned_tool
 @mkdir -p "$(ANALYSIS_TOOLS_DIR)"
 @if ! $(call tool_version_ok,$(2),$(3),$(4)); then \
 	echo "Installing $(1) $(4) to $(2)..."; \
-	rm -f "$(2)"; \
+	if [ -e "$(2)" ] && ! go version "$(2)" 2>/dev/null | grep -q ": go"; then \
+		rm -f "$(2)"; \
+	fi; \
 	GOBIN="$(ANALYSIS_TOOLS_DIR)" go install $(5); \
 fi
 @$(call tool_version_ok,$(2),$(3),$(4)) || { \
