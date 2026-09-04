@@ -294,15 +294,15 @@ that *something* signed the artifact but not that *we* did.
 
 Required secrets for automated releases:
 
-| Secret                        | Consumed by                            | Required            |
-| ----------------------------- | -------------------------------------- | ------------------- |
-| `GITHUB_TOKEN`                | GitHub Release, provided automatically | ✅                  |
-| `DOCKERHUB_USERNAME`          | `docker login` for the `dockers` pipes | ✅                  |
-| `DOCKERHUB_TOKEN`             | `docker login` for the `dockers` pipes | ✅                  |
-| `HOMEBREW_TAP_GITHUB_TOKEN`   | `homebrew_casks[].repository.token`    | ✅                  |
-| `SCOOP_BUCKET_GITHUB_TOKEN`   | `scoops[].repository.token`            | ✅                  |
-| `AUR_KEY`                     | `aurs[].private_key`                   | ✅                  |
-| `GORELEASER_MAINTAINER_EMAIL` | `nfpms[].maintainer`, `aurs[].maintainers` | ✅              |
+| Secret                        | Consumed by                                | Required |
+| ----------------------------- | ------------------------------------------ | -------- |
+| `GITHUB_TOKEN`                | GitHub Release, provided automatically     | ✅       |
+| `DOCKERHUB_USERNAME`          | `docker login` for the `dockers` pipes     | ✅       |
+| `DOCKERHUB_TOKEN`             | `docker login` for the `dockers` pipes     | ✅       |
+| `HOMEBREW_TAP_GITHUB_TOKEN`   | `homebrew_casks[].repository.token`        | ✅       |
+| `SCOOP_BUCKET_GITHUB_TOKEN`   | `scoops[].repository.token`                | ✅       |
+| `AUR_KEY`                     | `aurs[].private_key`                       | ✅       |
+| `GORELEASER_MAINTAINER_EMAIL` | `nfpms[].maintainer`, `aurs[].maintainers` | ✅       |
 
 The credential preflight enforces exactly **six** of these before any tool is
 installed: `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`, `HOMEBREW_TAP_GITHUB_TOKEN`,
