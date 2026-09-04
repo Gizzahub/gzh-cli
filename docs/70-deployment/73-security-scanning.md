@@ -79,13 +79,13 @@ gosec does not hardcode `#nosec`. It builds the tag it honors from `.gosec.json`
 at run time, and understanding this is necessary to read anything below
 correctly. Measured against the pinned binary:
 
-| `global` setting | Tag(s) gosec honors |
-|---|---|
-| no `nosec` key | `#nosec` |
-| `"nosec": false` (**this repository**) | `#false` |
-| `"nosec": "skipme"` | `#skipme` |
-| `"nosec": false, "#nosec": "skipme"` | `#false` **and** `#skipme` |
-| `"nosec": true` | none — including `//gosec:disable` |
+| `global` setting                       | Tag(s) gosec honors                |
+| -------------------------------------- | ---------------------------------- |
+| no `nosec` key                         | `#nosec`                           |
+| `"nosec": false` (**this repository**) | `#false`                           |
+| `"nosec": "skipme"`                    | `#skipme`                          |
+| `"nosec": false, "#nosec": "skipme"`   | `#false` **and** `#skipme`         |
+| `"nosec": true`                        | none — including `//gosec:disable` |
 
 The live tag is `"#"` followed by the configured value, so the tracked setting of
 `false` makes `#false` the live blanket form and leaves `#nosec` itself inert.
@@ -127,11 +127,11 @@ file, err := os.Open(configPath)
 
 #### Trusted base
 
-| File | Contents |
-| ---- | -------- |
-| `security/policy.yaml` | Who may approve, which evidence formats count, and the review cadence |
-| `security/accepted-risks.yaml` | One immutable `AR-YYYY-NNN` record per suppressed site |
-| `security/internal/acceptedrisk` | The fail-closed validator over both files and the source directives |
+| File                             | Contents                                                              |
+| -------------------------------- | --------------------------------------------------------------------- |
+| `security/policy.yaml`           | Who may approve, which evidence formats count, and the review cadence |
+| `security/accepted-risks.yaml`   | One immutable `AR-YYYY-NNN` record per suppressed site                |
+| `security/internal/acceptedrisk` | The fail-closed validator over both files and the source directives   |
 
 `security/policy.yaml` matches an approver on the **immutable GitHub numeric
 user id**, never on the login, which is renameable. `type: Bot` and any

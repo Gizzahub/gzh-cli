@@ -16,13 +16,13 @@ standalone 결과를 억제하지 않는다.
 gosec은 `#nosec`을 하드코딩하지 않는다. 실행 시점에 `.gosec.json`에서 tag를
 만들어낸다. pinned binary로 실측한 결과는 다음과 같다.
 
-| `global` 설정 | gosec이 존중하는 tag |
-|---|---|
-| `nosec` key 없음 | `#nosec` |
-| `"nosec": false` (**이 저장소**) | `#false` |
-| `"nosec": "skipme"` | `#skipme` |
-| `"nosec": false, "#nosec": "skipme"` | `#false`와 `#skipme` 둘 다 |
-| `"nosec": true` | 없음 — `//gosec:disable`까지 무력화 |
+| `global` 설정                        | gosec이 존중하는 tag                |
+| ------------------------------------ | ----------------------------------- |
+| `nosec` key 없음                     | `#nosec`                            |
+| `"nosec": false` (**이 저장소**)     | `#false`                            |
+| `"nosec": "skipme"`                  | `#skipme`                           |
+| `"nosec": false, "#nosec": "skipme"` | `#false`와 `#skipme` 둘 다          |
+| `"nosec": true`                      | 없음 — `//gosec:disable`까지 무력화 |
 
 live tag는 `"#"` + 설정값이다. 따라서 이 저장소의 `false` 설정에서 살아 있는
 blanket 형식은 `#false`이고 `#nosec` 자체는 무력하다. `#nosec` key는 기본 tag를
@@ -51,11 +51,11 @@ risk에서 gate가 실패한다. 이 비자명한 이유로 `false`만이 유효
 
 ## Trusted base
 
-| File | 역할 |
-| ---- | ---- |
-| `security/policy.yaml` | 승인 권한(GitHub numeric user id), 허용 evidence 형식, review cadence |
-| `security/accepted-risks.yaml` | site 하나당 immutable `AR-YYYY-NNN` record 하나 |
-| `security/internal/acceptedrisk` | 두 파일과 source directive를 fail-closed로 검증 |
+| File                             | 역할                                                                  |
+| -------------------------------- | --------------------------------------------------------------------- |
+| `security/policy.yaml`           | 승인 권한(GitHub numeric user id), 허용 evidence 형식, review cadence |
+| `security/accepted-risks.yaml`   | site 하나당 immutable `AR-YYYY-NNN` record 하나                       |
+| `security/internal/acceptedrisk` | 두 파일과 source directive를 fail-closed로 검증                       |
 
 승인자는 renameable한 login이 아니라 **immutable numeric user id**로 대조한다.
 `type: Bot`과 모든 agent identity는 승인할 수 없다. 허용되는 evidence는
@@ -128,17 +128,17 @@ Stage A0에서 관측된 9개의 inactive `#nosec` comment는 모두 제거되�
 않으면서 "처리된 finding"이라는 잘못된 인상을 주었기 때문이다. 어느 것도 일괄 활성화하지 않았고, AR ID를 부여하지
 않았다. site별 처리는 다음과 같다.
 
-| Path                                             | Line | Rule | 처리                                                              |
-| ------------------------------------------------ | ---: | ---- | ----------------------------------------------------------------- |
-| `internal/pm/bootstrap/version_managers.go`      |   58 | G204 | marker 삭제. env 유래 경로를 `bash -c`에 보간하므로 finding 유지   |
-| `internal/pm/bootstrap/version_managers.go`      |   95 | G204 | marker 삭제. 위와 동일                                             |
-| `internal/pm/bootstrap/version_managers.go`      |  336 | G204 | marker 삭제. 위와 동일                                             |
-| `internal/pm/bootstrap/version_managers.go`      |  377 | G204 | marker 삭제. 위와 동일                                             |
-| `internal/pm/sync/nvm_npm.go`                    |  191 | G204 | marker 삭제. `bash -c` 보간이므로 finding 유지                     |
-| `internal/pm/sync/nvm_npm.go`                    |  236 | G204 | marker 삭제 후 argument vector 사용을 설명하는 주석으로 대체       |
-| `internal/pm/sync/pyenv_pip.go`                  |  193 | G204 | marker 삭제. `bash -c` 보간이므로 finding 유지                     |
+| Path                                             | Line | Rule | 처리                                                                 |
+| ------------------------------------------------ | ---: | ---- | -------------------------------------------------------------------- |
+| `internal/pm/bootstrap/version_managers.go`      |   58 | G204 | marker 삭제. env 유래 경로를 `bash -c`에 보간하므로 finding 유지     |
+| `internal/pm/bootstrap/version_managers.go`      |   95 | G204 | marker 삭제. 위와 동일                                               |
+| `internal/pm/bootstrap/version_managers.go`      |  336 | G204 | marker 삭제. 위와 동일                                               |
+| `internal/pm/bootstrap/version_managers.go`      |  377 | G204 | marker 삭제. 위와 동일                                               |
+| `internal/pm/sync/nvm_npm.go`                    |  191 | G204 | marker 삭제. `bash -c` 보간이므로 finding 유지                       |
+| `internal/pm/sync/nvm_npm.go`                    |  236 | G204 | marker 삭제 후 argument vector 사용을 설명하는 주석으로 대체         |
+| `internal/pm/sync/pyenv_pip.go`                  |  193 | G204 | marker 삭제. `bash -c` 보간이므로 finding 유지                       |
 | `internal/synclone/discovery/repo_discoverer.go` |  367 | G204 | marker 삭제 후 remote name 검증과 argument vector 설명 주석으로 대체 |
-| `pkg/gzhclient/client.go`                        |  589 | G704 | marker 삭제 후 origin 제한을 설명하는 주석으로 대체                |
+| `pkg/gzhclient/client.go`                        |  589 | G704 | marker 삭제 후 origin 제한을 설명하는 주석으로 대체                  |
 
 blanket tag를 새로 추가하지 않는다. 새로 추가하면 validator가
 `suppression-blanket-form`으로 거부한다. 억제가 필요하면 accepted-risk 절차를 따른다.
