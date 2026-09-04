@@ -20,6 +20,7 @@ on:
       - 'examples/synclone/synclone-example.yaml'
       - 'scripts/check-agents.sh'
       - 'Makefile'
+      - 'mise.toml'
   pull_request:
     branches: [master, main, develop]
     paths:
@@ -39,6 +40,7 @@ on:
       - 'examples/synclone/synclone-example.yaml'
       - 'scripts/check-agents.sh'
       - 'Makefile'
+      - 'mise.toml'
 
 permissions:
   contents: read
