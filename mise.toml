@@ -14,4 +14,7 @@
 # message names the toolchain, which is why this took eight disproved
 # hypotheses to find. gzh-cli-gitforge carries the same pin (907201a) and is
 # the only repo in the family whose branches have been integrating cleanly.
+#
+# Listed in .github/workflows/main.yml paths so a pin-only change still runs
+# Main CI/CD Pipeline (TASK-137).
 go = "1.26.7"
