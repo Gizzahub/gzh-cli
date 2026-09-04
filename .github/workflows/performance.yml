@@ -16,6 +16,9 @@ on:
       - '**/*.go'
       - 'go.mod'
       - 'go.sum'
+      - 'Makefile'
+      - '.make/**'
+      - '.github/workflows/performance.yml'
 
   push:
     branches: [master, main, develop]
@@ -23,6 +26,9 @@ on:
       - '**/*.go'
       - 'go.mod'
       - 'go.sum'
+      - 'Makefile'
+      - '.make/**'
+      - '.github/workflows/performance.yml'
 
   workflow_dispatch:
     inputs:
@@ -56,10 +62,10 @@ jobs:
     - name: Cache benchstat tool
       uses: actions/cache@v5
       with:
-        path: ~/go/bin/benchstat
-        key: ${{ env.CACHE_VERSION }}-benchstat-${{ runner.os }}
+        path: bin/tools
+        key: ${{ env.CACHE_VERSION }}-benchstat-pin-${{ runner.os }}-${{ hashFiles('Makefile', '.make/tools.mk') }}
         restore-keys: |
-          ${{ env.CACHE_VERSION }}-benchstat-
+          ${{ env.CACHE_VERSION }}-benchstat-pin-${{ runner.os }}-
 
     - name: Install dependencies
       run: go mod download
@@ -78,13 +84,7 @@ jobs:
         echo "✅ Compilation checks completed!"
 
     - name: Install benchstat
-      run: |
-        if [ ! -f ~/go/bin/benchstat ]; then
-          echo "Installing benchstat..."
-          go install golang.org/x/perf/cmd/benchstat@latest
-        else
-          echo "Using cached benchstat"
-        fi
+      run: make install-benchstat
 
     - name: Run benchmarks
       id: benchmark-run
@@ -125,7 +125,7 @@ jobs:
           successful_results=(benchmark_[1-5].txt)
           if ((${#successful_results[@]} > 0)); then
             cat "${successful_results[@]}" > all_benchmarks.txt
-            benchstat all_benchmarks.txt
+            ./bin/tools/benchstat all_benchmarks.txt
           else
             : > all_benchmarks.txt
             echo "No benchmark results found or all benchmarks failed"

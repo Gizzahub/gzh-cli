@@ -222,6 +222,14 @@ jobs:
           go-version: '1.26.7'
           cache: true
 
+      - name: Cache tool binaries
+        uses: actions/cache@v5
+        with:
+          path: bin/tools
+          key: ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-${{ hashFiles('Makefile', '.make/tools.mk') }}
+          restore-keys: |
+            ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-
+
       - name: Install dependencies
         run: go mod download
 
@@ -239,7 +247,7 @@ jobs:
           echo "✅ Compilation checks completed!"
 
       - name: Install benchstat
-        run: go install golang.org/x/perf/cmd/benchstat@latest
+        run: make install-benchstat
 
       - name: Run benchmarks
         id: benchmark-run
@@ -281,7 +289,7 @@ jobs:
             successful_results=(benchmark_[1-5].txt)
             if ((${#successful_results[@]} > 0)); then
               cat "${successful_results[@]}" > all_benchmarks.txt
-              benchstat all_benchmarks.txt
+              ./bin/tools/benchstat all_benchmarks.txt
             else
               : > all_benchmarks.txt
               echo "No benchmark results found or all benchmarks failed"
