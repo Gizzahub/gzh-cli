@@ -2,7 +2,7 @@
 compdef _gz gz
 
 # Command-specific flags, including --known-hosts and --accept-new-host-key,
-# are requested dynamically from gz by this tracked wrapper.
+# are requested dynamically from gz at completion time, not listed in this file.
 
 # zsh completion for gz                                   -*- shell-script -*-
 

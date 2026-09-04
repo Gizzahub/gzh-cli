@@ -47,6 +47,7 @@ VERSION_FILE := internal/version/version.go
 
 .PHONY: build install run bootstrap clean release-dry-run release-snapshot release-check deploy bump-version
 .PHONY: release-healthcheck
+.PHONY: completions completions-check
 
 ## bump-version: Bump patch version if there are changes or new commit
 bump-version:
@@ -106,6 +107,41 @@ clean: ## clean up environment
 	@rm -rf coverage.out coverage.html dist/ $(executablename) $(BINARY)
 	@rm -f lint-report.json gosec-report.json
 	@echo -e "$(GREEN)✅ Cleanup completed$(RESET)"
+
+# ==============================================================================
+# Shell Completions
+# ==============================================================================
+
+# `.goreleaser.yml`'s before.hooks runs ./scripts/completions.sh on every release
+# and snapshot, and that script starts with `rm -rf completions`. So whatever is
+# tracked here is NOT what ships unless it is byte-identical to the generator's
+# output -- a reader auditing completions/gzh-manager.zsh in git is otherwise
+# reading a file the release overwrites. completions-check is what makes the two
+# the same artifact instead of two files that happen to look alike.
+#
+# Note for anyone adding a gate here: .make/build.mk defines a `%:` catchall that
+# answers every undefined target with success, so `make some-typo` exits 0. A
+# check is only real if the target name actually resolves; grep for the rule when
+# binding this to an acceptance criterion.
+
+completions: ## regenerate the tracked shell completions from the generator
+	@echo -e "$(CYAN)Regenerating shell completions...$(RESET)"
+	@for sh in bash zsh fish; do \
+		go run ./scripts/completiongen $$sh > "completions/gzh-manager.$$sh"; \
+	done
+	@echo -e "$(GREEN)✅ completions/ regenerated$(RESET)"
+
+completions-check: ## fail if tracked completions/ drifted from the generator
+	@echo -e "$(CYAN)Checking completions for drift...$(RESET)"
+	@for sh in bash zsh fish; do \
+		go run ./scripts/completiongen $$sh | diff -u "completions/gzh-manager.$$sh" - || { \
+			echo "❌ completions/gzh-manager.$$sh is not what ./scripts/completiongen $$sh produces."; \
+			echo "   The release regenerates it, so the tracked file would be discarded."; \
+			echo "   Run: make completions   (then commit the result)"; \
+			exit 1; \
+		}; \
+	done
+	@echo -e "$(GREEN)✅ completions/ matches the generator$(RESET)"
 
 # ==============================================================================
 # Release Targets
