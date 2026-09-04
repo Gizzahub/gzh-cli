@@ -86,66 +86,50 @@ nfpms:
         file_info:
           mode: 0644
 
-dockers:
-  - id: gz-amd64
+# Migrated from the deprecated `dockers` + `docker_manifests` pair. v2.18.0
+# still accepts both but warns they are being phased out, and a pin bump that
+# removes them would break the release. `dockers_v2` folds the two per-arch
+# builds and the four manifest entries into one block: `platforms` replaces
+# the per-arch `--platform=` flags, and `labels` replaces the `--label=`
+# build_flag_templates.
+#
+# One behavioural difference, deliberately accepted. The old pair published
+# four per-architecture tags (`:{{ .Tag }}-amd64` and `-arm64`, on both
+# registries) alongside the two manifest lists. `dockers_v2` pushes the
+# multi-platform manifest only — per-arch suffixes exist in snapshot builds
+# for local testing and are never pushed — and the schema has no field that
+# would restore them, so this is not a mistake to correct later.
+#
+# It is safe here because nothing has ever been published: the repository has
+# no `v*` tag (`refactor-start` is the only one), `gh release list` is empty,
+# and Release triggers exclusively on `tags: ["v*"]`. No consumer can be
+# referencing a tag this drops. Re-check that premise before assuming the
+# same of any repository that has already released.
+dockers_v2:
+  - id: gz
     ids:
       - gz
-    image_templates:
-      - "gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64"
-      - "ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64"
+    images:
+      - "gizzahub/{{ .ProjectName }}"
+      - "ghcr.io/gizzahub/{{ .ProjectName }}"
+    tags:
+      - "{{ .Tag }}"
+      - "latest"
+    platforms:
+      - linux/amd64
+      - linux/arm64
     dockerfile: Dockerfile
-    use: buildx
-    build_flag_templates:
+    flags:
       - "--pull"
-      - "--platform=linux/amd64"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source={{.GitURL}}"
-      - "--label=org.opencontainers.image.description=Comprehensive CLI tool for managing development environments and Git repositories"
-      - "--label=org.opencontainers.image.vendor=Gizzahub"
-      - "--label=org.opencontainers.image.licenses=GPL-3.0"
-    goarch: amd64
-
-  - id: gz-arm64
-    ids:
-      - gz
-    image_templates:
-      - "gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64"
-      - "ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64"
-    dockerfile: Dockerfile
-    use: buildx
-    build_flag_templates:
-      - "--pull"
-      - "--platform=linux/arm64"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source={{.GitURL}}"
-      - "--label=org.opencontainers.image.description=Comprehensive CLI tool for managing development environments and Git repositories"
-      - "--label=org.opencontainers.image.vendor=Gizzahub"
-      - "--label=org.opencontainers.image.licenses=GPL-3.0"
-    goarch: arm64
-
-docker_manifests:
-  - name_template: "gizzahub/{{ .ProjectName }}:{{ .Tag }}"
-    image_templates:
-      - "gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64"
-      - "gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64"
-  - name_template: "ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}"
-    image_templates:
-      - "ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64"
-      - "ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64"
-  - name_template: "gizzahub/{{ .ProjectName }}:latest"
-    image_templates:
-      - "gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64"
-      - "gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64"
-  - name_template: "ghcr.io/gizzahub/{{ .ProjectName }}:latest"
-    image_templates:
-      - "ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-amd64"
-      - "ghcr.io/gizzahub/{{ .ProjectName }}:{{ .Tag }}-arm64"
+    labels:
+      org.opencontainers.image.created: "{{ .Date }}"
+      org.opencontainers.image.title: "{{ .ProjectName }}"
+      org.opencontainers.image.revision: "{{ .FullCommit }}"
+      org.opencontainers.image.version: "{{ .Version }}"
+      org.opencontainers.image.source: "{{ .GitURL }}"
+      org.opencontainers.image.description: "Comprehensive CLI tool for managing development environments and Git repositories"
+      org.opencontainers.image.vendor: "Gizzahub"
+      org.opencontainers.image.licenses: "GPL-3.0"
 
 homebrew_casks:
   - name: gz
