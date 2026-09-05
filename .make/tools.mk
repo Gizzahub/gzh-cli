@@ -53,16 +53,27 @@ GOIMPORTS_MODULE := golang.org/x/tools
 GOIMPORTS_INSTALL := $(GOIMPORTS_MODULE)/cmd/goimports@$(GOIMPORTS_VERSION)
 GOIMPORTS := $(FORMAT_TOOLS_DIR)/goimports$(shell go env GOEXE)
 
-# mdformat is a Python package, so it cannot live in bin/tools next to the Go
-# binaries. `pip install --user` puts the launcher in ~/.local/bin and the
-# package in ~/.local/lib/python3.X/site-packages. Those are two directories, and
-# CI caches only the first — a restored launcher whose site-packages are gone
-# passes `which mdformat` and then dies with ModuleNotFoundError. Verifying with
-# `mdformat --version` instead of `which` catches both that and a stale pin,
-# because a broken install cannot print its version.
+# mdformat is a Python package, and under `pip install --user` that split it
+# across two directories: the launcher in ~/.local/bin and the package in
+# ~/.local/lib/python3.X/site-packages. CI caches only the first, so a restored
+# launcher whose site-packages are gone passes `which mdformat` and then dies
+# with ModuleNotFoundError.
+#
+# `uv tool install` collapses both halves into one tree, so mdformat *can* live
+# in bin/tools next to the Go binaries after all. UV_TOOL_DIR holds the isolated
+# venv and UV_TOOL_BIN_DIR the launcher; pointing both here buys three things at
+# once — the developer's global Python environment is never written to, there is
+# one directory to cache instead of two, and the Python tool is pinned the same
+# way and in the same place as gofumpt, gci and goimports.
+#
+# Verifying with `mdformat --version` rather than `test -x` is kept deliberately:
+# it catches a stale pin and a half-restored install with one command, because a
+# broken install cannot print its version.
 MDFORMAT_VERSION := 0.7.22
 MDFORMAT_GFM_VERSION := 1.0.0
 MDFORMAT_TABLES_VERSION := 1.0.0
+MDFORMAT_TOOL_DIR := $(FORMAT_TOOLS_DIR)/python
+MDFORMAT := $(FORMAT_TOOLS_DIR)/mdformat
 
 # Exit 0 only when the installed binary really is the pinned module version and
 # was built with the current Go toolchain — same test install-golangci-lint uses.
@@ -72,7 +83,7 @@ GCI_VERSION_OK = go version -m "$(GCI)" 2>/dev/null | \
 	awk -v want="$$(go env GOVERSION)" 'NR == 1 { built = $$NF } $$1 == "mod" && $$2 == "$(GCI_MODULE)" && $$3 == "$(GCI_VERSION)" { found = 1 } END { exit !(found && built == want) }'
 GOIMPORTS_VERSION_OK = go version -m "$(GOIMPORTS)" 2>/dev/null | \
 	awk -v want="$$(go env GOVERSION)" 'NR == 1 { built = $$NF } $$1 == "mod" && $$2 == "$(GOIMPORTS_MODULE)" && $$3 == "$(GOIMPORTS_VERSION)" { found = 1 } END { exit !(found && built == want) }'
-MDFORMAT_VERSION_OK = mdformat --version 2>/dev/null | \
+MDFORMAT_VERSION_OK = "$(MDFORMAT)" --version 2>/dev/null | \
 	grep -Fq "mdformat $(MDFORMAT_VERSION) (mdformat_tables $(MDFORMAT_TABLES_VERSION), mdformat-gfm $(MDFORMAT_GFM_VERSION))"
 
 # ------------------------------------------------------------------------------
@@ -179,16 +190,22 @@ install-goimports: ## install the pinned goimports (x/tools) release
 		exit 1; \
 	}
 
-install-mdformat: ## install the pinned mdformat and its plugins
+install-mdformat: ## install the pinned mdformat and its plugins into bin/tools
+	@mkdir -p "$(FORMAT_TOOLS_DIR)"
 	@if ! $(MDFORMAT_VERSION_OK); then \
-		echo "Installing mdformat $(MDFORMAT_VERSION)..."; \
-		pip install --user --upgrade \
-			"mdformat==$(MDFORMAT_VERSION)" \
-			"mdformat-gfm==$(MDFORMAT_GFM_VERSION)" \
-			"mdformat-tables==$(MDFORMAT_TABLES_VERSION)"; \
+		command -v uv >/dev/null 2>&1 || { \
+			echo "install-mdformat needs uv on PATH; it is this repository's installer for Python tooling (https://docs.astral.sh/uv/)" >&2; \
+			exit 1; \
+		}; \
+		echo "Installing mdformat $(MDFORMAT_VERSION) to $(MDFORMAT)..."; \
+		UV_TOOL_DIR="$(MDFORMAT_TOOL_DIR)" UV_TOOL_BIN_DIR="$(FORMAT_TOOLS_DIR)" \
+			uv tool install --force \
+				--with "mdformat-gfm==$(MDFORMAT_GFM_VERSION)" \
+				--with "mdformat-tables==$(MDFORMAT_TABLES_VERSION)" \
+				"mdformat==$(MDFORMAT_VERSION)"; \
 	fi
 	@$(MDFORMAT_VERSION_OK) || { \
-		echo "mdformat is not the pinned $(MDFORMAT_VERSION) (mdformat_tables $(MDFORMAT_TABLES_VERSION), mdformat-gfm $(MDFORMAT_GFM_VERSION)); got: $$(mdformat --version 2>&1 || echo 'not runnable')" >&2; \
+		echo "mdformat is not the pinned $(MDFORMAT_VERSION) (mdformat_tables $(MDFORMAT_TABLES_VERSION), mdformat-gfm $(MDFORMAT_GFM_VERSION)); got: $$("$(MDFORMAT)" --version 2>&1 || echo 'not runnable')" >&2; \
 		exit 1; \
 	}
 

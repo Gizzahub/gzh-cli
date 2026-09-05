@@ -22,14 +22,28 @@ format-simplify: format-install-tools ## quick basic formatting with gofumpt, go
 	@echo "2. Organizing imports..."
 	@"$(GOIMPORTS)" -w -local github.com/gizzahub/gzh-cli .
 	@echo "3. Formatting markdown files..."
-	@find . -name "*.md" -type f -not -path "./vendor/*" -not -path "./.git/*" | xargs -r mdformat || true
+	@find . -name "*.md" -type f -not -path "./vendor/*" -not -path "./.git/*" -not -path "./bin/*" | xargs -r "$(MDFORMAT)" || true
 	@echo -e "$(GREEN)✅ Quick formatting complete!$(RESET)"
 
 format-md: install-mdformat ## format all markdown files with mdformat
 	@echo -e "$(CYAN)📝 Formatting markdown files...$(RESET)"
-	@find . -name "*.md" -type f -not -path "./vendor/*" -not -path "./.git/*" | xargs -r mdformat
+	@find . -name "*.md" -type f -not -path "./vendor/*" -not -path "./.git/*" -not -path "./bin/*" | xargs -r "$(MDFORMAT)"
 	@echo -e "$(GREEN)✅ Markdown formatting complete!$(RESET)"
 
+# The file set is a denylist, so it grows silently whenever a new directory
+# appears with markdown in it. `./bin/*` is excluded because mdformat now
+# installs there (see MDFORMAT in .make/tools.mk) and the venv ships README.md
+# files of its own -- without the exclusion this target fails on
+# mdit_py_plugins/deflist/README.md, a file that is not this repository's.
+#
+# The tempting rewrite -- ask git for the repository's own markdown instead of
+# denying paths -- was measured and rejected. `git ls-files` returns 213 paths
+# against find's 211, and the two extra are AGENTS.md and GEMINI.md, which are
+# symlinks to CLAUDE.md. find skips them via -type f; feeding them to a formatter
+# would rewrite the same file three times and risks replacing the symlinks with
+# regular files. Fixing the denylist's fragility is a separate change from
+# fixing this one directory.
+#
 # The `|| echo` this replaced turned a check into a report: mdformat --check named
 # the unformatted file, the recipe printed a warning, and make still exited 0, so
 # nothing downstream could act on it -- "checked and clean" and "checked and dirty"
@@ -40,7 +54,7 @@ format-md: install-mdformat ## format all markdown files with mdformat
 # pick, and it would only cover `find` itself failing, not this target's job.
 format-md-check: install-mdformat ## check markdown files that need formatting
 	@echo -e "$(CYAN)📋 Checking markdown formatting...$(RESET)"
-	@find . -name "*.md" -type f -not -path "./vendor/*" -not -path "./.git/*" | xargs -r mdformat --check
+	@find . -name "*.md" -type f -not -path "./vendor/*" -not -path "./.git/*" -not -path "./bin/*" | xargs -r "$(MDFORMAT)" --check
 
 # `.PHONY` above has listed format-check since this file was written and no rule
 # ever stood behind it, and scripts/pre-commit-lint.sh has called `make fmt-check`
@@ -76,7 +90,7 @@ format-md-diff: install-mdformat ## format only changed markdown files
 	@echo -e "$(CYAN)🚀 Formatting changed markdown files...$(RESET)"
 	@CHANGED_FILES=$$(git diff --name-only --diff-filter=d HEAD | grep '\.md$$' || true); \
 	if [ -n "$$CHANGED_FILES" ]; then \
-		echo "$$CHANGED_FILES" | xargs -r mdformat; \
+		echo "$$CHANGED_FILES" | xargs -r "$(MDFORMAT)"; \
 		echo -e "$(GREEN)✅ Changed markdown files formatted!$(RESET)"; \
 	else \
 		echo -e "$(YELLOW)No markdown files changed$(RESET)"; \

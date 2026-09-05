@@ -50,8 +50,28 @@ logs:                         ## show recent log files
 # bin/tools. So the cost of running this at integration time is the test suite
 # itself: measured at 49s here on a warm cache. On a cold one it is minutes, and
 # lint-check can exceed the 5m timeout in .golangci.yml before it finishes.
-check: format-check lint-check test ## pre-commit gate: format + lint + test (non-mutating)
-	@echo -e "$(GREEN)✅ check passed - formatting, lint and tests are clean$(RESET)"
+#
+# `format-md-check` was added on 2026-09-05. The target had existed for a long
+# time and nothing called it, so markdown drift was caught by a person reading a
+# diff -- twice on one day, e50dda3 and dfa2687/aa9fbfe, cleaned afterwards by
+# daa1ea8 and 353a00e. CI cannot cover it yet: main.yml's Format check runs as a
+# writer, and changing that is waiting on .github/** approval. This half needs no
+# approval and costs about 2s over the 211 markdown files in a clean worktree.
+#
+# CI needs no edit for this. `Cache tool binaries` in main.yml already caches
+# bin/tools and keys on hashFiles('.make/tools.mk'), so this change invalidates
+# the key by itself and the new layout is what gets stored. The `~/.local/bin`
+# entry beside it is now vestigial for mdformat; removing it needs .github/**
+# approval and is not worth blocking on.
+#
+# Wiring it here was only safe once install-mdformat stopped calling
+# `pip install --user`. A gate must not rewrite the tree it judges, and the same
+# rule applies to the developer's home directory -- connecting a target that
+# mutates ~/.local to every pre-commit run and every integration would have been
+# the larger defect. mdformat now installs into bin/tools like every other pinned
+# tool; see the comment above MDFORMAT in .make/tools.mk.
+check: format-check format-md-check lint-check test ## pre-commit gate: format + markdown + lint + test (non-mutating)
+	@echo -e "$(GREEN)✅ check passed - formatting, markdown, lint and tests are clean$(RESET)"
 
 dev: fmt lint-check test ## run standard development workflow (format, lint, test)
 	@echo -e "$(GREEN)✅ Standard development workflow completed!$(RESET)"
