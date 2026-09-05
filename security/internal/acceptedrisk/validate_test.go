@@ -297,6 +297,18 @@ func TestValidateRegistryEnforcesSuppressionLinkage(t *testing.T) {
 			},
 			want: []string{codeSuppressionBlanket},
 		},
+		// A directive in a file the pinned scan never loads suppresses nothing.
+		// Registering it would put a risk gosec never evaluates into the
+		// registry, so it is reported rather than linked — and the record it
+		// names is left orphaned, which is the correct second finding.
+		{
+			name:    "directive in a file the pinned scan never loads",
+			records: []recordSpec{spec},
+			suppressions: []suppression{
+				withSuppressionUnscanned(suppressionFor(spec, 42)),
+			},
+			want: []string{codeRecordOrphaned, codeSuppressionUnscanned},
+		},
 		{
 			name:         "two sites share one record",
 			records:      []recordSpec{spec},
@@ -429,4 +441,9 @@ func emptyToNil(values []string) []string {
 		return nil
 	}
 	return values
+}
+
+func withSuppressionUnscanned(current suppression) suppression {
+	current.Unscanned = true
+	return current
 }

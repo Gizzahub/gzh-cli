@@ -6,6 +6,8 @@ package acceptedrisk
 import (
 	"encoding/json"
 	"fmt"
+	"go/ast"
+	"go/build/constraint"
 	"go/parser"
 	"go/token"
 	"io/fs"
@@ -149,7 +151,22 @@ func gosecScanScope(toolsMakefile []byte) (scanScope, error) {
 		return scanScope{}, fmt.Errorf("GOSEC_SCAN_FLAGS is not declared in the pinned tool configuration")
 	}
 
-	matches := gosecExcludeDirPattern.FindAllStringSubmatch(string(flags[1]), -1)
+	declared := strings.TrimRight(string(flags[1]), " \t\r")
+	// A trailing backslash means make joins the next line onto this one, and the
+	// pattern above stops at the first physical line. Refusing here is the whole
+	// point: the alternative is to read a truncated flag list, and a truncated
+	// -exclude-dir list *widens* the derived scan scope silently, so the scanner
+	// would then demand registry records for directives the pinned scan never
+	// evaluates. A loud failure costs one edit; a silent one is discovered by not
+	// being discovered.
+	if strings.HasSuffix(declared, `\`) {
+		return scanScope{}, fmt.Errorf(
+			"GOSEC_SCAN_FLAGS is continued onto the next line with a trailing backslash; " +
+				"this scope is derived from the first physical line only, so declare the flags on one line",
+		)
+	}
+
+	matches := gosecExcludeDirPattern.FindAllStringSubmatch(declared, -1)
 	if len(matches) == 0 {
 		return scanScope{}, fmt.Errorf("GOSEC_SCAN_FLAGS declares no -exclude-dir value")
 	}
@@ -198,6 +215,12 @@ type suppression struct {
 	// a directive that failed to parse. The zero value is the registrable
 	// directive form, which is the grammar every other field describes.
 	Blanket bool
+	// Unscanned marks a directive written in a file the pinned scan can never
+	// load, because the file's build constraint requires a tag the pinned flags
+	// never pass. Such a directive suppresses nothing, so demanding an
+	// accepted-risk record for it would put a risk in the registry that gosec
+	// never evaluates. It is reported as its own violation instead.
+	Unscanned bool
 }
 
 // scanSuppressions collects every gosec suppression under fsys, in both the
@@ -257,6 +280,123 @@ func scanSuppressions(fsys fs.FS, scope scanScope, tokens blanketTokens) ([]supp
 	return found, nil
 }
 
+// goosTags and goarchTags are the platform tags of the pinned toolchain, as
+// reported by `go tool dist list`. They are restated here rather than discovered
+// because this package reads through io/fs and never invokes the toolchain; a
+// test asserts the two stay equal, so a new port fails a test instead of drifting
+// silently.
+var (
+	goosTags = []string{
+		"aix", "android", "darwin", "dragonfly", "freebsd", "illumos", "ios", "js",
+		"linux", "netbsd", "openbsd", "plan9", "solaris", "wasip1", "windows",
+	}
+	goarchTags = []string{
+		"386", "amd64", "arm", "arm64", "loong64", "mips", "mips64", "mips64le",
+		"mipsle", "ppc64", "ppc64le", "riscv64", "s390x", "wasm",
+	}
+	// implicitTags are set by the toolchain itself rather than by -tags.
+	implicitTags = []string{
+		"cgo", "gc", "gccgo", "unix", "race", "msan", "asan", "boringcrypto", "purego",
+	}
+	goReleaseTagPattern = regexp.MustCompile(`^go1\.\d+$`)
+)
+
+// settableTag reports whether some default build context sets this tag. It is
+// deliberately optimistic about platforms: a file constrained to one GOOS is
+// invisible to a scan on another, but which one the pinned scan runs on is a
+// property of the runner, not of this repository. Treating every platform as
+// settable keeps the registry contract identical on every machine, and errs
+// toward counting a directive rather than skipping it.
+func settableTag(tag string) bool {
+	return slices.Contains(goosTags, tag) ||
+		slices.Contains(goarchTags, tag) ||
+		slices.Contains(implicitTags, tag) ||
+		goReleaseTagPattern.MatchString(tag)
+}
+
+// canBeTrue and canBeFalse decide satisfiability rather than evaluating the
+// expression once. Evaluating once, with every platform tag set, gets negation
+// backwards: `//go:build !windows` would read as false and the file would look
+// unreachable, when in fact it is built everywhere except one platform.
+//
+// So the two forced values are separated from the free ones. A tag the pinned
+// flags never set can only be false; every tag the toolchain may set is free,
+// because the scan's platform is a property of the runner.
+//
+// Correlations between free tags are ignored — `linux && windows` is judged
+// satisfiable although no context sets both. That is the safe direction: it
+// leaves the file in scope and the directive counted, which is what this scanner
+// did before it could read constraints at all.
+func canBeTrue(expr constraint.Expr) bool {
+	switch typed := expr.(type) {
+	case *constraint.TagExpr:
+		return settableTag(typed.Tag)
+	case *constraint.NotExpr:
+		return canBeFalse(typed.X)
+	case *constraint.AndExpr:
+		return canBeTrue(typed.X) && canBeTrue(typed.Y)
+	case *constraint.OrExpr:
+		return canBeTrue(typed.X) || canBeTrue(typed.Y)
+	default:
+		// An expression shape this package does not know is left in scope, for
+		// the same reason an unparseable constraint is.
+		return true
+	}
+}
+
+func canBeFalse(expr constraint.Expr) bool {
+	switch typed := expr.(type) {
+	case *constraint.TagExpr:
+		// Any tag can be unset: a GOOS tag is false on every other platform,
+		// and a custom tag is false always.
+		return true
+	case *constraint.NotExpr:
+		return canBeTrue(typed.X)
+	case *constraint.AndExpr:
+		return canBeFalse(typed.X) || canBeFalse(typed.Y)
+	case *constraint.OrExpr:
+		return canBeFalse(typed.X) && canBeFalse(typed.Y)
+	default:
+		return true
+	}
+}
+
+// unreachableByPinnedScan reports whether the pinned scan can never load this
+// file, because its //go:build expression is false under every default context.
+// The pinned flags declare no -tags, so a custom tag such as `tools` is never
+// set and `go list ./...` — which is how gosec resolves its argument — never
+// hands the file to the scanner.
+//
+// Only the //go:build form is read. gofmt keeps the legacy `// +build` lines in
+// sync with it, and reading one authority rather than reconciling two keeps this
+// from disagreeing with the toolchain about which line wins.
+func unreachableByPinnedScan(parsed *ast.File) bool {
+	for _, group := range parsed.Comments {
+		// A build constraint is only a constraint above the package clause.
+		// Below it the same text is an ordinary comment, and honoring it there
+		// would let a comment anywhere in a file erase its suppressions.
+		if group.Pos() > parsed.Package {
+			break
+		}
+		for _, comment := range group.List {
+			if !constraint.IsGoBuild(comment.Text) {
+				continue
+			}
+			expr, err := constraint.Parse(comment.Text)
+			if err != nil {
+				// An unparseable constraint is the toolchain's error to report,
+				// not this scanner's to act on. Leaving the file in scope keeps
+				// the conservative behavior of counting the directive.
+				continue
+			}
+			if !canBeTrue(expr) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func suppressionsInFile(name string, contents []byte, tokens blanketTokens) ([]suppression, error) {
 	fileSet := token.NewFileSet()
 	parsed, err := parser.ParseFile(fileSet, name, contents, parser.ParseComments|parser.SkipObjectResolution)
@@ -264,17 +404,22 @@ func suppressionsInFile(name string, contents []byte, tokens blanketTokens) ([]s
 		return nil, fmt.Errorf("parse %s: %w", name, err)
 	}
 
+	unscanned := unreachableByPinnedScan(parsed)
+
 	found := make([]suppression, 0)
 	for _, group := range parsed.Comments {
 		for _, comment := range group.List {
 			startLine := fileSet.Position(comment.Slash).Line
-			found = append(found, tokens.blanketSuppressions(name, startLine, comment.Text)...)
+			for _, blanket := range tokens.blanketSuppressions(name, startLine, comment.Text) {
+				blanket.Unscanned = unscanned
+				found = append(found, blanket)
+			}
 
 			text := strings.TrimRight(comment.Text, " \t")
 			if !strings.HasPrefix(text, directivePrefix) {
 				continue
 			}
-			current := suppression{Path: name, Line: startLine, Raw: text}
+			current := suppression{Path: name, Line: startLine, Raw: text, Unscanned: unscanned}
 			if matches := directivePattern.FindStringSubmatch(text); matches != nil {
 				current.Rule = matches[1]
 				current.RiskID = matches[2]

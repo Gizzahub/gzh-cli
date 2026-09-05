@@ -25,6 +25,7 @@ const (
 	codeSignerNotAuthorized     = "approval-signer-not-authorized"
 	codeApprovalScopeMismatch   = "approval-commit-scope-mismatch"
 	codeSuppressionBlanket      = "suppression-blanket-form"
+	codeSuppressionUnscanned    = "suppression-unscanned-file"
 	codeSuppressionMalformed    = "suppression-malformed"
 	codeSuppressionUnregistered = "suppression-unregistered"
 	codeSuppressionRuleMismatch = "suppression-rule-mismatch"
@@ -345,6 +346,20 @@ func suppressionViolations(suppressions []suppression, byID map[string]record) (
 	linkage := make(map[string]int, len(byID))
 	violations := make([]violation, 0)
 	for _, current := range suppressions {
+		if current.Unscanned {
+			// Reported before the blanket and linkage checks because it
+			// subsumes them: in a file the scan never loads, no directive of
+			// any grammar suppresses anything. Registering an accepted risk
+			// for it would record a risk gosec never evaluates, and silently
+			// skipping it would let the file become a place to hide directives.
+			violations = append(violations, violation{
+				Code:    codeSuppressionUnscanned,
+				Subject: current.location(),
+				Detail: fmt.Sprintf("%q sits in a file the pinned scan never loads, because its build constraint requires a tag the pinned flags do not set; it suppresses nothing and must be removed rather than registered",
+					current.Raw),
+			})
+			continue
+		}
 		if current.Blanket {
 			// The blanket grammar carries no identifier and cannot be given
 			// one, so it is never a malformed directive to be corrected: it is

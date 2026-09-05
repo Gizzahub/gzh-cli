@@ -5,7 +5,9 @@ import (
 	"errors"
 	"io/fs"
 	"os"
+	"os/exec"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -235,6 +237,11 @@ func TestRepositoryRegistryEnforcesCadenceAsTheClockAdvances(t *testing.T) {
 			want: []string{codeEvidencePending, codeReviewOverdue},
 		},
 		{
+			name: "the day the 180-day hard sunset falls due is still valid",
+			now:  "2027-03-01",
+			want: []string{codeEvidencePending, codeReviewOverdue},
+		},
+		{
 			name: "one day past the 180-day hard sunset",
 			now:  "2027-03-02",
 			want: []string{codeEvidencePending, codeHardSunsetExpired, codeReviewOverdue},
@@ -282,4 +289,42 @@ func repositoryState(t *testing.T, root fs.FS) ([]record, []suppression) {
 	suppressions, err := scanSuppressions(root, scope, testBlanketTokens(t))
 	require.NoError(t, err)
 	return records, suppressions
+}
+
+// TestPlatformTagsMatchThePinnedToolchain guards the one place this package
+// restates something the toolchain owns. The build-constraint check treats a tag
+// outside these lists as never set, so a new port would silently turn a normal
+// platform file into one the scanner believes is unreachable. Asking the
+// toolchain here means that drift fails a test instead.
+func TestPlatformTagsMatchThePinnedToolchain(t *testing.T) {
+	goBinary, err := exec.LookPath("go")
+	if err != nil {
+		t.Skip("go is not on PATH; the toolchain cannot be asked what it supports")
+	}
+
+	output, err := exec.CommandContext(t.Context(), goBinary, "tool", "dist", "list").Output()
+	require.NoError(t, err)
+
+	oses := make(map[string]struct{})
+	arches := make(map[string]struct{})
+	for _, pair := range strings.Fields(string(output)) {
+		platform, architecture, found := strings.Cut(pair, "/")
+		require.True(t, found, pair)
+		oses[platform] = struct{}{}
+		arches[architecture] = struct{}{}
+	}
+
+	assert.ElementsMatch(t, keysOf(oses), goosTags,
+		"goosTags must equal the GOOS values of the pinned toolchain")
+	assert.ElementsMatch(t, keysOf(arches), goarchTags,
+		"goarchTags must equal the GOARCH values of the pinned toolchain")
+}
+
+func keysOf(set map[string]struct{}) []string {
+	keys := make([]string, 0, len(set))
+	for key := range set {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	return keys
 }

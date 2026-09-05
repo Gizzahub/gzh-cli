@@ -394,3 +394,127 @@ func TestScanSuppressionsFailsClosed(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "parse broken.go")
 }
+
+// TestGosecScanScopeRefusesAContinuedFlagList pins the fail-loud choice for a
+// line-continued declaration. The pattern reads one physical line, so a
+// continuation would yield a truncated -exclude-dir list, and a truncated
+// exclusion list widens the derived scan scope rather than narrowing it: the
+// scanner would then demand registry records for directives the pinned gosec
+// never evaluates. That failure is invisible, so it is refused instead.
+func TestGosecScanScopeRefusesAContinuedFlagList(t *testing.T) {
+	continued := []byte("GOSEC_SCAN_FLAGS := -conf=.gosec.json -exclude-dir=vendor \\\n\t-exclude-dir=node_modules -exclude-dir=tmp\n")
+
+	_, err := gosecScanScope(continued)
+
+	require.Error(t, err, "a continued declaration must not be read as if the first line were the whole of it")
+	assert.Contains(t, err.Error(), "continued onto the next line")
+}
+
+// TestGosecScanScopeAcceptsTheDeclarationAsWritten guards the refusal above from
+// widening into a false alarm: a single-line declaration with trailing
+// whitespace is the form the repository actually uses.
+func TestGosecScanScopeAcceptsTheDeclarationAsWritten(t *testing.T) {
+	declared := []byte("GOSEC_SCAN_FLAGS := -conf=.gosec.json -exclude-dir=vendor -exclude-dir=tmp   \n")
+
+	scope, err := gosecScanScope(declared)
+
+	require.NoError(t, err)
+	assert.Equal(t, []string{"tmp", "vendor"}, scope.excludedDirs)
+}
+
+// TestScanSuppressionsMarksFilesThePinnedScanNeverLoads covers the asymmetry
+// between the two ways this scanner can be wrong about a build-constrained file.
+// gosec resolves ./... through the Go toolchain, so a file requiring a custom tag
+// is never handed to it; a directive there suppresses nothing. Counting it would
+// demand an accepted-risk record for a risk gosec never evaluates, and dropping
+// it silently would make such a file a place to hide directives. It is marked
+// instead, and the validator reports it as its own violation.
+func TestScanSuppressionsMarksFilesThePinnedScanNeverLoads(t *testing.T) {
+	cases := []struct {
+		name      string
+		header    string
+		unscanned bool
+	}{
+		{
+			name:      "a custom tag the pinned flags never set",
+			header:    "//go:build tools\n\n",
+			unscanned: true,
+		},
+		{
+			name:      "the ignore tag",
+			header:    "//go:build ignore\n\n",
+			unscanned: true,
+		},
+		{
+			name:      "a platform tag, which some runner does set",
+			header:    "//go:build windows\n\n",
+			unscanned: false,
+		},
+		{
+			name:      "a negated platform tag",
+			header:    "//go:build !windows\n\n",
+			unscanned: false,
+		},
+		{
+			name:      "a custom tag disjoined with a platform tag",
+			header:    "//go:build tools || linux\n\n",
+			unscanned: false,
+		},
+		{
+			name:      "a custom tag conjoined with a platform tag",
+			header:    "//go:build tools && linux\n\n",
+			unscanned: true,
+		},
+		{
+			name:      "no constraint at all",
+			header:    "",
+			unscanned: false,
+		},
+	}
+
+	for _, testCase := range cases {
+		t.Run(testCase.name, func(t *testing.T) {
+			source := testCase.header + `package example
+
+import "os"
+
+func example(p string) ([]byte, error) {
+	//gosec:disable G304 -- AR-2026-001 the caller owns the path.
+	return os.ReadFile(p)
+}
+`
+			tree := fstest.MapFS{"tools/tools.go": &fstest.MapFile{Data: []byte(source)}}
+
+			found, err := scanSuppressions(tree, testScanScope(t), testBlanketTokens(t))
+
+			require.NoError(t, err)
+			require.Len(t, found, 1)
+			assert.Equal(t, testCase.unscanned, found[0].Unscanned)
+		})
+	}
+}
+
+// TestScanSuppressionsReadsBuildConstraintsOnlyAboveThePackageClause keeps the
+// constraint check from being usable as an eraser: below the package clause the
+// same text is an ordinary comment, and honoring it there would let one comment
+// anywhere in a file exempt every directive in it from the registry.
+func TestScanSuppressionsReadsBuildConstraintsOnlyAboveThePackageClause(t *testing.T) {
+	source := `package example
+
+//go:build tools
+
+import "os"
+
+func example(p string) ([]byte, error) {
+	//gosec:disable G304 -- AR-2026-001 the caller owns the path.
+	return os.ReadFile(p)
+}
+`
+	tree := fstest.MapFS{"internal/example/example.go": &fstest.MapFile{Data: []byte(source)}}
+
+	found, err := scanSuppressions(tree, testScanScope(t), testBlanketTokens(t))
+
+	require.NoError(t, err)
+	require.Len(t, found, 1)
+	assert.False(t, found[0].Unscanned, "a //go:build line below the package clause is a comment, not a constraint")
+}
