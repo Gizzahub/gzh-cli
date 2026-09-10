@@ -69,12 +69,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Setup Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version: '1.26.7'
           cache: true
@@ -119,12 +119,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Setup Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version: '1.26.7'
           cache: true
@@ -134,7 +134,7 @@ jobs:
       # bin/tools 는 .make/tools.mk 가 pin 한 golangci-lint/gosec 설치 위치이며,
       # pin 이 바뀌면 key 가 바뀌어 새 캐시 항목으로 저장된다.
       - name: Cache tool binaries
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.local/bin
@@ -185,13 +185,13 @@ jobs:
     name: Vulncheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version: '1.26.7'
           cache: true
       - name: Cache tool binaries
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: bin/tools
           key: ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-${{ hashFiles('Makefile', '.make/tools.mk') }}
@@ -212,18 +212,18 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Setup Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version: '1.26.7'
           cache: true
 
       - name: Cache tool binaries
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: bin/tools
           key: ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-${{ hashFiles('Makefile', '.make/tools.mk') }}
@@ -341,10 +341,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version: '1.26.7'
           cache: true
