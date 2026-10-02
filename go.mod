@@ -17,7 +17,7 @@ require (
 	github.com/fatih/color v1.19.0
 	github.com/fsnotify/fsnotify v1.10.1
 	github.com/gizzahub/gzh-cli-dev-env v0.0.0-20260716162932-02e707444061
-	github.com/gizzahub/gzh-cli-gitforge v0.0.0-20260820073008-842c21ff7a6a
+	github.com/gizzahub/gzh-cli-gitforge v0.9.0
 	github.com/gizzahub/gzh-cli-net-env v0.0.0-20260716161846-3361f665ac30
 	github.com/gizzahub/gzh-cli-shellforge v0.0.0-20260716160554-2ce77b442b09
 	github.com/go-critic/go-critic v0.15.0
@@ -117,7 +117,7 @@ require (
 	github.com/leodido/go-urn v1.5.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
-	github.com/mattn/go-isatty v0.0.22 // indirect
+	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.23 // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect

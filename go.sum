@@ -116,8 +116,8 @@ github.com/gizzahub/gzh-cli-core v0.0.0-20260805234833-84a0f3d05f5d h1:wSqcmy+eu
 github.com/gizzahub/gzh-cli-core v0.0.0-20260805234833-84a0f3d05f5d/go.mod h1:X2WBXNGmnUUk670P8EA4tqid8cy1Plp5gwc1+CaLV1o=
 github.com/gizzahub/gzh-cli-dev-env v0.0.0-20260716162932-02e707444061 h1:W8YctfynAEud9vlNFIjIoOVDQjVjKUOyTSaofURHx9M=
 github.com/gizzahub/gzh-cli-dev-env v0.0.0-20260716162932-02e707444061/go.mod h1:pqDeNrdHWLFLmEGPdPpLh7oMx3WOAyrn/GV3e/6IYkk=
-github.com/gizzahub/gzh-cli-gitforge v0.0.0-20260820073008-842c21ff7a6a h1:LQOseyospUr2eCCxKFYxfQyEEAEdvyTkIU9n5zITdVQ=
-github.com/gizzahub/gzh-cli-gitforge v0.0.0-20260820073008-842c21ff7a6a/go.mod h1:mPKVY6ab8m7Qs7kHunIatsAoIYzy14Bq8tjA5wdR1uI=
+github.com/gizzahub/gzh-cli-gitforge v0.9.0 h1:4qFklEWc4QFUL+8hWi7WvEcthsu2dyA4xSg58aK6nhc=
+github.com/gizzahub/gzh-cli-gitforge v0.9.0/go.mod h1:sD3NBF1VAiGt5Nd+0kdma+bzntCQq/oYBIch4C0OSuA=
 github.com/gizzahub/gzh-cli-net-env v0.0.0-20260716161846-3361f665ac30 h1:80KRcs6crjDEgcANTSSlnD6EDJ1ffUIZxu5Jjncjb8I=
 github.com/gizzahub/gzh-cli-net-env v0.0.0-20260716161846-3361f665ac30/go.mod h1:kSFntqmjjixB4GtWZL9wbcu33oH+9UILfwbZJX2GfGw=
 github.com/gizzahub/gzh-cli-package-manager v0.0.0-20260903070642-f1ed624e1b64 h1:H+OsZebqYZ3gtZ8NAZGUr9ZoNIN+oPQTbdYq3kt9Xss=
@@ -206,8 +206,8 @@ github.com/manifoldco/promptui v0.9.0 h1:3V4HzJk1TtXW1MTZMP7mdlwbBpIinw3HztaIlYt
 github.com/manifoldco/promptui v0.9.0/go.mod h1:ka04sppxSGFAtxX0qhlYQjISsg9mR4GWtQEhdbn6Pgg=
 github.com/mattn/go-colorable v0.1.14 h1:9A9LHSqF/7dyVVX6g0U9cwm9pG3kP9gSzcuIPHPsaIE=
 github.com/mattn/go-colorable v0.1.14/go.mod h1:6LmQG8QLFO4G5z1gPvYEzlUgJ2wF+stgPZH1UqBm1s8=
-github.com/mattn/go-isatty v0.0.22 h1:j8l17JJ9i6VGPUFUYoTUKPSgKe/83EYU2zBC7YNKMw4=
-github.com/mattn/go-isatty v0.0.22/go.mod h1:ZXfXG4SQHsB/w3ZeOYbR0PrPwLy+n6xiMrJlRFqopa4=
+github.com/mattn/go-isatty v0.0.24 h1:tGZZoVgT/KiqK1c8ocVLeDS8BSWMRd47J3Lbz7vsReI=
+github.com/mattn/go-isatty v0.0.24/go.mod h1:nMCL3Zebbrt45jsMDgnfIwz6ydEQApk5oEI3HqDio6A=
 github.com/mattn/go-localereader v0.0.1 h1:ygSAOl7ZXTx4RdPYinUpg6W99U8jWvWi9Ye2JC/oIi4=
 github.com/mattn/go-localereader v0.0.1/go.mod h1:8fBrzywKY7BI3czFoHkuzRoWE9C+EiG4R1k4Cjx5p88=
 github.com/mattn/go-runewidth v0.0.23 h1:7ykA0T0jkPpzSvMS5i9uoNn2Xy3R383f9HDx3RybWcw=
