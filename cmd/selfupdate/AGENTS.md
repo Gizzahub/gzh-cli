@@ -25,19 +25,6 @@ The selfupdate command enables automatic updates of the gz binary by downloading
 
 ## Development Guidelines
 
-### Code Organization
-
-```
-cmd/selfupdate/
-├── register.go      # Command registration
-├── selfupdate.go    # Main implementation
-├── replace_unix.go  # Unix atomic replacement and directory sync
-├── replace_windows.go # Windows backup, replacement, and rollback
-├── replace_windows_test.go # Windows rollback and committed-cleanup tests
-├── selfupdate_test.go # Unit tests
-└── AGENTS.md        # This documentation
-```
-
 ### Testing Strategy
 
 #### Unit Tests

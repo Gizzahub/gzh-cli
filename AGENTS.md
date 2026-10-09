@@ -1,4 +1,4 @@
-# CLAUDE.md
+# gzh-cli
 
 This file provides LLM-optimized guidance for Claude Code when working with this repository.
 
@@ -9,7 +9,7 @@ ______________________________________________________________________
 **Binary**: `gz` (not `gzh-cli`)
 **Architecture**: Integration Libraries Pattern (wrapper-based integration)
 **Go Version**: 1.23+
-**Main Branch**: `master` (for PRs)
+**Main Branch**: `master`
 
 Core principle: Interface-driven design with direct constructors. External libraries via thin wrappers.
 
@@ -50,31 +50,6 @@ ______________________________________________________________________
 - ❌ Skip reading AGENTS.md files
 - ❌ Commit without fmt + lint + test
 - ❌ Modify core logic in wrappers (use external libraries)
-
-______________________________________________________________________
-
-## Directory Structure
-
-```
-.
-├── cmd/                    # CLI commands
-│   ├── root.go            # Main CLI entry
-│   ├── *_wrapper.go       # Integration library wrappers
-│   ├── git/               # Git platform integration
-│   ├── ide/               # IDE management
-│   └── */AGENTS.md        # Module-specific guides (READ THESE!)
-├── internal/              # Private abstractions
-│   ├── git/               # Git operations (interfaces)
-│   ├── logger/            # Logging abstractions
-│   └── cli/               # Command builder utilities
-├── pkg/                   # Public APIs
-│   ├── github/            # GitHub API integration
-│   ├── gitlab/            # GitLab API integration
-│   └── gitea/             # Gitea API integration
-├── docs/
-│   └── .claude-context/   # Context docs (see below)
-└── .make/                 # Modular Makefile (7 modules)
-```
 
 ______________________________________________________________________
 
@@ -155,9 +130,6 @@ ______________________________________________________________________
 {type}({scope}): {description}
 
 {body}
-
-Model: claude-{model}
-Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 **Types**: feat, fix, docs, refactor, test, chore
@@ -212,8 +184,3 @@ ______________________________________________________________________
 - **Startup time**: \<50ms
 - **Binary size**: ~33MB
 - **Command response**: \<100ms for most commands
-
-______________________________________________________________________
-
-**Last Updated**: 2025-12-26
-**Previous**: 165 lines → **Current**: ~185 lines (added dev-env wrapper docs)
