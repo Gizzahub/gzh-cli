@@ -65,7 +65,7 @@ ______________________________________________________________________
 **CRITICAL**: Read module-specific guides:
 
 - `cmd/AGENTS_COMMON.md` - Project-wide conventions
-- `cmd/{module}/AGENTS.md` - Module-specific rules (15 files)
+- `cmd/{module}/AGENTS.md` - Module-specific rules (one in every `cmd/` module directory)
 
 ______________________________________________________________________
 
@@ -175,7 +175,7 @@ A: `pkg/bitbucket/` for API, register in provider registry.
 A: Use environment variables, skip tests if not available.
 
 **Q: Where are AGENTS.md files?**
-A: `cmd/AGENTS_COMMON.md` + `cmd/{module}/AGENTS.md` (15 modules).
+A: `cmd/AGENTS_COMMON.md` + `cmd/{module}/AGENTS.md` in each module directory.
 
 ______________________________________________________________________
 
