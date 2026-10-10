@@ -44,7 +44,7 @@ GCI_SECTIONS := -s standard -s default -s "prefix(github.com/gizzahub/gzh-cli)"
 # ignored, and .git/ is never listed.
 #
 # The symlink filter is not optional. `git ls-files '*.md'` returns 213 paths to
-# find's 211; the two extra are AGENTS.md and GEMINI.md, symlinks to CLAUDE.md.
+# find's 211; the two extra are CLAUDE.md and GEMINI.md, symlinks to AGENTS.md.
 # find dropped them via -type f. Handing them to a formatter would rewrite the
 # same file three times and risks replacing the links with regular files. With the
 # filter the set is 211 -- the same 211.
