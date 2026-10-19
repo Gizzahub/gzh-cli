@@ -17,7 +17,7 @@ require (
 	github.com/fatih/color v1.19.0
 	github.com/fsnotify/fsnotify v1.10.1
 	github.com/gizzahub/gzh-cli-dev-env v0.0.0-20260716162932-02e707444061
-	github.com/gizzahub/gzh-cli-gitforge v0.9.1
+	github.com/gizzahub/gzh-cli-gitforge v0.9.4
 	github.com/gizzahub/gzh-cli-net-env v0.0.0-20260716161846-3361f665ac30
 	github.com/gizzahub/gzh-cli-shellforge v0.0.0-20260716160554-2ce77b442b09
 	github.com/go-critic/go-critic v0.15.0
@@ -41,7 +41,7 @@ require (
 	golang.org/x/sync v0.24.0
 	golang.org/x/term v0.47.0
 	golang.org/x/text v0.43.0
-	golang.org/x/tools v0.51.0
+	golang.org/x/tools v0.52.0
 	gopkg.in/ini.v1 v1.67.3
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -144,7 +144,7 @@ require (
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20251023183803-a4bb9ffd2546 // indirect
-	golang.org/x/mod v0.41.0 // indirect
-	golang.org/x/telemetry v0.0.0-20260924152758-ed294f943157 // indirect
+	golang.org/x/mod v0.42.0 // indirect
+	golang.org/x/telemetry v0.0.0-20261009151841-97e8ea77aa2a // indirect
 	golang.org/x/time v0.14.0 // indirect
 )
