@@ -4,13 +4,6 @@ name: Specialized Quality Checks
 on:
   pull_request:
     branches: [master, main, develop]
-  # Dependabot PR에 대해서만 push 이벤트 처리
-  push:
-    branches: [master, main, develop]
-    paths:
-      - '.github/dependabot.yml'
-      - 'go.mod'
-      - 'go.sum'
 
 # 동시 실행 제어: main.yml과 다른 그룹으로 분리
 concurrency:
@@ -30,49 +23,3 @@ jobs:
 
       - name: Lint commit messages
         uses: wagoid/commitlint-github-action@v6
-
-  dependabot-auto-merge:
-    name: Dependabot Auto Merge
-    runs-on: ubuntu-latest
-    if: ${{ github.actor == 'dependabot[bot]' }}
-    permissions:
-      contents: write
-      pull-requests: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Set up Go
-        uses: actions/setup-go@v7
-        with:
-          go-version: '1.26.7'
-
-      - name: Run tests
-        run: go test ./...
-
-      - name: Auto-merge Dependabot PRs
-        uses: actions/github-script@v9
-        with:
-          script: |
-            const pr = context.payload.pull_request;
-
-            // Only auto-merge minor and patch updates
-            const title = pr.title;
-            const isMinorOrPatch = /bump.*from.*to.*\d+\.\d+\.\d+/.test(title) &&
-                                   !title.includes('major');
-
-            if (isMinorOrPatch) {
-              await github.rest.pulls.createReview({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: pr.number,
-                event: 'APPROVE'
-              });
-
-              await github.rest.pulls.merge({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: pr.number,
-                merge_method: 'squash'
-              });
-            }
