@@ -58,7 +58,7 @@ MD_FILES = git ls-files -z --cached --others --exclude-standard -- '*.md' \
 format: format-simplify ## quick and simple formatting (default)
 fmt: format-simplify
 
-format-simplify: format-install-tools ## quick basic formatting with gofumpt, goimports, and mdformat
+format-simplify: format-install-tools install-mdformat ## quick basic formatting with gofumpt, goimports, and mdformat
 	@echo -e "$(CYAN)🚀 Quick formatting...$(RESET)"
 	@echo "1. Running gofumpt (includes go fmt + simplification)..."
 	@"$(GOFUMPT)" -w .
@@ -67,7 +67,7 @@ format-simplify: format-install-tools ## quick basic formatting with gofumpt, go
 	@echo "3. Grouping imports..."
 	@"$(GCI)" write --skip-generated $(GCI_SECTIONS) .
 	@echo "4. Formatting markdown files..."
-	@$(MD_FILES) | xargs -0 -r "$(MDFORMAT)" || true
+	@$(MD_FILES) | xargs -0 -r "$(MDFORMAT)"
 	@echo -e "$(GREEN)✅ Quick formatting complete!$(RESET)"
 
 format-md: install-mdformat ## format all markdown files with mdformat

@@ -69,11 +69,13 @@ GOIMPORTS := $(FORMAT_TOOLS_DIR)/goimports$(shell go env GOEXE)
 # Verifying with `mdformat --version` rather than `test -x` is kept deliberately:
 # it catches a stale pin and a half-restored install with one command, because a
 # broken install cannot print its version.
-MDFORMAT_VERSION := 0.7.22
+MDFORMAT_VERSION := 1.0.0
 MDFORMAT_GFM_VERSION := 1.0.0
-MDFORMAT_TABLES_VERSION := 1.0.0
+MDFORMAT_FRONTMATTER_VERSION := 2.1.2
 MDFORMAT_TOOL_DIR := $(FORMAT_TOOLS_DIR)/python
-MDFORMAT := $(FORMAT_TOOLS_DIR)/mdformat
+MDFORMAT := $(FORMAT_TOOLS_DIR)/mdformat$(shell go env GOEXE)
+MDFORMAT_PYTHON := $(MDFORMAT_TOOL_DIR)/mdformat/$(if $(shell go env GOEXE),Scripts/python.exe,bin/python)
+MDFORMAT_CONSTRAINTS := $(CURDIR)/.make/mdformat-constraints.txt
 
 # Exit 0 only when the installed binary really is the pinned module version and
 # was built with the current Go toolchain — same test install-golangci-lint uses.
@@ -84,7 +86,10 @@ GCI_VERSION_OK = go version -m "$(GCI)" 2>/dev/null | \
 GOIMPORTS_VERSION_OK = go version -m "$(GOIMPORTS)" 2>/dev/null | \
 	awk -v want="$$(go env GOVERSION)" 'NR == 1 { built = $$NF } $$1 == "mod" && $$2 == "$(GOIMPORTS_MODULE)" && $$3 == "$(GOIMPORTS_VERSION)" { found = 1 } END { exit !(found && built == want) }'
 MDFORMAT_VERSION_OK = "$(MDFORMAT)" --version 2>/dev/null | \
-	grep -Fq "mdformat $(MDFORMAT_VERSION) (mdformat_tables $(MDFORMAT_TABLES_VERSION), mdformat-gfm $(MDFORMAT_GFM_VERSION))"
+	awk -v core="mdformat $(MDFORMAT_VERSION)" -v a="mdformat-gfm $(MDFORMAT_GFM_VERSION)" -v b="mdformat_frontmatter $(MDFORMAT_FRONTMATTER_VERSION)" \
+	'NR == 1 && sub(/\)$$/, "") { n = split($$0, p, / \(|, /); ok = n == 3 && p[1] == core && ((p[2] == a && p[3] == b) || (p[2] == b && p[3] == a)) } END { exit !ok }'
+# 하위 의존성도 출력에 영향을 주므로 설치 상태를 constraints와 대조한다.
+MDFORMAT_DEPS_OK = "$(MDFORMAT_PYTHON)" -I -c 'import sys, importlib.metadata as m; lines = [l for l in map(str.strip, open(sys.argv[1])) if l and l[0] != chr(35)]; got = lambda n: next((d.version for d in m.distributions(name=n)), None); pairs = [(l, l.split("==")) for l in lines]; bad = [l + (" (installed %s)" % got(p[0]) if len(p) == 2 else " (not name==version)") for l, p in pairs if len(p) != 2 or got(p[0]) != p[1]]; bad and print("mdformat dependency mismatch: " + "; ".join(bad), file=sys.stderr); sys.exit(not lines or bool(bad))' "$(MDFORMAT_CONSTRAINTS)"
 
 # ------------------------------------------------------------------------------
 # Release toolchain pins
@@ -208,20 +213,25 @@ install-goimports: ## install the pinned goimports (x/tools) release
 
 install-mdformat: ## install the pinned mdformat and its plugins into bin/tools
 	@mkdir -p "$(FORMAT_TOOLS_DIR)"
-	@if ! $(MDFORMAT_VERSION_OK); then \
+	@if ! { $(MDFORMAT_VERSION_OK) && $(MDFORMAT_DEPS_OK) 2>/dev/null; }; then \
 		command -v uv >/dev/null 2>&1 || { \
 			echo "install-mdformat needs uv on PATH; it is this repository's installer for Python tooling (https://docs.astral.sh/uv/)" >&2; \
 			exit 1; \
 		}; \
 		echo "Installing mdformat $(MDFORMAT_VERSION) to $(MDFORMAT)..."; \
 		UV_TOOL_DIR="$(MDFORMAT_TOOL_DIR)" UV_TOOL_BIN_DIR="$(FORMAT_TOOLS_DIR)" \
-			uv tool install --force \
+			uv tool install --quiet --force \
+				--constraints "$(MDFORMAT_CONSTRAINTS)" \
 				--with "mdformat-gfm==$(MDFORMAT_GFM_VERSION)" \
-				--with "mdformat-tables==$(MDFORMAT_TABLES_VERSION)" \
-				"mdformat==$(MDFORMAT_VERSION)"; \
+				--with "mdformat-frontmatter==$(MDFORMAT_FRONTMATTER_VERSION)" \
+				"mdformat==$(MDFORMAT_VERSION)" || exit 1; \
 	fi
 	@$(MDFORMAT_VERSION_OK) || { \
-		echo "mdformat is not the pinned $(MDFORMAT_VERSION) (mdformat_tables $(MDFORMAT_TABLES_VERSION), mdformat-gfm $(MDFORMAT_GFM_VERSION)); got: $$("$(MDFORMAT)" --version 2>&1 || echo 'not runnable')" >&2; \
+		echo "mdformat is not the pinned $(MDFORMAT_VERSION) with mdformat-gfm $(MDFORMAT_GFM_VERSION) and mdformat_frontmatter $(MDFORMAT_FRONTMATTER_VERSION); got: $$("$(MDFORMAT)" --version 2>&1 || echo 'not runnable')" >&2; \
+		exit 1; \
+	}
+	@$(MDFORMAT_DEPS_OK) || { \
+		echo "mdformat dependencies at $(MDFORMAT_PYTHON) do not match $(MDFORMAT_CONSTRAINTS)" >&2; \
 		exit 1; \
 	}
 
