@@ -223,6 +223,10 @@ ______________________________________________________________________
 - ~~`migrate-config.sh`~~ - One-time bulk-clone.yaml to gzh.yaml migration (`bulk-clone` command removed)
 - ~~`verify-cleanup.sh`~~ - One-time check that `internal/legacy` and `internal/api` were gone
 - ~~`simple-benchmark.sh`~~ - Startup/size check, duplicate of gzh-cli-template's wired `benchmark.sh`
+- ~~`benchmark-performance.sh`~~ - Baseline benchmarking, superseded by `make bench` / `make bench-compare`
+- ~~`pre-commit-lint.sh`~~ - Pre-commit lint hook that no installer ever wired
+- ~~`test-git-repo-e2e.sh`~~ - One-off manual E2E fixture run
+- ~~`testing/synclone/setup-test-repos/` / `cleanup-test-repos/`~~ - Manual synclone test fixture commands
 
 ______________________________________________________________________
 
