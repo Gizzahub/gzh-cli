@@ -136,49 +136,6 @@ go test -tags=e2e ./test/e2e/...
 
 ______________________________________________________________________
 
-### 📦 Migration & Configuration Scripts
-
-#### `migrate-config.sh`
-
-**Purpose**: Migrate from bulk-clone.yaml to gzh.yaml configuration format
-
-**Usage**:
-
-```bash
-# Basic migration
-./scripts/migrate-config.sh
-
-# Custom input/output files
-./scripts/migrate-config.sh -i old-config.yaml -o new-config.yaml
-
-# Preview migration without creating files
-./scripts/migrate-config.sh --dry-run
-
-# Create backups before migration
-./scripts/migrate-config.sh --backup
-```
-
-**Options**:
-
-- `-i, --input FILE`: Input bulk-clone.yaml file (default: bulk-clone.yaml)
-- `-o, --output FILE`: Output gzh.yaml file (default: gzh.yaml)
-- `--dry-run`: Preview migration without creating files
-- `--backup`: Create backup of existing files
-- `-h, --help`: Show help message
-
-**Migration Process**:
-
-1. Analyzes existing bulk-clone.yaml configuration
-1. Extracts organizations and ignore patterns
-1. Generates gzh.yaml template with migration notes
-1. Provides next steps for manual configuration
-
-**Requirements**:
-
-- `yq` (optional, for better migration support)
-
-______________________________________________________________________
-
 ### 🐛 Debug Scripts
 
 #### `debug/` Directory
@@ -229,16 +186,6 @@ ______________________________________________________________________
 # - Tests and coverage checks
 ```
 
-### Migrating from Old Configuration
-
-```bash
-# Preview migration
-./scripts/migrate-config.sh --dry-run
-
-# Perform migration with backup
-./scripts/migrate-config.sh --backup
-```
-
 ### Debugging Issues
 
 ```bash
@@ -257,7 +204,6 @@ ______________________________________________________________________
 
 - `setup-git-hooks.sh` - Development workflow automation
 - `completions.sh` - User experience improvement
-- `migrate-config.sh` - Configuration migration tool
 - `manpages.sh` - Documentation generation
 - `pre-commit-lint.sh` - Pre-commit linting
 - `test-git-repo-e2e.sh` - Git repository E2E testing
@@ -276,6 +222,9 @@ ______________________________________________________________________
 - ~~`homebrew/gzh-git-extensions.rb`~~ - Homebrew formula for git-synclone
 - ~~`debian/`~~ - Debian packaging for git-synclone
 - ~~`install.sh`~~ - Online installer for git-synclone
+- ~~`migrate-config.sh`~~ - One-time bulk-clone.yaml to gzh.yaml migration (`bulk-clone` command removed)
+- ~~`verify-cleanup.sh`~~ - One-time check that `internal/legacy` and `internal/api` were gone
+- ~~`simple-benchmark.sh`~~ - Startup/size check, duplicate of gzh-cli-template's wired `benchmark.sh`
 
 ______________________________________________________________________
 

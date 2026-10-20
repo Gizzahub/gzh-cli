@@ -157,7 +157,6 @@ The project includes automated performance monitoring to prevent regressions:
 
 ```bash
 scripts/
-├── simple-benchmark.sh          # Quick performance checks (startup, size, memory)
 └── benchmark-performance.sh     # Comprehensive benchmarking with baselines
 ```
 
@@ -323,9 +322,6 @@ make lint-all          # Complete quality pipeline
 # Pre-commit setup (optional but recommended)
 make pre-commit-install # Install pre-commit hooks
 make pre-commit        # Run pre-commit checks manually
-
-# Performance monitoring
-./scripts/simple-benchmark.sh  # Quick performance check
 ```
 
 ## Testing Strategy
