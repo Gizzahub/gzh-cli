@@ -2,7 +2,7 @@ module github.com/gizzahub/gzh-cli
 
 go 1.26.0
 
-toolchain go1.26.7
+toolchain go1.26.10
 
 require (
 	github.com/Gizzahub/gzh-cli-quality v0.1.2
