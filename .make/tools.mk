@@ -332,7 +332,7 @@ BENCHSTAT := $(ANALYSIS_TOOLS_DIR)/benchstat$(shell go env GOEXE)
 
 # golang.org/x/vuln is tagged, unlike x/perf. security-deps, deps-security,
 # and CI vulncheck must share this pin; @latest moves the vuln DB cutoff.
-GOVULNCHECK_VERSION := v1.7.0
+GOVULNCHECK_VERSION := v1.9.0
 GOVULNCHECK_MODULE := golang.org/x/vuln
 GOVULNCHECK_INSTALL := $(GOVULNCHECK_MODULE)/cmd/govulncheck@$(GOVULNCHECK_VERSION)
 GOVULNCHECK := $(ANALYSIS_TOOLS_DIR)/govulncheck$(shell go env GOEXE)
