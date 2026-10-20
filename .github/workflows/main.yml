@@ -30,7 +30,7 @@ on:
       - '.golangci.yml'
       - '.gosec.json'
       - '.make/**'
-      - '.github/workflows/main.yml'
+      - '.github/workflows/**'
       - 'cmd/**/AGENTS.md'
       - 'cmd/AGENTS_COMMON.md'
       - 'docs/bulk-clone-schema.json'
