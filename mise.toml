@@ -1,5 +1,5 @@
 [tools]
-# Pinned to go.mod's `toolchain go1.26.10`, not to whatever the workstation has.
+# Pinned to go.mod's `toolchain go1.27.3`, not to whatever the workstation has.
 #
 # Task worktrees live under ~/worktrees, outside the devbox tree, so the
 # devbox-level mise.toml never applies to them and the machine-global config
@@ -17,4 +17,4 @@
 #
 # Listed in .github/workflows/main.yml paths so a pin-only change still runs
 # Main CI/CD Pipeline (TASK-137).
-go = "1.26.10"
+go = "1.27.3"

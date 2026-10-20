@@ -5,13 +5,18 @@
 # Tool Configuration
 # ==============================================================================
 
-GOLANGCI_LINT_VERSION := v2.13.1
+GOLANGCI_LINT_VERSION := v2.15.0
 GOLANGCI_LINT_MODULE := github.com/golangci/golangci-lint/v2
 GOLANGCI_LINT_INSTALL := $(GOLANGCI_LINT_MODULE)/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
 GOLANGCI_LINT_DIR := $(CURDIR)/bin/tools
 GOLANGCI_LINT := $(GOLANGCI_LINT_DIR)/golangci-lint$(shell go env GOEXE)
 GOLANGCI_LINT_RUN_FLAGS := --allow-serial-runners
-GOSEC_VERSION := v2.28.0
+# No stable gosec reads Go 1.27.2+ export data: v2.28.0 and v2.29.0 (latest
+# stable) report type errors on every package under go1.27.3, and
+# security-json rejects any "Golang errors". This is the untagged upstream
+# compatibility commit gzh-cli-gitforge adopted (its .make/tools.mk,
+# GOSEC_VERSION). Move to the next stable gosec release once it supports Go 1.27.
+GOSEC_VERSION := v2.29.1-0.20261009120814-7b1b5cebe007
 GOSEC_MODULE := github.com/securego/gosec/v2
 GOSEC_INSTALL := $(GOSEC_MODULE)/cmd/gosec@$(GOSEC_VERSION)
 GOSEC_DIR := $(CURDIR)/bin/tools
@@ -35,7 +40,7 @@ GOSEC_SCAN_FLAGS := -conf=.gosec.json -exclude-generated -exclude-dir=vendor -ex
 # v0.11.0 / v0.13.7 / v0.49.0 that golangci-lint v2.13.1 actually uses.
 FORMAT_TOOLS_DIR := $(CURDIR)/bin/tools
 
-GOFUMPT_VERSION := v0.11.0
+GOFUMPT_VERSION := v0.12.0
 GOFUMPT_MODULE := mvdan.cc/gofumpt
 GOFUMPT_INSTALL := $(GOFUMPT_MODULE)@$(GOFUMPT_VERSION)
 GOFUMPT := $(FORMAT_TOOLS_DIR)/gofumpt$(shell go env GOEXE)
@@ -48,7 +53,7 @@ GCI := $(FORMAT_TOOLS_DIR)/gci$(shell go env GOEXE)
 # goimports ships from the x/tools module, so `go version -m` reports the module
 # path rather than the command path. The version below is x/tools', not a
 # separate goimports version.
-GOIMPORTS_VERSION := v0.49.0
+GOIMPORTS_VERSION := v0.52.0
 GOIMPORTS_MODULE := golang.org/x/tools
 GOIMPORTS_INSTALL := $(GOIMPORTS_MODULE)/cmd/goimports@$(GOIMPORTS_VERSION)
 GOIMPORTS := $(FORMAT_TOOLS_DIR)/goimports$(shell go env GOEXE)
