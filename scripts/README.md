@@ -205,8 +205,6 @@ ______________________________________________________________________
 - `setup-git-hooks.sh` - Development workflow automation
 - `completions.sh` - User experience improvement
 - `manpages.sh` - Documentation generation
-- `pre-commit-lint.sh` - Pre-commit linting
-- `test-git-repo-e2e.sh` - Git repository E2E testing
 
 ### ⚠️ Development Tools (Keep for Development)
 

@@ -102,8 +102,8 @@ run: ## run the application (usage: make run [args...] or ARGS="args" make run)
 # target was defined anywhere in this repository -- and the DevBox CLAUDE.md
 # documents `make check` as gzh-cli's pre-commit gate. A mistyped target name
 # and a passing gate produced the same exit code, which is the one thing a gate
-# must never do. `make fmt-check`, called by scripts/pre-commit-lint.sh, and
-# `make format-check`, listed in quality.mk's .PHONY, were absorbed the same way.
+# must never do. `make format-check`, listed in quality.mk's .PHONY, was
+# absorbed the same way.
 #
 # Now the words are absorbed only when the FIRST goal is a target that actually
 # takes arguments. Everything else stops. The stop is `$(error ...)` rather than

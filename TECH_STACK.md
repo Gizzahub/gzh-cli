@@ -147,17 +147,15 @@ The architecture was recently simplified to remove over-engineered components in
 
 1. **URL Parsing Strategy**: Robust URL parsing for multiple Git hosting formats (HTTPS, SSH, ssh://) in `extractRepoNameFromURL`
 
-1. **Performance monitoring**: Automated benchmarking system with regression detection (see `scripts/` directory)
+1. **Performance monitoring**: Go benchmarks (`make bench`, `make bench-compare` with benchstat) and runtime profiling (`gz profile`)
 
 ## Performance Monitoring System
 
-### Automated Benchmarking
-
-The project includes automated performance monitoring to prevent regressions:
+### Benchmarking
 
 ```bash
-scripts/
-└── benchmark-performance.sh     # Comprehensive benchmarking with baselines
+make bench             # Run all Go benchmarks
+make bench-compare     # Compare benchmark runs (requires benchstat)
 ```
 
 ### Performance Metrics
