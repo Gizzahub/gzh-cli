@@ -30,30 +30,9 @@
 GOIMPORTS_FLAGS :=
 GCI_SECTIONS := -s standard -s default -s "prefix(github.com/gizzahub/gzh-cli)"
 
-# The markdown file set, asked of git rather than denied path by path. A denylist
-# is wrong by default: everything not listed is judged, so the set grows silently
-# whenever a new directory appears. It was wrong twice already -- ./bin/* had to
-# be added when mdformat's venv brought its dependencies' README.md files in, and
-# tasks/ (gitignored, 34 files) is judged today purely by the luck of being
-# formatted. A developer should never be blocked by a file the repository does
-# not have.
-#
-# --cached --others --exclude-standard is tracked plus untracked minus gitignored,
-# which is exactly "the markdown this repository owns". It subsumes every entry of
-# the old denylist: vendor/ (.gitignore:58), bin/ (:595) and tasks/ (:21) are all
-# ignored, and .git/ is never listed.
-#
-# The symlink filter is not optional. `git ls-files '*.md'` returns 213 paths to
-# find's 211; the two extra are CLAUDE.md and GEMINI.md, symlinks to AGENTS.md.
-# find dropped them via -type f. Handing them to a formatter would rewrite the
-# same file three times and risks replacing the links with regular files. With the
-# filter the set is 211 -- the same 211.
-#
-# -z/\0 throughout so paths with spaces survive, and the filter is an xargs -0
-# loop rather than bash's `read -r -d ''` because make may pick a shell that has
-# no such thing.
-MD_FILES = git ls-files -z --cached --others --exclude-standard -- '*.md' \
-	| xargs -0 -r sh -c 'for f; do [ -L "$$f" ] || printf "%s\0" "$$f"; done' _
+# 백필 전에는 변경된 저장소 소유 Markdown만 검사·정렬한다.
+MDFORMAT_BASE ?= origin/master
+MDFORMAT_RUN = "$(MDFORMAT_PYTHON)" -I scripts/mdformat-files.py
 
 format: format-simplify ## quick and simple formatting (default)
 fmt: format-simplify
@@ -66,29 +45,28 @@ format-simplify: format-install-tools install-mdformat ## quick basic formatting
 	@"$(GOIMPORTS)" -w $(GOIMPORTS_FLAGS) .
 	@echo "3. Grouping imports..."
 	@"$(GCI)" write --skip-generated $(GCI_SECTIONS) .
-	@echo "4. Formatting markdown files..."
-	@$(MD_FILES) | xargs -0 -r "$(MDFORMAT)"
+	@echo "4. Formatting changed markdown files..."
+	@$(MDFORMAT_RUN) changed --base "$(MDFORMAT_BASE)" --formatter "$(MDFORMAT)"
 	@echo -e "$(GREEN)✅ Quick formatting complete!$(RESET)"
 
 format-md: install-mdformat ## format all markdown files with mdformat
 	@echo -e "$(CYAN)📝 Formatting markdown files...$(RESET)"
-	@$(MD_FILES) | xargs -0 -r "$(MDFORMAT)"
+	@$(MDFORMAT_RUN) all --formatter "$(MDFORMAT)"
 	@echo -e "$(GREEN)✅ Markdown formatting complete!$(RESET)"
 
-# The file set now comes from MD_FILES; see its comment above for why the
-# denylist this target used to carry was replaced rather than extended again.
-#
-# The `|| echo` this replaced turned a check into a report: mdformat --check named
-# the unformatted file, the recipe printed a warning, and make still exited 0, so
-# nothing downstream could act on it -- "checked and clean" and "checked and dirty"
-# were the same exit code. The pipeline's status is xargs's, and xargs reports a
-# non-zero status when mdformat does (measured here: rc=1 on an unformatted file,
-# rc=0 once formatted), so dropping the `|| echo` is the entire fix.
-# pipefail is deliberately not added: it is not portable across the shells make may
-# pick, and it would only cover `find` itself failing, not this target's job.
-format-md-check: install-mdformat ## check markdown files that need formatting
-	@echo -e "$(CYAN)📋 Checking markdown formatting...$(RESET)"
-	@$(MD_FILES) | xargs -0 -r "$(MDFORMAT)" --check
+# Git 조회와 formatter 실패를 숨기지 않는 읽기 전용 변경 파일 게이트다.
+format-md-check: install-mdformat ## check changed Markdown before document backfill
+	@$(MDFORMAT_RUN) changed --base "$(MDFORMAT_BASE)" --formatter "$(MDFORMAT)" --check
+
+.PHONY: format-md-all-check mdformat-install-test markdown-selector-test
+format-md-all-check: install-mdformat ## check all repository Markdown explicitly
+	@$(MDFORMAT_RUN) all --formatter "$(MDFORMAT)" --check
+
+mdformat-install-test: install-mdformat ## verify the mdformat installer offline after preparation
+	@/bin/bash scripts/test-mdformat-install.sh "$(MDFORMAT_PYTHON)"
+
+markdown-selector-test: install-mdformat ## verify changed Markdown selection in isolated Git fixtures
+	@"$(MDFORMAT_PYTHON)" -I scripts/test-mdformat-files.py
 
 # `.PHONY` above has listed format-check since this file was written and no rule
 # ever stood behind it. It was answered by the match-anything rule in
@@ -131,15 +109,8 @@ format-check: format-install-tools ## fail if Go files are not formatted (non-mu
 	fi
 	@echo -e "$(GREEN)✅ Go files are properly formatted$(RESET)"
 
-format-md-diff: install-mdformat ## format only changed markdown files
-	@echo -e "$(CYAN)🚀 Formatting changed markdown files...$(RESET)"
-	@CHANGED_FILES=$$(git diff --name-only --diff-filter=d HEAD | grep '\.md$$' | while IFS= read -r f; do [ -L "$$f" ] || printf '%s\n' "$$f"; done || true); \
-	if [ -n "$$CHANGED_FILES" ]; then \
-		echo "$$CHANGED_FILES" | xargs -r "$(MDFORMAT)"; \
-		echo -e "$(GREEN)✅ Changed markdown files formatted!$(RESET)"; \
-	else \
-		echo -e "$(YELLOW)No markdown files changed$(RESET)"; \
-	fi
+format-md-diff: install-mdformat ## format changed Markdown only
+	@$(MDFORMAT_RUN) changed --base "$(MDFORMAT_BASE)" --formatter "$(MDFORMAT)"
 
 format-strict: format-install-tools ## comprehensive formatting with all tools
 	@echo -e "$(CYAN)🔧 Strict formatting (all tools)...$(RESET)"

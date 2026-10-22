@@ -51,12 +51,9 @@ logs:                         ## show recent log files
 # itself: measured at 49s here on a warm cache. On a cold one it is minutes, and
 # lint-check can exceed the 5m timeout in .golangci.yml before it finishes.
 #
-# `format-md-check` was added on 2026-09-05. The target had existed for a long
-# time and nothing called it, so markdown drift was caught by a person reading a
-# diff -- twice on one day, e50dda3 and dfa2687/aa9fbfe, cleaned afterwards by
-# daa1ea8 and 353a00e. CI cannot cover it yet: main.yml's Format check runs as a
-# writer, and changing that is waiting on .github/** approval. This half needs no
-# approval and costs about 2s over the 211 markdown files in a clean worktree.
+# 백필 전 Markdown 게이트는 branch·index·작업 파일·비추적 파일의 변경 합집합을
+# 읽기 전용으로 검사한다. 전체 문서 검사는 명시적 format-md-all-check로 유지한다.
+# CI workflow의 Markdown 검사 채택과 실제 Windows 실행은 별도 작업이다.
 #
 # CI needs no edit for this. `Cache tool binaries` in main.yml already caches
 # bin/tools and keys on hashFiles('.make/tools.mk'), so this change invalidates
@@ -70,7 +67,7 @@ logs:                         ## show recent log files
 # mutates ~/.local to every pre-commit run and every integration would have been
 # the larger defect. mdformat now installs into bin/tools like every other pinned
 # tool; see the comment above MDFORMAT in .make/tools.mk.
-check: format-check format-md-check lint-check test ## pre-commit gate: format + markdown + lint + test (non-mutating)
+check: format-check format-md-check mdformat-install-test markdown-selector-test lint-check test ## pre-commit gate: format + markdown + lint + test (non-mutating)
 	@echo -e "$(GREEN)✅ check passed - formatting, markdown, lint and tests are clean$(RESET)"
 
 dev: fmt lint-check test ## run standard development workflow (format, lint, test)

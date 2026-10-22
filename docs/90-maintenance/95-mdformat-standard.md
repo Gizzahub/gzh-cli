@@ -41,3 +41,28 @@ Go formatter·lint·test의 선택이나 timeout은 변경하지 않는다.
 기존 도구별 timeout은 유지했고 진단 wrapper의 초기 외부 예산만 단계별 1800초로 뒀다.
 독립 리뷰·native 통합은 이 기록으로 대체하지 않으며 실제 고정 후보의 결과를 따른다.
 primary의 기존 `internal/version/version.go` 수정은 이번 후보에 포함하지 않는다.
+
+## Python 실행 계약과 백필 전 게이트 — 2026-10-23
+
+기준은 gitforge `2ef4e8d`다. 구현·독립 리뷰 요구 등급은 strong이다.
+재사용 전과 설치 후 실제 venv가 Python 3.11 이상인지 확인한다. 설치가 필요하고
+`UV_PYTHON`이 미설정일 때만 `>=3.11`을 요청하며 명시된 빈 값도 보존한다.
+정상인 더 최신 venv는 명시적 요청이 달라도 재설치하지 않는다. 도구 묶음·constraints와
+프로젝트·워크스테이션 Python pin은 변경하지 않는다.
+
+백필 전 `format-md-check`와 기본 `fmt`의 Markdown 단계는 `MDFORMAT_BASE`
+(기본 `origin/master`)와의 merge-base 이후 커밋, index·작업 파일, 비추적 일반
+Markdown을 선택한다. Git 조회나 formatter 실패는 실패로 전파한다. 삭제·ignored
+venv·symlink는 제외하며 공백·개행·선행 `-` 파일명을 인자 경계대로 보존한다.
+존재하지 않는 base를 `HEAD`로 바꿔 성공시키지 않는다.
+symlink에서 일반 파일로 바뀐 타입 변경도 포함한다. 검사 대상 Markdown의 staged
+내용과 작업 파일이 다르면 index를 자동 수정하지 않고 명시적으로 실패한다.
+
+전체 문서 선택은 `format-md`와 읽기 전용 `format-md-all-check`로 유지한다.
+문서 백필은 도구·게이트 변경과 별도 커밋으로 진행한다. `make check`는 기존
+Go 포맷·lint·전체 test에 설치 및 Markdown 선택기 회귀 검사를 더한다.
+준비는 저장소 venv의 Python을 사용하고 이후 설치 fixture는 네트워크 없이 실행한다.
+fixture의 명령별 30초 제한은 잠정 안전 예산이며 측정된 p95가 아니다.
+Go 검사 선택·worker·timeout·릴리스 설정은 바꾸지 않는다.
+
+모의 Windows 경로 검사는 실제 Windows 설치 검증을 대신하지 않는다.
