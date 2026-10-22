@@ -90,9 +90,10 @@ GCI_VERSION_OK = go version -m "$(GCI)" 2>/dev/null | \
 	awk -v want="$$(go env GOVERSION)" 'NR == 1 { built = $$NF } $$1 == "mod" && $$2 == "$(GCI_MODULE)" && $$3 == "$(GCI_VERSION)" { found = 1 } END { exit !(found && built == want) }'
 GOIMPORTS_VERSION_OK = go version -m "$(GOIMPORTS)" 2>/dev/null | \
 	awk -v want="$$(go env GOVERSION)" 'NR == 1 { built = $$NF } $$1 == "mod" && $$2 == "$(GOIMPORTS_MODULE)" && $$3 == "$(GOIMPORTS_VERSION)" { found = 1 } END { exit !(found && built == want) }'
-MDFORMAT_VERSION_OK = "$(MDFORMAT)" --version 2>/dev/null | \
+# 정상 버전 문자열 뒤의 실행 실패도 보존한다.
+MDFORMAT_VERSION_OK = { mdformat_version_output=$$("$(MDFORMAT)" --version 2>/dev/null) && printf '%s\n' "$$mdformat_version_output" | \
 	awk -v core="mdformat $(MDFORMAT_VERSION)" -v a="mdformat-gfm $(MDFORMAT_GFM_VERSION)" -v b="mdformat_frontmatter $(MDFORMAT_FRONTMATTER_VERSION)" \
-	'NR == 1 && sub(/\)$$/, "") { n = split($$0, p, / \(|, /); ok = n == 3 && p[1] == core && ((p[2] == a && p[3] == b) || (p[2] == b && p[3] == a)) } END { exit !ok }'
+	'NR == 1 && sub(/\)$$/, "") { n = split($$0, p, / \(|, /); ok = n == 3 && p[1] == core && ((p[2] == a && p[3] == b) || (p[2] == b && p[3] == a)) } END { exit !ok }'; }
 # 하위 의존성도 출력에 영향을 주므로 설치 상태를 constraints와 대조한다.
 MDFORMAT_DEPS_OK = "$(MDFORMAT_PYTHON)" -I -c 'import sys, importlib.metadata as m; lines = [l for l in map(str.strip, open(sys.argv[1])) if l and l[0] != chr(35)]; got = lambda n: next((d.version for d in m.distributions(name=n)), None); pairs = [(l, l.split("==")) for l in lines]; bad = [l + (" (installed %s)" % got(p[0]) if len(p) == 2 else " (not name==version)") for l, p in pairs if len(p) != 2 or got(p[0]) != p[1]]; bad and print("mdformat dependency mismatch: " + "; ".join(bad), file=sys.stderr); sys.exit(not lines or bool(bad))' "$(MDFORMAT_CONSTRAINTS)"
 
