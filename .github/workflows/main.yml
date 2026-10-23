@@ -124,6 +124,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Go
+        id: setup-go
         uses: actions/setup-go@v7
         with:
           go-version: '1.27.3'
@@ -133,6 +134,9 @@ jobs:
       # (~/go/pkg/mod, ~/.cache/go-build)와 경로가 겹치지 않는다.
       # bin/tools 는 .make/tools.mk 가 pin 한 golangci-lint/gosec 설치 위치이며,
       # pin 이 바뀌면 key 가 바뀌어 새 캐시 항목으로 저장된다.
+      # 바이너리는 러너의 Go 로 go install 하므로 key 와 restore-keys 모두
+      # 설치된 Go 버전을 포함한다. 툴체인이 바뀌면 다른 Go 로 만든 항목은
+      # 복원되지 않는다.
       - name: Cache tool binaries
         uses: actions/cache@v6
         with:
@@ -140,9 +144,9 @@ jobs:
             ~/.local/bin
             ~/go/bin
             bin/tools
-          key: ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-${{ hashFiles('Makefile', '.make/tools.mk') }}
+          key: ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ hashFiles('Makefile', '.make/tools.mk') }}
           restore-keys: |
-            ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-
+            ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
 
       - name: Install dependencies
         run: go mod download
@@ -186,7 +190,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-go@v7
+      - id: setup-go
+        uses: actions/setup-go@v7
         with:
           go-version: '1.27.3'
           cache: true
@@ -194,9 +199,9 @@ jobs:
         uses: actions/cache@v6
         with:
           path: bin/tools
-          key: ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-${{ hashFiles('Makefile', '.make/tools.mk') }}
+          key: ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ hashFiles('Makefile', '.make/tools.mk') }}
           restore-keys: |
-            ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-
+            ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
       - name: Install govulncheck
         run: make install-govulncheck
       - name: govulncheck
@@ -217,6 +222,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Go
+        id: setup-go
         uses: actions/setup-go@v7
         with:
           go-version: '1.27.3'
@@ -226,9 +232,9 @@ jobs:
         uses: actions/cache@v6
         with:
           path: bin/tools
-          key: ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-${{ hashFiles('Makefile', '.make/tools.mk') }}
+          key: ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ hashFiles('Makefile', '.make/tools.mk') }}
           restore-keys: |
-            ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-
+            ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
 
       - name: Install dependencies
         run: go mod download
