@@ -83,59 +83,6 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-#### `check-coverage.sh`
-
-**Purpose**: Check test coverage and enforce thresholds
-
-**Usage**:
-
-```bash
-# Basic coverage check
-./scripts/check-coverage.sh
-
-# Generate detailed report
-./scripts/check-coverage.sh --report
-```
-
-**Environment Variables**:
-
-```bash
-export COVERAGE_THRESHOLD=70           # Total coverage threshold (default: 70%)
-export PACKAGE_COVERAGE_THRESHOLD=60  # Package coverage threshold (default: 60%)
-```
-
-**Exit Codes**:
-
-- `0`: Coverage meets thresholds
-- `1`: Coverage below thresholds
-
-______________________________________________________________________
-
-#### `add-build-tags.sh`
-
-**Purpose**: Add build tags to integration and e2e test files
-
-**Usage**:
-
-```bash
-./scripts/add-build-tags.sh
-```
-
-**What it does**:
-
-- Adds `//go:build integration` tags to `test/integration/*_test.go`
-- Adds `//go:build e2e` tags to `test/e2e/*_test.go`
-- Skips files that already have build tags
-
-**Running tagged tests**:
-
-```bash
-go test -tags=integration ./test/integration/...
-go test -tags=e2e ./test/e2e/...
-```
-
-______________________________________________________________________
-
 ### 🐛 Debug Scripts
 
 #### `debug/` Directory
@@ -178,7 +125,7 @@ ______________________________________________________________________
 
 ```bash
 # Check coverage
-./scripts/check-coverage.sh
+make cover
 
 # Git hooks will automatically run:
 # - Code formatting (gofumpt, gci)
@@ -227,6 +174,8 @@ ______________________________________________________________________
 - ~~`pre-commit-lint.sh`~~ - Pre-commit lint hook that no installer ever wired
 - ~~`test-git-repo-e2e.sh`~~ - One-off manual E2E fixture run
 - ~~`testing/synclone/setup-test-repos/` / `cleanup-test-repos/`~~ - Manual synclone test fixture commands
+- ~~`check-coverage.sh`~~ - Coverage threshold check, superseded by `make cover` / `make cover-report`
+- ~~`add-build-tags.sh`~~ - One-time insertion of integration/e2e build tags
 
 ______________________________________________________________________
 
@@ -278,13 +227,6 @@ Most scripts will check for required tools and provide installation instructions
 
 # Run manually
 pre-commit run --all-files
-```
-
-#### Coverage Script Fails
-
-```bash
-# Check if bc is installed (required for threshold comparison)
-which bc || sudo apt-get install bc  # Ubuntu/Debian
 ```
 
 ______________________________________________________________________

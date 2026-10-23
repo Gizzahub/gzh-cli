@@ -1,507 +1,138 @@
 # 📊 Performance Profiling Guide
 
-The `gz profile` command provides comprehensive performance profiling capabilities using Go's standard pprof tools, helping developers identify bottlenecks and optimize their applications.
+The `gz profile` command collects and inspects profiles of the running `gz`
+process with Go's standard `runtime/pprof` and `net/http/pprof` packages. For
+interactive exploration, open the saved files with `go tool pprof`.
 
 ## 📋 Table of Contents
 
-- [Overview](#overview)
-- [Profile Types](#profile-types)
-- [Command Reference](#command-reference)
-- [Analysis Tools](#analysis-tools)
-- [Best Practices](#best-practices)
-- [Integration Examples](#integration-examples)
+- [Commands](#commands)
+- [Output Files](#output-files)
+- [Workflows](#workflows)
+- [Analyzing Profiles with go tool pprof](#analyzing-profiles-with-go-tool-pprof)
 
-## 🎯 Overview
+## Commands
 
-Performance profiling is essential for understanding how your application uses CPU, memory, and other resources. The `gz profile` command streamlines the profiling workflow by providing an easy-to-use interface over Go's powerful pprof ecosystem.
+`gz profile` has seven subcommands. The source of truth is `cmd/profile/`
+(`gz profile --help`).
 
-### Key Features
+| Subcommand                               | Purpose                                          | Flags                                                                                                                       |
+| ---------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `server`                                 | Serve the `/debug/pprof/` endpoints until Ctrl+C | `--port` (default `6060`)                                                                                                   |
+| `cpu`                                    | Collect a CPU profile for a fixed duration       | `--duration` (default `30s`)                                                                                                |
+| `memory`                                 | Write the current heap profile                   | —                                                                                                                           |
+| `stats`                                  | Print runtime statistics                         | —                                                                                                                           |
+| `compare <baseline.prof> <current.prof>` | Simulated comparison (see below)                 | `--format text\|json` (default `text`), `--threshold` percent (default `5.0`)                                               |
+| `continuous`                             | Collect profiles at an interval                  | `--interval` (default `5m`), `--duration` (default `1h`), `--type cpu\|memory\|goroutine` (default `cpu`), `--auto-analyze` |
+| `analyze <profile.prof>`                 | Simulated analysis (see below)                   | `--threshold` percent (default `5.0`), `--format text\|json` (default `text`), `--auto-suggest` (default `true`)            |
 
-- **Standard Go pprof Integration** - Uses Go's built-in profiling tools
-- **Multiple Profile Types** - CPU, memory, block, mutex, goroutine, and trace profiles
-- **Interactive Analysis** - Web-based visualization and command-line tools
-- **Production-Safe** - Minimal overhead profiling suitable for production use
-- **Profile Management** - Store, compare, and analyze profiles over time
-- **Real-time Monitoring** - Live profiling with continuous data collection
+> ⚠️ `compare` and `analyze` do not parse the profile data yet. Their output is
+> a fixed sample chosen from the file names (for example `cpu`, `memory`,
+> `baseline`, `current`), so it does not describe your program. Use
+> `go tool pprof` for real comparison and analysis.
 
-## 📈 Profile Types
-
-### CPU Profiling
-
-Analyze CPU usage and identify performance bottlenecks:
-
-```bash
-# Basic CPU profiling
-gz profile start --type cpu
-
-# CPU profiling with custom duration
-gz profile start --type cpu --duration 30s
-
-# High-frequency CPU sampling
-gz profile start --type cpu --rate 1000
-```
-
-### Memory Profiling
-
-Track memory allocation and usage patterns:
+### `server`
 
 ```bash
-# Heap memory profiling
-gz profile start --type memory
-
-# Allocation profiling
-gz profile start --type allocs
-
-# Memory with garbage collection info
-gz profile start --type memory --gc-info
-```
-
-### Concurrency Profiling
-
-Analyze goroutines and synchronization:
-
-```bash
-# Goroutine profiling
-gz profile start --type goroutine
-
-# Mutex contention profiling
-gz profile start --type mutex
-
-# Block profiling
-gz profile start --type block
-```
-
-### Trace Profiling
-
-Detailed execution tracing:
-
-```bash
-# Execution trace
-gz profile start --type trace
-
-# Trace with custom duration
-gz profile start --type trace --duration 10s
-```
-
-## 📖 Command Reference
-
-### Start Profiling
-
-Begin a profiling session:
-
-```bash
-# Start CPU profiling
-gz profile start --type cpu
-
-# Start memory profiling
-gz profile start --type memory
-
-# Start with custom duration
-gz profile start --type cpu --duration 30s
-
-# Start multiple profile types
-gz profile start --type cpu,memory,goroutine
-
-# Production-safe profiling
-gz profile start --type cpu --safe-mode
-```
-
-### Stop Profiling
-
-End the current profiling session:
-
-```bash
-# Stop all active profiles
-gz profile stop
-
-# Stop specific profile type
-gz profile stop --type cpu
-
-# Stop and save with custom name
-gz profile stop --output my-profile.pprof
-
-# Stop and analyze immediately
-gz profile stop --analyze
-```
-
-### Server Mode
-
-Run a profiling server for continuous monitoring:
-
-```bash
-# Start profiling server
 gz profile server
-
-# Custom port and address
-gz profile server --port 6060 --bind 0.0.0.0
-
-# Server with authentication
-gz profile server --auth-token secret123
-
-# Background server
-gz profile server --daemon
+gz profile server --port 6061
 ```
 
-### Profile Management
+The server listens on `127.0.0.1` only and exposes `/debug/pprof/`,
+`/debug/pprof/profile`, `/debug/pprof/heap`, `/debug/pprof/goroutine`,
+`/debug/pprof/block`, and `/debug/pprof/mutex`. It runs in the foreground and
+stops on Ctrl+C.
 
-Manage saved profiles:
+### `cpu` and `memory`
 
 ```bash
-# List available profiles
-gz profile list
-
-# Show profile information
-gz profile info cpu-profile.pprof
-
-# Compare two profiles
-gz profile diff profile1.pprof profile2.pprof
-
-# Delete old profiles
-gz profile cleanup --older-than 7d
+gz profile cpu
+gz profile cpu --duration 10s
+gz profile memory
 ```
 
-## 🔍 Analysis Tools
+Both commands profile the `gz` process that runs them and print the saved file
+path together with a `go tool pprof` hint.
 
-### Interactive Analysis
-
-```bash
-# Analyze profile interactively
-gz profile analyze cpu-profile.pprof
-
-# Web-based analysis
-gz profile web cpu-profile.pprof
-
-# Command-line analysis
-gz profile cli memory-profile.pprof
-```
-
-### Report Generation
+### `stats`
 
 ```bash
-# Generate text report
-gz profile report cpu-profile.pprof
-
-# Generate flame graph
-gz profile flamegraph cpu-profile.pprof
-
-# Generate call graph
-gz profile callgraph memory-profile.pprof
-
-# Export to SVG
-gz profile svg cpu-profile.pprof --output cpu-usage.svg
-```
-
-### Performance Statistics
-
-```bash
-# Show performance stats
 gz profile stats
-
-# CPU usage summary
-gz profile stats --type cpu
-
-# Memory usage trends
-gz profile stats --type memory --trend
-
-# Export statistics
-gz profile stats --output json > perf-stats.json
 ```
 
-## ⚙️ Configuration
+Prints the goroutine count, heap allocated/system/in-use, stack in use, the
+number of GC runs, and the last GC time of the `gz` process.
 
-### Basic Configuration
-
-Add profiling settings to your `~/.config/gzh-manager/gzh.yaml`:
-
-```yaml
-commands:
-  profile:
-    # Default profile type
-    default_type: cpu
-
-    # Default duration
-    default_duration: "30s"
-
-    # Output directory
-    output_dir: "$HOME/.config/gzh-manager/profiles"
-
-    # Server settings
-    server:
-      port: 6060
-      bind: "localhost"
-      enable_auth: false
-
-    # Automatic cleanup
-    cleanup:
-      enabled: true
-      retention_days: 14
-      max_profiles: 50
-```
-
-### Advanced Configuration
-
-```yaml
-commands:
-  profile:
-    # Profile-specific settings
-    cpu:
-      sample_rate: 100  # Hz
-      duration: "30s"
-
-    memory:
-      sample_rate: 512  # KB
-      gc_before: true
-
-    goroutine:
-      debug_level: 1
-
-    # Analysis settings
-    analysis:
-      web_port: 8080
-      auto_open_browser: true
-
-    # Integration settings
-    integration:
-      prometheus:
-        enabled: true
-        endpoint: "/metrics"
-
-      grafana:
-        enabled: false
-        dashboard_url: "http://grafana:3000"
-```
-
-## 🎯 Best Practices
-
-### Production Profiling
+### `compare`
 
 ```bash
-# Safe production profiling
-gz profile start --type cpu --duration 15s --safe-mode
-
-# Low-overhead memory profiling
-gz profile start --type memory --rate 512KB
-
-# Background profiling with alerts
-gz profile server --daemon --alert-threshold 80%
+gz profile compare baseline.prof current.prof
+gz profile compare --threshold 10 baseline.prof current.prof
+gz profile compare --format json baseline.prof current.prof
 ```
 
-### Development Workflow
+The output is simulated; see the warning above.
+
+### `continuous`
 
 ```bash
-# Profile during development
-gz profile start --type cpu,memory &
-# Run your application
-gz profile stop --analyze
-
-# Continuous profiling
-gz profile server --auto-profile
+gz profile continuous --interval 1m --duration 30m
+gz profile continuous --type memory --interval 5m --duration 2h --auto-analyze
 ```
 
-### Performance Regression Detection
+Collects one profile per interval until `--duration` elapses or Ctrl+C is
+pressed; each CPU sample runs for 10 seconds. `--auto-analyze` passes each
+profile to the simulated `analyze` step.
+
+### `analyze`
 
 ```bash
-# Baseline profiling
-gz profile start --type cpu --baseline
-
-# Compare against baseline
-gz profile diff baseline.pprof current.pprof
-
-# Automated regression detection
-gz profile regression-check --threshold 10%
+gz profile analyze cpu.prof
+gz profile analyze --threshold 10 memory.prof
+gz profile analyze --format json profile.prof
 ```
 
-## 🔧 Analysis Examples
+The output is simulated; see the warning above. Sample issues below
+`--threshold` percent impact are dropped, and suggestions are included unless
+`--auto-suggest=false` is given.
 
-### CPU Bottleneck Analysis
+## Output Files
+
+Profiles are written to `tmp/profiles/` under the current working directory, as
+`<type>_<YYYYMMDD_HHMMSS>_<sequence>.prof` with mode `0600`. There is no
+configuration file setting for the directory, and old profiles are not removed
+automatically.
+
+## Workflows
+
+### Compare before and after a change
 
 ```bash
-# Identify CPU hotspots
-gz profile analyze cpu.pprof --focus hot
-
-# Function-level analysis
-gz profile top cpu.pprof --functions
-
-# Source code view
-gz profile list cpu.pprof "function_name"
+gz profile cpu --duration 30s
+# make the change, rebuild gz
+gz profile cpu --duration 30s
+go tool pprof -diff_base=tmp/profiles/<before>.prof tmp/profiles/<after>.prof
 ```
 
-### Memory Leak Detection
+### Profile a long-running command
+
+Start `gz profile server` in one terminal, run the workload, and fetch profiles
+from the endpoints in another:
 
 ```bash
-# Memory allocation analysis
-gz profile analyze memory.pprof --inuse_space
-
-# Find potential leaks
-gz profile diff memory-start.pprof memory-end.pprof
-
-# Allocation patterns
-gz profile top memory.pprof --alloc_objects
+go tool pprof http://127.0.0.1:6060/debug/pprof/profile?seconds=30
+go tool pprof http://127.0.0.1:6060/debug/pprof/heap
 ```
 
-### Concurrency Analysis
+## Analyzing Profiles with go tool pprof
+
+`gz profile` does not render reports or graphs itself. Use `go tool pprof`:
 
 ```bash
-# Goroutine analysis
-gz profile analyze goroutine.pprof
-
-# Mutex contention
-gz profile top mutex.pprof --contentions
-
-# Blocking operations
-gz profile analyze block.pprof --delay
+go tool pprof -top tmp/profiles/<file>.prof
+go tool pprof -list 'FunctionName' tmp/profiles/<file>.prof
+go tool pprof -http=127.0.0.1:8080 tmp/profiles/<file>.prof
+go tool pprof -diff_base=<before>.prof <after>.prof
 ```
 
-## 🚀 Integration Examples
-
-### With CI/CD Pipelines
-
-```yaml
-# GitHub Actions example
-- name: Performance Profiling
-  run: |
-    gz profile start --type cpu --duration 60s &
-    # Run performance tests
-    gz profile stop --output perf-results.pprof
-    gz profile report perf-results.pprof --format json > performance.json
-```
-
-### With Monitoring Systems
-
-```bash
-# Prometheus integration
-gz profile server --prometheus-endpoint /metrics
-
-# Custom metrics export
-gz profile stats --format prometheus | curl -X POST \
-  --data-binary @- http://pushgateway:9091/metrics/job/gzh-profiling
-```
-
-### With Load Testing
-
-```bash
-# Profile during load test
-gz profile start --type cpu,memory &
-# Run load test (wrk, ab, etc.)
-LOAD_TEST_PID=$!
-sleep 60
-gz profile stop --output load-test-profile.pprof
-kill $LOAD_TEST_PID
-gz profile analyze load-test-profile.pprof
-```
-
-## 📊 Visualization Options
-
-### Flame Graphs
-
-```bash
-# Generate flame graph
-gz profile flamegraph cpu.pprof --output flame.svg
-
-# Interactive flame graph
-gz profile web cpu.pprof --flamegraph
-```
-
-### Call Graphs
-
-```bash
-# Generate call graph
-gz profile callgraph memory.pprof --output calls.svg
-
-# Focus on specific function
-gz profile callgraph cpu.pprof --focus "main.*"
-```
-
-### Timeline Views
-
-```bash
-# Trace timeline
-gz profile trace-view trace.pprof
-
-# Memory timeline
-gz profile timeline memory.pprof --metric alloc_space
-```
-
-## 🆘 Troubleshooting
-
-### Common Issues
-
-#### No Profile Data
-
-```bash
-# Check if profiling is enabled
-gz profile status
-
-# Verify profile generation
-gz profile test --duration 5s
-
-# Debug profiling setup
-gz profile debug
-```
-
-#### Performance Impact
-
-```bash
-# Monitor profiling overhead
-gz profile overhead
-
-# Use safe mode for production
-gz profile start --safe-mode
-
-# Adjust sampling rates
-gz profile start --type cpu --rate 10  # Lower rate
-```
-
-#### Analysis Problems
-
-```bash
-# Validate profile file
-gz profile validate profile.pprof
-
-# Re-analyze with different settings
-gz profile analyze profile.pprof --nodecount 100
-
-# Export raw data
-gz profile raw profile.pprof --format json
-```
-
-## 📋 Output Formats
-
-All profiling commands support multiple output formats:
-
-```bash
-# JSON output for automation
-gz profile stats --output json
-
-# CSV for spreadsheet analysis
-gz profile report cpu.pprof --output csv
-
-# HTML for web viewing
-gz profile report memory.pprof --output html
-
-# Plain text for console
-gz profile top cpu.pprof --output text
-```
-
-## 🔗 Related Commands
-
-### Integration with Other gzh-cli Features
-
-```bash
-# Profile during repository sync
-gz synclone github --org myorg &
-gz profile start --type cpu
-# Wait for sync to complete
-gz profile stop --output synclone-profile.pprof
-
-# Profile IDE monitoring
-gz ide monitor &
-gz profile server --daemon
-```
-
-______________________________________________________________________
-
-**Profile Types**: CPU, Memory, Goroutine, Mutex, Block, Trace
-**Output Formats**: pprof, SVG, JSON, CSV, HTML
-**Integration**: Go pprof, Prometheus, Grafana
-**Production Safe**: Minimal overhead profiling
+`-http` opens the web UI with flame graph, graph, and source views.
