@@ -48,7 +48,18 @@ def main():
                       '--exclude-standard', '--', '*.md')]
     names = sorted({os.fsdecode(name) for chunk in chunks
                     for name in chunk.split(b'\0') if name})
-    files = ['./' + name for name in names if regular(root, name)]
+    # Git for Windows는 symlink를 일반 target-text 파일로 checkout할 수 있다.
+    index_links = set()
+    for entry in git(root, 'ls-files', '--stage', '-z').split(b'\0'):
+        if entry:
+            info, name = entry.split(b'\t', 1)
+            if info.split(b' ', 1)[0] == b'120000':
+                index_links.add(os.fsdecode(name))
+    type_changes = {os.fsdecode(name) for name in
+                    git(root, 'diff', '--name-only', '-z', '--diff-filter=T',
+                        '--', '*.md').split(b'\0') if name}
+    files = ['./' + name for name in names
+             if (name not in index_links or name in type_changes) and regular(root, name)]
     if args.mode == 'changed' and args.check:
         # index를 덮어쓰거나 다른 내용을 검사한 뒤 커밋을 허용하지 않는다.
         partial = set(staged.split(b'\0')) & set(working.split(b'\0'))

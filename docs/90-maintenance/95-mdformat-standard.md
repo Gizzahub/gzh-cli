@@ -66,3 +66,13 @@ fixture의 명령별 30초 제한은 잠정 안전 예산이며 측정된 p95가
 Go 검사 선택·worker·timeout·릴리스 설정은 바꾸지 않는다.
 
 모의 Windows 경로 검사는 실제 Windows 설치 검증을 대신하지 않는다.
+
+## Native CI 수용 경로 — 2026-10-23
+
+새 Markdown workflow는 Linux·Windows에서 실제 installer, 준비된 Python,
+launcher, selector를 실행한다. 작업 브랜치 push는 매번 source origin/master와
+비교하고, PR은 대상 SHA, trunk push는 이전 SHA를 사용한다. 수동 실행은 전체 검사다.
+Windows에서 symlink가 일반 파일로 checkout되어도 index mode 120000이면 제외하되,
+실제 symlink→일반 파일 타입 변경은 선택한다. core.symlinks=false 회귀 fixture를
+실제 formatter로 검사한다. 10분 job 제한은 초기 정책값이며 메트릭 설계는 후속 범위다.
+실제 Windows 성공 여부는 ISSUE-352 campaign 검증 기록으로 판단한다.
