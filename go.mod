@@ -5,7 +5,7 @@ go 1.26.0
 toolchain go1.27.3
 
 require (
-	github.com/Gizzahub/gzh-cli-quality v0.1.2
+	github.com/Gizzahub/gzh-cli-quality v0.2.0
 	github.com/aws/aws-sdk-go-v2 v1.47.3
 	github.com/aws/aws-sdk-go-v2/config v1.33.9
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.43.4
@@ -19,7 +19,7 @@ require (
 	github.com/gizzahub/gzh-cli-dev-env v0.0.0-20260716162932-02e707444061
 	github.com/gizzahub/gzh-cli-gitforge v0.11.1
 	github.com/gizzahub/gzh-cli-net-env v0.0.0-20260716161846-3361f665ac30
-	github.com/gizzahub/gzh-cli-shellforge v0.0.0-20260716160554-2ce77b442b09
+	github.com/gizzahub/gzh-cli-shellforge v0.6.0
 	github.com/go-critic/go-critic v0.15.0
 	github.com/go-playground/validator/v10 v10.30.5
 	github.com/google/go-github/v66 v66.0.0
@@ -76,7 +76,6 @@ require (
 	gitlab.com/gitlab-org/api/client-go v1.46.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/sys v0.49.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
 
 require (
@@ -97,7 +96,7 @@ require (
 	github.com/cristalhq/acmd v0.12.0 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/gabriel-vasile/mimetype v1.4.15 // indirect
-	github.com/gizzahub/gzh-cli-package-manager v0.0.0-20260903070642-f1ed624e1b64
+	github.com/gizzahub/gzh-cli-package-manager v0.1.0
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-toolsmith/astcast v1.1.0 // indirect
