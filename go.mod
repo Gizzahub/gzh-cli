@@ -5,7 +5,7 @@ go 1.26.0
 toolchain go1.27.3
 
 require (
-	github.com/Gizzahub/gzh-cli-quality v0.2.0
+	github.com/Gizzahub/gzh-cli-quality v0.2.1
 	github.com/aws/aws-sdk-go-v2 v1.47.3
 	github.com/aws/aws-sdk-go-v2/config v1.33.9
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.43.4

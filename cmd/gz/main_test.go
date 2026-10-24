@@ -23,6 +23,7 @@ func TestCLIExitStatus(t *testing.T) {
 	}{
 		{"unknown root", []string{"does-not-exist"}, 1, "unknown command"},
 		{"unknown group child", []string{"profile", "start"}, 1, "unknown command"},
+		{"unknown quality child", []string{"quality", "nosuch"}, 1, "unknown command"},
 		{"unknown flag", []string{"profile", "cpu", "--format", "flame"}, 1, "unknown flag"},
 		{"root help", []string{"--help"}, 0, "Usage:"},
 		{"group help", []string{"profile", "--help"}, 0, "Usage:"},
