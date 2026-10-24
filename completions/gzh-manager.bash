@@ -6404,76 +6404,6 @@ _gz_net-env()
     noun_aliases=()
 }
 
-_gz_profile_analyze()
-{
-    last_command="gz_profile_analyze"
-
-    command_aliases=()
-
-    commands=()
-
-    flags=()
-    two_word_flags=()
-    local_nonpersistent_flags=()
-    flags_with_completion=()
-    flags_completion=()
-
-    flags+=("--auto-suggest")
-    local_nonpersistent_flags+=("--auto-suggest")
-    flags+=("--format=")
-    two_word_flags+=("--format")
-    local_nonpersistent_flags+=("--format")
-    local_nonpersistent_flags+=("--format=")
-    flags+=("--threshold=")
-    two_word_flags+=("--threshold")
-    local_nonpersistent_flags+=("--threshold")
-    local_nonpersistent_flags+=("--threshold=")
-    flags+=("--debug")
-    flags+=("--experimental")
-    flags+=("--quiet")
-    flags+=("-q")
-    flags+=("--verbose")
-    flags+=("-v")
-
-    must_have_one_flag=()
-    must_have_one_noun=()
-    noun_aliases=()
-}
-
-_gz_profile_compare()
-{
-    last_command="gz_profile_compare"
-
-    command_aliases=()
-
-    commands=()
-
-    flags=()
-    two_word_flags=()
-    local_nonpersistent_flags=()
-    flags_with_completion=()
-    flags_completion=()
-
-    flags+=("--format=")
-    two_word_flags+=("--format")
-    local_nonpersistent_flags+=("--format")
-    local_nonpersistent_flags+=("--format=")
-    flags+=("--threshold=")
-    two_word_flags+=("--threshold")
-    local_nonpersistent_flags+=("--threshold")
-    local_nonpersistent_flags+=("--threshold=")
-    flags+=("--debug")
-    flags+=("--experimental")
-    flags+=("--quiet")
-    flags+=("-q")
-    flags+=("--verbose")
-    flags+=("-v")
-
-    must_have_one_flag=()
-    must_have_one_noun=()
-    noun_aliases=()
-}
-
 _gz_profile_continuous()
 {
     last_command="gz_profile_continuous"
@@ -6488,8 +6418,6 @@ _gz_profile_continuous()
     flags_with_completion=()
     flags_completion=()
 
-    flags+=("--auto-analyze")
-    local_nonpersistent_flags+=("--auto-analyze")
     flags+=("--duration=")
     two_word_flags+=("--duration")
     local_nonpersistent_flags+=("--duration")
@@ -6633,8 +6561,6 @@ _gz_profile()
     command_aliases=()
 
     commands=()
-    commands+=("analyze")
-    commands+=("compare")
     commands+=("continuous")
     commands+=("cpu")
     commands+=("memory")

@@ -20,7 +20,9 @@ func NewProfileCmd(appCtx *app.AppContext) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "profile",
 		Short: "Performance profiling using standard Go pprof",
-		Long: `Comprehensive performance profiling using standard Go pprof tools with enhanced analysis capabilities.
+		Long: `Comprehensive performance profiling using standard Go pprof tools. Analyze or compare
+collected profiles with "go tool pprof -top <file>" and
+"go tool pprof -diff_base=<base> <current>".
 
 Available commands:
   server      Start pprof HTTP server
@@ -29,18 +31,14 @@ Available commands:
   stats       Show runtime statistics
 
 Enhanced commands:
-  compare     Compare two profiles for performance differences
   continuous  Run continuous profiling over time
-  analyze     Analyze profile for performance issues
 
 Examples:
   gz profile server --port 6060
   gz profile cpu --duration 30s
   gz profile memory
   gz profile stats
-  gz profile compare baseline.prof current.prof
-  gz profile continuous --interval 5m --duration 1h
-  gz profile analyze cpu.prof`,
+  gz profile continuous --interval 5m --duration 1h`,
 	}
 
 	// Add basic subcommands
@@ -50,9 +48,7 @@ Examples:
 	cmd.AddCommand(newSimpleStatsCmd())
 
 	// Add enhanced subcommands
-	cmd.AddCommand(newCompareCmd())
 	cmd.AddCommand(newContinuousCmd())
-	cmd.AddCommand(newAnalyzeCmd())
 
 	return cmd
 }

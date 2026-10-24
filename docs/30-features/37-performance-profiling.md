@@ -17,23 +17,16 @@ interactive exploration, open the saved files with `go tool pprof`.
 
 ## Commands
 
-`gz profile` has seven subcommands. The source of truth is `cmd/profile/`
+`gz profile` has five subcommands. The source of truth is `cmd/profile/`
 (`gz profile --help`).
 
-| Subcommand                               | Purpose                                          | Flags                                                                                                                       |
-| ---------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| `server`                                 | Serve the `/debug/pprof/` endpoints until Ctrl+C | `--port` (default `6060`)                                                                                                   |
-| `cpu`                                    | Collect a CPU profile for a fixed duration       | `--duration` (default `30s`)                                                                                                |
-| `memory`                                 | Write the current heap profile                   | —                                                                                                                           |
-| `stats`                                  | Print runtime statistics                         | —                                                                                                                           |
-| `compare <baseline.prof> <current.prof>` | Simulated comparison (see below)                 | `--format text\|json` (default `text`), `--threshold` (accepted but currently ignored)                                      |
-| `continuous`                             | Collect profiles at an interval                  | `--interval` (default `5m`), `--duration` (default `1h`), `--type cpu\|memory\|goroutine` (default `cpu`), `--auto-analyze` |
-| `analyze <profile.prof>`                 | Simulated analysis (see below)                   | `--threshold` percent (default `5.0`), `--format text\|json` (default `text`), `--auto-suggest` (default `true`)            |
-
-> ⚠️ `compare` and `analyze` do not parse the profile data yet. Their output is
-> a fixed sample chosen from the file names (for example `cpu`, `memory`,
-> `baseline`, `current`), so it does not describe your program. Use
-> `go tool pprof` for real comparison and analysis.
+| Subcommand   | Purpose                                          | Flags                                                                                                     |
+| ------------ | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| `server`     | Serve the `/debug/pprof/` endpoints until Ctrl+C | `--port` (default `6060`)                                                                                 |
+| `cpu`        | Collect a CPU profile for a fixed duration       | `--duration` (default `30s`)                                                                              |
+| `memory`     | Write the current heap profile                   | —                                                                                                         |
+| `stats`      | Print runtime statistics                         | —                                                                                                         |
+| `continuous` | Collect profiles at an interval                  | `--interval` (default `5m`), `--duration` (default `1h`), `--type cpu\|memory\|goroutine` (default `cpu`) |
 
 ### `server`
 
@@ -69,38 +62,16 @@ gz profile stats
 Prints the goroutine count, heap allocated/system/in-use, stack in use, the
 number of GC runs, and the last GC time of the `gz` process.
 
-### `compare`
-
-```bash
-gz profile compare baseline.prof current.prof
-gz profile compare --format json baseline.prof current.prof
-```
-
-The output is simulated; see the warning above.
-
 ### `continuous`
 
 ```bash
 gz profile continuous --interval 1m --duration 30m
-gz profile continuous --type memory --interval 5m --duration 2h --auto-analyze
+gz profile continuous --type memory --interval 5m --duration 2h
 ```
 
 Collects one profile of its own process per interval until `--duration`
 elapses or Ctrl+C is pressed; each CPU sample runs for 10 seconds.
-`--auto-analyze` passes each profile to the simulated `analyze` step.
-
-### `analyze`
-
-```bash
-gz profile analyze cpu.prof
-gz profile analyze --threshold 10 memory.prof
-gz profile analyze --format json profile.prof
-```
-
-The output is simulated; see the warning above. Sample issues below
-`--threshold` percent impact are dropped. In text output, suggestions are
-shown unless `--auto-suggest=false` is given; JSON output always includes
-them.
+Analyze the collected files with `go tool pprof` (see below).
 
 ## Output Files
 
@@ -112,7 +83,9 @@ automatically.
 
 ## Analyzing Profiles with go tool pprof
 
-`gz profile` does not render reports or graphs itself. Use `go tool pprof`:
+`gz profile` does not analyze, compare, or render profiles itself. Use
+`go tool pprof`: `-top` lists the hottest functions of one profile, and
+`-diff_base=<base> <current>` shows what changed between two profiles.
 
 ```bash
 go tool pprof -top tmp/profiles/<file>.prof

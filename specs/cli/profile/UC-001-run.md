@@ -54,10 +54,7 @@ gz profile --type cpu --duration 30s --output profile.pb.gz
 💡 Analyze profile:
    go tool pprof profile.pb.gz
    go tool pprof -http=:8080 profile.pb.gz
-
-💡 Alternative views:
-   gz profile analyze --file profile.pb.gz --format flamegraph
-   gz profile compare --baseline previous.pb.gz --current profile.pb.gz
+   go tool pprof -diff_base=previous.pb.gz profile.pb.gz
 
 stderr: (empty)
 Exit Code: 0

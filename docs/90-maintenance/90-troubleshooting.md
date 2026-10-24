@@ -345,10 +345,9 @@ GODEBUG=http2debug=1 gz synclone github --org myorg
 ### Performance Profiling
 
 ```bash
-# Profile command execution
-gz profile start --type cpu &
-gz synclone github --org myorg
-gz profile stop --analyze
+# gz profile only profiles its own process; profile code paths with go test
+go test -cpuprofile cpu.prof -run TestName ./pkg/<package>
+go tool pprof -top cpu.prof
 
 # Memory usage analysis
 GODEBUG=gctrace=1 gz synclone github --org myorg
@@ -393,10 +392,9 @@ providers:
 #### Diagnosis
 
 ```bash
-# Monitor memory usage
-gz profile start --type memory &
-gz synclone github --org large-org
-gz profile stop --analyze
+# Profile memory of a code path with go test
+go test -memprofile mem.prof -run TestName ./pkg/<package>
+go tool pprof -top mem.prof
 
 # Check system memory
 free -h

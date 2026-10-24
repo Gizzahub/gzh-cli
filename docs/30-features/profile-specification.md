@@ -120,7 +120,6 @@ gz profile cpu --duration <duration> [--output <file>]
 
 - `--duration` - Profiling duration (default: 30s)
 - `--output` - Output file (default: cpu.prof)
-- `--analyze` - Auto-analyze after profiling
 
 **Analysis Example**:
 
@@ -201,8 +200,8 @@ gz profile cpu --duration 30s --output baseline.prof
 # After changes
 gz profile cpu --duration 30s --output current.prof
 
-# Compare
-gz profile compare baseline.prof current.prof
+# Compare with go tool pprof
+go tool pprof -diff_base=baseline.prof current.prof
 ```
 
 ### 2. Continuous Profiling
@@ -216,24 +215,12 @@ gz profile continuous --interval 5m --duration 1h
 # Output: profile-{timestamp}.prof files every 5 minutes
 ```
 
-### 3. Automated Analysis
+### 3. Analysis
+
+`gz profile` does not analyze profiles itself; use `go tool pprof`:
 
 ```bash
-# Auto-analyze and report issues
-gz profile analyze --auto
-
-# Output
-Performance Issues Detected:
-1. High CPU usage in json.Marshal (15.2% of CPU time)
-   Suggestion: Consider using json.Encoder for streaming
-
-2. Memory leak detected in websocket handler
-   Growth rate: 2.3 MB/minute
-   Suggestion: Ensure proper connection cleanup
-
-3. Goroutine leak: 150 goroutines not terminating
-   Location: worker.go:42
-   Suggestion: Add proper context cancellation
+go tool pprof -top cpu.prof
 ```
 
 ## Configuration
@@ -292,7 +279,7 @@ profile:
 gz quality run --profile
 
 # Analyze quality tool performance
-gz profile analyze quality-profile.prof
+go tool pprof -top quality-profile.prof
 ```
 
 ### 2. Integration with `gz doctor`
@@ -312,7 +299,7 @@ gz doctor --include-profile
   run: |
     gz profile cpu --duration 30s --output cpu.prof
     gz profile memory --output mem.prof
-    gz profile analyze --threshold 80
+    go tool pprof -top cpu.prof
 
 # GitLab CI
 performance:
@@ -374,7 +361,7 @@ gz profile memory --output heap1.prof
 gz profile memory --output heap2.prof
 
 # Compare
-gz profile compare heap1.prof heap2.prof --type memory
+go tool pprof -diff_base=heap1.prof heap2.prof
 ```
 
 ### 3. Goroutine Monitoring
@@ -391,7 +378,8 @@ gz profile goroutine --watch --alert-threshold 1000
 1. **High CPU Usage**
 
    ```bash
-   gz profile cpu --duration 60s --analyze
+   gz profile cpu --duration 60s
+   go tool pprof -top tmp/profiles/<file>.prof
    ```
 
 1. **Memory Leaks**

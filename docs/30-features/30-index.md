@@ -127,9 +127,9 @@ gz profile start --type cpu
 1. **Performance Monitoring**
 
    ```bash
-   gz profile start --type cpu &
-   # Run tests/benchmarks
-   gz profile stop --analyze
+   go test -cpuprofile cpu.prof -bench . ./pkg/<package>
+   go tool pprof -top cpu.prof
+   go tool pprof -diff_base=baseline.prof cpu.prof
    ```
 
 ## 🔧 Configuration Overview

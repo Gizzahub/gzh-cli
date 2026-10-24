@@ -49,7 +49,7 @@ gz ide fix-sync
 # Performance profiling
 gz profile start --type cpu
 gz profile server --port 6060
-gz profile analyze profile.pprof
+go tool pprof -top profile.pprof
 ```
 
 #### Environment Management

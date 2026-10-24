@@ -5,7 +5,6 @@ import (
 	"context"
 	"net"
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 
@@ -32,10 +31,10 @@ func TestNewProfileCmd(t *testing.T) {
 
 	// Verify subcommands are added (basic + enhanced commands)
 	subcommands := cmd.Commands()
-	assert.Len(t, subcommands, 7) // 4 basic + 3 enhanced commands
+	assert.Len(t, subcommands, 5) // 4 basic + continuous
 
 	// Verify subcommands exist
-	var serverCmd, cpuCmd, memoryCmd, statsCmd, compareCmd, continuousCmd, analyzeCmd bool
+	var serverCmd, cpuCmd, memoryCmd, statsCmd, continuousCmd bool
 	for _, subcmd := range subcommands {
 		switch {
 		case subcmd.Use == "server":
@@ -46,12 +45,8 @@ func TestNewProfileCmd(t *testing.T) {
 			memoryCmd = true
 		case subcmd.Use == "stats":
 			statsCmd = true
-		case strings.Contains(subcmd.Use, "compare"):
-			compareCmd = true
 		case subcmd.Use == "continuous":
 			continuousCmd = true
-		case strings.Contains(subcmd.Use, "analyze"):
-			analyzeCmd = true
 		}
 	}
 
@@ -59,9 +54,9 @@ func TestNewProfileCmd(t *testing.T) {
 	assert.True(t, cpuCmd, "cpu subcommand should exist")
 	assert.True(t, memoryCmd, "memory subcommand should exist")
 	assert.True(t, statsCmd, "stats subcommand should exist")
-	assert.True(t, compareCmd, "compare subcommand should exist")
 	assert.True(t, continuousCmd, "continuous subcommand should exist")
-	assert.True(t, analyzeCmd, "analyze subcommand should exist")
+	assert.NotContains(t, cmd.Long, "gz profile compare")
+	assert.NotContains(t, cmd.Long, "gz profile analyze")
 }
 
 func TestNewSimpleServerCmd(t *testing.T) {
