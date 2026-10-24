@@ -86,21 +86,21 @@ markdown-selector-test: install-mdformat ## verify changed Markdown selection in
 # the probe drift out of the mode it is supposed to be measuring.
 format-check: format-install-tools ## fail if Go files are not formatted (non-mutating)
 	@echo -e "$(CYAN)📋 Checking Go formatting...$(RESET)"
-	@unformatted="$$("$(GOFUMPT)" -l -extra .)"; \
+	@unformatted="$$("$(GOFUMPT)" -l -extra .)" || { status=$$?; echo "gofumpt failed (exit $$status)" >&2; exit $$status; }; \
 	if [ -n "$$unformatted" ]; then \
 		echo -e "$(RED)❌ gofumpt: not formatted:$(RESET)"; \
 		printf '%s\n' "$$unformatted"; \
 		echo "   Run: make format-strict"; \
 		exit 1; \
 	fi
-	@imports="$$("$(GCI)" diff --skip-generated $(GCI_SECTIONS) .)"; \
+	@imports="$$("$(GCI)" diff --skip-generated $(GCI_SECTIONS) .)" || { status=$$?; echo "gci failed (exit $$status)" >&2; exit $$status; }; \
 	if [ -n "$$imports" ]; then \
 		echo -e "$(RED)❌ gci: import grouping not normalized:$(RESET)"; \
 		printf '%s\n' "$$imports"; \
 		echo "   Run: make format-strict"; \
 		exit 1; \
 	fi
-	@stale="$$("$(GOIMPORTS)" -l $(GOIMPORTS_FLAGS) .)"; \
+	@stale="$$("$(GOIMPORTS)" -l $(GOIMPORTS_FLAGS) .)" || { status=$$?; echo "goimports failed (exit $$status)" >&2; exit $$status; }; \
 	if [ -n "$$stale" ]; then \
 		echo -e "$(RED)❌ goimports: imports not organized:$(RESET)"; \
 		printf '%s\n' "$$stale"; \

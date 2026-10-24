@@ -607,33 +607,12 @@ func newWebhookBulkCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "bulk",
-		Short: "Bulk webhook operations across repositories",
-		Long: `Perform bulk webhook operations across multiple repositories.
+		Short: "Reserved bulk webhook operations (not implemented)",
+		Long: `Bulk webhook create, update, delete, and sync are not implemented.
+Every operation returns an error, including requests with --dry-run-bulk.
+No repositories or webhooks are changed.
 
-This command allows you to manage webhooks at scale across an entire
-organization or filtered set of repositories. Operations include:
-
-- create: Bulk create webhooks from configuration
-- update: Bulk update existing webhooks
-- delete: Bulk delete webhooks by pattern or config
-- sync: Synchronize webhooks with configuration file
-
-Bulk Operations:
-- Organization-wide webhook management
-- Pattern-based repository filtering
-- Template-based webhook configuration
-- Parallel processing for performance
-- Dry-run mode for safe testing
-
-Configuration File Format:
-The configuration file should define webhook templates and
-repository mappings for consistent webhook deployment.
-
-Examples:
-  gz repo-config webhook bulk --operation create --config webhooks.yaml
-  gz repo-config webhook bulk --operation sync --org myorg --dry-run
-  gz repo-config webhook bulk --operation delete --filter "^legacy-.*"
-  gz repo-config webhook bulk --operation update --parallel 10`,
+Use the individual webhook create, update, delete, list, and get commands instead.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runWebhookBulkCommand(*flags, operation, configFile, parallelJobs, dryRun)
 		},
@@ -683,62 +662,18 @@ func runWebhookBulkCommand(flags WebhookFlags, operation, configFile string, par
 
 // Helper functions for bulk operations
 
-func runBulkCreateWebhooks(_ WebhookFlags, configFile string, parallelJobs int, dryRun bool) error { //nolint:unparam // Flags unused in current implementation
-	fmt.Println("📥 Bulk creating webhooks...")
-
-	// Mock implementation
-	fmt.Printf("✅ Would create webhooks for 15 repositories")
-
-	if dryRun {
-		fmt.Printf(" (DRY RUN)")
-	}
-
-	fmt.Println()
-
-	return nil
+func runBulkCreateWebhooks(_ WebhookFlags, _ string, _ int, _ bool) error {
+	return fmt.Errorf("bulk webhook create is not implemented; use webhook create for individual repositories")
 }
 
-func runBulkUpdateWebhooks(_ WebhookFlags, configFile string, parallelJobs int, dryRun bool) error { //nolint:unparam // Flags unused in current implementation
-	fmt.Println("🔄 Bulk updating webhooks...")
-
-	// Mock implementation
-	fmt.Printf("✅ Would update webhooks for 12 repositories")
-
-	if dryRun {
-		fmt.Printf(" (DRY RUN)")
-	}
-
-	fmt.Println()
-
-	return nil
+func runBulkUpdateWebhooks(_ WebhookFlags, _ string, _ int, _ bool) error {
+	return fmt.Errorf("bulk webhook update is not implemented; use webhook update for individual repositories")
 }
 
-func runBulkDeleteWebhooks(_ WebhookFlags, parallelJobs int, dryRun bool) error { //nolint:unparam // Flags unused in current implementation
-	fmt.Println("🗑️  Bulk deleting webhooks...")
-
-	// Mock implementation
-	fmt.Printf("✅ Would delete webhooks from 8 repositories")
-
-	if dryRun {
-		fmt.Printf(" (DRY RUN)")
-	}
-
-	fmt.Println()
-
-	return nil
+func runBulkDeleteWebhooks(_ WebhookFlags, _ int, _ bool) error {
+	return fmt.Errorf("bulk webhook delete is not implemented; use webhook delete for individual repositories")
 }
 
-func runBulkSyncWebhooks(_ WebhookFlags, configFile string, parallelJobs int, dryRun bool) error { //nolint:unparam // Flags unused in current implementation
-	fmt.Println("🔄 Synchronizing webhooks with configuration...")
-
-	// Mock implementation
-	fmt.Printf("✅ Would sync webhooks for 20 repositories")
-
-	if dryRun {
-		fmt.Printf(" (DRY RUN)")
-	}
-
-	fmt.Println()
-
-	return nil
+func runBulkSyncWebhooks(_ WebhookFlags, _ string, _ int, _ bool) error {
+	return fmt.Errorf("bulk webhook sync is not implemented; use individual webhook commands")
 }
