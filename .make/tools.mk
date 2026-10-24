@@ -16,6 +16,8 @@ GOLANGCI_LINT_RUN_FLAGS := --allow-serial-runners
 # security-json rejects any "Golang errors". This is the untagged upstream
 # compatibility commit gzh-cli-gitforge adopted (its .make/tools.mk,
 # GOSEC_VERSION). Move to the next stable gosec release once it supports Go 1.27.
+# After any change here run `make security-gosec-parity`: the accepted-risk gate
+# reproduces this binary's suppression rules and that target re-measures them.
 GOSEC_VERSION := v2.29.1-0.20261009120814-7b1b5cebe007
 GOSEC_MODULE := github.com/securego/gosec/v2
 GOSEC_INSTALL := $(GOSEC_MODULE)/cmd/gosec@$(GOSEC_VERSION)

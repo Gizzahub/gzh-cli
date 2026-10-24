@@ -169,6 +169,9 @@ jobs:
       - name: Security scan
         run: make security-json
 
+      - name: Accepted-risk gosec parity
+        run: make security-gosec-parity
+
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@v4
         with:

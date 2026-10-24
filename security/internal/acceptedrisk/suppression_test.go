@@ -156,33 +156,42 @@ func stringLiteral() string {
 		"a violation must quote the suppression line, not the whole block comment")
 }
 
+// gosecTagPlacementCases are the placement claims the matcher makes about
+// gosec, shared with the gosecparity build-tagged test so that the cases the unit
+// test asserts are the same cases that test runs through the pinned binary.
+// Each comment is written with gosec's built-in tag; the parity test respells it
+// for every tag it measures.
+var gosecTagPlacementCases = []struct {
+	name       string
+	comment    string
+	suppressed bool
+}{
+	{name: "at the start of the comment", comment: "\t//#nosec G304\n", suppressed: true},
+	{name: "after the marker's space", comment: "\t// #nosec G304\n", suppressed: true},
+	{name: "after extra indentation", comment: "\t//   #nosec G304\n", suppressed: true},
+	{name: "with no separator before the rule", comment: "\t//#nosecG304\n", suppressed: true},
+	{name: "on a later line of a comment group", comment: "\t// the caller owns this path.\n\t// #nosec G304\n", suppressed: true},
+	{name: "on a later line of a block comment", comment: "\t/* the caller owns this path.\n\t   #nosec G304 */\n", suppressed: true},
+	{name: "spelled in uppercase", comment: "\t//#NOSEC G304\n", suppressed: false},
+	{name: "named mid-sentence", comment: "\t// note: #nosec G304 would apply here\n", suppressed: false},
+}
+
 // TestScanSuppressionsMatchesGosecTagPlacement pins the matcher to gosec's own
 // placement rule rather than to a looser one.
 //
-// Every case was measured against the pinned gosec v2.28.0 binary with a fixture
-// whose call sites differ only by the comment above them: the reported cases are
-// the ones gosec left unsuppressed. The rule is byte comparison at the start of a
-// line within a comment, after optional spaces and tabs, with no separator
-// required after the tag. Matching more loosely than this would report comments
-// gosec never acts on, and would make an ordinary sentence about the blanket
-// form unwriteable anywhere in the repository.
+// The rule is byte comparison at the start of a line within a comment, after
+// optional spaces and tabs, with no separator required after the tag. Matching
+// more loosely than this would report comments gosec never acts on, and would
+// make an ordinary sentence about the blanket form unwriteable anywhere in the
+// repository.
+//
+// That this is gosec's rule is a measurement, not a reading of its source: the
+// gosecparity test (make security-gosec-parity) runs these cases through the
+// gosec binary pinned by GOSEC_VERSION in .make/tools.mk, using a fixture whose
+// call sites differ only by the comment above them, and fails if the binary
+// suppresses a different set. A pin bump is re-measured by that target.
 func TestScanSuppressionsMatchesGosecTagPlacement(t *testing.T) {
-	cases := []struct {
-		name       string
-		comment    string
-		suppressed bool
-	}{
-		{name: "at the start of the comment", comment: "\t//#nosec G304\n", suppressed: true},
-		{name: "after the marker's space", comment: "\t// #nosec G304\n", suppressed: true},
-		{name: "after extra indentation", comment: "\t//   #nosec G304\n", suppressed: true},
-		{name: "with no separator before the rule", comment: "\t//#nosecG304\n", suppressed: true},
-		{name: "on a later line of a comment group", comment: "\t// the caller owns this path.\n\t// #nosec G304\n", suppressed: true},
-		{name: "on a later line of a block comment", comment: "\t/* the caller owns this path.\n\t   #nosec G304 */\n", suppressed: true},
-		{name: "spelled in uppercase", comment: "\t//#NOSEC G304\n", suppressed: false},
-		{name: "named mid-sentence", comment: "\t// note: #nosec G304 would apply here\n", suppressed: false},
-	}
-
-	for _, testCase := range cases {
+	for _, testCase := range gosecTagPlacementCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			tree := fstest.MapFS{
 				"example.go": &fstest.MapFile{Data: []byte("package example\n\nfunc example() int {\n" + testCase.comment + "\treturn 1\n}\n")},
@@ -199,50 +208,84 @@ func TestScanSuppressionsMatchesGosecTagPlacement(t *testing.T) {
 	}
 }
 
-// TestGosecBlanketTokensTrackTheConfiguration pins the derivation to gosec
-// v2.28.0's own construction, measured with the pinned binary: the live blanket
-// tag is "#" followed by the configured global.nosec value, and the alternative
-// key adds a second tag rather than replacing the first. gosec's built-in
-// spelling stays in the set unconditionally because removing the setting makes
-// it live again.
-func TestGosecBlanketTokensTrackTheConfiguration(t *testing.T) {
-	cases := []struct {
-		name   string
-		config string
-		want   blanketTokens
-	}{
-		{
-			name:   "no global section leaves the built-in tag live",
-			config: `{}`,
-			want:   blanketTokens{"#nosec"},
-		},
-		{
-			name:   "the tracked setting renames the live tag",
-			config: `{"global": {"nosec": false}}`,
-			want:   blanketTokens{"#false", "#nosec"},
-		},
-		{
-			name:   "any other value renames it to match",
-			config: `{"global": {"nosec": "skipme"}}`,
-			want:   blanketTokens{"#nosec", "#skipme"},
-		},
-		{
-			name:   "the alternative key adds a tag beside the default one",
-			config: `{"global": {"nosec": false, "#nosec": "skipme"}}`,
-			want:   blanketTokens{"#false", "#nosec", "#skipme"},
-		},
-		{
-			name:   "a value equal to the built-in spelling is not listed twice",
-			config: `{"global": {"nosec": "nosec"}}`,
-			want:   blanketTokens{"#nosec"},
-		},
-	}
+// gosecBlanketConfigCases are the configuration claims the matcher makes about
+// gosec, shared with the gosecparity build-tagged test for the same reason as
+// gosecTagPlacementCases.
+//
+// want is what gosecBlanketTokens derives. honored is the subset the pinned gosec
+// actually acts on: want can be wider, because the built-in spelling is kept
+// even where the configuration makes it inert, but it must never be narrower.
+// directiveHonored records whether the pinned gosec still honors the
+// //gosec:disable directive form under that configuration.
+var gosecBlanketConfigCases = []struct {
+	name             string
+	config           string
+	want             blanketTokens
+	honored          blanketTokens
+	directiveHonored bool
+}{
+	{
+		name:             "no global section leaves the built-in tag live",
+		config:           `{}`,
+		want:             blanketTokens{"#nosec"},
+		honored:          blanketTokens{"#nosec"},
+		directiveHonored: true,
+	},
+	{
+		name:             "the tracked setting renames the live tag",
+		config:           `{"global": {"nosec": false}}`,
+		want:             blanketTokens{"#false", "#nosec"},
+		honored:          blanketTokens{"#false"},
+		directiveHonored: true,
+	},
+	{
+		name:             "any other value renames it to match",
+		config:           `{"global": {"nosec": "skipme"}}`,
+		want:             blanketTokens{"#nosec", "#skipme"},
+		honored:          blanketTokens{"#skipme"},
+		directiveHonored: true,
+	},
+	{
+		name:             "the alternative key adds a tag beside the default one",
+		config:           `{"global": {"nosec": false, "#nosec": "skipme"}}`,
+		want:             blanketTokens{"#false", "#nosec", "#skipme"},
+		honored:          blanketTokens{"#false", "#skipme"},
+		directiveHonored: true,
+	},
+	{
+		name:             "a value equal to the built-in spelling is not listed twice",
+		config:           `{"global": {"nosec": "nosec"}}`,
+		want:             blanketTokens{"#nosec"},
+		honored:          blanketTokens{"#nosec"},
+		directiveHonored: true,
+	},
+	{
+		name:             "true disables every suppression grammar",
+		config:           `{"global": {"nosec": true}}`,
+		want:             blanketTokens{"#nosec", "#true"},
+		honored:          blanketTokens{},
+		directiveHonored: false,
+	},
+}
 
-	for _, testCase := range cases {
+// TestGosecBlanketTokensTrackTheConfiguration pins the derivation to gosec's own
+// construction: the live blanket tag is "#" followed by the configured
+// global.nosec value, and the alternative key adds a second tag rather than
+// replacing the first. gosec's built-in spelling stays in the set
+// unconditionally because removing the setting makes it live again.
+//
+// The honored column is measured, not assumed: the gosecparity test (make
+// security-gosec-parity) runs every configuration through the gosec binary
+// pinned by GOSEC_VERSION in .make/tools.mk. This test checks the half that
+// needs no binary, that the derivation never omits a tag gosec honors.
+func TestGosecBlanketTokensTrackTheConfiguration(t *testing.T) {
+	for _, testCase := range gosecBlanketConfigCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			tokens, err := gosecBlanketTokens([]byte(testCase.config))
 			require.NoError(t, err)
 			assert.Equal(t, testCase.want, tokens)
+			assert.Subset(t, tokens, testCase.honored,
+				"a tag the pinned gosec honors must never be missing from the derived set")
 		})
 	}
 }

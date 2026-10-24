@@ -303,9 +303,9 @@ lint-json: install-golangci-lint ## export lint results to JSON for further anal
 # Security Analysis
 # ==============================================================================
 
-.PHONY: security security-deps security-code security-json vuln
+.PHONY: security security-deps security-code security-gosec-parity security-json vuln
 
-security: security-deps security-code ## run all security checks
+security: security-deps security-code security-gosec-parity ## run all security checks
 	@echo -e "$(GREEN)✅ Security checks completed!$(RESET)"
 
 security-deps: install-govulncheck ## check dependencies for vulnerabilities
@@ -315,6 +315,20 @@ security-deps: install-govulncheck ## check dependencies for vulnerabilities
 security-code: install-gosec ## run security code analysis
 	@echo -e "$(CYAN)Running security code analysis with gosec...$(RESET)"
 	@"$(GOSEC)" $(GOSEC_SCAN_FLAGS) -no-fail ./...
+
+# The accepted-risk gate (security/internal/acceptedrisk) reproduces gosec's
+# suppression rules instead of asking gosec, so its claims about which comments
+# gosec honors hold only for the binary they were measured against. This target
+# re-measures them against the binary pinned by GOSEC_VERSION: the test fails,
+# not skips, when the binary is missing or built from another version. Run it
+# after every GOSEC_VERSION bump.
+security-gosec-parity: install-gosec ## verify the accepted-risk suppression matcher against the pinned gosec
+	@echo -e "$(CYAN)Verifying accepted-risk suppression parity with gosec $(GOSEC_VERSION)...$(RESET)"
+	@# go test passes with "no tests to run" when the tagged file is missing or
+	@# the tag drifts, so the target also requires the test's own PASS line and
+	@# the package's ok line (the pipe hides go test's exit status).
+	@GOSEC_BIN="$(GOSEC)" go test -tags gosecparity -count=1 -v -run '^TestGosecParity$$' ./security/internal/acceptedrisk/ | \
+		awk '{ print } /^--- PASS: TestGosecParity / { ran = 1 } /^ok / { ok = 1 } END { exit !(ran && ok) }'
 
 security-json: install-gosec ## run security analysis and output JSON/SARIF report
 	@echo -e "$(CYAN)Running security analysis with JSON/SARIF output...$(RESET)"
@@ -449,9 +463,10 @@ quality-info: ## show code quality information and targets
 	@echo -e "  • $(CYAN)analyze$(RESET)               Code complexity and quality analysis"
 	@echo ""
 	@echo -e "$(GREEN)🛡️  Security Analysis:$(RESET)"
-	@echo -e "  • $(CYAN)security$(RESET)              All security checks (deps + code)"
+	@echo -e "  • $(CYAN)security$(RESET)              All security checks (deps + code + gosec parity)"
 	@echo -e "  • $(CYAN)security-deps$(RESET)         Check dependencies for vulnerabilities"
 	@echo -e "  • $(CYAN)security-code$(RESET)         Static security analysis with gosec"
+	@echo -e "  • $(CYAN)security-gosec-parity$(RESET) Accepted-risk matcher vs pinned gosec"
 	@echo ""
 	@echo -e "$(GREEN)🔄 Quality Workflows:$(RESET)"
 	@echo -e "  • $(CYAN)quality$(RESET)               Comprehensive quality pipeline"
@@ -497,6 +512,7 @@ lint-help: ## show comprehensive help for linting targets
 	@echo -e "  $(CYAN)security$(RESET)              Run all security checks"
 	@echo -e "  $(CYAN)security-deps$(RESET)         Check dependencies for vulnerabilities"
 	@echo -e "  $(CYAN)security-code$(RESET)         Run security code analysis with gosec"
+	@echo -e "  $(CYAN)security-gosec-parity$(RESET) Verify accepted-risk matcher against pinned gosec"
 	@echo -e "  $(CYAN)security-json$(RESET)         Security analysis with JSON output"
 	@echo ""
 	@echo -e "$(YELLOW)📊 Code Analysis:$(RESET)"

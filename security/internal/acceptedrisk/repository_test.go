@@ -158,7 +158,8 @@ func TestRepositoryRegistryRejectsAnUnregisteredSigner(t *testing.T) {
 //
 // The scanner reports every occurrence of a live tag, but nothing in this
 // package can stop gosec from honoring one. That is decided entirely by
-// .gosec.json, and measured against the pinned gosec v2.28.0 binary the
+// .gosec.json, and measured against the gosec binary pinned by GOSEC_VERSION in
+// .make/tools.mk (the gosecparity test, run by make security-gosec-parity) the
 // mechanism is a rename rather than a switch: the live tag is "#" followed by
 // the configured global.nosec value, so the tracked setting of false makes
 // "#false" the live form and gosec's built-in spelling inert. Removing the line

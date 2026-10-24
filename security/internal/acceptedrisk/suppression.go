@@ -32,7 +32,9 @@ var directivePattern = regexp.MustCompile(`^//gosec:disable[ \t]+(G\d{3})[ \t]+-
 // gosecNosecKey and gosecAlternativeKey are the two .gosec.json global settings
 // that decide which comment tag the pinned gosec honors as a blanket
 // suppression. The names are gosec's own: config.Nosec and
-// config.NoSecAlternative in v2.28.0.
+// config.NoSecAlternative in the release pinned by GOSEC_VERSION in
+// .make/tools.mk. The gosecparity test (make security-gosec-parity) measures that
+// binary's behavior under each setting.
 const (
 	gosecNosecKey       = "nosec"
 	gosecAlternativeKey = "#nosec"
@@ -55,7 +57,9 @@ const defaultBlanketTag = "#" + gosecNosecKey
 type blanketTokens []string
 
 // gosecBlanketTokens derives the live blanket tags from the contents of
-// .gosec.json, reproducing the construction in gosec v2.28.0's Analyzer.ignore:
+// .gosec.json, reproducing the construction in gosec's (*astVisitor).ignore as
+// measured against the binary pinned by GOSEC_VERSION in .make/tools.mk (make
+// security-gosec-parity re-runs that measurement):
 //
 //   - global.nosec supplies the default tag as "#" plus its value, so the
 //     tracked setting of false makes "#false" the live tag and gosec's built-in
