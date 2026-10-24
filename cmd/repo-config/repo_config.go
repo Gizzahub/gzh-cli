@@ -46,9 +46,6 @@ Examples:
   gz repo-config webhook                # Manage repository webhooks
   gz repo-config dashboard              # Start real-time compliance dashboard
   gz repo-config risk-assessment        # Perform CVSS-based risk assessment`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return cmd.Help()
-		},
 	}
 
 	// Add subcommands

@@ -75,6 +75,9 @@ When targeting an organization, a gzh.yaml file will be created in the target di
 containing the repository list for future reference and synchronization.
 
 For provider-specific operations, use the subcommands (github, gitlab, etc.).`,
+		// run()은 위치 인자를 쓰지 않는다. 받아 주면 `gz synclone githb` 같은
+		// 오타가 설정 파일 전체 동기화로 이어진다.
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// 붙잡아 둔 ctx가 아니라 cmd.Context()를 쓴다. register.go가
 			// NewSyncCloneCmd에 context.Background()를 주기 때문에

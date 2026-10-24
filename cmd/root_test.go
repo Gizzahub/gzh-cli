@@ -94,3 +94,51 @@ func findCommand(root *cobra.Command, name string) *cobra.Command {
 
 	return nil
 }
+
+// 하위 명령만 가진 그룹이 모르는 인자를 받으면 도움말을 찍고 0으로 끝나지 않고
+// 뿌리와 같은 오류를 돌려줘야 한다. 인자가 없으면 지금처럼 도움말만 찍는다.
+func TestGroupCommandRejectsUnknownSubcommand(t *testing.T) {
+	tests := []struct {
+		name    string
+		args    []string
+		wantErr string
+	}{
+		{name: "bare group prints help", args: []string{"profile"}},
+		{name: "unknown subcommand", args: []string{"profile", "nosuch"}, wantErr: `unknown command "nosuch" for "gz profile"`},
+		{name: "typo suggests the subcommand", args: []string{"profile", "cpuu"}, wantErr: "Did you mean this?\n\tcpu\n"},
+		{name: "known subcommand help", args: []string{"profile", "cpu", "--help"}},
+		{name: "nested group", args: []string{"git", "config", "nosuch"}, wantErr: `unknown command "nosuch" for "gz git config"`},
+		{name: "bare nested group prints help", args: []string{"git", "repo"}},
+		{name: "synclone takes no positional args", args: []string{"synclone", "githb"}, wantErr: `unknown command "githb" for "gz synclone"`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			root := NewRootCmdForGeneration(context.Background(), "dev", app.NewTestAppContext())
+			root.SetArgs(tt.args)
+			root.SetOut(&bytes.Buffer{})
+			root.SetErr(&bytes.Buffer{})
+
+			_, err := root.ExecuteC()
+			if tt.wantErr == "" {
+				require.NoError(t, err)
+				return
+			}
+			require.ErrorContains(t, err, tt.wantErr)
+		})
+	}
+}
+
+// 새 그룹 명령도 빠짐없이 덮이는지 나무 전체를 확인한다.
+func TestEveryGroupCommandIsRunnable(t *testing.T) {
+	root := NewRootCmdForGeneration(context.Background(), "dev", app.NewTestAppContext())
+	var walk func(*cobra.Command)
+	walk = func(parent *cobra.Command) {
+		for _, child := range parent.Commands() {
+			if child.HasSubCommands() {
+				require.True(t, child.Runnable(), "%s must reject unknown subcommands", child.CommandPath())
+			}
+			walk(child)
+		}
+	}
+	walk(root)
+}

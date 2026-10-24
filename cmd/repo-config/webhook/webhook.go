@@ -102,9 +102,6 @@ Examples:
   gz repo-config webhook update --repo myrepo --id 12345 --events push,issues
   gz repo-config webhook delete --repo myrepo --id 12345
   gz repo-config webhook bulk create --org myorg --all --url https://example.com/webhook`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return cmd.Help()
-		},
 	}
 
 	// Add subcommands

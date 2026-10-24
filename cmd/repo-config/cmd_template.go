@@ -38,9 +38,6 @@ Examples:
   gz repo-config template list             # List available templates
   gz repo-config template show security    # Show template details
   gz repo-config template validate <name>  # Validate template`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return cmd.Help()
-		},
 	}
 
 	// Add subcommands

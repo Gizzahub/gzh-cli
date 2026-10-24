@@ -12,6 +12,11 @@
   세 기능은 pprof 데이터를 해석하지 않고 파일 이름에 따라 고정된 결과를 출력했다. 프로필 분석은
   `go tool pprof -top <file>`, 비교는 `go tool pprof -diff_base=<base> <current>`를 쓴다.
   공개 명령 제거이므로 다음 릴리스는 minor 버전 이상을 올린다.
+- 그룹 명령(`gz profile`, `gz git repo` 등)이 모르는 하위 명령을 받으면 도움말을 찍고 0으로
+  끝나지 않고 `unknown command` 오류와 함께 1로 끝난다. 인자 없이 부르면 지금처럼 도움말을 찍는다.
+  `gz git help`처럼 그룹 뒤에 붙인 `help`도 모르는 하위 명령이 된다. 도움말은 `--help`로 본다.
+  `gz synclone`은 위치 인자를 받지 않는다. 예전에는 `gz synclone githb` 같은 오타가 인자를
+  무시한 채 설정 파일 기반 동기화를 실행했다.
 
 ### 보안
 

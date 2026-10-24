@@ -38,9 +38,6 @@ Examples:
   gz git repo clone --provider github --org myorg --target ./repos
   gz git config audit --org myorg --framework SOC2
   gz git webhook create --org myorg --repo myrepo --url https://example.com/webhook`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return cmd.Help()
-		},
 	}
 
 	// Add subcommands for each resource
@@ -87,9 +84,6 @@ hosting site (not localhost).
 Examples:
   gz git webhook create --org myorg --repo myrepo --url https://example.com/webhook
   gz git webhook bulk create --org myorg --config webhooks.yaml`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return cmd.Help()
-		},
 	}
 
 	// Use webhook package implementation

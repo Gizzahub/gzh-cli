@@ -13,9 +13,6 @@ func NewCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "repo",
 		Short: "Repository lifecycle management",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return cmd.Help()
-		},
 	}
 
 	// 하위 커맨드는 기존 파일들에서 등록한다

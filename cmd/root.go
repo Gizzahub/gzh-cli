@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -168,6 +169,8 @@ Utility Commands: doctor, version`,
 		cmd.AddCommand(shellCmd)
 	}
 
+	rejectUnknownSubcommands(cmd)
+
 	// Hide completion command and help command
 	cmd.CompletionOptions.DisableDefaultCmd = true
 	cmd.SetHelpCommand(&cobra.Command{Hidden: true})
@@ -183,6 +186,50 @@ Utility Commands: doctor, version`,
 	cmd.PersistentFlags().MarkHidden("debug-shell")
 
 	return cmd
+}
+
+// rejectUnknownSubcommands는 하위 명령만 가진 그룹 명령이 모르는 인자를 받으면
+// 오류로 끝나게 한다.
+//
+// cobra는 실행할 수 없는 명령에 flag.ErrHelp를 돌려주고(command.go:955)
+// ExecuteC가 이를 도움말 출력과 nil로 바꾼다. 그래서 `gz profile nosuch`는
+// 도움말을 찍고 0으로 끝났다. 모르는 명령을 거부하는 legacyArgs는 뿌리에만
+// 적용된다. 그룹을 실행 가능하게 만들어 인자가 없으면 지금처럼 도움말을,
+// 있으면 뿌리와 같은 "unknown command" 오류를 돌려준다.
+func rejectUnknownSubcommands(parent *cobra.Command) {
+	for _, child := range parent.Commands() {
+		rejectUnknownSubcommands(child)
+		if !child.HasSubCommands() || child.Runnable() {
+			continue
+		}
+		child.RunE = func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return cmd.Help()
+			}
+			return fmt.Errorf("unknown command %q for %q%s", args[0], cmd.CommandPath(), subcommandSuggestions(cmd, args[0]))
+		}
+	}
+}
+
+// subcommandSuggestions는 cobra가 뿌리에서 붙이는 "Did you mean this?" 안내를
+// 같은 형식으로 만든다(cobra의 findSuggestions는 공개되지 않았다).
+func subcommandSuggestions(cmd *cobra.Command, arg string) string {
+	if cmd.DisableSuggestions {
+		return ""
+	}
+	if cmd.SuggestionsMinimumDistance <= 0 {
+		cmd.SuggestionsMinimumDistance = 2
+	}
+	suggestions := cmd.SuggestionsFor(arg)
+	if len(suggestions) == 0 {
+		return ""
+	}
+	var b strings.Builder
+	b.WriteString("\n\nDid you mean this?\n")
+	for _, s := range suggestions {
+		fmt.Fprintf(&b, "\t%v\n", s)
+	}
+	return b.String()
 }
 
 func registerUserExtensions(cmd *cobra.Command) error {
