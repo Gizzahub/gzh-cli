@@ -28,7 +28,9 @@ const directivePrefix = "//gosec:disable"
 //
 // A comma-separated rule list is rejected on purpose: one suppression must map to
 // exactly one accepted-risk record, and a list would hide the rules it covers.
-var directivePattern = regexp.MustCompile(`^//gosec:disable[ \t]+(G\d{3})[ \t]+--[ \t]+(AR-20\d{2}-\d{3})[ \t]+(\S.*)$`)
+// The pinned gosec requires an ASCII space immediately after the prefix; tabs
+// are allowed after that space and between the remaining fields.
+var directivePattern = regexp.MustCompile(`^//gosec:disable [ \t]*(G\d{3})[ \t]+--[ \t]+(AR-20\d{2}-\d{3})[ \t]+(\S.*)$`)
 
 // gosecNosecKey and gosecAlternativeKey are the two .gosec.json global settings
 // that decide which comment tag the pinned gosec honors as a blanket

@@ -1,0 +1,24 @@
+name: Main CI vulncheck
+description: Extracted vulncheck steps; job scheduling and permissions stay in main.yml
+runs:
+  using: composite
+  steps:
+  - id: setup-go
+    uses: actions/setup-go@v7
+    with:
+      go-version: 1.27.3
+      cache: true
+  - name: Cache tool binaries
+    uses: actions/cache@v6
+    with:
+      path: bin/tools
+      key: ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ hashFiles('Makefile',
+        '.make/tools.mk') }}
+      restore-keys: |
+        ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+  - name: Install govulncheck
+    run: make install-govulncheck
+    shell: bash -e {0}
+  - name: govulncheck
+    run: ./bin/tools/govulncheck ./...
+    shell: bash -e {0}

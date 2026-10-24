@@ -192,6 +192,9 @@ func writeParityFixture(t *testing.T, dir string) []paritySite {
 
 	addSite(paritySite{name: "control without a comment"}, "")
 	addSite(paritySite{name: "registrable directive", directive: true}, parityDirective)
+	addSite(paritySite{name: "directive with initial tab", directive: true}, "\t//gosec:disable\tG304 -- AR-2026-001 the caller owns the path.\n")
+	addSite(paritySite{name: "directive with space then tab", directive: true}, "\t//gosec:disable \tG304 -- AR-2026-001 the caller owns the path.\n")
+	addSite(paritySite{name: "directive with tab-separated fields", directive: true}, "\t//gosec:disable G304\t--\tAR-2026-001\tthe caller owns the path.\n")
 	for _, tag := range parityTags {
 		for _, placement := range gosecTagPlacementCases {
 			comment := strings.ReplaceAll(placement.comment, "#NOSEC", strings.ToUpper(tag))

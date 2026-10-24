@@ -1,431 +1,189 @@
 name: Main CI/CD Pipeline
-
-on:
+'on':
   push:
-    branches: [master, main]  # develop 브랜치 제외로 실행 빈도 감소
-    paths:
-      - '**/*.go'
-      - 'go.mod'
-      - 'go.sum'
-      - 'go.work'
-      - '.golangci.yml'
-      - '.gosec.json'
-      - '.make/**'
-      - '.github/workflows/main.yml'
-      - 'cmd/**/AGENTS.md'
-      - 'cmd/AGENTS_COMMON.md'
-      - 'docs/bulk-clone-schema.json'
-      - 'examples/repo-config/**'
-      - 'examples/synclone/synclone-example.yaml'
-      - 'scripts/check-agents.sh'
-      - 'Makefile'
-      - 'mise.toml'
+    branches: [master, main]
+    paths: ['**/*.go', go.mod, go.sum, go.work, .golangci.yml, .gosec.json, .make/**, .github/workflows/main.yml,
+      cmd/**/AGENTS.md, cmd/AGENTS_COMMON.md, docs/bulk-clone-schema.json, examples/repo-config/**, examples/synclone/synclone-example.yaml,
+      scripts/check-agents.sh, Makefile, mise.toml, .github/actions/main-test/**, .github/actions/main-quality/**,
+      .github/actions/main-vulncheck/**, .github/actions/main-benchmark/**, .github/actions/main-build/**]
   pull_request:
     branches: [master, main, develop]
-    paths:
-      - '**/*.go'
-      - 'go.mod'
-      - 'go.sum'
-      - 'go.work'
-      - '.golangci.yml'
-      - '.gosec.json'
-      - '.make/**'
-      - '.github/workflows/**'
-      - 'cmd/**/AGENTS.md'
-      - 'cmd/AGENTS_COMMON.md'
-      - 'docs/bulk-clone-schema.json'
-      - 'examples/repo-config/**'
-      - 'examples/synclone/synclone-example.yaml'
-      - 'scripts/check-agents.sh'
-      - 'Makefile'
-      - 'mise.toml'
-
+    paths: ['**/*.go', go.mod, go.sum, go.work, .golangci.yml, .gosec.json, .make/**, .github/workflows/**, cmd/**/AGENTS.md,
+      cmd/AGENTS_COMMON.md, docs/bulk-clone-schema.json, examples/repo-config/**, examples/synclone/synclone-example.yaml,
+      scripts/check-agents.sh, Makefile, mise.toml, .github/actions/main-test/**, .github/actions/main-quality/**,
+      .github/actions/main-vulncheck/**, .github/actions/main-benchmark/**, .github/actions/main-build/**]
 permissions:
   contents: read
   security-events: write
   pull-requests: write
   actions: read
-
-# 동시 실행 제어: 같은 브랜치/PR에 대한 중복 실행 방지
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
-# Global environment variables for better caching
 env:
   CACHE_VERSION: v1
-
 jobs:
-  # 🧪 조건부 크로스 플랫폼 테스트: PR은 Ubuntu만, push는 전체 OS
   test:
     name: Test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20  # 각 OS별 테스트 제한 시간
+    timeout-minutes: 20
     strategy:
       matrix:
-        # PR: Ubuntu만 실행 (빠른 피드백), push: 전체 OS 검증
-        os: ${{ github.event_name == 'pull_request' && fromJSON('["ubuntu-latest"]') || fromJSON('["ubuntu-latest", "macos-latest", "windows-latest"]') }}
+        os: ${{ github.event_name == 'pull_request' && fromJSON('["ubuntu-latest"]') || fromJSON('["ubuntu-latest",
+          "macos-latest", "windows-latest"]') }}
       fail-fast: false
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - name: Setup Go
-        uses: actions/setup-go@v7
-        with:
-          go-version: '1.27.3'
-          cache: true
-
-      - name: Install dependencies
-        run: go mod download && go mod verify
-
-      - name: Compile check
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "Checking if all packages compile..."
-          go build -v ./...
-          echo "Checking if tests compile (per package)..."
-          while IFS= read -r pkg; do
-            echo "Testing compilation for $pkg"
-            go test -run '^$' "$pkg"
-          done < <(go list ./...)
-          echo "✅ Compilation checks completed!"
-
-      - name: Run tests with coverage
-        shell: bash
-        run: |
-          go test -race "-coverprofile=coverage-${{ matrix.os }}.out" -covermode=atomic ./...
-
-      - name: Upload coverage artifacts
-        if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v7
-        with:
-          name: coverage-reports
-          path: |
-            coverage-*.out
-
-  # 🔍 코드 품질 및 보안 분석 (Ubuntu 테스트 완료 후 실행)
+    - {name: Checkout, uses: actions/checkout@v7, with: {fetch-depth: 0}}
+    - name: Run test checks
+      uses: ./.github/actions/main-test
+      with:
+        os: ${{ matrix.os }}
+        default-shell: ${{ runner.os == 'Windows' && 'pwsh' || 'bash -e {0}' }}
   quality:
     name: Quality & Security
     runs-on: ubuntu-latest
-    timeout-minutes: 15  # 품질 검사 제한 시간
+    timeout-minutes: 15
     needs: test
-    # 테스트가 실패하면 품질 검사도 skip
     if: success()
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - name: Setup Go
-        id: setup-go
-        uses: actions/setup-go@v7
-        with:
-          go-version: '1.27.3'
-          cache: true
-
-      # 도구 바이너리 전용 캐시. setup-go가 관리하는 module/build 캐시
-      # (~/go/pkg/mod, ~/.cache/go-build)와 경로가 겹치지 않는다.
-      # bin/tools 는 .make/tools.mk 가 pin 한 golangci-lint/gosec 설치 위치이며,
-      # pin 이 바뀌면 key 가 바뀌어 새 캐시 항목으로 저장된다.
-      # 바이너리는 러너의 Go 로 go install 하므로 key 와 restore-keys 모두
-      # 설치된 Go 버전을 포함한다. 툴체인이 바뀌면 다른 Go 로 만든 항목은
-      # 복원되지 않는다.
-      - name: Cache tool binaries
-        uses: actions/cache@v6
-        with:
-          path: |
-            ~/.local/bin
-            ~/go/bin
-            bin/tools
-          key: ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ hashFiles('Makefile', '.make/tools.mk') }}
-          restore-keys: |
-            ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
-
-      - name: Install dependencies
-        run: go mod download
-
-      - name: Verify AGENTS guidelines
-        run: |
-          if [ -f scripts/check-agents.sh ]; then
-            chmod +x scripts/check-agents.sh
-            scripts/check-agents.sh
-          else
-            echo "⚠️ AGENTS check script not found, skipping"
-          fi
-
-      - name: Format check
-        run: make format-check
-
-      - name: Lint check
-        run: make lint-check
-
-      - name: Security scan
-        run: make security-json
-
-      - name: Accepted-risk gosec parity
-        run: make security-gosec-parity
-
-      - name: Upload SARIF
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: gosec-report.json
-        if: always() && hashFiles('gosec-report.json') != ''
-
-      - name: Upload security artifacts
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: security-reports
-          path: |
-            gosec-report.json
-            lint-report.xml
-
-  # 🔒 취약점 스캔 (govulncheck: Go stdlib/의존성 CVE 자동 감지)
+    - {name: Checkout, uses: actions/checkout@v7, with: {fetch-depth: 0}}
+    - name: Run quality checks
+      uses: ./.github/actions/main-quality
+    - name: Upload SARIF
+      uses: github/codeql-action/upload-sarif@v4
+      with:
+        sarif_file: gosec-report.json
+      if: always() && hashFiles('gosec-report.json') != ''
+    - name: Upload security artifacts
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: security-reports
+        path: |
+          gosec-report.json
+          lint-report.xml
   vulncheck:
     name: Vulncheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - id: setup-go
-        uses: actions/setup-go@v7
-        with:
-          go-version: '1.27.3'
-          cache: true
-      - name: Cache tool binaries
-        uses: actions/cache@v6
-        with:
-          path: bin/tools
-          key: ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ hashFiles('Makefile', '.make/tools.mk') }}
-          restore-keys: |
-            ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
-      - name: Install govulncheck
-        run: make install-govulncheck
-      - name: govulncheck
-        run: ./bin/tools/govulncheck ./...
-
-  # 🚀 성능 벤치마크 (PR 또는 [benchmark] 커밋 메시지)
+    - {uses: actions/checkout@v7}
+    - name: Run vulncheck checks
+      uses: ./.github/actions/main-vulncheck
   benchmark:
     name: Performance Benchmarks
     runs-on: ubuntu-latest
     needs: [test, quality]
-    if: (github.event_name == 'pull_request' && contains(github.event.pull_request.title, 'perf')) || contains(github.event.head_commit.message, '[benchmark]') || contains(github.event.head_commit.message, 'perf:')
+    if: (github.event_name == 'pull_request' && contains(github.event.pull_request.title, 'perf')) || contains(github.event.head_commit.message,
+      '[benchmark]') || contains(github.event.head_commit.message, 'perf:')
     timeout-minutes: 30
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - name: Setup Go
-        id: setup-go
-        uses: actions/setup-go@v7
-        with:
-          go-version: '1.27.3'
-          cache: true
-
-      - name: Cache tool binaries
-        uses: actions/cache@v6
-        with:
-          path: bin/tools
-          key: ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ hashFiles('Makefile', '.make/tools.mk') }}
-          restore-keys: |
-            ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
-
-      - name: Install dependencies
-        run: go mod download
-
-      - name: Compile check
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "Checking if all packages compile..."
-          go build -v ./...
-          echo "Checking if tests compile (per package)..."
-          while IFS= read -r pkg; do
-            echo "Testing compilation for $pkg"
-            go test -run '^$' "$pkg"
-          done < <(go list ./...)
-          echo "✅ Compilation checks completed!"
-
-      - name: Install benchstat
-        run: make install-benchstat
-
-      - name: Run benchmarks
-        id: benchmark-run
-        shell: bash
-        run: |
-          set -uo pipefail
-          PACKAGE_PATTERN="${{ github.event.inputs.package_pattern || './...' }}"
-          echo "🏃 Running benchmarks for: $PACKAGE_PATTERN"
-
-          failures=0
-          for i in {1..5}; do
-            echo "📊 Benchmark run $i/5"
-            attempt_output="benchmark_attempt_${i}.log"
-            if go test -bench=. -benchmem -run=^$ $PACKAGE_PATTERN 2>&1 | tee "$attempt_output"; then
-              mv "$attempt_output" "benchmark_${i}.txt"
-            else
-              mv "$attempt_output" "benchmark_failure_${i}.log"
-              echo "::error::Benchmark run $i/5 failed; its output is retained in benchmark_failure_${i}.log"
-              failures=$((failures + 1))
-            fi
-          done
-          echo "failures=$failures" >> "$GITHUB_OUTPUT"
-
-      - name: Generate benchmark report
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          {
-            echo "# 📈 Performance Benchmark Report"
-            echo ""
-            echo "**Commit:** \`${{ github.sha }}\`"
-            echo "**Date:** $(date)"
-            echo "**Trigger:** ${{ github.event_name }}"
-            echo ""
-            echo "## 🎯 Benchmark Results"
-            echo "\`\`\`"
-            shopt -s nullglob
-            successful_results=(benchmark_[1-5].txt)
-            if ((${#successful_results[@]} > 0)); then
-              cat "${successful_results[@]}" > all_benchmarks.txt
-              ./bin/tools/benchstat all_benchmarks.txt
-            else
-              : > all_benchmarks.txt
-              echo "No benchmark results found or all benchmarks failed"
-            fi
-            echo "\`\`\`"
-          } > benchmark_report.md
-
-      - name: Upload benchmark results
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: benchmark-results
-          path: |
-            benchmark_*.txt
-            benchmark_failure_*.log
-            benchmark_report.md
-            all_benchmarks.txt
-
-      - name: Fail on benchmark errors
-        if: always() && steps.benchmark-run.outputs.failures != '0'
-        run: exit 1
-
-      - name: Comment PR with results
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v9
-        with:
-          script: |
-            const fs = require('fs');
-            try {
-              const report = fs.readFileSync('benchmark_report.md', 'utf8');
-              await github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: report
-              });
-            } catch (error) {
-              console.log('Could not read benchmark report:', error);
-            }
-
-  # 🔨 빌드 검증 (테스트와 품질 검사 완료 후)
+    - {name: Checkout, uses: actions/checkout@v7, with: {fetch-depth: 0}}
+    - name: Run benchmark checks
+      uses: ./.github/actions/main-benchmark
+      id: benchmark-run
+    - name: Generate benchmark report
+      if: always()
+      shell: bash
+      run: |
+        set -euo pipefail
+        {
+          echo "# 📈 Performance Benchmark Report"
+          echo ""
+          echo "**Commit:** \`${{ github.sha }}\`"
+          echo "**Date:** $(date)"
+          echo "**Trigger:** ${{ github.event_name }}"
+          echo ""
+          echo "## 🎯 Benchmark Results"
+          echo "\`\`\`"
+          shopt -s nullglob
+          successful_results=(benchmark_[1-5].txt)
+          if ((${#successful_results[@]} > 0)); then
+            cat "${successful_results[@]}" > all_benchmarks.txt
+            ./bin/tools/benchstat all_benchmarks.txt
+          else
+            : > all_benchmarks.txt
+            echo "No benchmark results found or all benchmarks failed"
+          fi
+          echo "\`\`\`"
+        } > benchmark_report.md
+    - name: Upload benchmark results
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-results
+        path: |
+          benchmark_*.txt
+          benchmark_failure_*.log
+          benchmark_report.md
+          all_benchmarks.txt
+    - name: Fail on benchmark errors
+      if: always() && steps.benchmark-run.outputs.failures != '0'
+      run: exit 1
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v9
+      with:
+        script: |
+          const fs = require('fs');
+          try {
+            const report = fs.readFileSync('benchmark_report.md', 'utf8');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });
+          } catch (error) {
+            console.log('Could not read benchmark report:', error);
+          }
   build:
     name: Build & Test Binaries
     runs-on: ubuntu-latest
-    timeout-minutes: 10  # 빌드 제한 시간
+    timeout-minutes: 10
     needs: [test, quality]
-    # 이전 job들이 성공했을 때만 실행
     if: success()
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Setup Go
-        uses: actions/setup-go@v7
-        with:
-          go-version: '1.27.3'
-          cache: true
-
-      - name: Install dependencies
-        run: go mod download
-
-      - name: Build supported binary
-        run: |
-          echo "🔨 Building main binary..."
-          go build -trimpath \
-            -ldflags="-s -w -X github.com/gizzahub/gzh-cli/internal/version.Version=${{ github.sha }}" \
-            -o gz ./cmd/gz
-
-      - name: Test binary functionality
-        run: |
-          echo "🧪 Testing binary versions..."
-          version_output=$(./gz version)
-          echo "$version_output"
-          test "$version_output" = "gz version ${{ github.sha }}"
-
-          echo "🧪 Testing basic commands..."
-          ./gz --help > /dev/null
-          ./gz dev-env --help > /dev/null
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v7
-        with:
-          name: binaries-${{ github.sha }}
-          path: gz
-
-  # 📋 Summary job for branch protection
+    - {name: Checkout, uses: actions/checkout@v7}
+    - name: Run build checks
+      uses: ./.github/actions/main-build
   summary:
     name: CI Summary
     runs-on: ubuntu-latest
     needs: [test, quality, build]
     if: always()
-
     steps:
-      - name: Check job results
-        run: |
-          echo "🔍 Checking job results..."
-          echo "Test job: ${{ needs.test.result }}"
-          echo "Quality job: ${{ needs.quality.result }}"
-          echo "Build job: ${{ needs.build.result }}"
+    - name: Check job results
+      run: |
+        echo "🔍 Checking job results..."
+        echo "Test job: ${{ needs.test.result }}"
+        echo "Quality job: ${{ needs.quality.result }}"
+        echo "Build job: ${{ needs.build.result }}"
 
-          if [ "${{ needs.test.result }}" != "success" ]; then
-            echo "❌ Tests failed"
-            exit 1
-          fi
+        if [ "${{ needs.test.result }}" != "success" ]; then
+          echo "❌ Tests failed"
+          exit 1
+        fi
 
-          if [ "${{ needs.quality.result }}" != "success" ]; then
-            echo "❌ Quality checks failed"
-            exit 1
-          fi
+        if [ "${{ needs.quality.result }}" != "success" ]; then
+          echo "❌ Quality checks failed"
+          exit 1
+        fi
 
-          if [ "${{ needs.build.result }}" != "success" ]; then
-            echo "❌ Build failed"
-            exit 1
-          fi
+        if [ "${{ needs.build.result }}" != "success" ]; then
+          echo "❌ Build failed"
+          exit 1
+        fi
 
-          echo "✅ All required jobs passed successfully!"
-
-      - name: Generate job summary
-        run: |
-          echo "## 🎉 CI/CD Pipeline Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Tests | ${{ needs.test.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Quality | ${{ needs.quality.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Build | ${{ needs.build.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "✅ All required jobs passed successfully!"
+    - name: Generate job summary
+      run: |
+        echo "## 🎉 CI/CD Pipeline Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Tests | ${{ needs.test.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Quality | ${{ needs.quality.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Build | ${{ needs.build.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY

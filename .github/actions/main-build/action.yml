@@ -1,0 +1,36 @@
+name: Main CI build
+description: Extracted build steps; job scheduling and permissions stay in main.yml
+runs:
+  using: composite
+  steps:
+  - name: Setup Go
+    uses: actions/setup-go@v7
+    with:
+      go-version: 1.27.3
+      cache: true
+  - name: Install dependencies
+    run: go mod download
+    shell: bash -e {0}
+  - name: Build supported binary
+    run: |
+      echo "🔨 Building main binary..."
+      go build -trimpath \
+        -ldflags="-s -w -X github.com/gizzahub/gzh-cli/internal/version.Version=${{ github.sha }}" \
+        -o gz ./cmd/gz
+    shell: bash -e {0}
+  - name: Test binary functionality
+    run: |
+      echo "🧪 Testing binary versions..."
+      version_output=$(./gz version)
+      echo "$version_output"
+      test "$version_output" = "gz version ${{ github.sha }}"
+
+      echo "🧪 Testing basic commands..."
+      ./gz --help > /dev/null
+      ./gz dev-env --help > /dev/null
+    shell: bash -e {0}
+  - name: Upload build artifacts
+    uses: actions/upload-artifact@v7
+    with:
+      name: binaries-${{ github.sha }}
+      path: gz

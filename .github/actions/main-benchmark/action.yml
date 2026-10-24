@@ -1,0 +1,62 @@
+name: Main CI benchmark
+description: Extracted benchmark steps; job scheduling and permissions stay in main.yml
+outputs:
+  failures:
+    description: Unchanged benchmark failure count from benchmark-run
+    value: ${{ steps.benchmark-run.outputs.failures }}
+runs:
+  using: composite
+  steps:
+  - name: Setup Go
+    id: setup-go
+    uses: actions/setup-go@v7
+    with:
+      go-version: 1.27.3
+      cache: true
+  - name: Cache tool binaries
+    uses: actions/cache@v6
+    with:
+      path: bin/tools
+      key: ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ hashFiles('Makefile',
+        '.make/tools.mk') }}
+      restore-keys: |
+        ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+  - name: Install dependencies
+    run: go mod download
+    shell: bash -e {0}
+  - name: Compile check
+    shell: bash
+    run: |
+      set -euo pipefail
+      echo "Checking if all packages compile..."
+      go build -v ./...
+      echo "Checking if tests compile (per package)..."
+      while IFS= read -r pkg; do
+        echo "Testing compilation for $pkg"
+        go test -run '^$' "$pkg"
+      done < <(go list ./...)
+      echo "✅ Compilation checks completed!"
+  - name: Install benchstat
+    run: make install-benchstat
+    shell: bash -e {0}
+  - name: Run benchmarks
+    id: benchmark-run
+    shell: bash
+    run: |
+      set -uo pipefail
+      PACKAGE_PATTERN="${{ github.event.inputs.package_pattern || './...' }}"
+      echo "🏃 Running benchmarks for: $PACKAGE_PATTERN"
+
+      failures=0
+      for i in {1..5}; do
+        echo "📊 Benchmark run $i/5"
+        attempt_output="benchmark_attempt_${i}.log"
+        if go test -bench=. -benchmem -run=^$ $PACKAGE_PATTERN 2>&1 | tee "$attempt_output"; then
+          mv "$attempt_output" "benchmark_${i}.txt"
+        else
+          mv "$attempt_output" "benchmark_failure_${i}.log"
+          echo "::error::Benchmark run $i/5 failed; its output is retained in benchmark_failure_${i}.log"
+          failures=$((failures + 1))
+        fi
+      done
+      echo "failures=$failures" >> "$GITHUB_OUTPUT"

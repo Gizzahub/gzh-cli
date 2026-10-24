@@ -1,0 +1,43 @@
+name: Main CI test
+description: Extracted test steps; job scheduling and permissions stay in main.yml
+inputs:
+  os:
+    description: Original matrix OS for coverage artifact selection
+    required: true
+  default-shell:
+    description: Original runner default shell for steps without an explicit shell
+    required: true
+runs:
+  using: composite
+  steps:
+  - name: Setup Go
+    uses: actions/setup-go@v7
+    with:
+      go-version: 1.27.3
+      cache: true
+  - name: Install dependencies
+    run: go mod download && go mod verify
+    shell: ${{ inputs.default-shell }}
+  - name: Compile check
+    shell: bash
+    run: |
+      set -euo pipefail
+      echo "Checking if all packages compile..."
+      go build -v ./...
+      echo "Checking if tests compile (per package)..."
+      while IFS= read -r pkg; do
+        echo "Testing compilation for $pkg"
+        go test -run '^$' "$pkg"
+      done < <(go list ./...)
+      echo "✅ Compilation checks completed!"
+  - name: Run tests with coverage
+    shell: bash
+    run: |
+      go test -race "-coverprofile=coverage-${{ inputs.os }}.out" -covermode=atomic ./...
+  - name: Upload coverage artifacts
+    if: inputs.os == 'ubuntu-latest'
+    uses: actions/upload-artifact@v7
+    with:
+      name: coverage-reports
+      path: |
+        coverage-*.out

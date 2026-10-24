@@ -1,0 +1,46 @@
+name: Main CI quality
+description: Extracted quality steps; job scheduling and permissions stay in main.yml
+runs:
+  using: composite
+  steps:
+  - name: Setup Go
+    id: setup-go
+    uses: actions/setup-go@v7
+    with:
+      go-version: 1.27.3
+      cache: true
+  - name: Cache tool binaries
+    uses: actions/cache@v6
+    with:
+      path: |
+        ~/.local/bin
+        ~/go/bin
+        bin/tools
+      key: ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ hashFiles('Makefile',
+        '.make/tools.mk') }}
+      restore-keys: |
+        ${{ env.CACHE_VERSION }}-tools-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+  - name: Install dependencies
+    run: go mod download
+    shell: bash -e {0}
+  - name: Verify AGENTS guidelines
+    run: |
+      if [ -f scripts/check-agents.sh ]; then
+        chmod +x scripts/check-agents.sh
+        scripts/check-agents.sh
+      else
+        echo "⚠️ AGENTS check script not found, skipping"
+      fi
+    shell: bash -e {0}
+  - name: Format check
+    run: make format-check
+    shell: bash -e {0}
+  - name: Lint check
+    run: make lint-check
+    shell: bash -e {0}
+  - name: Security scan
+    run: make security-json
+    shell: bash -e {0}
+  - name: Accepted-risk gosec parity
+    run: make security-gosec-parity
+    shell: bash -e {0}
