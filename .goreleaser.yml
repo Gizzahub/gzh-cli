@@ -61,7 +61,9 @@ nfpms:
     vendor: Gizzahub
     homepage: https://github.com/Gizzahub/gzh-cli
     maintainer: "Gizzahub <{{ .Env.GORELEASER_MAINTAINER_EMAIL }}>"
-    description: "Comprehensive CLI tool for managing development environments and Git repositories"
+    # Single source for every package description below (`*description`).
+    # Keep it under 80 characters: `brew style` rejects longer cask descs.
+    description: &description "CLI tool for managing development environments and Git repositories"
     license: GPL-3.0
     formats:
       - apk
@@ -127,7 +129,7 @@ dockers_v2:
       org.opencontainers.image.revision: "{{ .FullCommit }}"
       org.opencontainers.image.version: "{{ .Version }}"
       org.opencontainers.image.source: "{{ .GitURL }}"
-      org.opencontainers.image.description: "Comprehensive CLI tool for managing development environments and Git repositories"
+      org.opencontainers.image.description: *description
       org.opencontainers.image.vendor: "Gizzahub"
       org.opencontainers.image.licenses: "GPL-3.0"
 
@@ -144,7 +146,7 @@ homebrew_casks:
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     directory: Casks
     homepage: https://github.com/Gizzahub/gzh-cli
-    description: "Comprehensive CLI tool for managing development environments and Git repositories"
+    description: *description
     license: GPL-3.0
     hooks:
       post:
@@ -185,7 +187,7 @@ scoops:
       token: "{{ .Env.SCOOP_BUCKET_GITHUB_TOKEN }}"
     directory: bucket
     homepage: https://github.com/Gizzahub/gzh-cli
-    description: "Comprehensive CLI tool for managing development environments and Git repositories"
+    description: *description
     license: GPL-3.0
 
 aurs:
@@ -193,7 +195,7 @@ aurs:
     ids:
       - default
     homepage: https://github.com/Gizzahub/gzh-cli
-    description: "Comprehensive CLI tool for managing development environments and Git repositories"
+    description: *description
     maintainers:
       - "Gizzahub <{{ .Env.GORELEASER_MAINTAINER_EMAIL }}>"
     license: GPL-3.0
