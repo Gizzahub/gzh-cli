@@ -119,7 +119,7 @@ RELEASE_TOOLS_DIR := $(CURDIR)/bin/tools
 # than aspirational.
 RELEASE_WORKFLOW := $(CURDIR)/.github/workflows/release.yml
 
-GORELEASER_VERSION := v2.18.0
+GORELEASER_VERSION := v2.19.0
 GORELEASER_MODULE := github.com/goreleaser/goreleaser/v2
 GORELEASER_INSTALL := $(GORELEASER_MODULE)@$(GORELEASER_VERSION)
 GORELEASER := $(RELEASE_TOOLS_DIR)/goreleaser$(shell go env GOEXE)

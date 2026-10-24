@@ -148,9 +148,11 @@ homebrew_casks:
     license: GPL-3.0
     hooks:
       post:
-        install: |
-          if OS.mac?
-            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/gz"]
+        # GoReleaser v2.19 deprecated the Ruby `install` hook (Homebrew's
+        # `postflight`) for the declarative `install_steps` DSL.
+        install_steps: |
+          on_macos do
+            run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{ .StagedPath }}/gz"]
           end
 
 # Chocolatey is an explicitly UNSUPPORTED publish channel for now.

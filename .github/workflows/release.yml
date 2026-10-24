@@ -20,7 +20,7 @@ env:
   # local half of the same contract, and drift between the two means CI is no
   # longer releasing what a developer validated with `make release-snapshot`.
   # Bump both together. Evidence for each pin: docs/70-deployment/70-releases.md
-  GORELEASER_VERSION: v2.18.0
+  GORELEASER_VERSION: v2.19.0
   SYFT_VERSION: v1.51.1
   COSIGN_VERSION: v3.1.3
 

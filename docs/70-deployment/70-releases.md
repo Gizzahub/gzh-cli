@@ -109,7 +109,7 @@ of these resolve to `latest`.
 
 | Tool           | Pinned version | Upstream evidence                                                                                |
 | -------------- | -------------- | ------------------------------------------------------------------------------------------------ |
-| **GoReleaser** | `v2.18.0`      | [Release v2.18.0](https://github.com/goreleaser/goreleaser/releases/tag/v2.18.0) — latest stable |
+| **GoReleaser** | `v2.19.0`      | [Release v2.19.0](https://github.com/goreleaser/goreleaser/releases/tag/v2.19.0) — latest stable |
 | **syft**       | `v1.51.1`      | [Release v1.51.1](https://github.com/anchore/syft/releases/tag/v1.51.1) — latest stable          |
 | **cosign**     | `v3.1.3`       | [Release v3.1.3](https://github.com/sigstore/cosign/releases/tag/v3.1.3) — latest stable         |
 
@@ -126,7 +126,7 @@ the true module version even for a binary built without the upstream release
 ldflags. CI installs the official release binaries through pinned actions and
 verifies them with each tool's own `version` output. Both paths are exact.
 
-### Why GoReleaser v2.18.0
+### Why GoReleaser v2.19.0
 
 - The module path for GoReleaser v2 is `github.com/goreleaser/goreleaser/v2`.
   The unsuffixed `github.com/goreleaser/goreleaser` module stops at `v1.26.2`,
@@ -135,7 +135,7 @@ verifies them with each tool's own `version` output. Both paths are exact.
 - `homebrew_casks[].binary` was replaced by `binaries` in v2.13.0 and is now a
   hard `goreleaser check` failure ("configuration is valid, but uses deprecated
   properties"), so the config uses `binaries`.
-- v2.18.0 carries fixes that matter to this config directly: `fix(sign): artifacts: none masks real signing failures`, `fix(cask): a cask without a repository stops the ones after it`, and `fix(cask): emit Casks that pass brew style`.
+- v2.18.0 introduced fixes that matter to this config directly, and v2.19.0 (latest stable, 2026-10-22) keeps them: `fix(sign): artifacts: none masks real signing failures`, `fix(cask): a cask without a repository stops the ones after it`, and `fix(cask): emit Casks that pass brew style`.
 
 ### Why cosign v3.1.3 changed the signing config
 
