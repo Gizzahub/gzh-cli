@@ -172,6 +172,15 @@ var gosecTagPlacementCases = []struct {
 	{name: "with no separator before the rule", comment: "\t//#nosecG304\n", suppressed: true},
 	{name: "on a later line of a comment group", comment: "\t// the caller owns this path.\n\t// #nosec G304\n", suppressed: true},
 	{name: "on a later line of a block comment", comment: "\t/* the caller owns this path.\n\t   #nosec G304 */\n", suppressed: true},
+	{name: "after a vertical tab at the start of the group", comment: "\t//\v#nosec G304\n", suppressed: true},
+	{name: "after a form feed at the start of the group", comment: "\t//\f#nosec G304\n", suppressed: true},
+	{name: "after a no-break space at the start of the group", comment: "\t// #nosec G304\n", suppressed: true},
+	{name: "after a next-line character at the start of the group", comment: "\t//\u0085#nosec G304\n", suppressed: true},
+	{name: "after a white-space-only first comment", comment: "\t//\v\n\t//\v#nosec G304\n", suppressed: true},
+	{name: "after a directive comment", comment: "\t//go:generate true\n\t//\v#nosec G304\n", suppressed: true},
+	{name: "after a vertical tab on a later line", comment: "\t// the caller owns this path.\n\t//\v#nosec G304\n", suppressed: false},
+	{name: "after a vertical tab below a blank block comment line", comment: "\t/*\n\t\v#nosec G304 */\n", suppressed: true},
+	{name: "after a vertical tab on a later block comment line", comment: "\t/* the caller owns this path.\n\v#nosec G304 */\n", suppressed: false},
 	{name: "spelled in uppercase", comment: "\t//#NOSEC G304\n", suppressed: false},
 	{name: "named mid-sentence", comment: "\t// note: #nosec G304 would apply here\n", suppressed: false},
 }
@@ -180,7 +189,9 @@ var gosecTagPlacementCases = []struct {
 // placement rule rather than to a looser one.
 //
 // The rule is byte comparison at the start of a line within a comment, after
-// optional spaces and tabs, with no separator required after the tag. Matching
+// optional spaces and tabs, with no separator required after the tag. Before the
+// comment group's first visible text any Unicode white space may precede the
+// tag, because gosec trims the whole group text first. Matching
 // more loosely than this would report comments gosec never acts on, and would
 // make an ordinary sentence about the blanket form unwriteable anywhere in the
 // repository.

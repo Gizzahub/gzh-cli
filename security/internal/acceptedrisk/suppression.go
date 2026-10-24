@@ -16,6 +16,7 @@ import (
 	"slices"
 	"sort"
 	"strings"
+	"unicode"
 )
 
 // directivePrefix introduces a standalone gosec suppression.
@@ -103,7 +104,8 @@ func gosecBlanketTokens(gosecConfig []byte) (blanketTokens, error) {
 //
 // The rule mirrors gosec's findNoSecTag, and the fidelity is the whole point.
 // gosec compares bytes and accepts the tag only at the start of a line within a
-// comment group, after optional spaces and tabs. A looser rule is not merely
+// comment group, after optional spaces and tabs (any Unicode white space before
+// the group's first visible text; see blanketSuppressions). A looser rule is not merely
 // noisy: matching case-insensitively and at any position makes an ordinary
 // sentence about the blanket form unwriteable in any comment in the repository,
 // including the comments in this file, which is a cost paid for findings gosec
@@ -412,11 +414,18 @@ func suppressionsInFile(name string, contents []byte, tokens blanketTokens) ([]s
 
 	found := make([]suppression, 0)
 	for _, group := range parsed.Comments {
+		// leading holds until the group shows visible text, as gosec sees it.
+		// gosec reads ast.CommentGroup.Text, which drops directive comments such
+		// as //go:generate, so each comment is judged through that same method.
+		leading := true
 		for _, comment := range group.List {
 			startLine := fileSet.Position(comment.Slash).Line
-			for _, blanket := range tokens.blanketSuppressions(name, startLine, comment.Text) {
+			for _, blanket := range tokens.blanketSuppressions(name, startLine, comment.Text, leading) {
 				blanket.Unscanned = unscanned
 				found = append(found, blanket)
+			}
+			if strings.TrimSpace((&ast.CommentGroup{List: []*ast.Comment{comment}}).Text()) != "" {
+				leading = false
 			}
 
 			text := strings.TrimRight(comment.Text, " \t")
@@ -437,11 +446,19 @@ func suppressionsInFile(name string, contents []byte, tokens blanketTokens) ([]s
 
 // blanketSuppressions reports every blanket suppression written inside one
 // comment. The comment markers are stripped first, because gosec matches against
-// ast.CommentGroup.Text, which has already removed them, and each line is then
-// judged on its own, because gosec judges each line on its own. An occurrence is
-// attributed to the line it is written on rather than to the line a block
-// comment opens on.
-func (tokens blanketTokens) blanketSuppressions(name string, startLine int, text string) []suppression {
+// ast.CommentGroup.Text, which has already removed them.
+//
+// gosec applies strings.TrimSpace to the whole group text before looking for a
+// tag at its start, so while leading is true (no visible text earlier in the
+// group) any Unicode white space may precede the tag. On every other line gosec
+// accepts only spaces and tabs between the line start and the tag.
+//
+// gosec looks only at the first occurrence of each configured tag in a group,
+// while every line is reported here. Reporting more is the safe direction: a reported comment is
+// rejected as a blanket form, while a missed one would suppress findings unseen. An
+// occurrence is attributed to the line it is written on rather than to the line
+// a block comment opens on.
+func (tokens blanketTokens) blanketSuppressions(name string, startLine int, text string, leading bool) []suppression {
 	body := text
 	switch {
 	case strings.HasPrefix(body, "//"):
@@ -452,7 +469,12 @@ func (tokens blanketTokens) blanketSuppressions(name string, startLine int, text
 
 	var found []suppression
 	for offset, line := range strings.Split(body, "\n") {
-		if !tokens.live(strings.TrimLeft(line, " \t")) {
+		trimmed := strings.TrimLeft(line, " \t")
+		if leading {
+			trimmed = strings.TrimLeftFunc(line, unicode.IsSpace)
+			leading = trimmed == ""
+		}
+		if !tokens.live(trimmed) {
 			continue
 		}
 		found = append(found, suppression{
