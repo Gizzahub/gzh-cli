@@ -37,12 +37,24 @@ func TestReleasedQualityAnalyze(t *testing.T) {
 		t.Fatal(err)
 	}
 	output, err := runConsumerCLI(t, directory, "quality", "analyze")
-	canonical, pathErr := filepath.EvalSymlinks(directory)
-	if pathErr != nil {
-		t.Fatal(pathErr)
-	}
-	if err != nil || !strings.Contains(output, "Go: 1") || !strings.Contains(output, canonical) {
+	if err != nil || !strings.Contains(output, "Go: 1") {
 		t.Fatalf("analysis failed: %v\n%s", err, output)
+	}
+	// 경로 표기가 달라도 같은 디렉터리인지 파일시스템 정체성으로 확인한다.
+	var reported string
+	for _, line := range strings.Split(output, "\n") {
+		if value, ok := strings.CutPrefix(strings.TrimSuffix(line, "\r"), "🔍 프로젝트 분석: "); ok {
+			reported = value
+			break
+		}
+	}
+	expectedInfo, err := os.Stat(directory)
+	if err != nil {
+		t.Fatal(err)
+	}
+	reportedInfo, err := os.Stat(reported)
+	if err != nil || !os.SameFile(expectedInfo, reportedInfo) {
+		t.Fatalf("reported project root %q does not identify expected directory %q: %v\n%s", reported, directory, err, output)
 	}
 	got, err := os.ReadFile(path)
 	if err != nil || string(got) != string(source) {
