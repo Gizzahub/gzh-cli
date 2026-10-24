@@ -113,13 +113,15 @@ gz profile server --port <port> [--host <host>]
 **Purpose**: Profile CPU usage to identify performance bottlenecks.
 
 ```bash
-gz profile cpu --duration <duration> [--output <file>]
+gz profile cpu [--duration <duration>]
 ```
 
 **Options**:
 
 - `--duration` - Profiling duration (default: 30s)
-- `--output` - Output file (default: cpu.prof)
+
+The profile is written to `tmp/profiles/cpu_<timestamp>_<sequence>.prof`;
+there is no `--output` flag.
 
 **Analysis Example**:
 
@@ -128,10 +130,10 @@ gz profile cpu --duration <duration> [--output <file>]
 gz profile cpu --duration 60s
 
 # Analyze with pprof
-go tool pprof cpu.prof
+go tool pprof tmp/profiles/<file>.prof
 
-# Generate flame graph
-gz profile cpu --duration 30s --format flame
+# Open the web UI, which includes a flame graph view
+go tool pprof -http=localhost:8080 tmp/profiles/<file>.prof
 ```
 
 ### 4. Memory Profiling (`gz profile memory`)
@@ -315,10 +317,8 @@ performance:
 ### Flame Graphs
 
 ```bash
-# Generate flame graph
-gz profile cpu --duration 30s --format flame
-
-# Opens interactive flame graph in browser
+# `gz profile` has no flame graph output; the pprof web UI has one
+go tool pprof -http=localhost:8080 tmp/profiles/<file>.prof
 ```
 
 ### Call Graphs

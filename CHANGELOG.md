@@ -4,6 +4,20 @@
 
 이 프로젝트는 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)을 따릅니다.
 
+## [Unreleased]
+
+### ⚠️ 호환성 깨짐
+
+- `gz profile compare`, `gz profile analyze`, `gz profile continuous --auto-analyze`를 제거했다.
+  세 기능은 pprof 데이터를 해석하지 않고 파일 이름에 따라 고정된 결과를 출력했다. 프로필 분석은
+  `go tool pprof -top <file>`, 비교는 `go tool pprof -diff_base=<base> <current>`를 쓴다.
+  공개 명령 제거이므로 다음 릴리스는 minor 버전 이상을 올린다.
+
+### 보안
+
+- accepted-risk 검사가 고정된 gosec 버전과 같은 규칙으로 blanket `#nosec` 주석을 찾는다.
+  `make security-gosec-parity`가 CI에서 그 일치를 측정한다.
+
 ## [1.0.0] - 2025-01-XX (준비 중)
 
 ### 🎉 첫 정식 릴리즈

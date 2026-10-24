@@ -47,7 +47,7 @@ gz ide status
 gz ide fix-sync
 
 # Performance profiling
-gz profile start --type cpu
+gz profile cpu --duration 30s
 gz profile server --port 6060
 go tool pprof -top profile.pprof
 ```
