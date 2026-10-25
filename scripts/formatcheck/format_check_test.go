@@ -19,6 +19,18 @@ func TestMain(m *testing.M) {
 	if os.Getenv("FORMAT_CHECK_HELPER") == "1" {
 		tool := strings.TrimSuffix(filepath.Base(os.Args[0]), ".exe")
 		fmt.Fprintln(os.Stderr, "invoked:"+tool)
+		if trace := os.Getenv("FORMAT_CHECK_TRACE"); trace != "" {
+			file, err := os.OpenFile(trace, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(25)
+			}
+			_, writeErr := fmt.Fprintln(file, tool+":"+os.Args[len(os.Args)-1])
+			closeErr := file.Close()
+			if writeErr != nil || closeErr != nil {
+				os.Exit(25)
+			}
+		}
 		if tool == "gci" {
 			info, err := os.Stdin.Stat()
 			if err != nil || info.Mode()&os.ModeCharDevice == 0 {

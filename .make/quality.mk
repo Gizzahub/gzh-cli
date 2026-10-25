@@ -167,11 +167,11 @@ format-file: format-install-tools ## format specific files with gofumpt and goim
 			fi; \
 			echo -e "$(CYAN)📝 Formatting file: $$file$(RESET)"; \
 			echo "  1. Running gofumpt..."; \
-			"$(GOFUMPT)" -w "$$file" || echo -e "$(RED)❌ gofumpt failed for $$file$(RESET)"; \
+			"$(GOFUMPT)" -w "$$file" || { formatter_status=$$?; echo "gofumpt failed for $$file (exit $$formatter_status)" >&2; exit $$formatter_status; }; \
 			echo "  2. Running goimports..."; \
-			"$(GOIMPORTS)" -w $(GOIMPORTS_FLAGS) "$$file" || echo -e "$(RED)❌ goimports failed for $$file$(RESET)"; \
+			"$(GOIMPORTS)" -w $(GOIMPORTS_FLAGS) "$$file" || { formatter_status=$$?; echo "goimports failed for $$file (exit $$formatter_status)" >&2; exit $$formatter_status; }; \
 			echo "  3. Running gci..."; \
-			"$(GCI)" write --skip-generated $(GCI_SECTIONS) "$$file" </dev/null >/dev/null || echo -e "$(RED)❌ gci failed for $$file$(RESET)"; \
+			"$(GCI)" write --skip-generated $(GCI_SECTIONS) "$$file" </dev/null >/dev/null || { formatter_status=$$?; echo "gci failed for $$file (exit $$formatter_status)" >&2; exit $$formatter_status; }; \
 			echo -e "$(GREEN)✅ File '$$file' formatted successfully!$(RESET)"; \
 		fi; \
 	done
@@ -184,11 +184,11 @@ fmt-diff: format-install-tools ## format only changed files (fast, for pre-commi
 		echo "$$CHANGED_FILES" | while read file; do \
 			if [ -f "$$file" ]; then \
 				echo -e "$(CYAN)📝 Formatting: $$file$(RESET)"; \
-				"$(GOFUMPT)" -w "$$file" || echo -e "$(RED)❌ gofumpt failed for $$file$(RESET)"; \
-				"$(GOIMPORTS)" -w $(GOIMPORTS_FLAGS) "$$file" || echo -e "$(RED)❌ goimports failed for $$file$(RESET)"; \
-				"$(GCI)" write --skip-generated $(GCI_SECTIONS) "$$file" </dev/null >/dev/null || echo -e "$(RED)❌ gci failed for $$file$(RESET)"; \
+				"$(GOFUMPT)" -w "$$file" || { formatter_status=$$?; echo "gofumpt failed for $$file (exit $$formatter_status)" >&2; exit $$formatter_status; }; \
+				"$(GOIMPORTS)" -w $(GOIMPORTS_FLAGS) "$$file" || { formatter_status=$$?; echo "goimports failed for $$file (exit $$formatter_status)" >&2; exit $$formatter_status; }; \
+				"$(GCI)" write --skip-generated $(GCI_SECTIONS) "$$file" </dev/null >/dev/null || { formatter_status=$$?; echo "gci failed for $$file (exit $$formatter_status)" >&2; exit $$formatter_status; }; \
 			fi; \
-		done; \
+		done || exit $$?; \
 		echo -e "$(GREEN)✅ Changed files formatted!$(RESET)"; \
 	else \
 		echo -e "$(YELLOW)No Go files changed$(RESET)"; \

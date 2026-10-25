@@ -225,31 +225,23 @@ gz profile continuous --interval 5m --duration 1h
 go tool pprof -top cpu.prof
 ```
 
-## Configuration
+## 설정과 출력 경로
 
-```yaml
-profile:
-  server:
-    default_port: 6060
-    auto_open_browser: true
+`gz profile`은 YAML의 `profile:` 설정을 읽지 않는다. 명령별 CLI flag로 실행 조건을 지정하며,
+프로파일 파일은 실행 디렉터리 기준 `tmp/profiles`에 저장한다. 출력 경로·형식을 바꾸는
+flag나 `profile:` 설정 항목은 제공하지 않는다.
 
-  cpu:
-    default_duration: 30s
-    sampling_rate: 100  # Hz
+| 명령                    | 지원 flag와 기본값                                                            |
+| ----------------------- | ----------------------------------------------------------------------------- |
+| `gz profile server`     | `--port 6060`                                                                 |
+| `gz profile cpu`        | `--duration 30s`                                                              |
+| `gz profile memory`     | 명령 전용 flag 없음                                                           |
+| `gz profile stats`      | 명령 전용 flag 없음                                                           |
+| `gz profile continuous` | `--interval 5m`, `--duration 1h`, `--type cpu` (`cpu`, `memory`, `goroutine`) |
 
-  memory:
-    gc_before_heap: true
-    track_allocs: false
-
-  output:
-    directory: ./profiles
-    format: pprof  # pprof, text, json, flame
-
-  continuous:
-    enabled: false
-    interval: 5m
-    retention: 24h
-```
+수집한 pprof 파일은 `go tool pprof -top <file>` 또는
+`go tool pprof -http=:8080 <file>`로 분석한다. `text`, `json`, `flame`은
+`gz profile`의 출력 형식 선택값이 아니다.
 
 ## Performance Benchmarks
 
