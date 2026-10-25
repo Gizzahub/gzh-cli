@@ -19,6 +19,13 @@ func TestMain(m *testing.M) {
 	if os.Getenv("FORMAT_CHECK_HELPER") == "1" {
 		tool := strings.TrimSuffix(filepath.Base(os.Args[0]), ".exe")
 		fmt.Fprintln(os.Stderr, "invoked:"+tool)
+		if tool == "gci" {
+			info, err := os.Stdin.Stat()
+			if err != nil || info.Mode()&os.ModeCharDevice == 0 {
+				fmt.Fprintln(os.Stderr, "gci received caller stdin instead of a null device")
+				os.Exit(24)
+			}
+		}
 		if tool == os.Getenv("FORMAT_CHECK_SELECTED") {
 			switch os.Getenv("FORMAT_CHECK_MODE") {
 			case "error":

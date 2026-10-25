@@ -28,6 +28,7 @@
 # the gate is the same defect wearing a smaller scope: `make fmt-diff` would
 # hand back files that `make format-check` then rejects.
 GOIMPORTS_FLAGS :=
+# gci는 pipe stdin을 경로와 함께 처리하므로 경로 기반 호출은 /dev/null로 격리한다.
 GCI_SECTIONS := -s standard -s default -s "prefix(github.com/gizzahub/gzh-cli)"
 
 # 백필 전에는 변경된 저장소 소유 Markdown만 검사·정렬한다.
@@ -44,7 +45,7 @@ format-simplify: format-install-tools install-mdformat ## quick basic formatting
 	@echo "2. Organizing imports..."
 	@"$(GOIMPORTS)" -w $(GOIMPORTS_FLAGS) .
 	@echo "3. Grouping imports..."
-	@"$(GCI)" write --skip-generated $(GCI_SECTIONS) .
+	@"$(GCI)" write --skip-generated $(GCI_SECTIONS) . </dev/null
 	@echo "4. Formatting changed markdown files..."
 	@$(MDFORMAT_RUN) changed --base "$(MDFORMAT_BASE)" --formatter "$(MDFORMAT)"
 	@echo -e "$(GREEN)✅ Quick formatting complete!$(RESET)"
@@ -93,7 +94,7 @@ format-check: format-install-tools ## fail if Go files are not formatted (non-mu
 		echo "   Run: make format-strict"; \
 		exit 1; \
 	fi
-	@imports="$$("$(GCI)" diff --skip-generated $(GCI_SECTIONS) .)" || { status=$$?; echo "gci failed (exit $$status)" >&2; exit $$status; }; \
+	@imports="$$("$(GCI)" diff --skip-generated $(GCI_SECTIONS) . </dev/null)" || { status=$$?; echo "gci failed (exit $$status)" >&2; exit $$status; }; \
 	if [ -n "$$imports" ]; then \
 		echo -e "$(RED)❌ gci: import grouping not normalized:$(RESET)"; \
 		printf '%s\n' "$$imports"; \
@@ -119,7 +120,7 @@ format-strict: format-install-tools ## comprehensive formatting with all tools
 	@echo "2. Organizing imports with goimports..."
 	@"$(GOIMPORTS)" -w $(GOIMPORTS_FLAGS) .
 	@echo "3. Grouping imports with gci..."
-	@"$(GCI)" write --skip-generated $(GCI_SECTIONS) .
+	@"$(GCI)" write --skip-generated $(GCI_SECTIONS) . </dev/null
 	@echo -e "$(GREEN)✅ Strict formatting complete!$(RESET)"
 
 format-list: ## show files that need formatting
@@ -170,7 +171,7 @@ format-file: format-install-tools ## format specific files with gofumpt and goim
 			echo "  2. Running goimports..."; \
 			"$(GOIMPORTS)" -w $(GOIMPORTS_FLAGS) "$$file" || echo -e "$(RED)❌ goimports failed for $$file$(RESET)"; \
 			echo "  3. Running gci..."; \
-			"$(GCI)" write --skip-generated $(GCI_SECTIONS) "$$file" >/dev/null || echo -e "$(RED)❌ gci failed for $$file$(RESET)"; \
+			"$(GCI)" write --skip-generated $(GCI_SECTIONS) "$$file" </dev/null >/dev/null || echo -e "$(RED)❌ gci failed for $$file$(RESET)"; \
 			echo -e "$(GREEN)✅ File '$$file' formatted successfully!$(RESET)"; \
 		fi; \
 	done
@@ -185,7 +186,7 @@ fmt-diff: format-install-tools ## format only changed files (fast, for pre-commi
 				echo -e "$(CYAN)📝 Formatting: $$file$(RESET)"; \
 				"$(GOFUMPT)" -w "$$file" || echo -e "$(RED)❌ gofumpt failed for $$file$(RESET)"; \
 				"$(GOIMPORTS)" -w $(GOIMPORTS_FLAGS) "$$file" || echo -e "$(RED)❌ goimports failed for $$file$(RESET)"; \
-				"$(GCI)" write --skip-generated $(GCI_SECTIONS) "$$file" >/dev/null || echo -e "$(RED)❌ gci failed for $$file$(RESET)"; \
+				"$(GCI)" write --skip-generated $(GCI_SECTIONS) "$$file" </dev/null >/dev/null || echo -e "$(RED)❌ gci failed for $$file$(RESET)"; \
 			fi; \
 		done; \
 		echo -e "$(GREEN)✅ Changed files formatted!$(RESET)"; \
