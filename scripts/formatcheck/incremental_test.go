@@ -48,6 +48,10 @@ func TestIncrementalFormatterRecipes(t *testing.T) {
 	}
 	trace := filepath.Join(fixture, "invocations.log")
 	for _, target := range []string{"format-file", "fmt-diff"} {
+		successMessages := []string{"formatted successfully", "All files processed"}
+		if target == "fmt-diff" {
+			successMessages = []string{"Changed files formatted"}
+		}
 		for _, selected := range tools {
 			for _, mode := range []string{"clean", "error"} {
 				t.Run(target+"/"+selected+"/"+mode, func(t *testing.T) {
@@ -76,11 +80,14 @@ func TestIncrementalFormatterRecipes(t *testing.T) {
 						require.Error(t, runErr, "%s", output)
 						require.Contains(t, string(output), selected+" failed for first.go (exit 23)")
 						require.Contains(t, string(output), "formatter diagnostic")
-						require.NotContains(t, string(output), "✅")
-						require.NotContains(t, string(output), "🎉")
+						for _, message := range successMessages {
+							require.NotContains(t, string(output), message)
+						}
 					} else {
 						require.NoError(t, runErr, "%s", output)
-						require.Contains(t, string(output), "✅")
+						for _, message := range successMessages {
+							require.Contains(t, string(output), message)
+						}
 					}
 					require.Equal(t, expected, strings.Split(strings.TrimSpace(string(actual)), "\n"))
 				})
