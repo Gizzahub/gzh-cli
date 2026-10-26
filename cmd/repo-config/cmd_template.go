@@ -6,6 +6,7 @@ package repoconfig
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -21,23 +22,12 @@ func newTemplateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "template",
 		Short: "Manage repository configuration templates",
-		Long: `Manage repository configuration templates.
+		Long: `Built-in repository template catalog and YAML examples.
 
-Templates provide standardized configuration sets that can be applied
-to repositories based on their type, purpose, or security requirements.
-This helps maintain consistency across repositories in an organization.
-
-Template Features:
-- Predefined configuration templates
-- Template inheritance and composition
-- Custom template creation
-- Template validation and testing
-- Template compliance checking
-
-Examples:
-  gz repo-config template list             # List available templates
-  gz repo-config template show security    # Show template details
-  gz repo-config template validate <name>  # Validate template`,
+List returns static catalog metadata. Show returns the security or microservice
+YAML example; other catalog entries have no bundled YAML sample.
+Template validation and JSON show are unsupported and return explicit errors.
+Use --help on a subcommand to inspect retained flags.`,
 	}
 
 	// Add subcommands
@@ -81,14 +71,10 @@ func newTemplateShowCmd() *cobra.Command {
 		Use:   "show <template-name>",
 		Short: "Show detailed template configuration",
 		Args:  cobra.ExactArgs(1),
-		Long: `Show detailed configuration for a specific template.
+		Long: `Show a built-in YAML example (security or microservice).
 
-Displays the complete template configuration including all settings,
-policies, and inheritance information.
-
-Examples:
-  gz repo-config template show security     # Show security template
-  gz repo-config template show --format json microservice  # JSON format`,
+JSON show is unsupported. Catalog names without a bundled sample return
+not found; no remote or custom template store is queried.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			templateName := args[0]
 			return runTemplateShowCommand(templateName, format)
@@ -106,16 +92,12 @@ func newTemplateValidateCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "validate <template-name>",
-		Short: "Validate template configuration",
+		Short: "Template validation (currently unsupported)",
 		Args:  cobra.ExactArgs(1),
-		Long: `Validate a template configuration for correctness.
+		Long: `Template validation is currently unsupported.
 
-Checks template syntax, validates settings against GitHub API,
-and verifies template consistency and inheritance.
-
-Examples:
-  gz repo-config template validate security  # Validate security template
-  gz repo-config template validate --strict microservice  # Strict validation`,
+No resolved template schema, inheritance, or GitHub API validation backend
+is implemented. Execution returns an error; --strict does not enable validation.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			templateName := args[0]
 			return runTemplateValidateCommand(templateName, strict)
@@ -129,11 +111,7 @@ Examples:
 
 // runTemplateListCommand executes the template list command.
 func runTemplateListCommand(format string) error {
-	fmt.Printf("📋 Available Repository Configuration Templates\n")
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	fmt.Println()
-
-	// Mock template data
+	// 내장 catalog이며 원격 저장소 상태를 관측한 결과가 아니다.
 	templates := []ConfigTemplate{
 		{
 			Name:        "security",
@@ -184,9 +162,12 @@ func runTemplateListCommand(format string) error {
 
 	switch format {
 	case formatTable:
+		fmt.Printf("📋 Available Repository Configuration Templates\n")
+		fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+		fmt.Println()
 		displayTemplateTable(templates)
 	case formatJSON:
-		displayTemplateJSON(templates)
+		return displayTemplateJSON(templates)
 	default:
 		return fmt.Errorf("unsupported format: %s", format)
 	}
@@ -196,104 +177,24 @@ func runTemplateListCommand(format string) error {
 
 // runTemplateShowCommand executes the template show command.
 func runTemplateShowCommand(templateName, format string) error {
-	fmt.Printf("📄 Template Configuration: %s\n", templateName)
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	fmt.Println()
-
-	// Mock template detail
 	templateConfig := getTemplateConfiguration(templateName)
 	if templateConfig == "" {
 		return fmt.Errorf("template '%s' not found", templateName)
 	}
-
 	switch format {
 	case formatYAML:
-		fmt.Println(templateConfig)
+		_, err := fmt.Fprintln(os.Stdout, templateConfig)
+		return err
 	case formatJSON:
-		fmt.Println("JSON template output not yet implemented")
+		return fmt.Errorf("JSON template output is not supported")
 	default:
 		return fmt.Errorf("unsupported format: %s", format)
 	}
-
-	return nil
 }
 
 // runTemplateValidateCommand executes the template validate command.
 func runTemplateValidateCommand(templateName string, strict bool) error {
-	fmt.Printf("🔍 Validating Template: %s\n", templateName)
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	fmt.Println()
-
-	if strict {
-		fmt.Println("Mode: STRICT validation")
-		fmt.Println()
-	}
-
-	// Mock validation results
-	validationResults := []TemplateValidationResult{
-		{
-			Check:    "Template Syntax",
-			Status:   "pass",
-			Message:  "Valid YAML structure",
-			Severity: "info",
-		},
-		{
-			Check:    "Setting Validation",
-			Status:   "pass",
-			Message:  "All settings are valid GitHub API parameters",
-			Severity: "info",
-		},
-		{
-			Check:    "Inheritance Chain",
-			Status:   "pass",
-			Message:  "Template inheritance is valid",
-			Severity: "info",
-		},
-		{
-			Check:    "Policy Consistency",
-			Status:   "warn",
-			Message:  "Some policies may conflict with base template",
-			Severity: "warning",
-		},
-	}
-
-	fmt.Printf("%-20s %-8s %s\n", "CHECK", "STATUS", "MESSAGE")
-	fmt.Println("────────────────────────────────────────────────────────────────")
-
-	for _, result := range validationResults {
-		statusSymbol := getStatusSymbol(result.Status)
-		fmt.Printf(
-			"%-20s %-8s %s\n",
-			result.Check,
-			statusSymbol,
-			result.Message,
-		)
-	}
-
-	fmt.Println()
-
-	// Summary
-	errorCount := 0
-	warningCount := 0
-
-	for _, result := range validationResults {
-		switch result.Severity {
-		case "error":
-			errorCount++
-		case "warning":
-			warningCount++
-		}
-	}
-
-	if errorCount == 0 {
-		fmt.Printf("✅ Template '%s' is valid\n", templateName)
-	} else {
-		fmt.Printf("❌ Template '%s' has validation errors\n", templateName)
-	}
-
-	fmt.Printf("📊 Summary: %d errors, %d warnings\n", errorCount, warningCount)
-
-	return nil
+	return fmt.Errorf("template validation is not supported: no resolved template validation backend is implemented")
 }
 
 // ConfigTemplate represents a configuration template.
@@ -344,20 +245,17 @@ func displayTemplateTable(templates []ConfigTemplate) {
 }
 
 // displayTemplateJSON displays templates in JSON format.
-func displayTemplateJSON(templates []ConfigTemplate) {
-	jsonData := map[string]any{
-		"templates": templates,
-		"count":     len(templates),
+func displayTemplateJSON(templates []ConfigTemplate) error {
+	jsonData := map[string]any{"templates": templates, "count": len(templates)}
+	jsonBytes, err := json.MarshalIndent(jsonData, "", "  ")
+	if err != nil {
+		return err
 	}
-
-	if jsonBytes, err := json.MarshalIndent(jsonData, "", "  "); err != nil {
-		fmt.Printf("Error serializing JSON: %v\n", err)
-	} else {
-		fmt.Println(string(jsonBytes))
-	}
+	_, err = fmt.Fprintln(os.Stdout, string(jsonBytes))
+	return err
 }
 
-// getTemplateConfiguration returns mock template configuration.
+// getTemplateConfiguration returns the two built-in YAML examples.
 func getTemplateConfiguration(templateName string) string {
 	templates := map[string]string{
 		"security": `# Security Template Configuration
@@ -428,18 +326,4 @@ settings:
 	}
 
 	return ""
-}
-
-// getStatusSymbol returns the symbol for a validation status.
-func getStatusSymbol(status string) string {
-	switch status {
-	case "pass":
-		return "✅"
-	case "warn":
-		return "⚠️"
-	case "fail":
-		return "❌"
-	default:
-		return "❓"
-	}
 }

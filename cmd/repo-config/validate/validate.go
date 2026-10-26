@@ -6,10 +6,14 @@ package validate
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
+
+	"github.com/gizzahub/gzh-cli/pkg/config"
 )
 
 // GlobalFlags represents global flags for all repo-config commands.
@@ -34,14 +38,6 @@ func addGlobalFlags(cmd *cobra.Command, flags *GlobalFlags) {
 	cmd.Flags().StringVar(&flags.Timeout, "timeout", "30s", "Request timeout")
 }
 
-// truncateString truncates a string to a maximum length.
-func truncateString(s string, maxLen int) string {
-	if len(s) <= maxLen {
-		return s
-	}
-	return s[:maxLen-3] + "..."
-}
-
 // NewCmd creates the validate subcommand.
 func NewCmd() *cobra.Command {
 	var (
@@ -53,31 +49,19 @@ func NewCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "validate",
 		Short: "Validate repository configuration files",
-		Long: `Validate repository configuration files and templates.
+		Long: `Validate repository configuration using the existing local configuration loader.
 
-This command validates configuration files for syntax errors, schema compliance,
-and logical consistency. It helps ensure configurations are correct before
-applying them to repositories.
-
-Validation Features:
-- YAML syntax validation
-- Schema compliance checking
-- Template reference validation
-- Policy consistency verification
-- GitHub API compatibility checks
-
-Output Formats:
-- table: Human-readable validation results (default)
-- json: JSON format for programmatic use
-- yaml: YAML format for configuration export
+Checks YAML decoding, required version and organization, template base references
+and cycles, and required repository pattern matches. Unknown-field rejection,
+GitHub API compatibility, token permissions, and security policy auditing are not
+performed. Strict validation is unsupported.
 
 Examples:
-  gz repo-config validate                        # Validate default config
-  gz repo-config validate --config custom.yaml  # Validate specific file
-  gz repo-config validate --strict              # Strict validation mode
-  gz repo-config validate --format json         # JSON output`,
+  gz repo-config validate
+  gz repo-config validate --config-file custom.yaml
+  gz repo-config validate --format json`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runValidateCommand(flags, strict, format)
+			return runValidateCommandTo(cmd.OutOrStdout(), flags, strict, format)
 		},
 	}
 
@@ -85,7 +69,7 @@ Examples:
 	addGlobalFlags(cmd, &flags)
 
 	// Add validate-specific flags
-	cmd.Flags().BoolVar(&strict, "strict", false, "Enable strict validation mode")
+	cmd.Flags().BoolVar(&strict, "strict", false, "Request unsupported strict validation mode")
 	cmd.Flags().StringVar(&format, "format", "table", "Output format (table, json, yaml)")
 
 	return cmd
@@ -93,61 +77,41 @@ Examples:
 
 // runValidateCommand executes the validate command.
 func runValidateCommand(flags GlobalFlags, strict bool, format string) error {
-	if flags.Verbose {
-		fmt.Println("🔍 Validating repository configuration...")
+	return runValidateCommandTo(os.Stdout, flags, strict, format)
+}
 
-		if flags.ConfigFile != "" {
-			fmt.Printf("Configuration file: %s\n", flags.ConfigFile)
-		}
-
-		if strict {
-			fmt.Println("Mode: STRICT validation")
-		}
-
-		fmt.Println()
+func runValidateCommandTo(out io.Writer, flags GlobalFlags, strict bool, format string) error {
+	if strict {
+		return fmt.Errorf("strict repository configuration validation is unsupported")
 	}
-
-	// Determine config file to validate
-	targetFile := flags.ConfigFile
-	if targetFile == "" {
-		// Use default config discovery
-		targetFile = discoverConfigFile()
-	}
-
-	if targetFile == "" {
-		return fmt.Errorf("no configuration file found. Use --config-file to specify a file")
-	}
-
-	// Check if file exists
-	if _, err := os.Stat(targetFile); os.IsNotExist(err) {
-		return fmt.Errorf("configuration file not found: %s", targetFile)
-	}
-
-	fmt.Printf("📋 Repository Configuration Validation\n")
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	fmt.Printf("File: %s\n", targetFile)
-	fmt.Println()
-
-	// Perform validation checks
-	validationResults := performValidation(targetFile, strict)
-
-	// Display results based on format
 	switch format {
-	case "table":
-		displayValidationTable(validationResults)
-	case "json":
-		displayValidationJSON(validationResults)
-	case "yaml":
-		displayValidationYAML(validationResults)
+	case "table", "json", "yaml":
 	default:
 		return fmt.Errorf("unsupported format: %s", format)
 	}
-
-	// Return error if validation failed
-	if hasValidationErrors(validationResults) {
-		return fmt.Errorf("configuration validation failed")
+	targetFile := flags.ConfigFile
+	if targetFile == "" {
+		targetFile = discoverConfigFile()
 	}
-
+	if targetFile == "" {
+		return fmt.Errorf("no configuration file found. Use --config-file to specify a file")
+	}
+	results, validationErr := performValidation(targetFile, false)
+	var renderErr error
+	switch format {
+	case "table":
+		renderErr = displayValidationTable(out, results)
+	case "json":
+		renderErr = displayValidationJSON(out, results)
+	case "yaml":
+		renderErr = displayValidationYAML(out, results)
+	}
+	if renderErr != nil {
+		return fmt.Errorf("failed to render validation results: %w", renderErr)
+	}
+	if hasValidationErrors(results) {
+		return fmt.Errorf("configuration validation failed: %w", validationErr)
+	}
 	return nil
 }
 
@@ -171,134 +135,53 @@ type ValidationSummary struct {
 }
 
 // performValidation runs all validation checks on the configuration file.
-func performValidation(configFile string, strict bool) ValidationSummary {
-	results := ValidationSummary{
-		File:   configFile,
-		Valid:  true,
-		Checks: []ValidationResult{},
-	}
-
-	// Mock validation results for demonstration
-	checks := []ValidationResult{
-		{
-			Check:    "YAML Syntax",
-			Status:   "pass",
-			Message:  "Valid YAML syntax",
-			Severity: "info",
-		},
-		{
-			Check:    "Schema Compliance",
-			Status:   "pass",
-			Message:  "Configuration matches expected schema",
-			Severity: "info",
-		},
-		{
-			Check:      "Template References",
-			Status:     "warn",
-			Message:    "Template 'enterprise' referenced but not found",
-			Line:       15,
-			Severity:   "warning",
-			Suggestion: "Define the 'enterprise' template or use an existing template",
-		},
-		{
-			Check:    "GitHub API Compatibility",
-			Status:   "pass",
-			Message:  "All settings are compatible with GitHub API",
-			Severity: "info",
-		},
-		{
-			Check:    "Policy Consistency",
-			Status:   "pass",
-			Message:  "No conflicting policies detected",
-			Severity: "info",
-		},
-	}
-
-	// Add strict mode checks
+func performValidation(configFile string, strict bool) (ValidationSummary, error) {
+	results := ValidationSummary{File: configFile, Checks: []ValidationResult{}}
 	if strict {
-		checks = append(checks, ValidationResult{
-			Check:      "Token Permissions",
-			Status:     "warn",
-			Message:    "Cannot verify token permissions (token not provided)",
-			Severity:   "warning",
-			Suggestion: "Provide GitHub token with --token flag for permission validation",
-		})
+		return results, fmt.Errorf("strict repository configuration validation is unsupported")
 	}
-
-	results.Checks = checks
-
-	// Calculate summary
-	for _, check := range checks {
-		switch check.Severity {
-		case "error":
-			results.Errors++
-			results.Valid = false
-		case "warning":
-			results.Warnings++
-		}
+	_, err := config.LoadRepoConfig(configFile)
+	check := ValidationResult{Check: "Local configuration loader", Status: "pass", Message: "Local YAML decoding and configuration loader checks passed", Severity: "info"}
+	if err != nil {
+		check.Status = "fail"
+		check.Message = err.Error()
+		check.Severity = "error"
+		results.Errors = 1
+	} else {
+		results.Valid = true
 	}
-
-	return results
+	results.Checks = append(results.Checks, check)
+	return results, err
 }
 
 // displayValidationTable displays validation results in table format.
-func displayValidationTable(results ValidationSummary) {
-	fmt.Printf("%-20s %-8s %-50s %s\n", "CHECK", "STATUS", "MESSAGE", "LINE")
-	fmt.Println("────────────────────────────────────────────────────────────────────────────────")
-
+func displayValidationTable(out io.Writer, results ValidationSummary) error {
+	var text strings.Builder
+	fmt.Fprintf(&text, "%-28s %-8s %s\n", "CHECK", "STATUS", "MESSAGE")
 	for _, check := range results.Checks {
-		statusSymbol := getStatusSymbol(check.Status)
-
-		lineStr := ""
-		if check.Line > 0 {
-			lineStr = fmt.Sprintf("%d", check.Line)
-		}
-
-		fmt.Printf(
-			"%-20s %-8s %-50s %s\n",
-			check.Check,
-			statusSymbol,
-			truncateString(check.Message, 50),
-			lineStr,
-		)
-
-		if check.Suggestion != "" {
-			fmt.Printf("%-20s %-8s 💡 %s\n", "", "", check.Suggestion)
-		}
+		fmt.Fprintf(&text, "%-28s %-8s %s\n", check.Check, getStatusSymbol(check.Status), check.Message)
 	}
-
-	fmt.Println()
-
-	// Summary
 	if results.Valid {
-		fmt.Printf("✅ Configuration is valid\n")
+		fmt.Fprintln(&text, "Configuration passed local loader validation")
 	} else {
-		fmt.Printf("❌ Configuration has errors\n")
+		fmt.Fprintln(&text, "Configuration has errors")
 	}
-
-	fmt.Printf("📊 Summary: %d errors, %d warnings\n", results.Errors, results.Warnings)
+	fmt.Fprintf(&text, "Summary: %d errors, %d warnings\n", results.Errors, results.Warnings)
+	_, err := io.WriteString(out, text.String())
+	return err
 }
 
-// displayValidationJSON displays validation results in JSON format.
-func displayValidationJSON(results ValidationSummary) {
-	data, err := json.MarshalIndent(results, "", "  ")
-	if err != nil {
-		fmt.Printf("Error marshaling JSON: %v\n", err)
-		return
-	}
-
-	fmt.Println(string(data))
+func displayValidationJSON(out io.Writer, results ValidationSummary) error {
+	return json.NewEncoder(out).Encode(results)
 }
 
-// displayValidationYAML displays validation results in YAML format.
-func displayValidationYAML(results ValidationSummary) {
+func displayValidationYAML(out io.Writer, results ValidationSummary) error {
 	data, err := yaml.Marshal(results)
 	if err != nil {
-		fmt.Printf("Error marshaling YAML: %v\n", err)
-		return
+		return err
 	}
-
-	fmt.Println(string(data))
+	_, err = out.Write(data)
+	return err
 }
 
 // getStatusSymbol returns the symbol for a validation status.

@@ -37,6 +37,24 @@ branch protection·permissions 조회가 반환한 전송·해석·취소 오류
 오류 처리와 기본 브랜치가 없을 때 보호 조회를 생략하는 동작은 유지한다. 실제 통계나
 컴플라이언스 점수의 새 의미를 정의한 것은 아니다.
 
+## 설정 파일과 template 검증
+
+`repo-config validate --config-file <path>`는 기존 `pkg/config.LoadRepoConfig`로 실제 파일을
+읽고 YAML 구문·필수 version/organization·템플릿 상속과 일부 패턴 구조를 검증한다. 기본
+파일 검색 순서와 플래그·공개 결과 타입은 유지한다. null template나 null base도 panic 대신
+오류다. 이 결과는 전체 KnownFields schema, GitHub API 호환성이나 보안 정책 검증을
+수행했다는 뜻이 아니다. 고정 통과·가상 경고·임의 줄 번호를 결과로 만들지 않는다.
+
+strict 경고의 출처·승격 계약은 미정이므로 `--strict`는 파일 I/O 전에 명시적 미지원 오류를
+반환한다. 기본 검증은 계속 실제 loader를 사용한다. JSON/YAML 결과에는 선택한 payload만
+출력하고 verbose 제목을 섞지 않는다. 검증 실패와 출력 실패는 호출자에게 전달한다.
+
+`template list`의 내장 catalog 5개와 `template show --format yaml`의 security/microservice
+두 예제는 정적 제공 데이터다. 다른 catalog 항목에 YAML 예제가 있다고 확장하지 않는다.
+이름 확인·공개 DTO·기존 플래그는 유지하지만 template validate와 show JSON은 명시적
+미지원 오류를 반환한다. 새 저장소·JSON show 기능이나 strict 알고리즘을 만든 것이 아니다.
+list JSON과 show YAML은 파싱 가능한 payload를 출력하며 table은 기존 제목을 유지한다.
+
 ## 위험 평가와 dashboard
 
 `gz repo-config risk-assessment`와 `dashboard` 및 같은 생성자를 사용하는 `gz git config`

@@ -292,7 +292,7 @@ func expandRepoConfigEnvVars(config *RepoConfig) { //nolint:gocognit // Complex 
 	// Expand environment variables in webhook URLs and secrets
 	if config.Templates != nil {
 		for _, template := range config.Templates {
-			if template.Security != nil && template.Security.Webhooks != nil {
+			if template != nil && template.Security != nil && template.Security.Webhooks != nil {
 				for i := range template.Security.Webhooks {
 					template.Security.Webhooks[i].URL = os.ExpandEnv(template.Security.Webhooks[i].URL)
 					template.Security.Webhooks[i].Secret = os.ExpandEnv(template.Security.Webhooks[i].Secret)
@@ -356,6 +356,9 @@ func validateTemplateInheritance(name string, template *RepoTemplate, templates 
 }
 
 func checkTemplateInheritance(name string, template *RepoTemplate, templates map[string]*RepoTemplate, visited map[string]bool) error {
+	if template == nil {
+		return fmt.Errorf("template %q must not be null", name)
+	}
 	if visited[name] {
 		return fmt.Errorf("circular dependency detected")
 	}
