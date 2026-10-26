@@ -5,20 +5,20 @@ go 1.26.0
 toolchain go1.27.3
 
 require (
-	github.com/Gizzahub/gzh-cli-quality v0.2.1
+	github.com/Gizzahub/gzh-cli-quality v0.2.2
 	github.com/aws/aws-sdk-go-v2 v1.47.3
 	github.com/aws/aws-sdk-go-v2/config v1.33.9
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.43.4
 	github.com/aws/aws-sdk-go-v2/service/sts v1.51.4
-	github.com/charmbracelet/bubbles v0.21.1-0.20250623103423-23b8fd6302d7
+	github.com/charmbracelet/bubbles v1.0.0
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/daixiang0/gci v0.14.0
 	github.com/fatih/color v1.19.0
 	github.com/fsnotify/fsnotify v1.10.1
-	github.com/gizzahub/gzh-cli-dev-env v0.0.0-20260716162932-02e707444061
+	github.com/gizzahub/gzh-cli-dev-env v0.1.0
 	github.com/gizzahub/gzh-cli-gitforge v0.11.1
-	github.com/gizzahub/gzh-cli-net-env v0.0.0-20260716161846-3361f665ac30
+	github.com/gizzahub/gzh-cli-net-env v0.1.0
 	github.com/gizzahub/gzh-cli-shellforge v0.6.0
 	github.com/go-critic/go-critic v0.15.0
 	github.com/go-playground/validator/v10 v10.30.5
@@ -63,7 +63,7 @@ require (
 	github.com/danieljoos/wincred v1.2.3 // indirect
 	github.com/davidmz/go-pageant v1.0.2 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/gizzahub/gzh-cli-core v0.0.0-20260805234833-84a0f3d05f5d // indirect
+	github.com/gizzahub/gzh-cli-core v0.1.0 // indirect
 	github.com/go-fed/httpsig v1.1.0 // indirect
 	github.com/godbus/dbus/v5 v5.2.2 // indirect
 	github.com/google/go-github/v88 v88.0.0 // indirect
