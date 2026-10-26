@@ -49,6 +49,9 @@ func (e *SyncEngine) Runner() gitinternal.GitRunner {
 
 // Sync executes the synchronization process.
 func (e *SyncEngine) Sync(ctx context.Context) error {
+	if err := e.options.checkSupportedFeatures(); err != nil {
+		return err
+	}
 	// 1. Analyze source repositories
 	sourceRepos, err := e.analyzeSource(ctx)
 	if err != nil {

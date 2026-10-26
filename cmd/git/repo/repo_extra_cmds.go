@@ -23,7 +23,7 @@ func newRepoSyncCmd() *cobra.Command {
 		Short: "Synchronize repositories across Git platforms",
 		Long: `Synchronize repositories between different Git platforms including:
 - Repository code and branches
-- Issues and pull requests (if supported)
+- Issues (pull/merge request synchronization is not implemented)
 - Wiki content
 - Releases and tags
 - Repository settings and metadata`,
@@ -57,7 +57,7 @@ func newRepoSyncCmd() *cobra.Command {
 	// Include options
 	cmd.Flags().BoolVar(&opts.IncludeCode, "include-code", true, "Sync repository code")
 	cmd.Flags().BoolVar(&opts.IncludeIssues, "include-issues", false, "Sync issues")
-	cmd.Flags().BoolVar(&opts.IncludePRs, "include-prs", false, "Sync pull/merge requests")
+	cmd.Flags().BoolVar(&opts.IncludePRs, "include-prs", false, "Unsupported: pull/merge request synchronization returns an error")
 	cmd.Flags().BoolVar(&opts.IncludeWiki, "include-wiki", false, "Sync wiki")
 	cmd.Flags().BoolVar(&opts.IncludeReleases, "include-releases", false, "Sync releases")
 	cmd.Flags().BoolVar(&opts.IncludeSettings, "include-settings", false, "Sync repository settings")

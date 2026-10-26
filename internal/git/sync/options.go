@@ -119,6 +119,9 @@ func (t *SyncTarget) FullName() string {
 
 // Validate validates the sync options.
 func (opts *SyncOptions) Validate() error {
+	if err := opts.checkSupportedFeatures(); err != nil {
+		return err
+	}
 	if opts.From == "" {
 		return fmt.Errorf("source (--from) is required")
 	}
@@ -169,4 +172,12 @@ func (opts *SyncOptions) GetSourceTarget() (*SyncTarget, error) {
 // GetDestinationTarget parses and returns the destination target.
 func (opts *SyncOptions) GetDestinationTarget() (*SyncTarget, error) {
 	return ParseTarget(opts.To)
+}
+
+// checkSupportedFeatures는 제공되지 않는 기능을 어떤 실행 경로에서도 조용히 무시하지 않는다.
+func (opts *SyncOptions) checkSupportedFeatures() error {
+	if opts.IncludePRs {
+		return fmt.Errorf("pull/merge request synchronization (--include-prs) is not supported")
+	}
+	return nil
 }
