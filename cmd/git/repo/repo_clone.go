@@ -117,8 +117,9 @@ using the stable 'gz synclone' command.`,
 	cmd.Flags().StringVar(&opts.Branch, "branch", "", "Specific branch to clone")
 
 	// Flag validations and relationships
-	cmd.MarkFlagRequired("provider")
-	cmd.MarkFlagRequired("org")
+	// 새 작업에는 provider/org가 필요하지만 재개는 저장된 옵션을 사용한다.
+	cmd.MarkFlagsOneRequired("provider", "resume")
+	cmd.MarkFlagsOneRequired("org", "resume")
 	cmd.MarkFlagsMutuallyExclusive("quiet", "verbose")
 	cmd.MarkFlagsMutuallyExclusive("resume", "provider")
 	cmd.MarkFlagsMutuallyExclusive("resume", "org")
@@ -133,6 +134,11 @@ func runRepoClone(ctx context.Context, opts *clone.CloneOptions) error {
 		return runResumeClone(ctx, opts)
 	}
 
+	return executeRepoClone(ctx, opts)
+}
+
+// executeRepoClone는 재개 여부를 다시 분기하지 않고 실행기에 전달한다.
+func executeRepoClone(ctx context.Context, opts *clone.CloneOptions) error {
 	gitProvider, err := getCloneProvider(opts)
 	if err != nil {
 		return err
@@ -151,13 +157,17 @@ func runRepoClone(ctx context.Context, opts *clone.CloneOptions) error {
 // runResumeClone handles resuming a clone operation.
 func runResumeClone(ctx context.Context, opts *clone.CloneOptions) error {
 	// Load session to get original options
-	session := clone.NewSession(opts)
+	// Load가 CLI 옵션 포인터를 덮어쓰지 않도록 별도로 읽는다.
+	session := clone.NewSession(nil)
 	if err := session.Load(opts.Resume); err != nil {
 		return fmt.Errorf("failed to load session %s: %w", opts.Resume, err)
 	}
 
 	// Use original options but allow certain overrides
 	originalOpts := session.Options
+	if originalOpts == nil {
+		return fmt.Errorf("failed to resume session %s: saved options are missing", opts.Resume)
+	}
 
 	// Allow overriding certain options for resume
 	if opts.Parallel > 0 {
@@ -180,7 +190,7 @@ func runResumeClone(ctx context.Context, opts *clone.CloneOptions) error {
 	originalOpts.Resume = opts.Resume
 
 	// Run with original options
-	return runRepoClone(ctx, originalOpts)
+	return executeRepoClone(ctx, originalOpts)
 }
 
 // getCloneProvider resolves the provider the clone executor runs against. It is

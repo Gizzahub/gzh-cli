@@ -64,9 +64,13 @@ func (e *CloneExecutor) SetRunner(runner gitinternal.GitRunner) {
 func (e *CloneExecutor) Execute(ctx context.Context) error {
 	// 1. Initialize or restore session
 	if e.options.Resume != "" {
+		// 복원된 옵션이 검증·병합된 실행 옵션을 덮어쓰지 않게 분리한다.
+		e.session.Options = nil
 		if err := e.session.Load(e.options.Resume); err != nil {
 			return NewSessionError(e.options.Resume, "load", "failed to resume session", err)
 		}
+		// 진행 상태와 ID는 복원하고 이후 저장에는 실제 실행 옵션을 남긴다.
+		e.session.Options = e.options
 		e.progress.ResumeSession(e.session)
 	} else {
 		if err := e.session.Initialize(); err != nil {
