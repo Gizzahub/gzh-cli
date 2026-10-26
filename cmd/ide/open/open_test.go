@@ -277,28 +277,6 @@ func TestResolvePath(t *testing.T) {
 	}
 }
 
-func TestMockDetector(t *testing.T) {
-	detector := NewIDEDetector()
-
-	// Test DetectIDEs
-	ides, err := detector.DetectIDEs(t.Context(), true)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, ides, "Should return some mock IDEs")
-
-	// Test FindIDEByAlias
-	foundIDE := detector.FindIDEByAlias(ides, "code")
-	assert.NotNil(t, foundIDE, "Should find VS Code by alias 'code'")
-	assert.Equal(t, "VS Code", foundIDE.Name)
-
-	// Test case insensitive search
-	foundIDE = detector.FindIDEByAlias(ides, "CODE")
-	assert.NotNil(t, foundIDE, "Should find VS Code by alias 'CODE' (case insensitive)")
-
-	// Test non-existent IDE
-	foundIDE = detector.FindIDEByAlias(ides, "nonexistent")
-	assert.Nil(t, foundIDE, "Should not find non-existent IDE")
-}
-
 // Example of IDE names truncation test.
 func TestGetAvailableIDENamesTruncation(t *testing.T) {
 	options := openOptions{}

@@ -13,6 +13,8 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+
+	"github.com/gizzahub/gzh-cli/internal/idecore"
 )
 
 // IDE represents an integrated development environment.
@@ -31,38 +33,32 @@ type IDEDetector interface {
 	FindIDEByAlias(ides []IDE, alias string) *IDE
 }
 
-// NewIDEDetector creates a new IDE detector - placeholder implementation.
+// NewIDEDetector은 공유 idecore 백엔드를 감싼 IDE 감지기를 만든다.
 func NewIDEDetector() IDEDetector {
-	return &mockDetector{}
+	return &coreDetector{core: idecore.NewIDEDetector()}
 }
 
-// mockDetector is a simple mock implementation for now.
-type mockDetector struct{}
+// coreDetector는 idecore 백엔드 결과를 open 패키지의 IDE 타입으로 변환하는 비공개 어댑터다.
+type coreDetector struct {
+	core idecore.IDEDetectorInterface
+}
 
-func (d *mockDetector) DetectIDEs(ctx context.Context, useCache bool) ([]IDE, error) {
-	if err := ctx.Err(); err != nil {
+// DetectIDEs는 ctx와 useCache를 백엔드에 그대로 전달하고 오류도 그대로 전파한다.
+func (d *coreDetector) DetectIDEs(ctx context.Context, useCache bool) ([]IDE, error) {
+	coreIDEs, err := d.core.DetectIDEs(ctx, useCache)
+	if err != nil {
 		return nil, err
 	}
-	// Mock implementation - in reality this would detect actual IDEs
-	return []IDE{
-		{
-			Name:       "VS Code",
-			Type:       "vscode",
-			Executable: "/usr/local/bin/code",
-			Version:    "1.85.0",
-			Aliases:    []string{"code", "vscode"},
-		},
-		{
-			Name:       "PyCharm",
-			Type:       "jetbrains",
-			Executable: "/usr/local/bin/pycharm",
-			Version:    "2023.3.2",
-			Aliases:    []string{"pycharm"},
-		},
-	}, nil
+
+	ides := make([]IDE, 0, len(coreIDEs))
+	for i := range coreIDEs {
+		ides = append(ides, ideFromCore(coreIDEs[i]))
+	}
+	return ides, nil
 }
 
-func (d *mockDetector) FindIDEByAlias(ides []IDE, alias string) *IDE {
+// FindIDEByAlias는 이름/별칭을 대소문자 구분 없이 비교하는 기존 동작을 그대로 유지한다.
+func (d *coreDetector) FindIDEByAlias(ides []IDE, alias string) *IDE {
 	for _, ide := range ides {
 		if strings.EqualFold(ide.Name, alias) {
 			return &ide
@@ -74,6 +70,18 @@ func (d *mockDetector) FindIDEByAlias(ides []IDE, alias string) *IDE {
 		}
 	}
 	return nil
+}
+
+// ideFromCore는 백엔드 IDE에서 실제로 제공되는 값을 자식 IDE의 대응 필드로 복사한다.
+func ideFromCore(core idecore.IDE) IDE {
+	return IDE{
+		Name:       core.Name,
+		Type:       core.Type,
+		Executable: core.Executable,
+		Version:    core.Version,
+		Aliases:    core.Aliases,
+		// 백엔드에 ProductCode 제로값 유지 — 백엔드에 해당 값이 없어 임의로 만들지 않는다.
+	}
 }
 
 type openOptions struct {

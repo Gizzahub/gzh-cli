@@ -3,7 +3,7 @@
 
 //go:build aix || darwin || dragonfly || freebsd || linux || netbsd || openbsd || solaris
 
-package ide
+package idecore
 
 import (
 	"errors"

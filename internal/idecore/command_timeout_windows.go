@@ -3,7 +3,7 @@
 
 //go:build windows
 
-package ide
+package idecore
 
 import (
 	"context"

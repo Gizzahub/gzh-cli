@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+
+	"github.com/gizzahub/gzh-cli/internal/idecore"
 )
 
 // IDE represents an integrated development environment.
@@ -30,72 +32,43 @@ type IDEDetector interface {
 	DetectIDEs(ctx context.Context, useCache bool) ([]IDE, error)
 }
 
-// NewIDEDetector creates a new IDE detector - placeholder implementation.
+// NewIDEDetector은 공유 idecore 백엔드를 감싼 IDE 감지기를 만든다.
 func NewIDEDetector() IDEDetector {
-	return &mockDetector{}
+	return &coreDetector{core: idecore.NewIDEDetector()}
 }
 
-// mockDetector is a simple mock implementation for now.
-type mockDetector struct{}
+// coreDetector는 idecore 백엔드 결과를 status 패키지의 IDE 타입으로 변환하는 비공개 어댑터다.
+type coreDetector struct {
+	core idecore.IDEDetectorInterface
+}
 
-func (d *mockDetector) DetectIDEs(ctx context.Context, useCache bool) ([]IDE, error) {
-	if err := ctx.Err(); err != nil {
+// DetectIDEs는 ctx와 useCache를 백엔드에 그대로 전달하고 오류도 그대로 전파한다.
+func (d *coreDetector) DetectIDEs(ctx context.Context, useCache bool) ([]IDE, error) {
+	coreIDEs, err := d.core.DetectIDEs(ctx, useCache)
+	if err != nil {
 		return nil, err
 	}
-	// Mock implementation with LastUpdated times for demonstration
-	now := time.Now()
-	return []IDE{
-		{
-			Name:          "VS Code",
-			Type:          "vscode",
-			Executable:    "/usr/local/bin/code",
-			Version:       "1.85.0",
-			Aliases:       []string{"code", "vscode"},
-			InstallMethod: "direct",
-			InstallPath:   "/usr/local/bin",
-			LastUpdated:   now.Add(-2 * time.Hour),
-		},
-		{
-			Name:          "PyCharm Professional",
-			Type:          "jetbrains",
-			Executable:    "/home/user/.local/share/JetBrains/Toolbox/apps/PyCharm-P/ch-0/233.11799.297/bin/pycharm.sh",
-			Version:       "2023.3.2",
-			Aliases:       []string{"pycharm"},
-			InstallMethod: "toolbox",
-			InstallPath:   "/home/user/.local/share/JetBrains/Toolbox/apps/PyCharm-P",
-			LastUpdated:   now.Add(-24 * time.Hour),
-		},
-		{
-			Name:          "IntelliJ IDEA Ultimate",
-			Type:          "jetbrains",
-			Executable:    "/home/user/.local/share/JetBrains/Toolbox/apps/IDEA-U/ch-0/233.11799.241/bin/idea.sh",
-			Version:       "2023.3",
-			Aliases:       []string{"idea", "intellij"},
-			InstallMethod: "toolbox",
-			InstallPath:   "/home/user/.local/share/JetBrains/Toolbox/apps/IDEA-U",
-			LastUpdated:   now.Add(-3 * 24 * time.Hour),
-		},
-		{
-			Name:          "Cursor",
-			Type:          "vscode",
-			Executable:    "/home/user/Apps/cursor.AppImage",
-			Version:       "0.17.3",
-			Aliases:       []string{"cursor"},
-			InstallMethod: "appimage",
-			InstallPath:   "/home/user/Apps",
-			LastUpdated:   now.Add(-7 * 24 * time.Hour),
-		},
-		{
-			Name:          "Vim",
-			Type:          "other",
-			Executable:    "/usr/bin/vim",
-			Version:       "9.0",
-			Aliases:       []string{"vim"},
-			InstallMethod: "pacman",
-			InstallPath:   "vim 9.1.1-1",
-			LastUpdated:   now.Add(-30 * 24 * time.Hour),
-		},
-	}, nil
+
+	ides := make([]IDE, 0, len(coreIDEs))
+	for i := range coreIDEs {
+		ides = append(ides, ideFromCore(coreIDEs[i]))
+	}
+	return ides, nil
+}
+
+// ideFromCore는 백엔드 IDE에서 실제로 제공되는 값을 자식 IDE의 대응 필드로 복사한다.
+func ideFromCore(core idecore.IDE) IDE {
+	return IDE{
+		Name:          core.Name,
+		Type:          core.Type,
+		Executable:    core.Executable,
+		Version:       core.Version,
+		Aliases:       core.Aliases,
+		InstallMethod: core.InstallMethod,
+		InstallPath:   core.InstallPath,
+		LastUpdated:   core.LastUpdated,
+		// 백엔드에 ProductCode 값이 없으므로 제로값을 유지하고 임의로 만들지 않는다.
+	}
 }
 
 type statusOptions struct {
