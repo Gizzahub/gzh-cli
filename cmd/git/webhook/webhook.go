@@ -6,6 +6,7 @@ package webhook
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -17,6 +18,10 @@ import (
 
 // NewWebhookCmd creates the webhook management command.
 func NewWebhookCmd() *cobra.Command {
+	return newWebhookCmdWithFactory(createWebhookService)
+}
+
+func newWebhookCmdWithFactory(factory func() github.WebhookService) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "webhook",
 		Short: "🔗 GitHub 웹훅 관리 도구",
@@ -33,13 +38,13 @@ func NewWebhookCmd() *cobra.Command {
 	}
 
 	// Repository webhook commands
-	cmd.AddCommand(newRepositoryWebhookCmd())
+	cmd.AddCommand(newRepositoryWebhookCmdWithFactory(factory))
 
 	// Organization webhook commands
 	cmd.AddCommand(newOrganizationWebhookCmd())
 
 	// Bulk operations
-	cmd.AddCommand(newBulkWebhookCmd())
+	cmd.AddCommand(newBulkWebhookCmdWithFactory(factory))
 
 	// Organization-wide configuration
 	cmd.AddCommand(newWebhookConfigCmd())
@@ -52,6 +57,10 @@ func NewWebhookCmd() *cobra.Command {
 
 // Repository webhook commands.
 func newRepositoryWebhookCmd() *cobra.Command {
+	return newRepositoryWebhookCmdWithFactory(createWebhookService)
+}
+
+func newRepositoryWebhookCmdWithFactory(factory func() github.WebhookService) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "repo",
 		Short: "리포지토리 웹훅 관리",
@@ -105,7 +114,9 @@ func newRepositoryWebhookCmd() *cobra.Command {
 		Short: "웹훅 수정",
 		Long:  "기존 웹훅의 설정을 수정합니다.",
 		Args:  cobra.ExactArgs(3),
-		RunE:  runUpdateRepositoryWebhook,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runUpdateRepositoryWebhookWithService(cmd, args, factory())
+		},
 	}
 	updateCmd.Flags().String("name", "", "웹훅 이름")
 	updateCmd.Flags().String("url", "", "웹훅 URL")
@@ -173,6 +184,10 @@ func newOrganizationWebhookCmd() *cobra.Command {
 
 // Bulk operations.
 func newBulkWebhookCmd() *cobra.Command {
+	return newBulkWebhookCmdWithFactory(createWebhookService)
+}
+
+func newBulkWebhookCmdWithFactory(factory func() github.WebhookService) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "bulk",
 		Short: "대량 웹훅 작업",
@@ -185,13 +200,15 @@ func newBulkWebhookCmd() *cobra.Command {
 		Short: "대량 웹훅 생성",
 		Long:  "조직의 모든 리포지토리에 웹훅을 생성합니다.",
 		Args:  cobra.ExactArgs(1),
-		RunE:  runBulkCreateWebhooks,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runBulkCreateWebhooksWithService(cmd, args, factory())
+		},
 	}
 	createCmd.Flags().String("name", "", "웹훅 이름 (필수)")
 	createCmd.Flags().String("url", "", "웹훅 URL (필수)")
 	createCmd.Flags().StringSlice("events", []string{"push"}, "이벤트 목록")
 	createCmd.Flags().Bool("active", true, "웹훅 활성화 여부")
-	createCmd.Flags().StringSlice("repos", nil, "특정 리포지토리만 (비어있으면 모든 리포지토리)")
+	createCmd.Flags().StringSlice("repos", nil, "대상 리포지토리 목록 (기본 CLI에서는 명시 필요)")
 	if err := createCmd.MarkFlagRequired("name"); err != nil {
 		// Error marking flag as required - continue without marking
 		fmt.Printf("Warning: could not mark 'name' flag as required: %v\n", err)
@@ -386,7 +403,7 @@ func runCreateRepositoryWebhook(cmd *cobra.Command, args []string) error {
 	secret, _ := cmd.Flags().GetString("secret")
 
 	// Create webhook service (in real implementation, this would be injected)
-	webhookService := createMockWebhookService()
+	webhookService := createWebhookService()
 
 	request := &github.WebhookCreateRequest{
 		Name:   name,
@@ -418,7 +435,7 @@ func runCreateRepositoryWebhook(cmd *cobra.Command, args []string) error {
 func runListRepositoryWebhooks(cmd *cobra.Command, args []string) error {
 	owner, repo := args[0], args[1]
 
-	webhookService := createMockWebhookService()
+	webhookService := createWebhookService()
 
 	webhooks, err := webhookService.ListRepositoryWebhooks(cmd.Context(), owner, repo, nil)
 	if err != nil {
@@ -456,7 +473,7 @@ func runGetRepositoryWebhook(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid webhook ID: %s", args[2])
 	}
 
-	webhookService := createMockWebhookService()
+	webhookService := createWebhookService()
 
 	webhook, err := webhookService.GetRepositoryWebhook(cmd.Context(), owner, repo, webhookID)
 	if err != nil {
@@ -476,6 +493,10 @@ func runGetRepositoryWebhook(cmd *cobra.Command, args []string) error {
 }
 
 func runUpdateRepositoryWebhook(cmd *cobra.Command, args []string) error {
+	return runUpdateRepositoryWebhookWithService(cmd, args, createWebhookService())
+}
+
+func runUpdateRepositoryWebhookWithService(cmd *cobra.Command, args []string, webhookService github.WebhookService) error {
 	owner, repo := args[0], args[1]
 
 	webhookID, err := strconv.ParseInt(args[2], 10, 64)
@@ -488,14 +509,16 @@ func runUpdateRepositoryWebhook(cmd *cobra.Command, args []string) error {
 	events, _ := cmd.Flags().GetStringSlice("events")
 	active, _ := cmd.Flags().GetBool("active")
 
-	webhookService := createMockWebhookService()
-
 	request := &github.WebhookUpdateRequest{
 		ID:     webhookID,
 		Name:   name,
 		URL:    url,
 		Events: events,
-		Active: &active,
+		Config: github.WebhookConfig{URL: url},
+	}
+
+	if cmd.Flags().Changed("active") {
+		request.Active = &active
 	}
 
 	webhook, err := webhookService.UpdateRepositoryWebhook(cmd.Context(), owner, repo, request)
@@ -518,7 +541,7 @@ func runDeleteRepositoryWebhook(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid webhook ID: %s", args[2])
 	}
 
-	webhookService := createMockWebhookService()
+	webhookService := createWebhookService()
 
 	err = webhookService.DeleteRepositoryWebhook(cmd.Context(), owner, repo, webhookID)
 	if err != nil {
@@ -540,7 +563,7 @@ func runCreateOrganizationWebhook(cmd *cobra.Command, args []string) error {
 	contentType, _ := cmd.Flags().GetString("content-type")
 	secret, _ := cmd.Flags().GetString("secret")
 
-	webhookService := createMockWebhookService()
+	webhookService := createWebhookService()
 
 	request := &github.WebhookCreateRequest{
 		Name:   name,
@@ -569,7 +592,7 @@ func runCreateOrganizationWebhook(cmd *cobra.Command, args []string) error {
 func runListOrganizationWebhooks(cmd *cobra.Command, args []string) error {
 	org := args[0]
 
-	webhookService := createMockWebhookService()
+	webhookService := createWebhookService()
 
 	webhooks, err := webhookService.ListOrganizationWebhooks(cmd.Context(), org, nil)
 	if err != nil {
@@ -594,6 +617,10 @@ func runListOrganizationWebhooks(cmd *cobra.Command, args []string) error {
 }
 
 func runBulkCreateWebhooks(cmd *cobra.Command, args []string) error {
+	return runBulkCreateWebhooksWithService(cmd, args, createWebhookService())
+}
+
+func runBulkCreateWebhooksWithService(cmd *cobra.Command, args []string, webhookService github.WebhookService) error {
 	org := args[0]
 
 	name, _ := cmd.Flags().GetString("name")
@@ -601,8 +628,6 @@ func runBulkCreateWebhooks(cmd *cobra.Command, args []string) error {
 	events, _ := cmd.Flags().GetStringSlice("events")
 	active, _ := cmd.Flags().GetBool("active")
 	repos, _ := cmd.Flags().GetStringSlice("repos")
-
-	webhookService := createMockWebhookService()
 
 	request := &github.BulkWebhookRequest{
 		Organization: org,
@@ -642,6 +667,9 @@ func runBulkCreateWebhooks(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	if result.FailureCount > 0 {
+		return fmt.Errorf("webhook creation failed for %d of %d repositories", result.FailureCount, result.TotalRepositories)
+	}
 	return nil
 }
 
@@ -653,7 +681,7 @@ func runTestWebhook(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid webhook ID: %s", args[2])
 	}
 
-	webhookService := createMockWebhookService()
+	webhookService := createWebhookService()
 
 	result, err := webhookService.TestWebhook(cmd.Context(), owner, repo, webhookID)
 	if err != nil {
@@ -682,7 +710,7 @@ func runGetWebhookDeliveries(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid webhook ID: %s", args[2])
 	}
 
-	webhookService := createMockWebhookService()
+	webhookService := createWebhookService()
 
 	deliveries, err := webhookService.GetWebhookDeliveries(cmd.Context(), owner, repo, webhookID)
 	if err != nil {
@@ -706,10 +734,17 @@ func runGetWebhookDeliveries(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// Helper function to create a mock webhook service for demo purposes.
-func createMockWebhookService() github.WebhookService {
-	// In real implementation, this would be properly injected with real dependencies
-	return github.NewWebhookService(nil, &mockLogger{})
+// createWebhookService는 기존 CLI 토큰 우선순위로 실제 GitHub 서비스를 구성한다.
+func createWebhookService() github.WebhookService {
+	return createWebhookServiceWithBaseURL("")
+}
+
+func createWebhookServiceWithBaseURL(baseURL string) github.WebhookService {
+	token := os.Getenv("GITHUB_TOKEN")
+	if token == "" {
+		token = os.Getenv("GH_TOKEN")
+	}
+	return github.NewWebhookServiceWithTokenAndBaseURL(nil, token, &mockLogger{}, baseURL)
 }
 
 // Mock logger for demo purposes.

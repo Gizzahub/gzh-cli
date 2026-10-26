@@ -400,6 +400,11 @@ func (w *webhookServiceImpl) ListRepositoryWebhooks(ctx context.Context, owner, 
 func (w *webhookServiceImpl) UpdateRepositoryWebhook(ctx context.Context, owner, repo string, request *WebhookUpdateRequest) (*WebhookInfo, error) {
 	w.logger.Info("Updating repository webhook", "owner", owner, "repo", repo, "webhook_id", request.ID)
 
+	// Config.URL을 우선하고 기존 최상위 URL 입력도 지원한다. 요청 자체는 변경하지 않는다.
+	configURL := request.Config.URL
+	if configURL == "" {
+		configURL = request.URL
+	}
 	// Build update request body
 	apiRequest := make(map[string]any)
 	if request.Events != nil {
@@ -408,10 +413,10 @@ func (w *webhookServiceImpl) UpdateRepositoryWebhook(ctx context.Context, owner,
 	if request.Active != nil {
 		apiRequest["active"] = *request.Active
 	}
-	if request.Config.URL != "" || request.Config.ContentType != "" || request.Config.Secret != "" {
+	if configURL != "" || request.Config.ContentType != "" || request.Config.Secret != "" {
 		config := make(map[string]any)
-		if request.Config.URL != "" {
-			config["url"] = request.Config.URL
+		if configURL != "" {
+			config["url"] = configURL
 		}
 		if request.Config.ContentType != "" {
 			config["content_type"] = request.Config.ContentType
@@ -595,6 +600,11 @@ func (w *webhookServiceImpl) ListOrganizationWebhooks(ctx context.Context, org s
 func (w *webhookServiceImpl) UpdateOrganizationWebhook(ctx context.Context, org string, request *WebhookUpdateRequest) (*WebhookInfo, error) {
 	w.logger.Info("Updating organization webhook", "org", org, "webhook_id", request.ID)
 
+	configURL := request.Config.URL
+	if configURL == "" {
+		configURL = request.URL
+	}
+
 	// Build update request body
 	apiRequest := make(map[string]any)
 	if request.Events != nil {
@@ -603,10 +613,10 @@ func (w *webhookServiceImpl) UpdateOrganizationWebhook(ctx context.Context, org 
 	if request.Active != nil {
 		apiRequest["active"] = *request.Active
 	}
-	if request.Config.URL != "" || request.Config.ContentType != "" || request.Config.Secret != "" {
+	if configURL != "" || request.Config.ContentType != "" || request.Config.Secret != "" {
 		config := make(map[string]any)
-		if request.Config.URL != "" {
-			config["url"] = request.Config.URL
+		if configURL != "" {
+			config["url"] = configURL
 		}
 		if request.Config.ContentType != "" {
 			config["content_type"] = request.Config.ContentType
@@ -677,12 +687,9 @@ func (w *webhookServiceImpl) BulkCreateWebhooks(ctx context.Context, request *Bu
 		Results: make([]WebhookOperationResult, 0),
 	}
 
-	// Get repositories to process
-	repositories := request.Repositories
-	if len(repositories) == 0 {
-		// Get all repositories from organization
-		// TODO: Implement using APIClient.ListOrganizationRepositories
-		repositories = []string{"repo1", "repo2"} // Mock for now
+	repositories, err := w.bulkRepositories(ctx, request.Organization, request.Repositories)
+	if err != nil {
+		return nil, err
 	}
 
 	result.TotalRepositories = len(repositories)
@@ -731,9 +738,9 @@ func (w *webhookServiceImpl) BulkUpdateWebhooks(ctx context.Context, request *Bu
 	}
 
 	// Get repositories to process
-	repositories := request.Repositories
-	if len(repositories) == 0 {
-		repositories = []string{"repo1", "repo2"} // Mock for now
+	repositories, err := w.bulkRepositories(ctx, request.Organization, request.Repositories)
+	if err != nil {
+		return nil, err
 	}
 
 	result.TotalRepositories = len(repositories)
@@ -788,9 +795,9 @@ func (w *webhookServiceImpl) BulkDeleteWebhooks(ctx context.Context, request *Bu
 		Results: make([]WebhookOperationResult, 0),
 	}
 
-	repositories := request.Repositories
-	if len(repositories) == 0 {
-		repositories = []string{"repo1", "repo2"} // Mock for now
+	repositories, err := w.bulkRepositories(ctx, request.Organization, request.Repositories)
+	if err != nil {
+		return nil, err
 	}
 
 	result.TotalRepositories = len(repositories)
@@ -932,3 +939,28 @@ func (w *webhookServiceImpl) webhookMatchesSelector(webhook *WebhookInfo, select
 }
 
 // Logger interface is defined in constructors.go
+
+// bulkRepositories는 조직 조회가 완료된 실제 목록만 반환하며 가상 대상을 만들지 않는다.
+func (w *webhookServiceImpl) bulkRepositories(ctx context.Context, org string, explicit []string) ([]string, error) {
+	names := explicit
+	if len(names) == 0 {
+		if w.apiClient == nil {
+			return nil, fmt.Errorf("cannot list repositories of %s: API client is not configured; provide explicit repositories", org)
+		}
+		repos, err := w.apiClient.ListOrganizationRepositories(ctx, org)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list repositories of %s: %w", org, err)
+		}
+		names = make([]string, 0, len(repos))
+		for _, repo := range repos {
+			names = append(names, repo.Name)
+		}
+	}
+	// 전체 목록을 변경 전에 검증하여 잘못된 후속 항목으로 부분 변경하지 않는다.
+	for _, name := range names {
+		if name == "" || name == "." || name == ".." || strings.TrimSpace(name) != name || strings.ContainsAny(name, " /\\?#\t\r\n") {
+			return nil, fmt.Errorf("invalid repository name in bulk webhook target list")
+		}
+	}
+	return names, nil
+}

@@ -87,28 +87,13 @@ func NewRepoConfigServiceWithClient(client *github.RepoConfigClient) *RepoConfig
 }
 
 // ApplyConfiguration applies configuration changes to repositories.
-func (s *RepoConfigService) ApplyConfiguration(ctx context.Context, opts ApplyOptions) error {
-	// Setup client
-	if err := s.setupClient(opts.Token); err != nil {
-		return fmt.Errorf("failed to setup client: %w", err)
-	}
+func (s *RepoConfigService) ApplyConfiguration(_ context.Context, _ ApplyOptions) error {
+	return unsupportedRepositoryApply()
+}
 
-	// Get configuration changes to apply
-	changes, err := s.getConfigurationChanges(ctx, opts.Organization, opts.Filter, opts.Template)
-	if err != nil {
-		return fmt.Errorf("failed to get configuration changes: %w", err)
-	}
-
-	if len(changes) == 0 {
-		return nil // No changes needed
-	}
-
-	if opts.DryRun {
-		return nil // Dry run - don't apply changes
-	}
-
-	// Apply the changes
-	return s.applyChanges(ctx, changes, opts.Interactive)
+// 실제 병합·확인·부분 실패 계약 없이 고정 변경이나 적용 성공을 만들지 않는다.
+func unsupportedRepositoryApply() error {
+	return fmt.Errorf("repository configuration apply and change planning are not supported")
 }
 
 // ListRepositories lists repositories with their configuration status.
@@ -174,85 +159,18 @@ func (s *RepoConfigService) setupClient(token string) error {
 }
 
 // getConfigurationChanges retrieves configuration changes for an organization.
-func (s *RepoConfigService) getConfigurationChanges(_ context.Context, _, filter, template string) ([]ConfigurationChange, error) {
-	// This is a mock implementation - in reality, this would:
-	// 1. Fetch current repository configurations from GitHub API
-	// 2. Load target configurations from templates
-	// 3. Generate required changes
-	// 4. Apply filter and template constraints if specified
-	mockChanges := []ConfigurationChange{
-		{
-			Repository:   "api-server",
-			Setting:      "branch_protection.main.required_reviews",
-			CurrentValue: "1",
-			NewValue:     "2",
-			Action:       "update",
-		},
-		{
-			Repository:   "web-frontend",
-			Setting:      "features.wiki",
-			CurrentValue: "true",
-			NewValue:     "false",
-			Action:       "update",
-		},
-		{
-			Repository:   "legacy-service",
-			Setting:      "security.delete_head_branches",
-			CurrentValue: "false",
-			NewValue:     "true",
-			Action:       "create",
-		},
-	}
-
-	// Apply filter if specified
-	if filter != "" {
-		filteredChanges := []ConfigurationChange{}
-		filterRegex, err := regexp.Compile(filter)
-		if err != nil {
-			return nil, fmt.Errorf("invalid filter pattern: %w", err)
-		}
-
-		for _, change := range mockChanges {
-			if filterRegex.MatchString(change.Repository) {
-				filteredChanges = append(filteredChanges, change)
-			}
-		}
-		mockChanges = filteredChanges
-	}
-
-	// Apply template filter if specified
-	if template != "" {
-		// TODO: In a real implementation, this would filter changes based on template
-		fmt.Printf("Note: Template filtering for '%s' not yet implemented\n", template)
-	}
-
-	return mockChanges, nil
+func (s *RepoConfigService) getConfigurationChanges(_ context.Context, _, _, _ string) ([]ConfigurationChange, error) {
+	return nil, unsupportedRepositoryApply()
 }
 
-// applyConfigurationChange applies a single configuration change.
+// applyConfigurationChange는 연결되지 않은 적용을 성공으로 반환하지 않는다.
 func (s *RepoConfigService) applyConfigurationChange(_ context.Context, _ ConfigurationChange) error {
-	// This is a mock implementation - in reality, this would:
-	// 1. Use GitHub API to apply the configuration change
-	// 2. Handle authentication and rate limiting
-	// 3. Verify the change was applied successfully
-	// 4. Return appropriate errors if something fails
-
-	// For demonstration, we'll just return success
-	return nil
+	return unsupportedRepositoryApply()
 }
 
-// applyChanges applies the configuration changes.
-func (s *RepoConfigService) applyChanges(ctx context.Context, changes []ConfigurationChange, _ bool) error {
-	appliedCount := 0
-
-	for _, change := range changes {
-		if err := s.applyConfigurationChange(ctx, change); err != nil {
-			continue // Skip failed changes but continue with others
-		}
-		appliedCount++
-	}
-
-	return nil
+// applyChanges는 빈 목록과 preview에서도 미구현 적용을 숨기지 않는다.
+func (s *RepoConfigService) applyChanges(_ context.Context, _ []ConfigurationChange, _ bool) error {
+	return unsupportedRepositoryApply()
 }
 
 // applyFiltersAndLimits applies filtering and limiting to the repository list.

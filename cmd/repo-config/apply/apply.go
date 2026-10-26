@@ -4,8 +4,6 @@
 package apply
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-cli/internal/services"
@@ -61,63 +59,26 @@ func NewCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "apply",
-		Short: "Apply repository configuration",
-		Long: `Apply repository configuration to organizations and repositories.
+		Short: "Apply repository configuration (currently unsupported)",
+		Long: `Repository configuration apply and change planning are currently unsupported.
 
-This command applies configuration templates and policies to repositories
-based on the configuration file. It supports both organization-wide
-application and specific repository targeting.
-
-Configuration Application:
-- Template-based configuration deployment
-- Policy enforcement across repositories
-- Security settings standardization
-- Branch protection rule management
-
-Safety Features:
-- Dry-run mode for preview
-- Interactive confirmation for changes
-- Rollback capability
-- Detailed change reporting
-
-Examples:
-  gz repo-config apply --org myorg                     # Apply to all repositories
-  gz repo-config apply --filter "^api-.*"             # Apply to matching repositories
-  gz repo-config apply --template security            # Apply specific template
-  gz repo-config apply --dry-run                      # Preview changes only
-  gz repo-config apply --interactive                   # Interactive mode
-  gz repo-config apply --force                         # Force apply without confirmation`,
+Execution returns an explicit error without reading configuration files,
+looking up credentials, contacting GitHub, or changing repositories.
+Dry-run, force, and interactive options do not enable a working preview or apply.
+Existing flags remain available for compatibility.`,
+		Example: "gz repo-config apply --help",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if flags.Organization == "" {
-				return fmt.Errorf("organization is required (use --org flag)")
-			}
-
-			fmt.Printf("🚀 Applying configuration to organization: %s\n", flags.Organization)
-
-			service := services.NewRepoConfigService()
-
-			if flags.DryRun {
-				fmt.Printf("🔍 Dry run mode: previewing changes...\n")
-			}
-
-			if filter != "" {
-				fmt.Printf("📝 Filter: %s\n", filter)
-			}
-
-			if template != "" {
-				fmt.Printf("📋 Template: %s\n", template)
-			}
-
-			if interactive {
-				fmt.Printf("🤝 Interactive mode enabled\n")
-			}
-
-			// Note: Actual implementation would use the service
-			// This is a simplified version for the refactoring
-			_ = service
-
-			fmt.Printf("✅ Configuration apply completed\n")
-			return nil
+			return services.NewRepoConfigService().ApplyConfiguration(cmd.Context(), services.ApplyOptions{
+				Organization: flags.Organization,
+				Filter:       filter,
+				Template:     template,
+				DryRun:       flags.DryRun,
+				Interactive:  interactive,
+				Force:        force,
+				Token:        flags.Token,
+				ConfigFile:   flags.ConfigFile,
+				Verbose:      flags.Verbose,
+			})
 		},
 	}
 
