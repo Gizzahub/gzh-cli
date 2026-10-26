@@ -100,9 +100,9 @@ func TestIsGoVersionSupported(t *testing.T) {
 }
 
 func TestGetDiskSpace(t *testing.T) {
-	space := getDiskSpace("/tmp")
-	// This is a placeholder implementation that returns 50.0
-	assert.Equal(t, 50.0, space)
+	space, err := getDiskSpace(t.TempDir())
+	assert.ErrorContains(t, err, "not implemented")
+	assert.Zero(t, space, "no observed disk-space value is available")
 }
 
 func TestRunCPUBenchmark(t *testing.T) {
@@ -126,10 +126,9 @@ func TestCountSSHKeys(t *testing.T) {
 }
 
 func TestFindUnsafePermissions(t *testing.T) {
-	files := findUnsafePermissions()
-	// This is a placeholder implementation that returns empty slice
-	assert.NotNil(t, files)
-	assert.IsType(t, []string{}, files)
+	files, err := findUnsafePermissions()
+	assert.ErrorContains(t, err, "not implemented")
+	assert.Nil(t, files)
 }
 
 func TestCalculateReportTotals(t *testing.T) {
@@ -753,23 +752,18 @@ func TestSecurityFunctions(t *testing.T) {
 	})
 
 	t.Run("Unsafe permissions", func(t *testing.T) {
-		files := findUnsafePermissions()
-		assert.NotNil(t, files)
-		assert.IsType(t, []string{}, files)
+		files, err := findUnsafePermissions()
+		assert.ErrorContains(t, err, "not implemented")
+		assert.Nil(t, files)
 	})
 }
 
 func TestDiskSpaceFunction(t *testing.T) {
-	// Test with current directory
-	space := getDiskSpace(".")
-
-	// Should return a non-negative value
-	assert.GreaterOrEqual(t, space, 0.0)
-	assert.IsType(t, float64(0), space)
-
-	// Test with temp directory
-	tempSpace := getDiskSpace("/tmp")
-	assert.GreaterOrEqual(t, tempSpace, 0.0)
+	for _, path := range []string{t.TempDir(), "missing-fixture-directory"} {
+		space, err := getDiskSpace(path)
+		assert.ErrorContains(t, err, "not implemented")
+		assert.Zero(t, space)
+	}
 }
 
 func TestHelperFunctions(t *testing.T) {

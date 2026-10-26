@@ -387,30 +387,14 @@ func runSystemChecks(report *DiagnosticReport, _ logger.CommonLogger, _ *errors.
 		Timestamp: time.Now(),
 	})
 
-	// Disk space check
+	// 가용 공간 backend가 없으므로 숫자를 측정값처럼 보고하지 않는다.
 	start = time.Now()
-	wd, _ := os.Getwd()
-	diskSpace := getDiskSpace(wd)
-
-	status = statusPass
-	message = fmt.Sprintf("Disk space: %.2f GB available", diskSpace)
-
-	if diskSpace < 1.0 {
-		status = statusFail
-		message += " (critically low)"
-	} else if diskSpace < 5.0 {
-		status = statusWarn
-		message += " (low disk space)"
-	}
-
+	_, diskErr := getDiskSpace("")
 	report.Results = append(report.Results, DiagnosticResult{
-		Name:          "Disk Space",
-		Category:      "system",
-		Status:        status,
-		Message:       message,
-		FixSuggestion: "Free up disk space or move to a larger volume",
-		Duration:      time.Since(start),
-		Timestamp:     time.Now(),
+		Name: "Disk Space", Category: "system", Status: "skip",
+		Message:  "Disk space was not measured: no measurement backend is implemented",
+		Details:  map[string]any{"measured": false, "reason": diskErr.Error()},
+		Duration: time.Since(start), Timestamp: time.Now(),
 	})
 }
 
@@ -782,27 +766,14 @@ func runSecurityChecks(report *DiagnosticReport, _ logger.CommonLogger, _ *error
 		Timestamp:     time.Now(),
 	})
 
-	// File permissions check
+	// 검사 범위와 backend가 없는 상태를 안전 판정으로 바꾸지 않는다.
 	start = time.Now()
-	unsafeFiles := findUnsafePermissions()
-
-	status = statusPass
-	message = "File permissions look secure"
-
-	if len(unsafeFiles) > 0 {
-		status = statusWarn
-		message = fmt.Sprintf("Found %d files with unsafe permissions", len(unsafeFiles))
-	}
-
+	_, permissionsErr := findUnsafePermissions()
 	report.Results = append(report.Results, DiagnosticResult{
-		Name:          "File Permissions",
-		Category:      "security",
-		Status:        status,
-		Message:       message,
-		Details:       map[string]any{"unsafe_files": unsafeFiles},
-		FixSuggestion: "Review and fix file permissions with chmod",
-		Duration:      time.Since(start),
-		Timestamp:     time.Now(),
+		Name: "File Permissions", Category: "security", Status: "skip",
+		Message:  "File permissions were not assessed: no inspection scope or backend is implemented",
+		Details:  map[string]any{"measured": false, "reason": permissionsErr.Error()},
+		Duration: time.Since(start), Timestamp: time.Now(),
 	})
 }
 
@@ -872,10 +843,8 @@ func normalizeGoVersion(version string) string {
 	return version
 }
 
-func getDiskSpace(path string) float64 {
-	// This is a simplified implementation
-	// In a real implementation, you'd use syscalls to get actual disk space
-	return 50.0 // Placeholder: 50GB
+func getDiskSpace(_ string) (float64, error) {
+	return 0, fmt.Errorf("disk space measurement is not implemented")
 }
 
 func isURLReachable(ctx context.Context, url string) bool {
@@ -1025,9 +994,8 @@ func countSSHKeys() int {
 	return count
 }
 
-func findUnsafePermissions() []string {
-	// Simplified implementation - in practice, you'd check actual file permissions
-	return []string{} // Placeholder
+func findUnsafePermissions() ([]string, error) {
+	return nil, fmt.Errorf("file permission inspection scope and backend are not implemented")
 }
 
 func calculateReportTotals(report *DiagnosticReport) {
@@ -1071,11 +1039,15 @@ func generateSummaryAndRecommendations(report *DiagnosticReport) {
 			"Review warnings and consider improvements")
 	}
 
-	if successRate < 80 {
+	if successRate < 80 && report.SkippedChecks == 0 {
 		report.Recommendations = append(report.Recommendations,
 			"System health is below optimal - review failed checks")
 	}
 
+	if report.SkippedChecks > 0 {
+		report.Summary += fmt.Sprintf(", incomplete assessment: %d checks were skipped", report.SkippedChecks)
+		report.Recommendations = append(report.Recommendations, "Some checks were not measured; system health is not fully assessed")
+	}
 	if len(report.Recommendations) == 0 {
 		report.Recommendations = append(report.Recommendations,
 			"System appears healthy - no immediate action required")

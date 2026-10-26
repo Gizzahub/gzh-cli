@@ -6,11 +6,12 @@ package doctor
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -213,7 +214,38 @@ func (r *projectRootReader) ReadFile(path string) ([]byte, error) {
 	return content, nil
 }
 
+type metricsCommandRunner func(context.Context, string, string, ...string) ([]byte, error)
+
+type metricsDependencies struct {
+	run    metricsCommandRunner
+	remove func(string) error
+}
+
+func defaultMetricsDependencies() metricsDependencies {
+	return metricsDependencies{run: runMetricsCommand, remove: os.Remove}
+}
+
+func runMetricsCommand(ctx context.Context, dir, executable string, args ...string) ([]byte, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	cmd := exec.CommandContext(ctx, executable, args...)
+	cmd.Dir = dir
+	output, err := cmd.Output()
+	if ctx.Err() != nil {
+		return output, fmt.Errorf("%s canceled: %w", executable, ctx.Err())
+	}
+	if err != nil {
+		return output, fmt.Errorf("%s failed: %w", executable, err)
+	}
+	return output, nil
+}
+
 func runQualityMetricsAnalysis(ctx context.Context, flags *cli.CommonFlags, opts metricsOptions) error {
+	return runQualityMetricsAnalysisWithDependencies(ctx, flags, opts, defaultMetricsDependencies())
+}
+
+func runQualityMetricsAnalysisWithDependencies(ctx context.Context, flags *cli.CommonFlags, opts metricsOptions, deps metricsDependencies) error {
 	logger := logger.NewSimpleLogger("doctor-metrics")
 
 	logger.Info(
@@ -240,30 +272,30 @@ func runQualityMetricsAnalysis(ctx context.Context, flags *cli.CommonFlags, opts
 
 	// Collect basic project metrics
 	if err := collectProjectMetrics(report, opts, projectFiles); err != nil {
-		logger.Warn("Failed to collect basic metrics", "error", err)
+		return fmt.Errorf("failed to collect basic metrics: %w", err)
 	}
 
 	// Run linting analysis
-	if err := collectLintingIssues(ctx, report, opts); err != nil {
-		logger.Warn("Failed to collect linting issues", "error", err)
+	if err := collectLintingIssuesWithRunner(ctx, report, opts, deps.run); err != nil {
+		return fmt.Errorf("failed to collect linting issues: %w", err)
 	}
 
 	// Analyze test coverage
-	if err := collectCoverageMetrics(ctx, report, opts); err != nil {
-		logger.Warn("Failed to collect coverage metrics", "error", err)
+	if err := collectCoverageMetricsWithDependencies(ctx, report, opts, deps); err != nil {
+		return fmt.Errorf("failed to collect coverage metrics: %w", err)
 	}
 
 	// Analyze code complexity
 	if !opts.skipComplexity {
 		if err := collectComplexityMetrics(report, opts, projectFiles); err != nil {
-			logger.Warn("Failed to collect complexity metrics", "error", err)
+			return fmt.Errorf("failed to collect complexity metrics: %w", err)
 		}
 	}
 
 	// Perform detailed file analysis
 	if opts.detailedReport {
 		if err := collectFileAnalysis(report, opts, projectFiles); err != nil {
-			logger.Warn("Failed to collect file analysis", "error", err)
+			return fmt.Errorf("failed to collect file analysis: %w", err)
 		}
 	}
 
@@ -348,29 +380,25 @@ func collectProjectMetrics(report *CodeQualityReport, opts metricsOptions, proje
 }
 
 func collectLintingIssues(ctx context.Context, report *CodeQualityReport, opts metricsOptions) error {
-	// Try golangci-lint with timeout to prevent hanging.
-	//
-	// 실행 맥락에서 갈라 쓴다. 예전에는 Background에서 갈랐다. 시간 제한이
-	// 걸려 있으니 언젠가는 끝나지만, Ctrl+C를 눌러도 golangci-lint가 제
-	// 30초를 다 채울 때까지 기다려야 했다.
+	return collectLintingIssuesWithRunner(ctx, report, opts, runMetricsCommand)
+}
+
+func collectLintingIssuesWithRunner(ctx context.Context, report *CodeQualityReport, opts metricsOptions, run metricsCommandRunner) error {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-
-	cmd := exec.CommandContext(ctx, "golangci-lint", "run", "--out-format", "json", opts.projectPath)
-	output, err := cmd.Output()
-	// If golangci-lint fails or times out, continue with basic analysis
+	// v2의 명시적 이슈 종료 코드로 정상 진단 결과와 실행 실패를 구분한다.
+	output, err := run(ctx, opts.projectPath, "golangci-lint", "run", "--output.json.path", "stdout", "--show-stats=false", "--issues-exit-code=1", "./...")
+	if ctx.Err() != nil {
+		return fmt.Errorf("lint analysis canceled: %w", ctx.Err())
+	}
 	if err != nil {
-		logger.SimpleWarn("golangci-lint analysis failed or timed out, continuing with basic analysis", "error", err)
-		return nil
+		var exitErr *exec.ExitError
+		if !errors.As(err, &exitErr) || exitErr.ExitCode() != 1 {
+			return fmt.Errorf("lint analysis failed: %w", err)
+		}
 	}
-
-	if len(output) == 0 {
-		return nil // No issues found
-	}
-
-	// Parse golangci-lint JSON output
 	var lintResult struct {
-		Issues []struct {
+		Issues *[]struct {
 			FromLinter string `json:"FromLinter"`
 			Severity   string `json:"Severity"`
 			Text       string `json:"Text"`
@@ -380,14 +408,18 @@ func collectLintingIssues(ctx context.Context, report *CodeQualityReport, opts m
 			} `json:"Pos"`
 		} `json:"Issues"`
 	}
-
-	if err := json.Unmarshal(output, &lintResult); err != nil {
-		logger.SimpleWarn("Failed to parse golangci-lint output, continuing", "error", err)
-		return nil
+	if decodeErr := json.Unmarshal(output, &lintResult); decodeErr != nil {
+		return fmt.Errorf("invalid lint JSON (expected one JSON report; check configured output formats): %w", decodeErr)
+	}
+	if lintResult.Issues == nil {
+		return fmt.Errorf("lint report is missing a non-null Issues array")
+	}
+	if err != nil && len(*lintResult.Issues) == 0 {
+		return fmt.Errorf("lint issue exit without findings: %w", err)
 	}
 
 	// Convert to quality issues
-	for _, issue := range lintResult.Issues {
+	for _, issue := range *lintResult.Issues {
 		var severity string
 		switch issue.Severity {
 		case "error":
@@ -420,50 +452,65 @@ func collectLintingIssues(ctx context.Context, report *CodeQualityReport, opts m
 }
 
 func collectCoverageMetrics(ctx context.Context, report *CodeQualityReport, opts metricsOptions) error {
-	// Try coverage analysis with timeout.
-	//
-	// 여기가 특히 아팠다. go test ./...를 통째로 돌리는 자리라 웬만하면
-	// 60초를 다 쓴다. 실행 맥락에서 갈라야 Ctrl+C가 그 자식까지 닿는다.
+	return collectCoverageMetricsWithDependencies(ctx, report, opts, defaultMetricsDependencies())
+}
+
+func collectCoverageMetricsWithDependencies(ctx context.Context, report *CodeQualityReport, opts metricsOptions, deps metricsDependencies) (resultErr error) {
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
-
-	// Run go test with coverage
-	cmd := exec.CommandContext(ctx, "go", "test", "-coverprofile=coverage.tmp", "./...")
-	cmd.Dir = opts.projectPath
-	if err := cmd.Run(); err != nil {
-		logger.SimpleWarn("Coverage test failed or timed out, skipping coverage analysis", "error", err)
-		return nil
+	if err := ctx.Err(); err != nil {
+		return err
 	}
-
-	// Parse coverage output
-	cmd = exec.CommandContext(ctx, "go", "tool", "cover", "-func=coverage.tmp")
-	cmd.Dir = opts.projectPath
-	output, err := cmd.Output()
+	profileFile, err := os.CreateTemp("", "gz-metrics-coverage-*.out")
 	if err != nil {
-		logger.SimpleWarn("Failed to parse coverage, skipping", "error", err)
-		os.Remove(filepath.Join(opts.projectPath, "coverage.tmp"))
-		return nil
+		return fmt.Errorf("create coverage profile: %w", err)
 	}
-
-	// Extract total coverage percentage
-	lines := strings.SplitSeq(string(output), "\n")
-	for line := range lines {
-		if strings.Contains(line, "total:") {
-			re := regexp.MustCompile(`(\d+\.\d+)%`)
-			matches := re.FindStringSubmatch(line)
-			if len(matches) > 1 {
-				if coverage, err := strconv.ParseFloat(matches[1], 64); err == nil {
-					report.Summary.TestCoverage = coverage
-				}
-			}
-			break
+	profile := profileFile.Name()
+	defer func() {
+		if cleanupErr := deps.remove(profile); cleanupErr != nil {
+			resultErr = errors.Join(resultErr, fmt.Errorf("clean coverage profile: %w", cleanupErr))
 		}
+	}()
+	if err := profileFile.Close(); err != nil {
+		return fmt.Errorf("close coverage profile: %w", err)
 	}
 
-	// Cleanup
-	os.Remove(filepath.Join(opts.projectPath, "coverage.tmp"))
-
+	if _, err = deps.run(ctx, opts.projectPath, "go", "test", "-coverprofile="+profile, "./..."); err != nil {
+		return fmt.Errorf("coverage tests failed: %w", err)
+	}
+	output, err := deps.run(ctx, opts.projectPath, "go", "tool", "cover", "-func="+profile)
+	if err != nil {
+		return fmt.Errorf("coverage report failed: %w", err)
+	}
+	coverage, err := parseMetricsCoverage(output)
+	if err != nil {
+		return err
+	}
+	report.Summary.TestCoverage = coverage
 	return nil
+}
+
+func parseMetricsCoverage(output []byte) (float64, error) {
+	found := false
+	var coverage float64
+	for _, line := range strings.Split(string(output), "\n") {
+		fields := strings.Fields(line)
+		if len(fields) == 0 || fields[0] != "total:" {
+			continue
+		}
+		if found || len(fields) != 3 || fields[1] != "(statements)" || !strings.HasSuffix(fields[2], "%") {
+			return 0, fmt.Errorf("malformed or duplicate coverage total")
+		}
+		value, err := strconv.ParseFloat(strings.TrimSuffix(fields[2], "%"), 64)
+		if err != nil || math.IsNaN(value) || math.IsInf(value, 0) || value < 0 || value > 100 {
+			return 0, fmt.Errorf("invalid coverage total %q", fields[2])
+		}
+		coverage, found = value, true
+	}
+	if !found {
+		return 0, fmt.Errorf("coverage report has no total")
+	}
+	return coverage, nil
 }
 
 func collectComplexityMetrics(report *CodeQualityReport, opts metricsOptions, projectFiles *projectRootReader) error {
