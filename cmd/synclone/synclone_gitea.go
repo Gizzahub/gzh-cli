@@ -29,7 +29,7 @@ func newSyncCloneGiteaCmd(appCtx *app.AppContext) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:        "gitea",
-		Short:      "Clone repositories from a Gitea organization",
+		Short:      "Legacy Gitea cloning (currently unsupported)",
 		Deprecated: legacySyncloneProviderDeprecation("gitea"),
 		Args:       cobra.NoArgs,
 		RunE:       o.run,
@@ -52,10 +52,5 @@ func (o *syncCloneGiteaOptions) run(_ *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid strategy: %s. Must be one of: reset, pull, fetch", o.strategy)
 	}
 
-	// err := gitea_org.RefreshAll(o.targetPath, o.orgName, o.strategy)
-	// if err != nil {
-	//	return err
-	//}
-
-	return nil
+	return fmt.Errorf("legacy Gitea cloning is not supported; use 'gz synclone forge --provider gitea' instead")
 }

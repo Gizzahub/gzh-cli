@@ -42,6 +42,25 @@ The `gz synclone` command provides powerful multi-platform repository synchroniz
 - **Gitea**: Self-hosted Git service
 - **Gogs**: Lightweight Git service
 
+## 실행 결과와 탐색 범위
+
+중앙 설정의 synclone은 target 하나가 실패해도 나머지 target을 계속 처리하고, 마지막에
+target별 원인을 포함한 오류를 반환한다. 일부 오류를 출력한 뒤 전체 성공으로 끝내지 않는다.
+취소는 즉시 전달하며 실제 GitHub/GitLab provider와 별도 forge provider의 동작을 바꾸지
+않는다. legacy `synclone gitea`의 미지원 상태는 아래 명령 설명과 구분한다.
+
+`gz synclone config generate discover --recursive=false`는 base 디렉터리만 검사한다.
+base 자체가 저장소이면 발견하지만, 저장소가 아닌 base 아래의 저장소까지 내려가지 않는다.
+`--recursive=true`에서는 기존 `--depth`·ignore·context 동작을 유지한다. base가 저장소이면
+그 하위를 다시 탐색하지 않는 기존 정책도 그대로다.
+
+`--merge-existing`에서 기존 파일이 없으면 새 설정을 생성한다. 기존 파일의 읽기·해석에
+실패하면 새 설정으로 덮어쓰지 않고 오류를 반환한다. 새 merge 알고리즘이나 전체 쓰기의
+트랜잭션 계약을 도입한 것은 아니다.
+
+검증은 임시 디렉터리의 로컬 Git fixture와 호출별 실행 seam을 사용한다. 실제 원격 provider,
+사용자 저장소·HOME에서 실행한 결과나 루트/조상 초기화 전체의 검증으로 확대하지 않는다.
+
 ## Quick Start
 
 ### Basic Usage
@@ -53,8 +72,8 @@ gz synclone github --org myorganization
 # Clone from GitLab group
 gz synclone gitlab --group mygroup
 
-# Clone from Gitea organization
-gz synclone gitea --org myorg --base-url https://gitea.company.com
+# Inspect the Gitea forge provider (the legacy gitea command is unsupported)
+gz synclone forge --provider gitea --help
 
 # Use configuration file
 gz synclone --config synclone.yaml
@@ -173,28 +192,26 @@ gz synclone gitlab --group mygroup --visibility private
 
 #### `gz synclone gitea`
 
-Clone and synchronize Gitea organizations:
+이 legacy 명령은 deprecated 상태이며 실제 clone 호출이 연결되지 않아 미지원 오류를
+반환한다. 유효한 입력도 아무 작업 없이 성공 종료하지 않는다. 기존 입력 검증과 플래그는
+호환을 위해 유지한다.
 
 ```bash
-gz synclone gitea --org <organization> --base-url <url> [flags]
+gz synclone gitea --help
 ```
 
 **Key Flags:**
 
-- `--org`, `-o` - Organization name (required)
-- `--base-url` - Gitea instance URL (required)
-- `--target`, `-t` - Target directory
-- `--strategy` - Clone/update strategy
-- `--token` - Authentication token
+- `--orgName`, `-o` - Organization name (required for execution)
+- `--targetPath`, `-t` - Target directory (required for execution)
+- `--strategy`, `-s` - `reset`, `pull`, or `fetch`; execution remains unsupported
 
 **Examples:**
 
 ```bash
-# Clone Gitea organization
-gz synclone gitea --org myorg --base-url https://gitea.company.com
-
-# With authentication
-gz synclone gitea --org myorg --base-url https://gitea.company.com --token $GITEA_TOKEN
+# The separate forge command has an existing Gitea provider.
+# Inspect its current flags; legacy arguments are not automatically translated.
+gz synclone forge --provider gitea --help
 ```
 
 #### `gz synclone gogs`
@@ -515,7 +532,7 @@ gz synclone gitlab --group mygroup --base-url https://gitlab.company.com
 **Example:**
 
 ```bash
-gz synclone gitea --org myorg --base-url https://gitea.company.com
+gz synclone forge --provider gitea --help
 ```
 
 ### Gogs

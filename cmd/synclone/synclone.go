@@ -59,7 +59,17 @@ func defaultSyncCloneOptions() *syncCloneOptions {
 //
 // Returns a configured cobra.Command ready for execution.
 func NewSyncCloneCmd(appCtx *app.AppContext) *cobra.Command {
+	return newSyncCloneCmdWithRunner(appCtx, nil)
+}
+
+// cloneTargetRunner는 호출별 시험 경계이며 전역 provider 실행 상태를 바꾸지 않는다.
+type cloneTargetRunner func(context.Context, pkgconfig.BulkCloneTarget, string) error
+
+func newSyncCloneCmdWithRunner(appCtx *app.AppContext, runner cloneTargetRunner) *cobra.Command {
 	o := defaultSyncCloneOptions()
+	if runner == nil {
+		runner = o.executeProviderCloning
+	}
 
 	cmd := &cobra.Command{
 		Use:          "synclone",
@@ -85,7 +95,7 @@ For provider-specific operations, use the subcommands (github, gitlab, etc.).`,
 			// 쓰면 취소가 오지 않는다. 아래 run()에서 대상마다 확인하는
 			// ctx.Done()이 통째로 죽어 있었고, 수백 개를 받는 도중에
 			// Ctrl+C를 눌러도 끝까지 갔다.
-			return o.run(cmd.Context(), cmd, args)
+			return o.runWithCentralConfigServiceUsing(cmd.Context(), runner)
 		},
 	}
 
@@ -121,11 +131,19 @@ func (o *syncCloneOptions) run(ctx context.Context, _ *cobra.Command, _ []string
 
 // runWithCentralConfigService uses the central configuration service for unified config management.
 func (o *syncCloneOptions) runWithCentralConfigService(ctx context.Context) error {
+	return o.runWithCentralConfigServiceUsing(ctx, o.executeProviderCloning)
+}
+
+func (o *syncCloneOptions) runWithCentralConfigServiceUsing(ctx context.Context, runner cloneTargetRunner) error {
 	// 깃발 값부터 본다. 파일을 읽지도 파싱하지도 않고 판단할 수 있는 것이라
 	// 제일 앞에 둔다. 예전에는 설정을 다 읽고 검사한 다음에야 확인해서,
 	// gz synclone --strategy bogus가 오타 대신 설정 오류를 답했다.
 	if o.strategy != "reset" && o.strategy != "pull" && o.strategy != "fetch" {
 		return fmt.Errorf("invalid strategy: %s. Must be one of: reset, pull, fetch", o.strategy)
+	}
+
+	if err := ctx.Err(); err != nil {
+		return fmt.Errorf("operation canceled: %w", err)
 	}
 
 	// Create configuration service
@@ -184,27 +202,34 @@ func (o *syncCloneOptions) runWithCentralConfigService(ctx context.Context) erro
 
 	fmt.Printf("Found %d targets to process\n", len(targets))
 
-	// Process each target
+	// 일부 실패 뒤에도 다른 대상은 처리하되 최종 결과에 모든 원인을 남긴다.
+	var targetErrors []error
 	for _, target := range targets {
 		// Check for cancellation before starting each target
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("operation canceled: %w", ctx.Err())
+			return errors.Join(append(targetErrors, fmt.Errorf("operation canceled: %w", ctx.Err()))...)
 		default:
 		}
 
 		fmt.Printf("Processing %s organization: %s -> %s\n", target.Provider, target.Name, target.CloneDir)
 
-		err := o.executeProviderCloning(ctx, target, target.CloneDir)
+		err := runner(ctx, target, target.CloneDir)
 		if err != nil {
 			fmt.Printf("❌ Error processing %s/%s: %v\n", target.Provider, target.Name, err)
+			targetErrors = append(targetErrors, fmt.Errorf("failed to process %s/%s: %w", target.Provider, target.Name, err))
+		}
+		if ctx.Err() != nil {
+			return errors.Join(append(targetErrors, fmt.Errorf("operation canceled: %w", ctx.Err()))...)
+		}
+		if err != nil {
 			continue
 		}
 
 		fmt.Printf("✅ Successfully processed %s/%s\n", target.Provider, target.Name)
 	}
 
-	return nil
+	return errors.Join(targetErrors...)
 }
 
 // executeProviderCloning executes the cloning operation for a specific provider.

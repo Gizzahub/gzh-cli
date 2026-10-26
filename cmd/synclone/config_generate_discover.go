@@ -71,12 +71,16 @@ Examples:
 }
 
 // runConfigGenerateDiscover executes the discover command.
-func runConfigGenerateDiscover(ctx context.Context, basePath, outputFile string, mergeExisting, _ bool, maxDepth int, ignorePatterns []string, followSymlinks bool) error {
+func runConfigGenerateDiscover(ctx context.Context, basePath, outputFile string, mergeExisting, recursive bool, maxDepth int, ignorePatterns []string, followSymlinks bool) error {
 	fmt.Printf("🔍 Discovering repositories in %s...\n", basePath)
 
 	// Create repository discoverer
 	discoverer := discovery.NewRepoDiscoverer(basePath)
-	discoverer.SetMaxDepth(maxDepth)
+	if recursive {
+		discoverer.SetMaxDepth(maxDepth)
+	} else {
+		discoverer.SetMaxDepth(0)
+	}
 	discoverer.SetIgnorePatterns(ignorePatterns)
 	discoverer.SetFollowSymlinks(followSymlinks)
 
@@ -101,9 +105,13 @@ func runConfigGenerateDiscover(ctx context.Context, basePath, outputFile string,
 
 	// Handle merging with existing configuration if requested
 	if mergeExisting {
-		if existingConfig, err := loadExistingConfig(outputFile); err == nil {
+		existingConfig, err := loadExistingConfig(outputFile)
+		switch {
+		case err == nil:
 			config = mergeConfigurations(existingConfig, config)
 			fmt.Printf("📄 Merged with existing configuration\n")
+		case !os.IsNotExist(err):
+			return fmt.Errorf("failed to load existing configuration: %w", err)
 		}
 	}
 
