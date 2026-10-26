@@ -31,21 +31,24 @@ and compliance across entire GitHub organizations using infrastructure-as-code
 principles.
 
 Key Features:
-- Apply consistent configuration across repositories
+- Inspect repository configuration and compare target settings
 - Manage security policies and branch protection rules
 - Template-based configuration management
 - Compliance auditing and reporting
-- Dry-run mode for safe changes
+
+Apply, risk-assessment, and dashboard currently return explicit unsupported
+errors. Their commands and flags remain available for compatibility; use --help
+to inspect the current support boundary.
 
 Examples:
   gz repo-config list                    # List repositories with current settings
-  gz repo-config apply                   # Apply configuration to repositories
+  gz repo-config apply --help            # Inspect unsupported apply command
   gz repo-config validate               # Validate configuration files
   gz repo-config diff                   # Show differences between current and target
   gz repo-config audit                  # Generate compliance audit report
   gz repo-config webhook                # Manage repository webhooks
-  gz repo-config dashboard              # Start real-time compliance dashboard
-  gz repo-config risk-assessment        # Perform CVSS-based risk assessment`,
+  gz repo-config dashboard --help        # Inspect unsupported dashboard command
+  gz repo-config risk-assessment --help  # Inspect unsupported risk assessment`,
 	}
 
 	// Add subcommands

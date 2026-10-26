@@ -57,36 +57,13 @@ func NewCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "risk-assessment",
-		Short: "Perform CVSS-based risk assessment",
-		Long: `Perform comprehensive risk assessment using CVSS scoring methodology.
+		Short: "Repository risk assessment (currently unsupported)",
+		Long: `Repository risk assessment is currently unsupported.
 
-This command analyzes repository configurations and security settings to
-provide risk scores and recommendations based on industry standards.
-
-Risk Assessment Features:
-- CVSS-based vulnerability scoring
-- Configuration weakness detection
-- Security policy compliance analysis
-- Risk trend analysis over time
-- Actionable remediation recommendations
-
-Assessment Categories:
-- Access Control (IAM, permissions, branch protection)
-- Data Protection (encryption, secrets, visibility)
-- Infrastructure Security (webhooks, integrations)
-- Operational Security (monitoring, logging, auditing)
-
-Output Formats:
-- table: Human-readable risk assessment table
-- json: Structured data for integration
-- csv: Spreadsheet-compatible format
-- html: Detailed HTML report
-
-Examples:
-  gz repo-config risk-assessment --org myorg              # Full assessment
-  gz repo-config risk-assessment --severity high          # High severity only
-  gz repo-config risk-assessment --format html            # HTML report
-  gz repo-config risk-assessment --output report.html     # Save to file`,
+Repository security collection and CVSS analysis are not implemented.
+Execution returns an explicit error before producing scores or output files.
+Existing flags remain available for compatibility; they do not enable assessment.
+Use --help to inspect retained options.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runRiskAssessmentCommand(flags, format, includeArchived, severityFilter, outputFile, riskThreshold)
 		},
@@ -140,166 +117,12 @@ func runRiskAssessmentCommand(flags GlobalFlags, format string, includeArchived 
 	if flags.Organization == "" {
 		return fmt.Errorf("organization is required (use --org flag)")
 	}
-
-	if flags.Verbose {
-		fmt.Printf("🔍 Performing risk assessment for organization: %s\n", flags.Organization)
-		fmt.Printf("Format: %s\n", format)
-		fmt.Printf("Include archived: %t\n", includeArchived)
-
-		if severityFilter != "" {
-			fmt.Printf("Severity filter: %s\n", severityFilter)
-		}
-
-		fmt.Printf("Risk threshold: %.1f\n", riskThreshold)
-		fmt.Println()
-	}
-
-	fmt.Printf("🛡️  Security Risk Assessment\n")
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	fmt.Printf("Organization: %s\n", flags.Organization)
-	fmt.Printf("Assessment Date: %s\n", time.Now().Format("2006-01-02 15:04:05"))
-	fmt.Println()
-
-	// Perform risk assessments
-	assessments, err := performRiskAssessments(flags.Organization, flags.Token, includeArchived)
-	if err != nil {
-		return fmt.Errorf("failed to perform risk assessments: %w", err)
-	}
-
-	// Apply severity filter if specified
-	if severityFilter != "" {
-		assessments = filterBySeverity(assessments, severityFilter)
-	}
-
-	// Filter by risk threshold
-	assessments = filterByRiskThreshold(assessments, riskThreshold)
-
-	if len(assessments) == 0 {
-		fmt.Println("✅ No repositories match the specified criteria")
-		return nil
-	}
-
-	// Generate output based on format
-	switch format {
-	case "table":
-		displayRiskAssessmentTable(assessments)
-	case "json":
-		err = displayRiskAssessmentJSON(assessments, outputFile)
-	case "csv":
-		err = displayRiskAssessmentCSV(assessments, outputFile)
-	case "html":
-		err = displayRiskAssessmentHTML(assessments, outputFile, flags.Organization)
-	default:
-		return fmt.Errorf("unsupported format: %s", format)
-	}
-
-	if err != nil {
-		return fmt.Errorf("failed to generate output: %w", err)
-	}
-
-	// Display summary
-	displayRiskSummary(assessments, riskThreshold)
-
-	return nil
+	return fmt.Errorf("repository risk assessment is not supported: repository security collection and CVSS analysis are not implemented")
 }
 
 // performRiskAssessments performs risk assessments for repositories.
-func performRiskAssessments(organization, _ string, includeArchived bool) ([]RiskAssessment, error) { //nolint:unparam // Token unused in current implementation
-	_ = organization // organization unused in mock implementation
-	// This is a mock implementation. In reality, this would:
-	// 1. Fetch repository configurations from GitHub API
-	// 2. Analyze security settings and configurations
-	// 3. Calculate CVSS scores based on vulnerabilities
-	// 4. Generate recommendations
-	mockAssessments := []RiskAssessment{
-		{
-			Repository:   "api-server",
-			OverallScore: 8.5,
-			Severity:     "high",
-			Categories: RiskCategories{
-				AccessControl:       7.0,
-				DataProtection:      9.0,
-				InfrastructureSec:   8.5,
-				OperationalSecurity: 9.0,
-			},
-			Vulnerabilities: []RiskVulnerability{
-				{
-					ID:          "CVE-2024-0001",
-					Title:       "Missing Branch Protection",
-					Description: "Main branch lacks required status checks",
-					Severity:    "high",
-					CVSSScore:   8.5,
-					Category:    "access_control",
-					Remediation: "Enable required status checks for main branch",
-				},
-			},
-			Recommendations: []string{
-				"Enable branch protection rules for main branch",
-				"Require signed commits",
-				"Add CODEOWNERS file",
-			},
-			LastAssessed: time.Now(),
-		},
-		{
-			Repository:   "web-frontend",
-			OverallScore: 6.2,
-			Severity:     "medium",
-			Categories: RiskCategories{
-				AccessControl:       5.5,
-				DataProtection:      6.0,
-				InfrastructureSec:   7.0,
-				OperationalSecurity: 6.0,
-			},
-			Vulnerabilities: []RiskVulnerability{
-				{
-					ID:          "CVE-2024-0002",
-					Title:       "Insufficient Access Controls",
-					Description: "Repository allows force pushes to protected branches",
-					Severity:    "medium",
-					CVSSScore:   6.2,
-					Category:    "access_control",
-					Remediation: "Disable force pushes on protected branches",
-				},
-			},
-			Recommendations: []string{
-				"Disable force pushes on protected branches",
-				"Enable secret scanning",
-				"Add dependency scanning",
-			},
-			LastAssessed: time.Now(),
-		},
-		{
-			Repository:   "legacy-service",
-			OverallScore: 9.1,
-			Severity:     "critical",
-			Categories: RiskCategories{
-				AccessControl:       9.5,
-				DataProtection:      8.0,
-				InfrastructureSec:   9.0,
-				OperationalSecurity: 10.0,
-			},
-			Vulnerabilities: []RiskVulnerability{
-				{
-					ID:          "CVE-2024-0003",
-					Title:       "Public Repository with Secrets",
-					Description: "Public repository contains hardcoded credentials",
-					Severity:    "critical",
-					CVSSScore:   9.1,
-					Category:    "data_protection",
-					Remediation: "Remove secrets and make repository private",
-				},
-			},
-			Recommendations: []string{
-				"Immediately make repository private",
-				"Remove all hardcoded secrets",
-				"Implement proper secret management",
-				"Rotate exposed credentials",
-			},
-			LastAssessed: time.Now(),
-		},
-	}
-
-	return mockAssessments, nil
+func performRiskAssessments(organization, _ string, includeArchived bool) ([]RiskAssessment, error) {
+	return nil, fmt.Errorf("repository risk assessment is not supported: repository security collection and CVSS analysis are not implemented")
 }
 
 // displayRiskAssessmentTable displays risk assessments in table format.

@@ -37,6 +37,18 @@ branch protection·permissions 조회가 반환한 전송·해석·취소 오류
 오류 처리와 기본 브랜치가 없을 때 보호 조회를 생략하는 동작은 유지한다. 실제 통계나
 컴플라이언스 점수의 새 의미를 정의한 것은 아니다.
 
+## 위험 평가와 dashboard
+
+`gz repo-config risk-assessment`와 `dashboard` 및 같은 생성자를 사용하는 `gz git config`
+경로는 현재 미지원이다. 기존 명령·플래그·공개 DTO는 유지한다. risk-assessment는 고정
+저장소·CVSS 점수를 분석 결과로 만들거나 파일에 쓰지 않으며, 직접 분석 helper도 오류를
+반환한다. 실제 입력에 적용하는 필터·표시·포맷 유틸은 분석 backend와 구분한다.
+
+dashboard 실행은 listener를 열거나 파일·자격증명에 접근하기 전에 오류를 반환한다.
+직접 호출한 home/repository/compliance HTTP helper도 고정 통계 대신 HTTP 501을 반환한다.
+이 변경은 웹 기능을 새로 제공하는 것이 아니다. 실제 risk 산정과 컴플라이언스 의미의
+계약을 확정하지 않았으며, 공개 제품 정의의 웹/GUI 제외 조건을 유지한다.
+
 ## 저장소 설정 apply
 
 `gz repo-config apply`와 같은 명령을 제공하는 `gz git config apply`는 현재 미지원 오류를
