@@ -841,54 +841,12 @@ func (w *webhookServiceImpl) BulkDeleteWebhooks(ctx context.Context, request *Bu
 
 // TestWebhook tests a webhook by sending a ping event.
 func (w *webhookServiceImpl) TestWebhook(ctx context.Context, owner, repo string, webhookID int64) (*WebhookTestResult, error) {
-	w.logger.Info("Testing webhook", "owner", owner, "repo", repo, "webhook_id", webhookID)
-
-	startTime := time.Now()
-
-	// TODO: Implement actual webhook test
-	testResult := &WebhookTestResult{
-		Success:    true,
-		StatusCode: 200,
-		Response:   "OK",
-		Duration:   time.Since(startTime).String(),
-		DeliveryID: fmt.Sprintf("test-%d-%d", webhookID, time.Now().Unix()),
-		TestedAt:   time.Now(),
-	}
-
-	return testResult, nil
+	return nil, fmt.Errorf("webhook test: %w", ErrNotImplemented)
 }
 
 // GetWebhookDeliveries retrieves recent webhook deliveries.
 func (w *webhookServiceImpl) GetWebhookDeliveries(ctx context.Context, owner, repo string, webhookID int64) ([]*WebhookDelivery, error) {
-	w.logger.Debug("Getting webhook deliveries", "owner", owner, "repo", repo, "webhook_id", webhookID)
-
-	// TODO: Implement actual GitHub API call
-	deliveries := []*WebhookDelivery{
-		{
-			ID:          "12345678-1234-1234-1234-123456789012",
-			Event:       "push",
-			Action:      "synchronize",
-			StatusCode:  200,
-			Duration:    "150ms",
-			DeliveredAt: time.Now().Add(-2 * time.Hour),
-			Success:     true,
-			Redelivered: false,
-			URL:         "https://example.com/webhook",
-		},
-		{
-			ID:          "87654321-4321-4321-4321-210987654321",
-			Event:       "pull_request",
-			Action:      "opened",
-			StatusCode:  200,
-			Duration:    "230ms",
-			DeliveredAt: time.Now().Add(-6 * time.Hour),
-			Success:     true,
-			Redelivered: false,
-			URL:         "https://example.com/webhook",
-		},
-	}
-
-	return deliveries, nil
+	return nil, fmt.Errorf("webhook delivery retrieval: %w", ErrNotImplemented)
 }
 
 // Helper methods

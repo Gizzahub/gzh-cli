@@ -98,19 +98,25 @@ func unsupportedRepositoryApply() error {
 
 // ListRepositories lists repositories with their configuration status.
 func (s *RepoConfigService) ListRepositories(ctx context.Context, opts ListOptions) ([]RepositoryInfo, error) {
-	// Setup client
-	if err := s.setupClient(opts.Token); err != nil {
-		return nil, fmt.Errorf("failed to setup client: %w", err)
+	// 명시한 입력의 오류는 인증·HTTP 조회보다 먼저 반환한다.
+	var filterRegex *regexp.Regexp
+	if opts.Filter != "" {
+		var err error
+		filterRegex, err = regexp.Compile(opts.Filter)
+		if err != nil {
+			return nil, fmt.Errorf("invalid filter regex %q: %w", opts.Filter, err)
+		}
 	}
-
-	// Load repository configuration to check compliance
 	var repoConfig *config.RepoConfig
 	if opts.ConfigFile != "" {
 		var err error
 		repoConfig, err = config.LoadRepoConfig(opts.ConfigFile)
-		if err != nil && opts.Verbose {
-			fmt.Printf("Warning: failed to load config file %s: %v\n", opts.ConfigFile, err)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load config file %s: %w", opts.ConfigFile, err)
 		}
+	}
+	if err := s.setupClient(opts.Token); err != nil {
+		return nil, fmt.Errorf("failed to setup client: %w", err)
 	}
 
 	// List repositories
@@ -120,10 +126,10 @@ func (s *RepoConfigService) ListRepositories(ctx context.Context, opts ListOptio
 	}
 
 	// Apply filters and limits
-	repos = s.applyFiltersAndLimits(repos, opts.Filter, opts.Limit, opts.Verbose)
+	repos = s.applyFiltersAndLimits(repos, filterRegex, opts.Limit)
 
 	// Convert to RepositoryInfo format
-	return s.convertToRepositoryInfo(ctx, repos, opts, repoConfig), nil
+	return s.convertToRepositoryInfo(ctx, repos, opts, repoConfig)
 }
 
 // GetConfigurationChanges retrieves configuration changes for preview.
@@ -174,21 +180,15 @@ func (s *RepoConfigService) applyChanges(_ context.Context, _ []ConfigurationCha
 }
 
 // applyFiltersAndLimits applies filtering and limiting to the repository list.
-func (s *RepoConfigService) applyFiltersAndLimits(repos []*github.Repository, filter string, limit int, verbose bool) []*github.Repository {
-	// Filter repositories if pattern provided
-	if filter != "" {
-		filterRegex, err := regexp.Compile(filter)
-		if err != nil && verbose {
-			fmt.Printf("Warning: invalid filter regex '%s': %v\n", filter, err)
-		} else {
-			var filtered []*github.Repository
-			for _, repo := range repos {
-				if filterRegex.MatchString(repo.Name) {
-					filtered = append(filtered, repo)
-				}
+func (s *RepoConfigService) applyFiltersAndLimits(repos []*github.Repository, filterRegex *regexp.Regexp, limit int) []*github.Repository {
+	if filterRegex != nil {
+		var filtered []*github.Repository
+		for _, repo := range repos {
+			if filterRegex.MatchString(repo.Name) {
+				filtered = append(filtered, repo)
 			}
-			repos = filtered
 		}
+		repos = filtered
 	}
 
 	// Apply limit if specified
@@ -200,20 +200,22 @@ func (s *RepoConfigService) applyFiltersAndLimits(repos []*github.Repository, fi
 }
 
 // convertToRepositoryInfo converts GitHub repositories to RepositoryInfo format.
-func (s *RepoConfigService) convertToRepositoryInfo(ctx context.Context, repos []*github.Repository, opts ListOptions, repoConfig *config.RepoConfig) []RepositoryInfo {
+func (s *RepoConfigService) convertToRepositoryInfo(ctx context.Context, repos []*github.Repository, opts ListOptions, repoConfig *config.RepoConfig) ([]RepositoryInfo, error) {
 	repositories := make([]RepositoryInfo, 0, len(repos))
 
 	for _, repo := range repos {
 		info := s.createRepositoryInfo(repo, repoConfig)
 
 		if opts.ShowConfig {
-			s.addDetailedConfiguration(ctx, opts.Organization, &info)
+			if err := s.addDetailedConfiguration(ctx, opts.Organization, &info); err != nil {
+				return nil, err
+			}
 		}
 
 		repositories = append(repositories, info)
 	}
 
-	return repositories
+	return repositories, nil
 }
 
 // createRepositoryInfo creates a RepositoryInfo from a GitHub repository.
@@ -234,11 +236,13 @@ func (s *RepoConfigService) createRepositoryInfo(repo *github.Repository, repoCo
 }
 
 // addDetailedConfiguration adds detailed repository configuration if requested.
-func (s *RepoConfigService) addDetailedConfiguration(ctx context.Context, organization string, info *RepositoryInfo) {
+func (s *RepoConfigService) addDetailedConfiguration(ctx context.Context, organization string, info *RepositoryInfo) error {
 	repoConfig, err := s.client.GetRepositoryConfiguration(ctx, organization, info.Name)
-	if err == nil {
-		info.Config = repoConfig
+	if err != nil {
+		return fmt.Errorf("failed to get configuration for %s/%s: %w", organization, info.Name, err)
 	}
+	info.Config = repoConfig
+	return nil
 }
 
 // detectTemplate attempts to detect which template a repository is using.

@@ -411,47 +411,17 @@ func TestWebhookService_BulkCreateWebhooks(t *testing.T) {
 }
 
 func TestWebhookService_TestWebhook(t *testing.T) {
-	logger := &mockWebhookLogger{}
-	service := NewWebhookService(nil, logger)
-
-	result, err := service.TestWebhook(context.Background(), "testowner", "testrepo", 123456)
-
-	assert.NoError(t, err)
-	assert.NotNil(t, result)
-	assert.True(t, result.Success)
-	assert.Equal(t, 200, result.StatusCode)
-	assert.Equal(t, "OK", result.Response)
-	assert.NotEmpty(t, result.Duration)
-	assert.NotEmpty(t, result.DeliveryID)
-	assert.NotZero(t, result.TestedAt)
+	service := NewWebhookService(nil, &mockWebhookLogger{})
+	result, err := service.TestWebhook(context.Background(), "owner", "repo", 7)
+	require.ErrorIs(t, err, ErrNotImplemented)
+	require.Nil(t, result)
 }
 
 func TestWebhookService_GetWebhookDeliveries(t *testing.T) {
-	logger := &mockWebhookLogger{}
-	service := NewWebhookService(nil, logger)
-
-	deliveries, err := service.GetWebhookDeliveries(context.Background(), "testowner", "testrepo", 123456)
-
-	assert.NoError(t, err)
-	assert.NotNil(t, deliveries)
-	assert.Len(t, deliveries, 2) // Based on mock implementation
-
-	// Verify first delivery
-	delivery1 := deliveries[0]
-	assert.NotEmpty(t, delivery1.ID)
-	assert.Equal(t, "push", delivery1.Event)
-	assert.Equal(t, "synchronize", delivery1.Action)
-	assert.Equal(t, 200, delivery1.StatusCode)
-	assert.True(t, delivery1.Success)
-	assert.False(t, delivery1.Redelivered)
-
-	// Verify second delivery
-	delivery2 := deliveries[1]
-	assert.NotEmpty(t, delivery2.ID)
-	assert.Equal(t, "pull_request", delivery2.Event)
-	assert.Equal(t, "opened", delivery2.Action)
-	assert.Equal(t, 200, delivery2.StatusCode)
-	assert.True(t, delivery2.Success)
+	service := NewWebhookService(nil, &mockWebhookLogger{})
+	result, err := service.GetWebhookDeliveries(context.Background(), "owner", "repo", 7)
+	require.ErrorIs(t, err, ErrNotImplemented)
+	require.Nil(t, result)
 }
 
 func TestWebhookMatchesSelector(t *testing.T) {

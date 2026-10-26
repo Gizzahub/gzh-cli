@@ -17,8 +17,25 @@ bulk 작업은 사용자가 지정하거나 주입된 API client가 조회한 �
 없다고 고정된 예제 저장소를 대신 변경하지 않는다. 일부 생성에 실패하면 CLI도 실패를
 반환한다. 이미 성공한 원격 변경을 자동으로 취소하는 트랜잭션은 제공하지 않는다.
 
-이 수정은 webhook monitor와 조직 policy/config의 지원을 확장하지 않는다. 해당 경로의
-고정 결과 제거와 실제 운영 backend 계약은 후속 작업이다.
+webhook monitor와 CLI의 조직 policy/config 실행은 현재 미지원 오류를 반환한다. 명령·인자·
+플래그는 남아 있지만 고정 성공, 배송 내역, 정책, 점수나 통계를 실제 결과로 출력하지 않는다.
+직접 SDK의 monitor 및 migration/sync/compliance/inventory도 `ErrNotImplemented`를
+감싼 오류와 nil 결과를 반환한다.
+
+주입한 `ConfigStorage`를 사용하는 SDK policy CRUD와 실제 configuration 검증은 별도
+지원 기능으로 유지한다. 운영 backend가 없는 경로를 연결하지 않으며, 모든 config SDK가
+미지원이라고 해석하지 않는다.
+
+## 저장소 설정 조회
+
+명시한 config 파일을 읽거나 해석할 수 없거나 filter가 잘못되면 조회를 시작하기 전에
+오류를 반환한다. verbose 설정에 따라 잘못된 입력을 무시하거나 필터 없이 조회하지 않는다.
+정상 filter와 limit의 동작은 유지한다.
+
+상세 설정을 요청한 경우 조회 실패를 성공 목록에 숨기지 않고 오류를 반환한다. SDK도
+branch protection·permissions 조회가 반환한 전송·해석·취소 오류를 전달한다. 기존 HTTP
+오류 처리와 기본 브랜치가 없을 때 보호 조회를 생략하는 동작은 유지한다. 실제 통계나
+컴플라이언스 점수의 새 의미를 정의한 것은 아니다.
 
 ## 저장소 설정 apply
 

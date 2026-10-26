@@ -419,39 +419,17 @@ func TestWebhookConfigurationService_PreviewPolicyApplication(t *testing.T) {
 }
 
 func TestWebhookConfigurationService_GenerateComplianceReport(t *testing.T) {
-	mockStorage := &mockConfigStorage{}
-	mockLogger := &mockLogger{}
-	apiClient := &orgReposAPIClient{repos: []RepositoryInfo{
-		{Name: "test-repo", FullName: "testorg/test-repo"},
-	}}
-	service := NewWebhookConfigurationService(nil, apiClient, mockLogger, mockStorage)
-
-	config := createTestOrganizationConfig()
-	mockStorage.On("GetOrganizationConfig", mock.Anything, "testorg").Return(config, nil)
-
-	report, err := service.GenerateComplianceReport(context.Background(), "testorg")
-
-	require.NoError(t, err)
-	require.NotNil(t, report)
-	assert.Equal(t, "testorg", report.Organization)
-	assert.True(t, report.ComplianceScore >= 0 && report.ComplianceScore <= 100)
-	mockStorage.AssertExpectations(t)
+	service := NewWebhookConfigurationService(nil, nil, &mockLogger{}, nil)
+	result, err := service.GenerateComplianceReport(context.Background(), "org")
+	require.ErrorIs(t, err, ErrNotImplemented)
+	require.Nil(t, result)
 }
 
 func TestWebhookConfigurationService_GetWebhookInventory(t *testing.T) {
-	mockStorage := &mockConfigStorage{}
-	mockLogger := &mockLogger{}
-	apiClient := &orgReposAPIClient{repos: []RepositoryInfo{
-		{Name: "test-repo", FullName: "testorg/test-repo"},
-	}}
-	service := NewWebhookConfigurationService(nil, apiClient, mockLogger, mockStorage)
-
-	inventory, err := service.GetWebhookInventory(context.Background(), "testorg")
-
-	require.NoError(t, err)
-	require.NotNil(t, inventory)
-	assert.Equal(t, "testorg", inventory.Organization)
-	assert.NotNil(t, inventory.Summary)
+	service := NewWebhookConfigurationService(nil, nil, &mockLogger{}, nil)
+	result, err := service.GetWebhookInventory(context.Background(), "org")
+	require.ErrorIs(t, err, ErrNotImplemented)
+	require.Nil(t, result)
 }
 
 func TestValidatePolicy(t *testing.T) {

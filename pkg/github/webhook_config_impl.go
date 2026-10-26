@@ -294,174 +294,21 @@ func (w *webhookConfigurationServiceImpl) PreviewPolicyApplication(ctx context.C
 // Migration and Sync
 
 func (w *webhookConfigurationServiceImpl) MigrateExistingWebhooks(ctx context.Context, request *MigrationRequest) (*MigrationResult, error) {
-	w.logger.Info("Starting webhook migration", "org", request.Organization, "policy_id", request.TargetPolicyID)
-
-	startTime := time.Now()
-	result := &MigrationResult{
-		Organization: request.Organization,
-		Results:      []WebhookMigrationResult{},
-	}
-
-	// Get target policy
-	policy, err := w.GetPolicy(ctx, request.Organization, request.TargetPolicyID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get target policy: %w", err)
-	}
-
-	// Get all repositories in organization
-	repositories, err := w.getTargetRepositories(ctx, request.Organization, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get repositories: %w", err)
-	}
-
-	// Migrate webhooks for each repository
-	for _, repo := range repositories {
-		migrationResults := w.migrateRepositoryWebhooks(ctx, repo, policy, request)
-		result.Results = append(result.Results, migrationResults...)
-
-		// Update counters
-		for _, r := range migrationResults {
-			result.TotalWebhooks++
-			if r.Success {
-				result.MigratedWebhooks++
-			} else {
-				result.FailedWebhooks++
-			}
-		}
-	}
-
-	result.ExecutionTime = time.Since(startTime).String()
-
-	return result, nil
+	return nil, fmt.Errorf("webhook MigrateExistingWebhooks: %w", ErrNotImplemented)
 }
 
 func (w *webhookConfigurationServiceImpl) SyncOrganizationWebhooks(ctx context.Context, org string) (*SyncResult, error) {
-	w.logger.Info("Starting webhook synchronization", "org", org)
-
-	startTime := time.Now()
-	result := &SyncResult{
-		Organization:  org,
-		Discrepancies: []WebhookDiscrepancy{},
-	}
-
-	// Get organization config
-	orgConfig, err := w.GetOrganizationConfig(ctx, org)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get organization config: %w", err)
-	}
-
-	// Get all repositories
-	repositories, err := w.getTargetRepositories(ctx, org, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get repositories: %w", err)
-	}
-
-	result.TotalRepositories = len(repositories)
-
-	// Check each repository for discrepancies
-	for _, repo := range repositories {
-		discrepancies := w.checkRepositoryCompliance(ctx, repo, orgConfig)
-
-		result.Discrepancies = append(result.Discrepancies, discrepancies...)
-		if len(discrepancies) == 0 {
-			result.SyncedRepositories++
-		}
-	}
-
-	result.ExecutionTime = time.Since(startTime).String()
-
-	return result, nil
+	return nil, fmt.Errorf("webhook SyncOrganizationWebhooks: %w", ErrNotImplemented)
 }
 
 // Reporting and Audit
 
 func (w *webhookConfigurationServiceImpl) GenerateComplianceReport(ctx context.Context, org string) (*ComplianceReport, error) {
-	w.logger.Info("Generating compliance report", "org", org)
-
-	report := &ComplianceReport{
-		Organization:    org,
-		GeneratedAt:     time.Now(),
-		Violations:      []ComplianceViolation{},
-		Recommendations: []string{},
-	}
-
-	// Get organization config
-	orgConfig, err := w.GetOrganizationConfig(ctx, org)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get organization config: %w", err)
-	}
-
-	// Get all repositories
-	repositories, err := w.getTargetRepositories(ctx, org, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get repositories: %w", err)
-	}
-
-	report.TotalRepositories = len(repositories)
-
-	// Check compliance for each repository
-	for _, repo := range repositories {
-		violations := w.checkRepositoryViolations(ctx, repo, orgConfig)
-		if len(violations) == 0 {
-			report.CompliantRepos++
-		} else {
-			report.NonCompliantRepos++
-			report.Violations = append(report.Violations, violations...)
-		}
-	}
-
-	// Calculate compliance score
-	if report.TotalRepositories > 0 {
-		report.ComplianceScore = float64(report.CompliantRepos) / float64(report.TotalRepositories) * 100
-	}
-
-	// Generate recommendations
-	report.Recommendations = w.generateComplianceRecommendations(report)
-
-	return report, nil
+	return nil, fmt.Errorf("webhook GenerateComplianceReport: %w", ErrNotImplemented)
 }
 
 func (w *webhookConfigurationServiceImpl) GetWebhookInventory(ctx context.Context, org string) (*WebhookInventory, error) {
-	w.logger.Info("Generating webhook inventory", "org", org)
-
-	inventory := &WebhookInventory{
-		Organization:    org,
-		GeneratedAt:     time.Now(),
-		WebhooksByType:  make(map[string]int),
-		WebhooksByEvent: make(map[string]int),
-		Repositories:    []RepositoryWebhookInfo{},
-	}
-
-	// Get all repositories
-	repositories, err := w.getTargetRepositories(ctx, org, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get repositories: %w", err)
-	}
-
-	// Collect webhook information for each repository
-	for _, repo := range repositories {
-		repoInfo := w.collectRepositoryWebhookInfo(ctx, org, repo)
-		inventory.Repositories = append(inventory.Repositories, repoInfo)
-
-		// Update counters
-		for _, webhook := range repoInfo.Webhooks {
-			inventory.TotalWebhooks++
-
-			// Count by type (based on URL domain)
-			webhookType := w.categorizeWebhook(webhook)
-			inventory.WebhooksByType[webhookType]++
-
-			// Count by events
-			for _, event := range webhook.Events {
-				inventory.WebhooksByEvent[event]++
-			}
-		}
-	}
-
-	// Generate summary
-	inventory.Summary = w.generateInventorySummary(inventory)
-
-	return inventory, nil
+	return nil, fmt.Errorf("webhook GetWebhookInventory: %w", ErrNotImplemented)
 }
 
 // Helper methods
@@ -750,87 +597,6 @@ func (w *webhookConfigurationServiceImpl) updateSummaryForAction(summary *Policy
 	case WebhookActionDelete:
 		summary.WebhooksDeleted++
 	}
-}
-
-func (w *webhookConfigurationServiceImpl) migrateRepositoryWebhooks(ctx context.Context, repo string, policy *WebhookPolicy, request *MigrationRequest) []WebhookMigrationResult {
-	// Mock implementation for webhook migration
-	return []WebhookMigrationResult{
-		{
-			Repository:   repo,
-			OldWebhookID: 123,
-			NewWebhookID: 456,
-			Success:      true,
-			Changes:      []string{"Migrated webhook to new policy"},
-		},
-	}
-}
-
-func (w *webhookConfigurationServiceImpl) checkRepositoryCompliance(ctx context.Context, repo string, orgConfig *OrganizationWebhookConfig) []WebhookDiscrepancy {
-	// Mock implementation for compliance checking
-	return []WebhookDiscrepancy{}
-}
-
-func (w *webhookConfigurationServiceImpl) checkRepositoryViolations(ctx context.Context, repo string, orgConfig *OrganizationWebhookConfig) []ComplianceViolation {
-	// Mock implementation for violation checking
-	return []ComplianceViolation{}
-}
-
-func (w *webhookConfigurationServiceImpl) generateComplianceRecommendations(report *ComplianceReport) []string {
-	recommendations := []string{}
-
-	if report.ComplianceScore < 80 {
-		recommendations = append(recommendations, "Consider implementing standardized webhook policies")
-	}
-
-	if len(report.Violations) > 0 {
-		recommendations = append(recommendations, "Review and address compliance violations")
-	}
-
-	return recommendations
-}
-
-func (w *webhookConfigurationServiceImpl) collectRepositoryWebhookInfo(ctx context.Context, org, repo string) RepositoryWebhookInfo {
-	// Mock implementation - would call actual webhook service
-	return RepositoryWebhookInfo{
-		Repository: repo,
-		Webhooks:   []*WebhookInfo{},
-		Compliance: "compliant",
-		Issues:     []string{},
-	}
-}
-
-func (w *webhookConfigurationServiceImpl) categorizeWebhook(webhook *WebhookInfo) string {
-	// Simple categorization based on URL
-	if strings.Contains(webhook.URL, "slack") {
-		return "slack"
-	} else if strings.Contains(webhook.URL, "teams") {
-		return "teams"
-	} else if strings.Contains(webhook.URL, "discord") {
-		return "discord"
-	}
-
-	return "other"
-}
-
-func (w *webhookConfigurationServiceImpl) generateInventorySummary(inventory *WebhookInventory) WebhookInventorySummary {
-	summary := WebhookInventorySummary{}
-
-	for _, repoInfo := range inventory.Repositories {
-		for _, webhook := range repoInfo.Webhooks {
-			if webhook.Active {
-				summary.ActiveWebhooks++
-			} else {
-				summary.InactiveWebhooks++
-			}
-		}
-	}
-
-	// Calculate health score (simplified)
-	if inventory.TotalWebhooks > 0 {
-		summary.HealthScore = float64(summary.ActiveWebhooks) / float64(inventory.TotalWebhooks) * 100
-	}
-
-	return summary
 }
 
 // Helper functions

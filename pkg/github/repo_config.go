@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"maps"
@@ -406,11 +405,7 @@ func (c *RepoConfigClient) GetRepositoryConfiguration(ctx context.Context, owner
 	if repoData.DefaultBranch != "" {
 		protection, err := c.GetBranchProtection(ctx, owner, repo, repoData.DefaultBranch)
 		if err != nil {
-			// Branch protection might not be enabled, which is OK
-			apiErr := &APIError{}
-			if errors.As(err, &apiErr) {
-				return nil, fmt.Errorf("failed to get branch protection: %w", err)
-			}
+			return nil, fmt.Errorf("failed to get branch protection: %w", err)
 		} else {
 			config.BranchProtection = make(map[string]BranchProtectionConfig)
 			config.BranchProtection[repoData.DefaultBranch] = convertBranchProtection(protection)
@@ -420,11 +415,7 @@ func (c *RepoConfigClient) GetRepositoryConfiguration(ctx context.Context, owner
 	// Get team and user permissions
 	teamPerms, userPerms, err := c.GetRepositoryPermissions(ctx, owner, repo)
 	if err != nil {
-		// Permissions might require additional access, which is OK
-		apiErr := &APIError{}
-		if errors.As(err, &apiErr) {
-			return nil, fmt.Errorf("failed to get permissions: %w", err)
-		}
+		return nil, fmt.Errorf("failed to get permissions: %w", err)
 	} else {
 		config.Permissions = PermissionsConfig{
 			Teams: teamPerms,
@@ -872,7 +863,8 @@ func (c *RepoConfigClient) GetRepositoryPermissions(ctx context.Context, owner, 
 	if err != nil {
 		return nil, nil, err
 	}
-	defer func() { _ = resp.Body.Close() }()
+	// 다음 요청이 resp를 바꿔도 이 응답 본문을 정확히 닫는다.
+	defer func(body io.ReadCloser) { _ = body.Close() }(resp.Body)
 
 	var teams []TeamPermission
 	if err := json.NewDecoder(resp.Body).Decode(&teams); err != nil {
@@ -890,7 +882,8 @@ func (c *RepoConfigClient) GetRepositoryPermissions(ctx context.Context, owner, 
 	if err != nil {
 		return teamPerms, nil, err
 	}
-	defer func() { _ = resp.Body.Close() }()
+	// 다음 요청이 resp를 바꿔도 이 응답 본문을 정확히 닫는다.
+	defer func(body io.ReadCloser) { _ = body.Close() }(resp.Body)
 
 	var users []UserPermission
 	if err := json.NewDecoder(resp.Body).Decode(&users); err != nil {
