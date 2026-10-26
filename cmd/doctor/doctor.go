@@ -50,10 +50,10 @@ Available subcommands:
   godoc     # Analyze API documentation coverage and quality
   dev-env   # Validate development environment setup
   setup     # Automated development environment setup
-  benchmark # Run comprehensive performance benchmarks
+  benchmark # Currently unsupported; inspect retained options with --help
   metrics   # Analyze code quality metrics and generate dashboard
   health    # Monitor comprehensive system health metrics
-  container # Monitor and diagnose Docker containers
+  container # Run one-shot Docker container diagnostics
 
 Examples:
   gz doctor                    # Run full diagnostic
@@ -63,7 +63,7 @@ Examples:
   gz doctor godoc --package ./internal/logger  # Analyze package documentation
   gz doctor dev-env --fix          # Check and fix development environment
   gz doctor setup dev              # Automated development environment setup
-  gz doctor benchmark --package ./internal/synclone --ci  # Run CI benchmarks`,
+  gz doctor benchmark --help       # Inspect the unsupported benchmark command`,
 	Run: runDoctor,
 }
 

@@ -108,39 +108,16 @@ func newBenchmarkCmd() *cobra.Command {
 		trendWindowDays     int
 	)
 
-	cmd := cli.NewCommandBuilder("benchmark", "Run comprehensive performance benchmarks").
-		WithLongDescription(`Run comprehensive performance benchmarks with CI integration capabilities.
+	cmd := cli.NewCommandBuilder("benchmark", "Package performance benchmarking (currently unsupported)").
+		WithLongDescription(`Benchmark execution is currently unsupported.
 
-This command provides advanced benchmarking features for performance testing:
-- Package-level benchmark execution and analysis
-- Performance regression detection against baselines
-- CI/CD integration with exit codes and artifacts
-- Memory and CPU profiling with detailed reports
-- Historical performance trend analysis with snapshots
-- Advanced statistical analysis and predictions
-- Comprehensive reporting in multiple formats
+Package benchmark discovery, profiling artifact generation, and current-measurement
+comparison are not implemented by this CLI. Execution returns an explicit error
+before starting a profiler, querying Git, or writing results and snapshots.
 
-Features:
-- Automated benchmark discovery and execution
-- Performance regression analysis with configurable thresholds
-- Performance snapshot creation and management
-- Historical trend analysis with linear regression
-- Predictive performance analysis and forecasting
-- CI-friendly output with proper exit codes
-- Artifact generation for performance dashboards
-- Baseline comparison and trend analysis
-- Memory leak detection and analysis
-
-Examples:
-  gz doctor benchmark --package ./internal/...     # Benchmark all internal packages
-  gz doctor benchmark --ci --baseline baseline.json # CI mode with baseline comparison
-  gz doctor benchmark --cpu-profile --mem-profile  # Generate profiling artifacts
-  gz doctor benchmark --filter BenchmarkClone     # Run specific benchmark pattern
-  gz doctor benchmark --compare --baseline old.json # Compare against baseline
-  gz doctor benchmark --create-snapshot            # Create performance snapshot
-  gz doctor benchmark --analyze-snapshots --snapshot-id snapshot-123 # Analyze snapshots
-  gz doctor benchmark --trend-analysis --trend-window-days 30 # Historical trend analysis`).
-		WithExample("gz doctor benchmark --package ./internal/synclone --ci").
+Existing flags remain available for compatibility; they do not enable execution.
+Use --help to inspect the retained options.`).
+		WithExample("gz doctor benchmark --help").
 		WithFormatFlag("table", []string{"table", "json", "yaml"}).
 		WithRunFuncE(func(ctx context.Context, flags *cli.CommonFlags, args []string) error {
 			return runBenchmarkAnalysis(ctx, flags, benchmarkOptions{
@@ -211,136 +188,13 @@ type benchmarkOptions struct {
 	trendWindowDays     int
 }
 
-func runBenchmarkAnalysis(ctx context.Context, flags *cli.CommonFlags, opts benchmarkOptions) error {
-	logger := logger.NewSimpleLogger("doctor-benchmark")
+// CLI에는 실제 package 발견·실행과 current 측정 입력 계약이 아직 없다.
+func runBenchmarkAnalysis(_ context.Context, _ *cli.CommonFlags, _ benchmarkOptions) error {
+	return unsupportedBenchmarkExecution()
+}
 
-	logger.Info(
-		"Starting comprehensive benchmark analysis",
-		"package_pattern", opts.packagePattern,
-		"ci_mode", opts.ciMode,
-		"regression_threshold", opts.regressionThreshold,
-	)
-
-	// Initialize profiler and benchmark suite
-	profiler := profiling.NewProfiler(&profiling.ProfileConfig{
-		Enabled:     true,
-		HTTPPort:    0, // Disable HTTP server in benchmark mode
-		OutputDir:   "tmp/profiles",
-		AutoProfile: false,
-	})
-	if err := profiler.Start(ctx); err != nil {
-		return fmt.Errorf("failed to start benchmark profiler: %w", err)
-	}
-	defer func() {
-		if err := profiler.Stop(); err != nil {
-			logger.Warn("Failed to stop benchmark profiler", "error", err)
-		}
-	}()
-
-	benchmarkSuite := profiling.NewBenchmarkSuite(profiler)
-
-	// Create benchmark report
-	report := &BenchmarkReport{
-		Timestamp:   time.Now(),
-		Environment: getBenchmarkEnvironment(ctx),
-		Benchmarks:  make([]profiling.BenchmarkResult, 0),
-		CIMetrics: CIBenchmarkMetrics{
-			RegressionThreshold: opts.regressionThreshold,
-			ExitCode:            0,
-			ArtifactPaths:       make([]string, 0),
-		},
-	}
-
-	// Run benchmarks
-	if !opts.compareMode {
-		logger.Info("Executing benchmarks", "pattern", opts.packagePattern)
-
-		if err := runPackageBenchmarks(ctx, benchmarkSuite, opts, report); err != nil {
-			return fmt.Errorf("failed to run benchmarks: %w", err)
-		}
-
-		// Generate profiling artifacts if requested
-		if opts.generateArtifacts || opts.ciMode {
-			if err := generateBenchmarkArtifacts(profiler, report, opts); err != nil {
-				logger.Warn("Failed to generate artifacts", "error", err)
-			}
-		}
-	}
-
-	// Load and compare against baseline if provided
-	if opts.baselineFile != "" {
-		logger.Info("Comparing against baseline", "baseline", opts.baselineFile)
-
-		if err := compareAgainstBaseline(report, opts.baselineFile, opts.regressionThreshold); err != nil {
-			logger.Warn("Baseline comparison failed", "error", err)
-		}
-	}
-
-	// Generate summary and recommendations
-	generateBenchmarkSummary(report)
-	generateBenchmarkRecommendations(report)
-
-	// Initialize snapshot manager if needed
-	var snapshotManager *SnapshotManager
-	if opts.createSnapshot || opts.analyzeSnapshots || opts.trendAnalysis {
-		snapshotManager = NewSnapshotManager(opts.snapshotDir)
-	}
-
-	// Create performance snapshot if requested
-	if opts.createSnapshot && len(report.Benchmarks) > 0 {
-		logger.Info("Creating performance snapshot")
-		metadata := map[string]any{
-			"package_pattern": opts.packagePattern,
-			"iterations":      opts.iterations,
-			"duration":        opts.duration.String(),
-		}
-
-		snapshot, err := snapshotManager.CreateSnapshot(ctx, report.Benchmarks, metadata)
-		if err != nil {
-			logger.Warn("Failed to create snapshot", "error", err)
-		} else {
-			logger.Info("Performance snapshot created", "id", snapshot.ID, "file", filepath.Join(opts.snapshotDir, snapshot.ID+".json"))
-			report.CIMetrics.ArtifactPaths = append(report.CIMetrics.ArtifactPaths,
-				filepath.Join(opts.snapshotDir, snapshot.ID+".json"))
-		}
-	}
-
-	// Perform snapshot analysis if requested
-	var snapshotAnalysis *SnapshotAnalysis
-	if opts.analyzeSnapshots && snapshotManager != nil {
-		analysis, err := performSnapshotAnalysis(snapshotManager, report, opts, logger)
-		if err != nil {
-			logger.Warn("Snapshot analysis failed", "error", err)
-		} else {
-			snapshotAnalysis = analysis
-		}
-	}
-
-	// Handle CI mode specific logic
-	if opts.ciMode {
-		handleCIMode(report)
-	}
-
-	// Save results if output file specified
-	if opts.outputFile != "" {
-		if err := saveBenchmarkResults(report, opts.outputFile); err != nil {
-			return fmt.Errorf("failed to save results: %w", err)
-		}
-		logger.Info("Results saved", "file", opts.outputFile)
-	}
-
-	// Display results
-	formatter := cli.NewOutputFormatter(flags.Format)
-
-	switch flags.Format {
-	case "json", "yaml":
-		if snapshotAnalysis != nil {
-			return formatter.FormatOutput(snapshotAnalysis)
-		}
-		return formatter.FormatOutput(report)
-	default:
-		return displayBenchmarkResults(report, opts, snapshotAnalysis)
-	}
+func unsupportedBenchmarkExecution() error {
+	return fmt.Errorf("doctor benchmark execution is not supported: package discovery and current measurement inputs are not implemented")
 }
 
 func getBenchmarkEnvironment(ctx context.Context) BenchmarkEnvironment {
@@ -366,54 +220,21 @@ func getBenchmarkEnvironment(ctx context.Context) BenchmarkEnvironment {
 	return env
 }
 
-func runPackageBenchmarks(ctx context.Context, suite *profiling.BenchmarkSuite, opts benchmarkOptions, report *BenchmarkReport) error {
-	// Discover benchmark functions in specified packages
-	benchmarks, err := discoverBenchmarks(opts.packagePattern, opts.benchmarkFilter)
-	if err != nil {
-		return fmt.Errorf("failed to discover benchmarks: %w", err)
-	}
-
-	logger.SimpleInfo("Discovered benchmarks", "count", len(benchmarks))
-
-	// Run each benchmark
-	for _, benchmark := range benchmarks {
-		logger.SimpleInfo(fmt.Sprintf("Running benchmark: %s", benchmark.Name))
-
-		result, err := suite.RunSimpleBenchmark(ctx, benchmark.Name, benchmark.Function, opts.iterations, opts.duration)
-		if err != nil {
-			logger.SimpleWarn("Benchmark failed", "name", benchmark.Name, "error", err)
-			report.Summary.FailedBenchmarks++
-			continue
-		}
-
-		report.Benchmarks = append(report.Benchmarks, *result)
-		report.Summary.PassedBenchmarks++
-	}
-
-	return nil
+// 직접 호출도 가상의 sleep을 요청한 package 측정으로 반환하지 않는다.
+func runPackageBenchmarks(_ context.Context, _ *profiling.BenchmarkSuite, _ benchmarkOptions, _ *BenchmarkReport) error {
+	return unsupportedBenchmarkExecution()
 }
 
 func generateBenchmarkArtifacts(_ *profiling.Profiler, report *BenchmarkReport, opts benchmarkOptions) error {
+	if opts.cpuProfile || opts.memProfile {
+		return fmt.Errorf("benchmark CPU/memory profile artifact generation is not supported")
+	}
 	artifactDir := "benchmark-artifacts"
 	if err := os.MkdirAll(artifactDir, 0o755); err != nil {
 		return fmt.Errorf("failed to create artifact directory: %w", err)
 	}
 
 	timestamp := report.Timestamp.Format("20060102-150405")
-
-	// Generate CPU profile if enabled
-	if opts.cpuProfile {
-		cpuFile := filepath.Join(artifactDir, fmt.Sprintf("cpu-profile-%s.prof", timestamp))
-		// Note: Actual CPU profiling would be integrated with the profiler
-		report.CIMetrics.ArtifactPaths = append(report.CIMetrics.ArtifactPaths, cpuFile)
-	}
-
-	// Generate memory profile if enabled
-	if opts.memProfile {
-		memFile := filepath.Join(artifactDir, fmt.Sprintf("mem-profile-%s.prof", timestamp))
-		// Note: Actual memory profiling would be integrated with the profiler
-		report.CIMetrics.ArtifactPaths = append(report.CIMetrics.ArtifactPaths, memFile)
-	}
 
 	// Generate benchmark report
 	reportFile := filepath.Join(artifactDir, fmt.Sprintf("benchmark-report-%s.json", timestamp))
@@ -764,21 +585,6 @@ type BenchmarkFunction struct {
 	Name     string
 	Package  string
 	Function func(ctx context.Context)
-}
-
-func discoverBenchmarks(_, _ string) ([]BenchmarkFunction, error) {
-	// This would discover benchmark functions in the specified packages
-	// For now, return a placeholder implementation
-	return []BenchmarkFunction{
-		{
-			Name:    "BenchmarkExample",
-			Package: "example",
-			Function: func(ctx context.Context) {
-				// Example benchmark function
-				time.Sleep(1 * time.Millisecond)
-			},
-		},
-	}, nil
 }
 
 // performSnapshotAnalysis performs comprehensive snapshot analysis.

@@ -291,6 +291,10 @@ type ResourceWastage struct {
 
 // newContainerCmd creates the container monitoring and diagnostics subcommand.
 func newContainerCmd() *cobra.Command {
+	return newContainerCmdWithDependencies(defaultContainerDependencies())
+}
+
+func newContainerCmdWithDependencies(deps containerDependencies) *cobra.Command {
 	var (
 		includeStats     bool
 		includeHealth    bool
@@ -319,30 +323,29 @@ This command provides detailed analysis of your Docker environment including:
 - Health check monitoring and failure analysis
 - Performance profiling and resource utilization
 - Security posture assessment and compliance checks
-- Comprehensive reporting and alerting capabilities
+- One-shot diagnostic output and file export
 
 Features:
-- Real-time container monitoring with customizable metrics
+- One-shot container diagnostics with customizable metrics
 - Security vulnerability detection and remediation guidance
 - Performance optimization recommendations
 - Network topology visualization and diagnostics
 - Resource usage analysis and capacity planning
-- Health monitoring with alerting capabilities
-- Comprehensive reporting in multiple formats
-- HTTP server mode for external monitoring integration
+- Health check summaries
+- Diagnostic output in multiple formats
+- Watch, HTTP server, and comprehensive report modes are not implemented
 
 Examples:
   gz doctor container                           # Basic container diagnostics
   gz doctor container --include-stats          # Include resource statistics
   gz doctor container --include-security       # Include security analysis
   gz doctor container --container-filter nginx # Filter by container name pattern
-  gz doctor container --watch --interval 30s   # Continuous monitoring every 30s
   gz doctor container --detailed-analysis      # Comprehensive analysis with recommendations
-  gz doctor container --server --port 8080     # HTTP server mode for monitoring integration`).
+  gz doctor container --output diagnostics.json # Save one-shot diagnostics`).
 		WithExample("gz doctor container --include-stats --include-security").
 		WithFormatFlag("table", []string{"table", "json", "yaml"}).
 		WithRunFuncE(func(ctx context.Context, flags *cli.CommonFlags, args []string) error {
-			return runContainerDiagnostics(ctx, flags, containerOptions{
+			return runContainerDiagnosticsWithDependencies(ctx, flags, containerOptions{
 				includeStats:     includeStats,
 				includeHealth:    includeHealth,
 				includeSecurity:  includeSecurity,
@@ -357,7 +360,7 @@ Examples:
 				serverMode:       serverMode,
 				serverPort:       serverPort,
 				detailedAnalysis: detailedAnalysis,
-			})
+			}, deps)
 		}).
 		Build()
 
@@ -368,12 +371,12 @@ Examples:
 	cmd.Flags().BoolVar(&includeImages, "include-images", false, "Include image information")
 	cmd.Flags().BoolVar(&includeVolumes, "include-volumes", false, "Include volume information")
 	cmd.Flags().StringVar(&containerFilter, "container-filter", "", "Filter containers by name pattern")
-	cmd.Flags().BoolVar(&watchMode, "watch", false, "Continuous monitoring mode")
-	cmd.Flags().DurationVar(&watchInterval, "watch-interval", 10*time.Second, "Watch mode update interval")
+	cmd.Flags().BoolVar(&watchMode, "watch", false, "Unsupported: continuous monitoring returns an error")
+	cmd.Flags().DurationVar(&watchInterval, "watch-interval", 10*time.Second, "Reserved watch interval (watch mode is unsupported)")
 	cmd.Flags().StringVar(&outputFile, "output", "", "Output file for diagnostics results")
-	cmd.Flags().BoolVar(&generateReport, "generate-report", false, "Generate comprehensive diagnostics report")
-	cmd.Flags().BoolVar(&serverMode, "server", false, "Run in HTTP server mode for external monitoring")
-	cmd.Flags().IntVar(&serverPort, "server-port", 8080, "HTTP server port")
+	cmd.Flags().BoolVar(&generateReport, "generate-report", false, "Unsupported: comprehensive report generation returns an error")
+	cmd.Flags().BoolVar(&serverMode, "server", false, "Unsupported: HTTP server mode returns an error")
+	cmd.Flags().IntVar(&serverPort, "server-port", 8080, "Reserved HTTP server port (server mode is unsupported)")
 	cmd.Flags().BoolVar(&detailedAnalysis, "detailed-analysis", false, "Perform detailed analysis with recommendations")
 
 	return cmd
@@ -396,7 +399,31 @@ type containerOptions struct {
 	detailedAnalysis bool
 }
 
+// containerDependencies는 호출별 진단 경계를 제공하며 전역 실행 상태를 변경하지 않는다.
+type containerDependencies struct {
+	available func(context.Context) bool
+	collect   func(context.Context, containerOptions, logger.CommonLogger) (*ContainerDiagnostics, error)
+}
+
+func defaultContainerDependencies() containerDependencies {
+	return containerDependencies{available: isDockerAvailable, collect: performContainerDiagnostics}
+}
+
 func runContainerDiagnostics(ctx context.Context, flags *cli.CommonFlags, opts containerOptions) error {
+	return runContainerDiagnosticsWithDependencies(ctx, flags, opts, defaultContainerDependencies())
+}
+
+func runContainerDiagnosticsWithDependencies(ctx context.Context, flags *cli.CommonFlags, opts containerOptions, deps containerDependencies) error {
+	// 미구현 모드는 로그, 외부 조회, 파일 저장 전에 명시적으로 거부한다.
+	if opts.watchMode {
+		return fmt.Errorf("container continuous monitoring (--watch) is not supported")
+	}
+	if opts.serverMode {
+		return fmt.Errorf("container HTTP server mode (--server) is not supported")
+	}
+	if opts.generateReport {
+		return fmt.Errorf("container comprehensive report generation (--generate-report) is not supported")
+	}
 	logger := logger.NewSimpleLogger("doctor-container")
 
 	logger.Info(
@@ -407,12 +434,12 @@ func runContainerDiagnostics(ctx context.Context, flags *cli.CommonFlags, opts c
 	)
 
 	// Check if Docker is available
-	if !isDockerAvailable(ctx) {
+	if !deps.available(ctx) {
 		return fmt.Errorf("docker is not available or not running")
 	}
 
 	// Run diagnostics
-	diagnostics, err := performContainerDiagnostics(ctx, opts, logger)
+	diagnostics, err := deps.collect(ctx, opts, logger)
 	if err != nil {
 		return fmt.Errorf("failed to perform container diagnostics: %w", err)
 	}
