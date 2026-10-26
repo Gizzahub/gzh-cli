@@ -11,7 +11,7 @@ git:
 
 before:
   hooks:
-    - go mod tidy
+    - go mod verify
     - ./scripts/manpages.sh
     - ./scripts/completions.sh
 
@@ -19,6 +19,8 @@ builds:
   - id: gz
     binary: gz
     main: ./cmd/gz
+    flags:
+      - -trimpath
     ldflags:
       - -s -w -X github.com/gizzahub/gzh-cli/internal/version.Version={{ .Version }}
     goos:
@@ -33,6 +35,8 @@ builds:
       - "6"
       - "7"
     ignore:
+      - goos: darwin
+        goarch: arm
       - goos: windows
         goarch: arm
       - goos: windows
@@ -54,85 +58,6 @@ archives:
       - completions/*
       - manpages/*
 
-nfpms:
-  - id: packages
-    ids:
-      - gz
-    vendor: Gizzahub
-    homepage: https://github.com/Gizzahub/gzh-cli
-    maintainer: "Gizzahub <{{ .Env.GORELEASER_MAINTAINER_EMAIL }}>"
-    # Single source for every package description below (`*description`).
-    # Keep it under 80 characters: `brew style` rejects longer cask descs.
-    description: &description "CLI tool for managing development environments and Git repositories"
-    license: GPL-3.0
-    formats:
-      - apk
-      - deb
-      - rpm
-    bindir: /usr/bin
-    contents:
-      - src: ./manpages/gzh-manager.1.gz
-        dst: /usr/share/man/man1/gz.1.gz
-        file_info:
-          mode: 0644
-      - src: ./completions/gzh-manager.bash
-        dst: /usr/share/bash-completion/completions/gz
-        file_info:
-          mode: 0644
-      - src: ./completions/gzh-manager.fish
-        dst: /usr/share/fish/vendor_completions.d/gz.fish
-        file_info:
-          mode: 0644
-      - src: ./completions/gzh-manager.zsh
-        dst: /usr/share/zsh/vendor-completions/_gz
-        file_info:
-          mode: 0644
-
-# Migrated from the deprecated `dockers` + `docker_manifests` pair. v2.18.0
-# still accepts both but warns they are being phased out, and a pin bump that
-# removes them would break the release. `dockers_v2` folds the two per-arch
-# builds and the four manifest entries into one block: `platforms` replaces
-# the per-arch `--platform=` flags, and `labels` replaces the `--label=`
-# build_flag_templates.
-#
-# One behavioural difference, deliberately accepted. The old pair published
-# four per-architecture tags (`:{{ .Tag }}-amd64` and `-arm64`, on both
-# registries) alongside the two manifest lists. `dockers_v2` pushes the
-# multi-platform manifest only — per-arch suffixes exist in snapshot builds
-# for local testing and are never pushed — and the schema has no field that
-# would restore them, so this is not a mistake to correct later.
-#
-# It is safe here because nothing has ever been published: the repository has
-# no `v*` tag (`refactor-start` is the only one), `gh release list` is empty,
-# and Release triggers exclusively on `tags: ["v*"]`. No consumer can be
-# referencing a tag this drops. Re-check that premise before assuming the
-# same of any repository that has already released.
-dockers_v2:
-  - id: gz
-    ids:
-      - gz
-    images:
-      - "gizzahub/{{ .ProjectName }}"
-      - "ghcr.io/gizzahub/{{ .ProjectName }}"
-    tags:
-      - "{{ .Tag }}"
-      - "latest"
-    platforms:
-      - linux/amd64
-      - linux/arm64
-    dockerfile: Dockerfile
-    flags:
-      - "--pull"
-    labels:
-      org.opencontainers.image.created: "{{ .Date }}"
-      org.opencontainers.image.title: "{{ .ProjectName }}"
-      org.opencontainers.image.revision: "{{ .FullCommit }}"
-      org.opencontainers.image.version: "{{ .Version }}"
-      org.opencontainers.image.source: "{{ .GitURL }}"
-      org.opencontainers.image.description: *description
-      org.opencontainers.image.vendor: "Gizzahub"
-      org.opencontainers.image.licenses: "GPL-3.0"
-
 homebrew_casks:
   - name: gz
     ids:
@@ -143,11 +68,14 @@ homebrew_casks:
       owner: Gizzahub
       name: homebrew-tap
       branch: main
-      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    # 업로드는 서명 검증을 마친 로컬 publisher만 수행한다.
+    skip_upload: true
+    url:
+      template: "https://github.com/Gizzahub/gzh-cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
     directory: Casks
     homepage: https://github.com/Gizzahub/gzh-cli
-    description: *description
-    license: GPL-3.0
+    description: "CLI tool for managing development environments and Git repositories"
+    license: MIT
     hooks:
       post:
         # GoReleaser v2.19 deprecated the Ruby `install` hook (Homebrew's
@@ -157,70 +85,6 @@ homebrew_casks:
             run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{ .StagedPath }}/gz"]
           end
 
-# Chocolatey is an explicitly UNSUPPORTED publish channel for now.
-#
-# The `chocolateys` pipe shells out to the `choco` CLI (GoReleaser does not
-# install it), and `choco` is a Windows-only .NET tool that is not present on
-# the `ubuntu-latest` release runner. `goreleaser healthcheck` therefore exits
-# 1 with "choco - not present in path" whenever this section is configured.
-#
-# Splitting the pipe into a separate Windows job needs `goreleaser release
-# --split` + `goreleaser continue`, which are GoReleaser Pro features and are
-# not available to this OSS distribution. Rather than silently skipping the
-# pipe (`--skip=chocolatey`), the section is removed so that the toolchain
-# contract and the healthcheck agree on what this release actually ships.
-#
-# To re-enable: move the release job (or a dedicated packaging job) to a
-# `windows-latest` runner with `choco` on PATH, restore the `chocolateys`
-# section from git history (see the commit that removed it), and add
-# CHOCOLATEY_API_KEY to the release job env and to the credential preflight.
-# See docs/70-deployment/70-releases.md.
-
-scoops:
-  - name: gz
-    ids:
-      - default
-    repository:
-      owner: Gizzahub
-      name: scoop-bucket
-      branch: main
-      token: "{{ .Env.SCOOP_BUCKET_GITHUB_TOKEN }}"
-    directory: bucket
-    homepage: https://github.com/Gizzahub/gzh-cli
-    description: *description
-    license: GPL-3.0
-
-aurs:
-  - name: gz-bin
-    ids:
-      - default
-    homepage: https://github.com/Gizzahub/gzh-cli
-    description: *description
-    maintainers:
-      - "Gizzahub <{{ .Env.GORELEASER_MAINTAINER_EMAIL }}>"
-    license: GPL-3.0
-    private_key: "{{ .Env.AUR_KEY }}"
-    git_url: "ssh://aur@aur.archlinux.org/gz-bin.git"
-    depends:
-      - git
-    package: |-
-      # bin
-      install -Dm755 "./gz" "${pkgdir}/usr/bin/gz"
-
-      # license
-      install -Dm644 "./LICENSE" "${pkgdir}/usr/share/licenses/gz/LICENSE"
-
-      # completions
-      mkdir -p "${pkgdir}/usr/share/bash-completion/completions/"
-      mkdir -p "${pkgdir}/usr/share/zsh/site-functions/"
-      mkdir -p "${pkgdir}/usr/share/fish/vendor_completions.d/"
-      install -Dm644 "./completions/gzh-manager.bash" "${pkgdir}/usr/share/bash-completion/completions/gz"
-      install -Dm644 "./completions/gzh-manager.zsh" "${pkgdir}/usr/share/zsh/site-functions/_gz"
-      install -Dm644 "./completions/gzh-manager.fish" "${pkgdir}/usr/share/fish/vendor_completions.d/gz.fish"
-
-      # man pages
-      install -Dm644 "./manpages/gzh-manager.1.gz" "${pkgdir}/usr/share/man/man1/gz.1.gz"
-
 checksum:
   name_template: "checksums.txt"
 
@@ -229,37 +93,6 @@ sboms:
   # release job pins an exact syft version and fail-fast checks for it.
   - artifacts: archive
     cmd: syft
-
-signs:
-  # Keyless (Fulcio/Rekor) signing with the pinned cosign 3.x.
-  # cosign 3 removed the working --output-certificate/--output-signature path
-  # (it now errors with "must specify --bundle with --new-bundle-format"), so
-  # the certificate and signature are emitted together as a Sigstore bundle.
-  # Verifying needs an explicit signer identity (keyless has no key to pin);
-  # without one cosign refuses to run. See docs/70-deployment/70-releases.md:
-  #   cosign verify-blob --bundle checksums.txt.sigstore.json \
-  #     --certificate-identity-regexp 'https://github.com/Gizzahub/gzh-cli/.*' \
-  #     --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-  #     checksums.txt
-  - cmd: cosign
-    signature: "${artifact}.sigstore.json"
-    args:
-      - sign-blob
-      - "--bundle=${signature}"
-      - "${artifact}"
-      - "--yes"
-    artifacts: checksum
-    output: true
-
-docker_signs:
-  # COSIGN_EXPERIMENTAL is a no-op since cosign 2.0; keyless is the default.
-  - cmd: cosign
-    artifacts: images
-    output: true
-    args:
-      - "sign"
-      - "${artifact}@${digest}"
-      - "--yes"
 
 changelog:
   sort: asc
@@ -300,9 +133,11 @@ release:
   github:
     owner: Gizzahub
     name: gzh-cli
+  # GoReleaser는 산출물만 만든다. GitHub 게시 권한은 받지 않는다.
+  disable: true
   draft: true
   prerelease: auto
-  mode: replace
+  mode: keep-existing
   header: |
     ## gz {{ .Tag }} ({{ .Date }})
 
@@ -313,11 +148,6 @@ release:
     Those were the changes on {{ .Tag }}!
 
     **Full Changelog**: https://github.com/Gizzahub/gzh-cli/compare/{{ .PreviousTag }}...{{ .Tag }}
-
-milestones:
-  - close: true
-    fail_on_error: false
-    name_template: "{{ .Tag }}"
 
 # Announcements are fail-closed disabled.
 #

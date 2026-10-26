@@ -176,22 +176,31 @@ release-healthcheck: verify-release-tools verify-release-pins ## fail fast on to
 	@echo -e "$(CYAN)Running goreleaser healthcheck...$(RESET)"
 	@PATH="$(RELEASE_PATH)" "$(GORELEASER)" healthcheck
 
-# `sign` is excluded from both local targets on purpose. Signing is keyless: it
-# mints a Fulcio certificate from an ambient OIDC token and writes an entry to
-# the public Rekor transparency log, which is irreversible. The release job has
-# that ambient token (id-token: write); a laptop does not, so locally cosign
-# would fall back to an interactive browser flow and, if completed, would
-# publish a throwaway snapshot to a public log. The signing contract is instead
-# gated by `goreleaser check` and by release-healthcheck, which fail if cosign
-# is missing or the config is invalid.
+# 서명은 승인된 태그의 hosted workflow만 수행한다. 로컬 대상에는 signer가 없다.
+# GoReleaser도 release.disable/skip_upload 설정으로 게시를 거부한다.
+release-dry-run: release-snapshot ## compatibility alias for the unsigned, non-publishing snapshot
 
-release-dry-run: release-healthcheck ## dry-run release: builds and Docker images, no publish, no signing
-	@echo -e "$(CYAN)Running goreleaser in dry-run mode (publish and sign excluded)...$(RESET)"
-	@PATH="$(RELEASE_PATH)" "$(GORELEASER)" release --snapshot --clean --skip=publish,sign
+release-snapshot: release-healthcheck ## create an unsigned archive/SBOM/cask handoff preview
+	@echo -e "$(CYAN)Creating unsigned, non-publishing artifact preview...$(RESET)"
+	@PATH="$(RELEASE_PATH)" "$(GORELEASER)" release --snapshot --clean --skip=publish --parallelism=2
+	@go run ./scripts/releaseartifact prepare --snapshot --dir dist --sha "$$(git rev-parse HEAD)"
 
-release-snapshot: release-healthcheck ## snapshot release with publish, Docker and signing excluded
-	@echo -e "$(CYAN)Creating snapshot release (publish, docker and sign excluded)...$(RESET)"
-	@PATH="$(RELEASE_PATH)" "$(GORELEASER)" release --snapshot --clean --skip=publish,docker,sign
+# 값은 shell 환경에서 확장해 tag/path 문자열이 shell 코드로 재해석되지 않게 한다.
+RELEASE_ARTIFACT_DIR ?= $(CURDIR)/dist/publish
+export RELEASE_ARTIFACT_DIR RELEASE_TAG RELEASE_SHA
+
+.PHONY: release-artifact-prepare release-artifact-verify release-artifact-publish release-artifact-test
+release-artifact-prepare: ## stage a stable tag build before hosted checksum signing
+	@go run ./scripts/releaseartifact prepare --dir dist --tag "$${RELEASE_TAG:?required}" --sha "$${RELEASE_SHA:?required}"
+
+release-artifact-verify: verify-release-tools ## verify signed bytes and the exact tag/workflow/source identity
+	@go run ./scripts/releaseartifact verify --dir "$${RELEASE_ARTIFACT_DIR}" --tag "$${RELEASE_TAG:?required}" --sha "$${RELEASE_SHA:?required}" --cosign "$(COSIGN)"
+
+release-artifact-publish: verify-release-tools ## publish verified existing bytes using the infra-ops main-release broker
+	@go run ./scripts/releaseartifact publish --dir "$${RELEASE_ARTIFACT_DIR}" --tag "$${RELEASE_TAG:?required}" --sha "$${RELEASE_SHA:?required}" --cosign "$(COSIGN)"
+
+release-artifact-test: ## exercise artifact tamper, signature and partial-publication rejection paths offline
+	@go test -race -count=1 ./scripts/releaseartifact
 
 release-check: install-goreleaser ## check goreleaser configuration with the pinned version
 	@echo -e "$(CYAN)Checking goreleaser configuration with $(GORELEASER_VERSION)...$(RESET)"

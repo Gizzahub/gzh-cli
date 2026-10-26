@@ -3,32 +3,21 @@ name: Release
 on:
   push:
     tags: ["v*"]
-  # Running this from the Actions UI validates the selected branch without
-  # making a release. The validation job has read-only permissions and never
-  # receives publishing credentials.
   workflow_dispatch:
 
-# Least privilege by default; the release job elevates only what it needs.
 permissions:
   contents: read
 
 env:
-  REGISTRY: ghcr.io
-  # Release toolchain pins.
-  #
-  # These MUST stay in sync with the pins in .make/tools.mk — that file is the
-  # local half of the same contract, and drift between the two means CI is no
-  # longer releasing what a developer validated with `make release-snapshot`.
-  # Bump both together. Evidence for each pin: docs/70-deployment/70-releases.md
+  # .make/tools.mk와 같은 기존 pin을 유지한다.
   GORELEASER_VERSION: v2.19.0
   SYFT_VERSION: v1.51.1
   COSIGN_VERSION: v3.1.3
+  GOMAXPROCS: "2"
+  GOWORK: "off"
 
 jobs:
   verify-release:
-    # This job is deliberately separate from `release`: GitHub job permissions
-    # are static, so a conditional publish step would still expose write and
-    # OIDC permissions to a manually dispatched run.
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
@@ -38,273 +27,67 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-
+          persist-credentials: false
       - name: Setup Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: '1.27.3'
-
-      # Exact toolchain. Every version is pinned; nothing resolves to "latest".
-      - name: Install cosign ${{ env.COSIGN_VERSION }}
-        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
-        with:
-          cosign-release: ${{ env.COSIGN_VERSION }}
-
-      - name: Install syft ${{ env.SYFT_VERSION }}
-        uses: anchore/sbom-action/download-syft@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
-        with:
-          syft-version: ${{ env.SYFT_VERSION }}
-
-      - name: Install GoReleaser ${{ env.GORELEASER_VERSION }}
-        uses: goreleaser/goreleaser-action@a4f02ab5355a589de60d917a659ce617ed19b3de # v7.3.0
-        with:
-          distribution: goreleaser
-          version: ${{ env.GORELEASER_VERSION }}
-          install-only: true
-
-      - name: Preflight — release toolchain
+      - name: Install and validate pinned release tools
+        uses: ./.github/actions/release-tools
+      - name: Test artifact handoff rejection paths
+        run: go test -race -count=1 ./scripts/releaseartifact
+      - name: Build unsigned non-publishing snapshot
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          fail() {
-            echo "::error title=Release toolchain mismatch::$1"
-            echo "TOOLCHAIN FAILURE: $1" >&2
-            exit 1
-          }
+          goreleaser release --snapshot --clean --skip=publish --parallelism=2
+          go run ./scripts/releaseartifact prepare --snapshot --dir dist --sha "$GITHUB_SHA"
+      - name: Upload unsigned preview
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: release-preview
+          path: dist/publish/*
+          if-no-files-found: error
 
-          command -v goreleaser >/dev/null 2>&1 || fail "goreleaser is not on PATH"
-          command -v syft >/dev/null 2>&1 || fail "syft is not on PATH (SBOM generation would be skipped)"
-          command -v cosign >/dev/null 2>&1 || fail "cosign is not on PATH (artifact signing would be skipped)"
-
-          got_goreleaser="$(goreleaser --version | awk '/^GitVersion:/ { print $2 }' || true)"
-          got_syft="$(syft version -o json | jq -r '.version' || true)"
-          got_cosign="$(cosign version --json | jq -r '.gitVersion' || true)"
-
-          echo "goreleaser: ${got_goreleaser:-<unparsed>} (want ${GORELEASER_VERSION})"
-          echo "syft:       ${got_syft:-<unparsed>} (want ${SYFT_VERSION})"
-          echo "cosign:     ${got_cosign:-<unparsed>} (want ${COSIGN_VERSION})"
-
-          norm() { printf '%s' "${1#v}"; }
-          check_version() { # <tool> <found> <want>
-            case "${2:-}" in
-              "" | null | "[not provided]")
-                fail "could not read the $1 version from its own output (got '${2:-}')" ;;
-            esac
-            [ "$(norm "$2")" = "$(norm "$3")" ] || fail "$1 is $2, want $3"
-          }
-
-          check_version goreleaser "${got_goreleaser}" "${GORELEASER_VERSION}"
-          check_version syft       "${got_syft}"       "${SYFT_VERSION}"
-          check_version cosign     "${got_cosign}"     "${COSIGN_VERSION}"
-
-          goreleaser check || fail "goreleaser check rejected .goreleaser.yml (deprecated or invalid keys — see above)"
-          goreleaser healthcheck || fail "goreleaser healthcheck reported a missing dependency (see above)"
-
-      - name: Validate non-publishing snapshot
-        # Snapshot artifacts stay on the ephemeral hosted runner. Publishing,
-        # Docker pushes, and signing are explicitly disabled.
-        run: goreleaser release --snapshot --clean --skip=publish,docker,sign
-
-  release:
-    # Publishing is allowed only for the tag-push trigger. Keep this guard on
-    # the privileged job so adding another workflow trigger cannot expose its
-    # write permissions, OIDC token, or publishing credentials.
+  build-tag:
+    # 공개 로그에 남는 서명은 승인된 태그의 push에서만 수행한다.
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
-      contents: write # create the GitHub Release and upload artifacts
-      packages: write # push images to ghcr.io
-      id-token: write # keyless cosign signing via the ambient OIDC token
+      contents: read
+      id-token: write
     steps:
-      # ----------------------------------------------------------------------
-      # Preflight 1/2 — publishing credentials.
-      #
-      # Runs before any tool is installed so that a missing or unshared secret
-      # can never be mistaken for a broken toolchain. It only tests for
-      # emptiness and never echoes a value.
-      # ----------------------------------------------------------------------
-      - name: Preflight — publishing credentials
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
-          SCOOP_BUCKET_GITHUB_TOKEN: ${{ secrets.SCOOP_BUCKET_GITHUB_TOKEN }}
-          AUR_KEY: ${{ secrets.AUR_KEY }}
-          GORELEASER_MAINTAINER_EMAIL: ${{ secrets.GORELEASER_MAINTAINER_EMAIL }}
-        run: |
-          set -euo pipefail
-          missing=()
-          # This list is exactly the secrets a configured pipe will actually
-          # consume. nfpms[].maintainer and aurs[].maintainers expand
-          # {{ .Env.GORELEASER_MAINTAINER_EMAIL }}; a missing value is a
-          # failed template, not a skipped channel.
-          for name in DOCKERHUB_USERNAME DOCKERHUB_TOKEN HOMEBREW_TAP_GITHUB_TOKEN \
-                      SCOOP_BUCKET_GITHUB_TOKEN AUR_KEY GORELEASER_MAINTAINER_EMAIL; do
-            # Compare against a whitespace-stripped copy: a secret set to
-            # spaces or a stray newline is a paste accident, not a value, and
-            # it would otherwise sail through here and fail deep inside a
-            # publish step with no category.
-            value="${!name:-}"
-            if [ -z "${value//[[:space:]]/}" ]; then
-              missing+=("$name")
-            fi
-          done
-          if [ ${#missing[@]} -ne 0 ]; then
-            echo "::error title=Missing publishing credentials::${missing[*]}"
-            echo "CREDENTIAL FAILURE: the release toolchain is fine; these secrets are not set on this repository:" >&2
-            printf '  - %s\n' "${missing[@]}" >&2
-            echo "" >&2
-            echo "Each one is consumed by .goreleaser.yml:" >&2
-            echo "  DOCKERHUB_USERNAME / DOCKERHUB_TOKEN  -> docker login for the dockers/docker_manifests pipes" >&2
-            echo "  HOMEBREW_TAP_GITHUB_TOKEN             -> homebrew_casks[].repository.token" >&2
-            echo "  SCOOP_BUCKET_GITHUB_TOKEN             -> scoops[].repository.token" >&2
-            echo "  AUR_KEY                               -> aurs[].private_key" >&2
-            echo "  GORELEASER_MAINTAINER_EMAIL           -> nfpms[].maintainer / aurs[].maintainers" >&2
-            echo "" >&2
-            echo "Add them under Settings > Secrets and variables > Actions, or drop the" >&2
-            echo "corresponding pipe from .goreleaser.yml. Do not work around this by" >&2
-            echo "skipping the pipe at run time: a half-published release is worse than" >&2
-            echo "a failed one." >&2
-            exit 1
-          fi
-          echo "All publishing credentials are present."
-
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-
+          persist-credentials: false
       - name: Setup Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: '1.27.3'
-
-      - name: Docker setup
-        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
-
-      # ----------------------------------------------------------------------
-      # Exact toolchain. Every version is pinned; nothing resolves to "latest".
-      # ----------------------------------------------------------------------
-      - name: Install cosign ${{ env.COSIGN_VERSION }}
-        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
-        with:
-          cosign-release: ${{ env.COSIGN_VERSION }}
-
-      - name: Install syft ${{ env.SYFT_VERSION }}
-        uses: anchore/sbom-action/download-syft@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
-        with:
-          syft-version: ${{ env.SYFT_VERSION }}
-
-      - name: Install GoReleaser ${{ env.GORELEASER_VERSION }}
-        uses: goreleaser/goreleaser-action@a4f02ab5355a589de60d917a659ce617ed19b3de # v7.3.0
-        with:
-          distribution: goreleaser
-          version: ${{ env.GORELEASER_VERSION }}
-          install-only: true
-
-      # ----------------------------------------------------------------------
-      # Preflight 2/2 — release toolchain.
-      #
-      # Asserts the exact versions actually on PATH, then lets GoReleaser itself
-      # declare which external binaries its configured pipes need. `goreleaser
-      # healthcheck` exits 1 on a missing tool, so a stripped-down runner fails
-      # here rather than producing a release that quietly has no SBOM or no
-      # signature. Failures from this step are toolchain failures, never
-      # credential failures — those already fired in Preflight 1/2.
-      # ----------------------------------------------------------------------
-      - name: Preflight — release toolchain
+      - name: Install and validate pinned release tools
+        uses: ./.github/actions/release-tools
+      - name: Test artifact handoff rejection paths
+        run: go test -race -count=1 ./scripts/releaseartifact
+      - name: Build tag without publishing
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          fail() {
-            echo "::error title=Release toolchain mismatch::$1"
-            echo "TOOLCHAIN FAILURE: $1" >&2
-            echo "This is a tool/config problem, not a missing secret." >&2
-            exit 1
-          }
-
-          command -v goreleaser >/dev/null 2>&1 || fail "goreleaser is not on PATH"
-          command -v syft >/dev/null 2>&1 || fail "syft is not on PATH (SBOM generation would be skipped)"
-          command -v cosign >/dev/null 2>&1 || fail "cosign is not on PATH (artifact signing would be skipped)"
-
-          # Each tool reports its own version in its own shape, and none of the
-          # three promises a stable "v" prefix. `|| true` keeps a tool that
-          # errors or changes its JSON schema from aborting here through
-          # `set -e` with no explanation; the empty result is caught below and
-          # reported as a parse failure instead.
-          got_goreleaser="$(goreleaser --version | awk '/^GitVersion:/ { print $2 }' || true)"
-          got_syft="$(syft version -o json | jq -r '.version' || true)"
-          got_cosign="$(cosign version --json | jq -r '.gitVersion' || true)"
-
-          # Raw values, so a genuine mismatch shows exactly what was found.
-          echo "goreleaser: ${got_goreleaser:-<unparsed>} (want ${GORELEASER_VERSION})"
-          echo "syft:       ${got_syft:-<unparsed>} (want ${SYFT_VERSION})"
-          echo "cosign:     ${got_cosign:-<unparsed>} (want ${COSIGN_VERSION})"
-
-          # Comparison is prefix-insensitive: a leading "v" is stripped from
-          # both sides. This is NOT a loosening — 1.51.0 still fails against
-          # 1.51.1 — it only stops an upstream tool switching between "1.51.1"
-          # and "v1.51.1" in its own output from aborting a real release with a
-          # TOOLCHAIN FAILURE that is really a parsing bug. The hosted format is
-          # the one that matters and it is not assumed here, so please do not
-          # "tighten" this back into an exact string compare.
-          norm() { printf '%s' "${1#v}"; }
-
-          check_version() { # <tool> <found> <want>
-            case "${2:-}" in
-              "" | null | "[not provided]")
-                fail "could not read the $1 version from its own output (got '${2:-}'); the tool errored or changed its output format, so this check cannot vouch for what is installed" ;;
-            esac
-            [ "$(norm "$2")" = "$(norm "$3")" ] || fail "$1 is $2, want $3"
-          }
-
-          check_version goreleaser "${got_goreleaser}" "${GORELEASER_VERSION}"
-          check_version syft       "${got_syft}"       "${SYFT_VERSION}"
-          check_version cosign     "${got_cosign}"     "${COSIGN_VERSION}"
-
-          # `check` and `healthcheck` answer different questions and neither
-          # substitutes for the other:
-          #   check       - is the CONFIG valid and free of deprecated keys?
-          #   healthcheck - are the external BINARIES the configured pipes need
-          #                 present on PATH?
-          # A config using a deprecated key passes healthcheck with rc=0 while
-          # only printing a DEPRECATED line, so without `check` a schema
-          # regression reaches a real release unnoticed. `check` runs first
-          # because a broken config makes the dependency list meaningless.
-          goreleaser check || fail "goreleaser check rejected .goreleaser.yml (deprecated or invalid keys — see above)"
-
-          # Let GoReleaser enumerate the dependencies of the configured pipes.
-          goreleaser healthcheck || fail "goreleaser healthcheck reported a missing dependency (see above)"
-
-      - name: Login registries
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_ACTOR: ${{ github.actor }}
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          git diff --exit-code
+          goreleaser release --clean --skip=publish --parallelism=2
+          git diff --exit-code
+          go run ./scripts/releaseartifact prepare --dir dist --tag "$GITHUB_REF_NAME" --sha "$GITHUB_SHA"
+      - name: Sign final checksums and verify exact workflow identity
         run: |
           set -euo pipefail
-          # The credential preflight proves these secrets are non-empty; only a
-          # login proves they are valid. Without this wrapper a wrong-but-set
-          # token fails here with a bare docker error and no category, which is
-          # exactly the ambiguity this workflow exists to remove.
-          cred_fail() {
-            echo "::error title=Registry login failed::$1"
-            echo "CREDENTIAL FAILURE: $1" >&2
-            echo "The secret is set but was rejected by the registry — check its value and scopes, not the toolchain." >&2
-            exit 1
-          }
-
-          echo "${GITHUB_TOKEN}" | docker login "${REGISTRY}" -u "${GITHUB_ACTOR}" --password-stdin \
-            || cred_fail "docker login to ${REGISTRY} was rejected (GITHUB_TOKEN / packages: write permission)"
-          echo "${DOCKERHUB_TOKEN}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin \
-            || cred_fail "docker login to Docker Hub was rejected (DOCKERHUB_USERNAME / DOCKERHUB_TOKEN)"
-
-      - name: Run GoReleaser
-        run: goreleaser release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
-          SCOOP_BUCKET_GITHUB_TOKEN: ${{ secrets.SCOOP_BUCKET_GITHUB_TOKEN }}
-          AUR_KEY: ${{ secrets.AUR_KEY }}
-          GORELEASER_MAINTAINER_EMAIL: ${{ secrets.GORELEASER_MAINTAINER_EMAIL }}
+          cosign sign-blob --bundle dist/publish/checksums.txt.sigstore.json --yes dist/publish/checksums.txt
+          go run ./scripts/releaseartifact verify --dir dist/publish --tag "$GITHUB_REF_NAME" --sha "$GITHUB_SHA" --cosign "$(command -v cosign)"
+      - name: Upload signed tag build
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: release-tag-build
+          path: dist/publish/*
+          if-no-files-found: error
