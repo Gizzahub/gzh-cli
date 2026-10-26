@@ -159,20 +159,20 @@ gz> trace status            # Unsupported; no trace state is available
 
 #### profile
 
-**Purpose**: Control performance profiling within shell
+**Purpose**: Reserved shell command; profiling is not implemented.
 
-**Features**:
+**Current behavior**:
 
-- Start/stop profiling sessions
-- Profiling status monitoring
-- Integration with main profile command
+- `profile start`, `profile stop`, `profile status`, and bare `profile` return an unsupported error.
+- No profiling session is started or stopped, and no success message is printed.
+- Unknown actions return an unknown-command error. The REPL reports errors and remains available.
 
 **Usage**:
 
 ```
-gz> profile start           # Start performance profiling
-gz> profile stop            # Stop performance profiling
-gz> profile status          # Show profiling status
+gz> profile start           # Error: profiling is not implemented
+gz> profile stop            # Error: profiling is not implemented
+gz> profile status          # Error: profiling is not implemented
 ```
 
 ### Plugin Management Commands
@@ -351,7 +351,7 @@ Direct integration with Go runtime for:
 - Memory statistics collection
 - Goroutine monitoring
 - Garbage collection control
-- Performance profiling
+- Performance profiling is not implemented in the shell
 
 ## Shell Context
 
@@ -395,9 +395,9 @@ gz shell
 gz> memory --gc             # Run GC and check memory
 gz> metrics --watch         # Start continuous monitoring
 # Press Ctrl+C to stop watching
-gz> profile start           # Start profiling
-gz> profile status          # Check profiling status
-gz> profile stop            # Stop profiling
+gz> profile start           # Error: profiling is not implemented
+gz> profile status          # Error: profiling is not implemented
+gz> profile stop            # Error: profiling is not implemented
 ```
 
 ### Debugging Session

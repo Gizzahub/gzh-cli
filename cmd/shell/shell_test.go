@@ -332,34 +332,54 @@ func captureTraceOutput(t *testing.T, run func()) string {
 }
 
 func TestProfileCommand(t *testing.T) {
-	client, err := gzhclient.NewClient(gzhclient.DefaultConfig())
-	require.NoError(t, err)
-	defer client.Close()
-
-	shell := NewShell(client)
-
-	tests := []struct {
-		name string
-		args []string
+	for _, tc := range []struct {
+		name    string
+		args    []string
+		message string
 	}{
-		{"start", []string{"start"}},
-		{"stop", []string{"stop"}},
-		{"status", []string{"status"}},
-		{"default status", []string{}},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := handleProfile(shell, tt.args)
-			assert.NoError(t, err)
+		{"start", []string{"start"}, "shell profile start is not supported: profiling is not implemented"},
+		{"stop", []string{"stop"}, "shell profile stop is not supported: profiling is not implemented"},
+		{"status", []string{"status"}, "shell profile status is not supported: profiling is not implemented"},
+		{"default status", nil, "shell profile status is not supported: profiling is not implemented"},
+		{"invalid action", []string{"unknown"}, "unknown profile command: unknown"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			// profiler나 실제 client 없이 handler의 오류와 출력 계약만 검증한다.
+			reader, writer, err := os.Pipe()
+			require.NoError(t, err)
+			original := os.Stdout
+			os.Stdout = writer
+			t.Cleanup(func() { os.Stdout = original })
+			err = handleProfile(nil, tc.args)
+			os.Stdout = original
+			require.NoError(t, writer.Close())
+			output, readErr := io.ReadAll(reader)
+			require.NoError(t, reader.Close())
+			require.NoError(t, readErr)
+			require.EqualError(t, err, tc.message)
+			assert.Empty(t, string(output), "지원하지 않는 작업은 성공 출력을 내지 않아야 한다")
 		})
 	}
+}
 
-	t.Run("unknown profile command", func(t *testing.T) {
-		err := handleProfile(shell, []string{"unknown"})
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "unknown profile command: unknown")
-	})
+func TestProfileShellBoundaryKeepsSessionRunning(t *testing.T) {
+	// REPL을 시작하지 않고 같은 dispatch 경계에서 오류 뒤 다음 명령을 검증한다.
+	shell := &Shell{running: true, commands: map[string]ShellCommand{
+		"profile": {Handler: handleProfile},
+	}}
+	called := 0
+	shell.commands["next"] = ShellCommand{Handler: func(_ *Shell, _ []string) error {
+		called++
+		return nil
+	}}
+	for _, input := range []string{"profile start", "profile stop", "profile status", "profile"} {
+		require.ErrorContains(t, shell.executeCommand(input), "not supported")
+		assert.True(t, shell.running)
+		require.NoError(t, shell.executeCommand("next"))
+	}
+	assert.Equal(t, 4, called)
+	require.EqualError(t, shell.executeCommand("profile typo"), "unknown profile command: typo")
+	assert.True(t, shell.running)
 }
 
 func TestCompletion(t *testing.T) {

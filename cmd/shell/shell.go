@@ -45,7 +45,7 @@ Available commands:
   logs           - Show recent logs
   metrics        - Show system metrics
   trace          - Reserved tracing command (unsupported)
-  profile        - Start/stop profiling
+  profile        - Profiling unavailable (not implemented)
   exit, quit     - Exit the shell
 
 Examples:
@@ -312,7 +312,7 @@ func (s *Shell) registerCommands() {
 
 	s.commands["profile"] = ShellCommand{
 		Name:        "profile",
-		Description: "Control performance profiling",
+		Description: "Profiling unavailable (not implemented)",
 		Usage:       "profile [start|stop|status]",
 		Handler:     handleProfile,
 	}
@@ -563,31 +563,18 @@ func handleTrace(_ *Shell, args []string) error {
 	}
 }
 
-func handleProfile(s *Shell, args []string) error {
+func handleProfile(_ *Shell, args []string) error {
 	if len(args) == 0 {
 		args = []string{"status"}
 	}
 
 	switch args[0] {
-	case "start":
-		fmt.Println("Starting performance profiling...")
-		// Profiler integration placeholder - implement with actual profiler
-		fmt.Println("Profiling started (use 'profile stop' to stop)")
-
-	case "stop":
-		fmt.Println("Stopping performance profiling...")
-		// Profiler integration placeholder - implement with actual profiler
-		fmt.Println("Profiling stopped")
-
-	case "status":
-		fmt.Println("Profile Status: Not implemented yet")
-		// Profiler status placeholder - implement with actual profiler status
-
+	case "start", "stop", "status":
+		// 실제 profiler가 연결되지 않았으므로 성공이나 상태를 꾸며내지 않는다.
+		return fmt.Errorf("shell profile %s is not supported: profiling is not implemented", args[0])
 	default:
 		return fmt.Errorf("unknown profile command: %s", args[0])
 	}
-
-	return nil
 }
 
 func handleHistory(s *Shell, args []string) error {
