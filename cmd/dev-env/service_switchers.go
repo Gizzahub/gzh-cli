@@ -9,6 +9,7 @@ import (
 	"os/exec"
 
 	"github.com/gizzahub/gzh-cli-dev-env/pkg/environment"
+	"github.com/gizzahub/gzh-cli-dev-env/pkg/ssh"
 )
 
 // AWSSwitcher implements ServiceSwitcher for AWS.
@@ -270,29 +271,13 @@ func (s *SSHSwitcher) Name() string {
 }
 
 func (s *SSHSwitcher) Switch(ctx context.Context, config any) error {
-	sshConfig, ok := config.(*environment.SSHConfig)
-	if !ok {
-		return fmt.Errorf("invalid SSH configuration type")
-	}
-
-	// For SSH, we would typically update the SSH config file or set environment variables
-	// This is a simplified implementation
-	if sshConfig.Config != "" {
-		// In a real implementation, this would load the SSH configuration
-		// For now, we'll just validate that the config exists
-		fmt.Printf("Setting SSH config to: %s\n", sshConfig.Config)
-	}
-
-	return nil
+	return ssh.NewSwitcher().Switch(ctx, config)
 }
 
 func (s *SSHSwitcher) GetCurrentState(ctx context.Context) (any, error) {
-	// Get current SSH configuration (simplified)
-	return &environment.SSHConfig{
-		Config: "default",
-	}, nil
+	return ssh.NewSwitcher().GetCurrentState(ctx)
 }
 
 func (s *SSHSwitcher) Rollback(ctx context.Context, previousState any) error {
-	return s.Switch(ctx, previousState)
+	return ssh.NewSwitcher().Rollback(ctx, previousState)
 }

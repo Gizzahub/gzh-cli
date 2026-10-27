@@ -116,6 +116,8 @@ github.com/gizzahub/gzh-cli-core v0.1.0 h1:s8qvDrUXgTrqYXHSaw2k+ss/Woy9zU/mle7OR
 github.com/gizzahub/gzh-cli-core v0.1.0/go.mod h1:Q8oVshAM174aG9sMbWqhW8r0fr95Sm3qtvwEzatlaqc=
 github.com/gizzahub/gzh-cli-dev-env v0.1.0 h1:+1qZCQQgoTlp5YgySLD61GPsribzXz23zduxHCpkuJo=
 github.com/gizzahub/gzh-cli-dev-env v0.1.0/go.mod h1:1FasSyEa2FA0XRoSjgCnSqGu4FXpACqJGhVhentPsbo=
+github.com/gizzahub/gzh-cli-dev-env v0.1.1 h1:IVE+ui+eI2lRUHdkdJUaMbxfiEl7lao22EJM2MGdS0c=
+github.com/gizzahub/gzh-cli-dev-env v0.1.1/go.mod h1:1FasSyEa2FA0XRoSjgCnSqGu4FXpACqJGhVhentPsbo=
 github.com/gizzahub/gzh-cli-gitforge v0.13.0 h1:MlAeMgobs9nsOdmO2ze20dBCZ31x5G87GOP8CPGqJrc=
 github.com/gizzahub/gzh-cli-gitforge v0.13.0/go.mod h1:KSFIBEROMPsfm7xo5PbOLoi3ngQYPm0GSyg4qPxHe+c=
 github.com/gizzahub/gzh-cli-net-env v0.1.0 h1:+KWJ6RGyN9ZWAxqOcVkTvT4AIA95qNPBtKyEjs+8pyo=
