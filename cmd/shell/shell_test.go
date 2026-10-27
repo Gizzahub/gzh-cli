@@ -2,6 +2,8 @@
 package shell
 
 import (
+	"io"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -291,35 +293,42 @@ func TestHistoryCommand(t *testing.T) {
 	})
 }
 
+// client 생성이나 실제 REPL 실행 없이 handler와 등록된 dispatch를 확인한다.
 func TestTraceCommand(t *testing.T) {
-	client, err := gzhclient.NewClient(gzhclient.DefaultConfig())
+	shell := &Shell{commands: make(map[string]ShellCommand), running: true}
+	shell.registerCommands()
+	for _, args := range [][]string{nil, {"start"}, {"stop"}, {"status"}} {
+		output := captureTraceOutput(t, func() { require.ErrorContains(t, handleTrace(nil, args), "unsupported") })
+		require.Empty(t, output)
+	}
+	for _, line := range []string{"trace", "trace start", "trace stop", "trace status"} {
+		output := captureTraceOutput(t, func() { require.ErrorContains(t, shell.executeCommand(line), "unsupported") })
+		require.Empty(t, output)
+		require.True(t, shell.running)
+	}
+	require.EqualError(t, handleTrace(nil, []string{"unknown"}), "unknown trace command: unknown")
+	require.EqualError(t, shell.executeCommand("trace unknown"), "unknown trace command: unknown")
+	calls := 0
+	shell.commands["next"] = ShellCommand{Handler: func(*Shell, []string) error { calls++; return nil }}
+	require.NoError(t, shell.executeCommand("next"))
+	require.Equal(t, 1, calls)
+	require.Contains(t, shell.commands["trace"].Description, "unsupported")
+	require.Equal(t, "trace [start|stop|status]", shell.commands["trace"].Usage)
+	require.NotContains(t, ShellCmd.Long, "trace          - Start/stop tracing")
+}
+
+func captureTraceOutput(t *testing.T, run func()) string {
+	t.Helper()
+	read, write, err := os.Pipe()
 	require.NoError(t, err)
-	defer client.Close()
-
-	shell := NewShell(client)
-
-	tests := []struct {
-		name string
-		args []string
-	}{
-		{"start", []string{"start"}},
-		{"stop", []string{"stop"}},
-		{"status", []string{"status"}},
-		{"default status", []string{}},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := handleTrace(shell, tt.args)
-			assert.NoError(t, err)
-		})
-	}
-
-	t.Run("unknown trace command", func(t *testing.T) {
-		err := handleTrace(shell, []string{"unknown"})
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "unknown trace command: unknown")
-	})
+	original := os.Stdout
+	os.Stdout = write
+	defer func() { os.Stdout = original; _ = read.Close(); _ = write.Close() }()
+	run()
+	require.NoError(t, write.Close())
+	output, err := io.ReadAll(read)
+	require.NoError(t, err)
+	return string(output)
 }
 
 func TestProfileCommand(t *testing.T) {

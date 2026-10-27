@@ -47,8 +47,8 @@ Examples:
   # Build shell config (dry-run to preview)
   gz shellforge build --manifest manifest.yaml --config-dir modules --os Mac --dry-run
 
-  # Build and save to file
-  gz shellforge build --manifest manifest.yaml --config-dir modules --os Mac --output ~/.zshrc
+  # Build into a staging directory
+  gz shellforge build --manifest manifest.yaml --config-dir modules --os Mac --output-dir ./build
 
   # Create backup before changes
   gz shellforge backup --file ~/.zshrc --backup-dir ~/.shellforge/backups

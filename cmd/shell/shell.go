@@ -44,7 +44,7 @@ Available commands:
   plugins        - List and manage plugins
   logs           - Show recent logs
   metrics        - Show system metrics
-  trace          - Start/stop tracing
+  trace          - Reserved tracing command (unsupported)
   profile        - Start/stop profiling
   exit, quit     - Exit the shell
 
@@ -305,7 +305,7 @@ func (s *Shell) registerCommands() {
 
 	s.commands["trace"] = ShellCommand{
 		Name:        "trace",
-		Description: "Control execution tracing",
+		Description: "Execution tracing is unsupported",
 		Usage:       "trace [start|stop|status]",
 		Handler:     handleTrace,
 	}
@@ -551,31 +551,16 @@ func handleMetrics(s *Shell, args []string) error {
 	return nil
 }
 
-func handleTrace(s *Shell, args []string) error {
+func handleTrace(_ *Shell, args []string) error {
 	if len(args) == 0 {
 		args = []string{"status"}
 	}
-
 	switch args[0] {
-	case "start":
-		fmt.Println("Starting execution tracing...")
-		// Tracing integration placeholder - implement with actual tracer
-		fmt.Println("Tracing started (use 'trace stop' to stop)")
-
-	case "stop":
-		fmt.Println("Stopping execution tracing...")
-		// Tracing integration placeholder - implement with actual tracer
-		fmt.Println("Tracing stopped")
-
-	case "status":
-		fmt.Println("Trace Status: Not implemented yet")
-		// Status display placeholder - implement with actual tracer status
-
+	case "start", "stop", "status":
+		return fmt.Errorf("shell trace is unsupported: no tracing backend is connected")
 	default:
 		return fmt.Errorf("unknown trace command: %s", args[0])
 	}
-
-	return nil
 }
 
 func handleProfile(s *Shell, args []string) error {

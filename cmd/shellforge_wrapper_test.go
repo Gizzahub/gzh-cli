@@ -91,3 +91,21 @@ func TestShellforgeCmdIntegration(t *testing.T) {
 		assert.Contains(t, subcommandNames, expected, "Should have '%s' subcommand", expected)
 	}
 }
+
+// wrapper의 예제가 실제 라이브러리 flag를 가리키는지만 확인하고 build는 실행하지 않는다.
+func TestShellforgeBuildExampleFlagContract(t *testing.T) {
+	command := NewShellforgeCmd(&app.AppContext{})
+	build, args, err := command.Find([]string{"build"})
+	require.NoError(t, err)
+	require.Empty(t, args)
+	require.Equal(t, "build", build.Name())
+	require.NotNil(t, build.Flags().Lookup("output-dir"))
+	require.Nil(t, build.Flags().Lookup("output"))
+	require.NoError(t, build.ParseFlags([]string{"--output-dir", "./build"}))
+	output, err := build.Flags().GetString("output-dir")
+	require.NoError(t, err)
+	require.Equal(t, "./build", output)
+	require.Contains(t, command.Long, "--os Mac --output-dir ./build")
+	require.Contains(t, command.Long, "Build into a staging directory")
+	require.NotContains(t, command.Long, "--output ~/.zshrc")
+}
