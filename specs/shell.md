@@ -142,38 +142,37 @@ gz> config set <key> <value> # Set configuration value
 
 #### trace
 
-**Purpose**: Control execution tracing
+**Status**: Unsupported. No execution tracing backend is connected to the shell.
 
-**Features**:
-
-- Start/stop execution tracing
-- Trace status monitoring
-- Integration with Go's trace package
+Bare `trace`, `trace start`, `trace stop`, and `trace status` return an explicit
+unsupported error without starting a tracer or reporting fabricated state.
+Unknown subcommands retain their error. The shell accepts the next command after
+the error; tracing is not implemented by an HTTP profiling endpoint.
 
 **Usage**:
 
-```
-gz> trace start             # Start execution tracing
-gz> trace stop              # Stop execution tracing
-gz> trace status            # Show trace status
+```text
+gz> trace start             # Unsupported; no tracer is started
+gz> trace stop              # Unsupported; no tracer is stopped
+gz> trace status            # Unsupported; no trace state is available
 ```
 
 #### profile
 
-**Purpose**: Control performance profiling within shell
+**Purpose**: Reserved shell command; profiling is not implemented.
 
-**Features**:
+**Current behavior**:
 
-- Start/stop profiling sessions
-- Profiling status monitoring
-- Integration with main profile command
+- `profile start`, `profile stop`, `profile status`, and bare `profile` return an unsupported error.
+- No profiling session is started or stopped, and no success message is printed.
+- Unknown actions return an unknown-command error. The REPL reports errors and remains available.
 
 **Usage**:
 
 ```
-gz> profile start           # Start performance profiling
-gz> profile stop            # Stop performance profiling
-gz> profile status          # Show profiling status
+gz> profile start           # Error: profiling is not implemented
+gz> profile stop            # Error: profiling is not implemented
+gz> profile status          # Error: profiling is not implemented
 ```
 
 ### Plugin Management Commands
@@ -352,7 +351,7 @@ Direct integration with Go runtime for:
 - Memory statistics collection
 - Goroutine monitoring
 - Garbage collection control
-- Performance profiling
+- Performance profiling is not implemented in the shell
 
 ## Shell Context
 
@@ -396,9 +395,9 @@ gz shell
 gz> memory --gc             # Run GC and check memory
 gz> metrics --watch         # Start continuous monitoring
 # Press Ctrl+C to stop watching
-gz> profile start           # Start profiling
-gz> profile status          # Check profiling status
-gz> profile stop            # Stop profiling
+gz> profile start           # Error: profiling is not implemented
+gz> profile status          # Error: profiling is not implemented
+gz> profile stop            # Error: profiling is not implemented
 ```
 
 ### Debugging Session
@@ -407,9 +406,9 @@ gz> profile stop            # Stop profiling
 gz shell --timeout 1h       # Start with 1-hour timeout
 
 gz> status --json           # Get detailed status
-gz> trace start             # Start execution tracing
-# Perform operations to trace
-gz> trace stop              # Stop tracing
+gz> trace start             # Unsupported; reports an error
+# The shell remains available after the error
+gz> trace stop              # Unsupported; reports an error
 gz> history                 # Review commands executed
 gz> context --json          # Get session context
 ```
