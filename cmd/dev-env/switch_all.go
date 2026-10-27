@@ -38,12 +38,16 @@ func newSwitchAllCmd() *cobra.Command {
 		Long: `Switch multiple cloud services and development environments to a target state.
 
 This command switches the configured services:
-- AWS profiles, regions, and accounts
+- AWS managed profile selection and configuration-file regions (AccountID switching unsupported)
 - GCP projects and accounts
 - Azure subscriptions and tenants
 - Docker contexts
 - Kubernetes clusters and namespaces
 - SSH configurations
+
+AWS switching changes local configuration; it does not log in or change parent-shell
+environment variables. Conflicting AWS_PROFILE or region environment overrides
+and nonempty AccountID requests are rejected before AWS changes.
 
 On failure, rollback is attempted. Rollback can also fail and changes may remain;
 inspect the reported switching and rollback errors.

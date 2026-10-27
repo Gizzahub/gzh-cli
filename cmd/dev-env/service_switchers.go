@@ -5,12 +5,10 @@ package devenv
 
 import (
 	"context"
-	"fmt"
-	"os/exec"
 
+	"github.com/gizzahub/gzh-cli-dev-env/pkg/aws"
 	"github.com/gizzahub/gzh-cli-dev-env/pkg/azure"
 	"github.com/gizzahub/gzh-cli-dev-env/pkg/docker"
-	"github.com/gizzahub/gzh-cli-dev-env/pkg/environment"
 	"github.com/gizzahub/gzh-cli-dev-env/pkg/gcp"
 	"github.com/gizzahub/gzh-cli-dev-env/pkg/kubernetes"
 	"github.com/gizzahub/gzh-cli-dev-env/pkg/ssh"
@@ -24,51 +22,30 @@ func (a *AWSSwitcher) Name() string {
 }
 
 func (a *AWSSwitcher) Switch(ctx context.Context, config any) error {
-	awsConfig, ok := config.(*environment.AWSConfig)
-	if !ok {
-		return fmt.Errorf("invalid AWS configuration type")
-	}
-
-	// Set AWS profile
-	if awsConfig.Profile != "" {
-		cmd := exec.CommandContext(ctx, "aws", "configure", "set", "profile", awsConfig.Profile)
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("failed to set AWS profile: %w", err)
-		}
-	}
-
-	// Set AWS region
-	if awsConfig.Region != "" {
-		args := []string{"configure", "set", "region", awsConfig.Region}
-		if awsConfig.Profile != "" {
-			args = append(args, "--profile", awsConfig.Profile)
-		}
-		cmd := exec.CommandContext(ctx, "aws", args...)
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("failed to set AWS region: %w", err)
-		}
-	}
-
-	return nil
+	return aws.NewSwitcher().Switch(ctx, config)
 }
 
 func (a *AWSSwitcher) GetCurrentState(ctx context.Context) (any, error) {
-	// Get current AWS profile
-	cmd := exec.CommandContext(ctx, "aws", "configure", "get", "profile")
-	profileOutput, _ := cmd.Output()
-
-	// Get current AWS region
-	cmd = exec.CommandContext(ctx, "aws", "configure", "get", "region")
-	regionOutput, _ := cmd.Output()
-
-	return &environment.AWSConfig{
-		Profile: string(profileOutput),
-		Region:  string(regionOutput),
-	}, nil
+	return aws.NewSwitcher().GetCurrentState(ctx)
 }
 
-func (a *AWSSwitcher) Rollback(ctx context.Context, previousState any) error {
-	return a.Switch(ctx, previousState)
+func (a *AWSSwitcher) Rollback(ctx context.Context, state any) error {
+	return aws.NewSwitcher().Rollback(ctx, state)
+}
+
+// CaptureState 는 소유 라이브러리의 요청별 복구 상태를 그대로 전달한다.
+func (a *AWSSwitcher) CaptureState(ctx context.Context, config any) (any, error) {
+	return aws.NewSwitcher().CaptureState(ctx, config)
+}
+
+// ApplyState 는 journal에 기록한 동일한 계획을 소유 구현에 전달한다.
+func (a *AWSSwitcher) ApplyState(ctx context.Context, state any) error {
+	return aws.NewSwitcher().ApplyState(ctx, state)
+}
+
+// ValidateRecoveryState 는 복구 metadata 검증을 소유 구현에 위임한다.
+func (a *AWSSwitcher) ValidateRecoveryState(state any) error {
+	return aws.NewSwitcher().ValidateRecoveryState(state)
 }
 
 // GCPSwitcher implements ServiceSwitcher for GCP.

@@ -313,6 +313,31 @@ gz dev-env switch-all --from-file env.yaml      # Switch using environment file
 Switch and rollback errors are reported together on failure. Rollback is an attempt,
 not an all-or-nothing guarantee. `switch-all` has no `--rollback` flag.
 
+AWS switching here updates local managed profile selection and configuration-file
+regions; it does not log in to AWS or change the parent shell's environment. A
+nonempty `AWS_PROFILE` conflicting with the requested profile, or a region request
+conflicting with nonempty `AWS_REGION` (otherwise `AWS_DEFAULT_REGION`), causes an
+error before that AWS change. Nonempty `accountId` is unsupported. A region-only
+request targets the profile resolved by the owner:
+nonempty `AWS_PROFILE`, then managed selection, then `default`.
+
+For example, save this as `local-aws.yaml` and preview it with
+`gz dev-env switch-all --from-file local-aws.yaml --dry-run`:
+
+```yaml
+name: local-aws
+services:
+  aws:
+    aws:
+      profile: development
+      region: us-west-2
+```
+
+The command delegates AWS switching and target-aware recovery to the published
+`gzh-cli-dev-env` library. Unsupported ambiguous configuration syntax is rejected
+rather than guessed. Recovery preserves the changed AWS targets, but does not
+guarantee atomic rollback across services or concurrent external writers.
+
 #### Development Environment Status (`gz dev-env status`)
 
 **Purpose**: Display comprehensive status of all development environment services

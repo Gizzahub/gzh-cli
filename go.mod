@@ -16,7 +16,7 @@ require (
 	github.com/daixiang0/gci v0.14.0
 	github.com/fatih/color v1.19.0
 	github.com/fsnotify/fsnotify v1.10.1
-	github.com/gizzahub/gzh-cli-dev-env v0.1.1
+	github.com/gizzahub/gzh-cli-dev-env v0.2.0
 	github.com/gizzahub/gzh-cli-gitforge v0.13.0
 	github.com/gizzahub/gzh-cli-net-env v0.1.0
 	github.com/gizzahub/gzh-cli-shellforge v0.6.0

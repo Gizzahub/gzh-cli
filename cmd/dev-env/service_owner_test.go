@@ -28,6 +28,9 @@ type ownerInvocation struct {
 
 func TestMain(m *testing.M) {
 	name := strings.TrimSuffix(filepath.Base(os.Args[0]), ".exe")
+	if os.Getenv("GZ_MAIN_AWS_FIXTURE") == "native-v1" && name == "aws" {
+		os.Exit(runAWSOwnerFixture())
+	}
 	if os.Getenv("GZ_SERVICE_OWNER_HELPER") == "native-v1" && (name == "gcloud" || name == "az" || name == "docker" || name == "kubectl") {
 		data, err := json.Marshal(ownerInvocation{Name: name, Args: os.Args[1:]})
 		if err != nil {
