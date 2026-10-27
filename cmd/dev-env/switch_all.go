@@ -34,10 +34,10 @@ func newSwitchAllCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "switch-all",
-		Short: "Switch all development environments atomically",
+		Short: "Switch multiple development environments",
 		Long: `Switch multiple cloud services and development environments to a target state.
 
-This command provides atomic environment switching across all configured services:
+This command switches the configured services:
 - AWS profiles, regions, and accounts
 - GCP projects and accounts
 - Azure subscriptions and tenants
@@ -45,7 +45,8 @@ This command provides atomic environment switching across all configured service
 - Kubernetes clusters and namespaces
 - SSH configurations
 
-All services are switched atomically - either all succeed or all are rolled back.
+On failure, rollback is attempted. Rollback can also fail and changes may remain;
+inspect the reported switching and rollback errors.
 
 Examples:
   # Switch to production environment
@@ -126,18 +127,26 @@ func (opts *switchAllOptions) run(ctx context.Context) error {
 	}
 
 	result, err := switcher.SwitchEnvironment(ctx, env, switchOptions)
-	if err != nil {
-		return fmt.Errorf("environment switch failed: %w", err)
-	}
+	return opts.finishSwitch(env.Name, result, err)
+}
 
-	// Display results
-	opts.displayResults(result)
+// finishSwitch는 반환 오류보다 먼저 사용 가능한 전환·롤백 결과를 표시한다.
+func (opts *switchAllOptions) finishSwitch(name string, result *environment.SwitchResult, switchErr error) error {
+	if result != nil {
+		opts.displayResults(result)
+	}
+	if switchErr != nil {
+		return fmt.Errorf("environment switch failed: %w", switchErr)
+	}
+	if result == nil {
+		return fmt.Errorf("environment switch returned no result")
+	}
 
 	if !result.Success {
 		return fmt.Errorf("environment switch completed with errors")
 	}
 
-	fmt.Printf("✅ Successfully switched to environment: %s\n", env.Name)
+	fmt.Printf("✅ Successfully switched to environment: %s\n", name)
 	return nil
 }
 
@@ -356,7 +365,7 @@ func (opts *switchAllOptions) displayResults(result *environment.SwitchResult) {
 	}
 
 	if result.RollbackPerformed {
-		fmt.Printf("   🔄 Rollback: Performed\n")
+		fmt.Printf("   🔄 Rollback: Attempted (inspect errors; restoration is not guaranteed)\n")
 	}
 
 	if len(result.Errors) > 0 {
