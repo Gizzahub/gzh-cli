@@ -8,7 +8,11 @@ import (
 	"fmt"
 	"os/exec"
 
+	"github.com/gizzahub/gzh-cli-dev-env/pkg/azure"
+	"github.com/gizzahub/gzh-cli-dev-env/pkg/docker"
 	"github.com/gizzahub/gzh-cli-dev-env/pkg/environment"
+	"github.com/gizzahub/gzh-cli-dev-env/pkg/gcp"
+	"github.com/gizzahub/gzh-cli-dev-env/pkg/kubernetes"
 	"github.com/gizzahub/gzh-cli-dev-env/pkg/ssh"
 )
 
@@ -75,60 +79,15 @@ func (g *GCPSwitcher) Name() string {
 }
 
 func (g *GCPSwitcher) Switch(ctx context.Context, config any) error {
-	gcpConfig, ok := config.(*environment.GCPConfig)
-	if !ok {
-		return fmt.Errorf("invalid GCP configuration type")
-	}
-
-	// Set GCP project
-	if gcpConfig.Project != "" {
-		cmd := exec.CommandContext(ctx, "gcloud", "config", "set", "project", gcpConfig.Project)
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("failed to set GCP project: %w", err)
-		}
-	}
-
-	// Set GCP account
-	if gcpConfig.Account != "" {
-		cmd := exec.CommandContext(ctx, "gcloud", "config", "set", "account", gcpConfig.Account)
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("failed to set GCP account: %w", err)
-		}
-	}
-
-	// Set GCP region
-	if gcpConfig.Region != "" {
-		cmd := exec.CommandContext(ctx, "gcloud", "config", "set", "compute/region", gcpConfig.Region)
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("failed to set GCP region: %w", err)
-		}
-	}
-
-	return nil
+	return gcp.NewSwitcher().Switch(ctx, config)
 }
 
 func (g *GCPSwitcher) GetCurrentState(ctx context.Context) (any, error) {
-	// Get current GCP project
-	cmd := exec.CommandContext(ctx, "gcloud", "config", "get-value", "project")
-	projectOutput, _ := cmd.Output()
-
-	// Get current GCP account
-	cmd = exec.CommandContext(ctx, "gcloud", "config", "get-value", "account")
-	accountOutput, _ := cmd.Output()
-
-	// Get current GCP region
-	cmd = exec.CommandContext(ctx, "gcloud", "config", "get-value", "compute/region")
-	regionOutput, _ := cmd.Output()
-
-	return &environment.GCPConfig{
-		Project: string(projectOutput),
-		Account: string(accountOutput),
-		Region:  string(regionOutput),
-	}, nil
+	return gcp.NewSwitcher().GetCurrentState(ctx)
 }
 
 func (g *GCPSwitcher) Rollback(ctx context.Context, previousState any) error {
-	return g.Switch(ctx, previousState)
+	return gcp.NewSwitcher().Rollback(ctx, previousState)
 }
 
 // AzureSwitcher implements ServiceSwitcher for Azure.
@@ -139,39 +98,15 @@ func (a *AzureSwitcher) Name() string {
 }
 
 func (a *AzureSwitcher) Switch(ctx context.Context, config any) error {
-	azureConfig, ok := config.(*environment.AzureConfig)
-	if !ok {
-		return fmt.Errorf("invalid Azure configuration type")
-	}
-
-	// Set Azure subscription
-	if azureConfig.Subscription != "" {
-		cmd := exec.CommandContext(ctx, "az", "account", "set", "--subscription", azureConfig.Subscription)
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("failed to set Azure subscription: %w", err)
-		}
-	}
-
-	return nil
+	return azure.NewSwitcher().Switch(ctx, config)
 }
 
 func (a *AzureSwitcher) GetCurrentState(ctx context.Context) (any, error) {
-	// Get current Azure subscription
-	cmd := exec.CommandContext(ctx, "az", "account", "show", "--query", "id", "-o", "tsv")
-	subscriptionOutput, _ := cmd.Output()
-
-	// Get current Azure tenant
-	cmd = exec.CommandContext(ctx, "az", "account", "show", "--query", "tenantId", "-o", "tsv")
-	tenantOutput, _ := cmd.Output()
-
-	return &environment.AzureConfig{
-		Subscription: string(subscriptionOutput),
-		Tenant:       string(tenantOutput),
-	}, nil
+	return azure.NewSwitcher().GetCurrentState(ctx)
 }
 
 func (a *AzureSwitcher) Rollback(ctx context.Context, previousState any) error {
-	return a.Switch(ctx, previousState)
+	return azure.NewSwitcher().Rollback(ctx, previousState)
 }
 
 // DockerSwitcher implements ServiceSwitcher for Docker.
@@ -182,34 +117,15 @@ func (d *DockerSwitcher) Name() string {
 }
 
 func (d *DockerSwitcher) Switch(ctx context.Context, config any) error {
-	dockerConfig, ok := config.(*environment.DockerConfig)
-	if !ok {
-		return fmt.Errorf("invalid Docker configuration type")
-	}
-
-	// Set Docker context
-	if dockerConfig.Context != "" {
-		cmd := exec.CommandContext(ctx, "docker", "context", "use", dockerConfig.Context)
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("failed to set Docker context: %w", err)
-		}
-	}
-
-	return nil
+	return docker.NewSwitcher().Switch(ctx, config)
 }
 
 func (d *DockerSwitcher) GetCurrentState(ctx context.Context) (any, error) {
-	// Get current Docker context
-	cmd := exec.CommandContext(ctx, "docker", "context", "show")
-	contextOutput, _ := cmd.Output()
-
-	return &environment.DockerConfig{
-		Context: string(contextOutput),
-	}, nil
+	return docker.NewSwitcher().GetCurrentState(ctx)
 }
 
 func (d *DockerSwitcher) Rollback(ctx context.Context, previousState any) error {
-	return d.Switch(ctx, previousState)
+	return docker.NewSwitcher().Rollback(ctx, previousState)
 }
 
 // KubernetesSwitcher implements ServiceSwitcher for Kubernetes.
@@ -220,47 +136,15 @@ func (k *KubernetesSwitcher) Name() string {
 }
 
 func (k *KubernetesSwitcher) Switch(ctx context.Context, config any) error {
-	kubernetesConfig, ok := config.(*environment.KubernetesConfig)
-	if !ok {
-		return fmt.Errorf("invalid Kubernetes configuration type")
-	}
-
-	// Set Kubernetes context
-	if kubernetesConfig.Context != "" {
-		cmd := exec.CommandContext(ctx, "kubectl", "config", "use-context", kubernetesConfig.Context)
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("failed to set Kubernetes context: %w", err)
-		}
-	}
-
-	// Set Kubernetes namespace
-	if kubernetesConfig.Namespace != "" {
-		cmd := exec.CommandContext(ctx, "kubectl", "config", "set-context", "--current", "--namespace", kubernetesConfig.Namespace)
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("failed to set Kubernetes namespace: %w", err)
-		}
-	}
-
-	return nil
+	return kubernetes.NewSwitcher().Switch(ctx, config)
 }
 
 func (k *KubernetesSwitcher) GetCurrentState(ctx context.Context) (any, error) {
-	// Get current Kubernetes context
-	cmd := exec.CommandContext(ctx, "kubectl", "config", "current-context")
-	contextOutput, _ := cmd.Output()
-
-	// Get current namespace
-	cmd = exec.CommandContext(ctx, "kubectl", "config", "view", "--minify", "--output", "jsonpath={..namespace}")
-	namespaceOutput, _ := cmd.Output()
-
-	return &environment.KubernetesConfig{
-		Context:   string(contextOutput),
-		Namespace: string(namespaceOutput),
-	}, nil
+	return kubernetes.NewSwitcher().GetCurrentState(ctx)
 }
 
 func (k *KubernetesSwitcher) Rollback(ctx context.Context, previousState any) error {
-	return k.Switch(ctx, previousState)
+	return kubernetes.NewSwitcher().Rollback(ctx, previousState)
 }
 
 // SSHSwitcher implements ServiceSwitcher for SSH.
