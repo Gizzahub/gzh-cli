@@ -26,7 +26,7 @@ The dev-env command provides both individual service management (for fine-graine
 #### Unified Environment Management (Secondary)
 
 - `gz dev-env tui` - Interactive TUI dashboard for environment management
-- `gz dev-env switch-all` - Atomic environment switching across all services
+- `gz dev-env switch-all` - Multi-service environment switching with rollback attempts on failure
 - `gz dev-env status` - Display current status of all development services
 
 ### Individual Service Commands
@@ -256,14 +256,14 @@ gz dev-env tui                                  # Launch interactive TUI dashboa
 - `Esc` - Go back to previous view
 - `q` - Quit dashboard
 
-#### Atomic Environment Switching (`gz dev-env switch-all`)
+#### Multi-Service Environment Switching (`gz dev-env switch-all`)
 
-**Purpose**: Switch multiple cloud services and development environments atomically
+**Purpose**: Switch configured cloud services and development environments.
 
 **Features**:
 
-- Atomic switching across all configured services
-- Rollback on failure
+- Switching across configured services
+- Rollback attempts on failure; rollback can also fail and changes may remain
 - Dependency resolution and ordering
 - Progress tracking
 - Pre/post switch hooks
@@ -274,8 +274,10 @@ gz dev-env tui                                  # Launch interactive TUI dashboa
 gz dev-env switch-all --env production          # Switch all to production
 gz dev-env switch-all --env dev --dry-run       # Preview changes
 gz dev-env switch-all --from-file env.yaml      # Switch using environment file
-gz dev-env switch-all --rollback                # Rollback last switch
 ```
+
+Switch and rollback errors are reported together on failure. Rollback is an attempt,
+not an all-or-nothing guarantee. `switch-all` has no `--rollback` flag.
 
 #### Development Environment Status (`gz dev-env status`)
 
