@@ -105,6 +105,9 @@ cmd/repo-config/shared_types.go
 cmd/repo-config/template/template.go
 cmd/repo-config/validate/validate.go
 cmd/repo-config/webhook/webhook.go
+cmd/repo-config/webhook/webhook_bulk.go
+cmd/repo-config/webhook/webhook_display.go
+cmd/repo-config/webhook/webhook_run.go
 cmd/root.go
 cmd/selfupdate/register.go
 cmd/selfupdate/replace_unix.go

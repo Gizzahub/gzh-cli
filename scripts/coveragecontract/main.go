@@ -30,7 +30,7 @@ import (
 
 const (
 	threshold                = 80
-	coreInventorySHA256      = "62df8846584b20532cc45561adda590257d26dc4a82095952f9bd15e52665ef4"
+	coreInventorySHA256      = "fba46ce9c7dfa2168508a30865c98d1d595e700244429c4b1f94aab6db918808"
 	exclusionInventorySHA256 = "a515728437337c813971e56bf4ab5e453028b361d06c8b35821931e348cabde0"
 	coreInventoryPath        = "scripts/coveragecontract/core-files.txt"
 	exclusionInventoryPath   = "scripts/coveragecontract/reviewed-exclusions.txt"
@@ -1109,7 +1109,7 @@ func verifySourceSnapshot(root string, m manifest) error {
 }
 
 func validateManifest(root string, m manifest) error {
-	if m.Schema != 1 || len(m.Cohorts) != 24 || len(m.Files) != 364 {
+	if m.Schema != 1 || len(m.Cohorts) != 24 || len(m.Files) != 367 {
 		return errors.New("manifest schema/cohort/source inventory is incomplete")
 	}
 	if err := validateInventories(root); err != nil {
@@ -1774,8 +1774,8 @@ func readInventory(path string) ([]string, error) {
 	if e != nil {
 		return nil, e
 	}
-	if len(out) != 364 {
-		return nil, fmt.Errorf("reviewed core inventory has %d entries, want 364", len(out))
+	if len(out) != 367 {
+		return nil, fmt.Errorf("reviewed core inventory has %d entries, want 367", len(out))
 	}
 	return out, nil
 }
