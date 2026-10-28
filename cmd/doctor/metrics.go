@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"math"
 	"os"
 	"os/exec"
@@ -20,20 +21,21 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-cli/internal/cli"
-	"github.com/gizzahub/gzh-cli/internal/logger"
 )
 
 // CodeQualityReport represents a comprehensive code quality analysis report.
 type CodeQualityReport struct {
-	Timestamp       time.Time         `json:"timestamp"`
-	ProjectPath     string            `json:"project_path"`
-	Summary         QualitySummary    `json:"summary"`
-	Metrics         QualityMetrics    `json:"metrics"`
-	Issues          []QualityIssue    `json:"issues"`
-	Trends          QualityTrends     `json:"trends"`
-	Scores          QualityScores     `json:"scores"`
-	Recommendations []string          `json:"recommendations"`
-	FileAnalysis    []FileQualityInfo `json:"file_analysis"`
+	Timestamp   time.Time      `json:"timestamp"`
+	ProjectPath string         `json:"project_path"`
+	Summary     QualitySummary `json:"summary"`
+	Metrics     QualityMetrics `json:"metrics"`
+	Issues      []QualityIssue `json:"issues"`
+	Trends      QualityTrends  `json:"trends"`
+	// HistoryAssessment는 실제 이력 평가 여부다. 미평가이면 Trends의 기존0값은 측정값이 아니다.
+	HistoryAssessment string            `json:"history_assessment" yaml:"history_assessment"`
+	Scores            QualityScores     `json:"scores"`
+	Recommendations   []string          `json:"recommendations"`
+	FileAnalysis      []FileQualityInfo `json:"file_analysis"`
 }
 
 // QualitySummary provides high-level quality overview.
@@ -125,13 +127,13 @@ This command provides detailed code quality analysis including:
 - Code complexity analysis and maintainability metrics
 - Test coverage integration and quality scoring
 - Technical debt assessment and recommendations
-- Issue tracking and trend analysis over time
+- Issue tracking; historical trends are not assessed
 - File-level quality breakdown and hotspot identification
 - Integration with golangci-lint and go test coverage
 
 Features:
 - Comprehensive quality scoring across multiple dimensions
-- Historical trend analysis and quality regression detection
+- Explicit --historical requests are unsupported until a history backend exists
 - Actionable recommendations for code improvement
 - Integration with existing CI/CD quality gates
 - Detailed per-file analysis for targeted improvements
@@ -142,7 +144,7 @@ Examples:
   gz doctor metrics --path ./internal                 # Analyze specific path
   gz doctor metrics --threshold 80.0                  # Set quality threshold
   gz doctor metrics --detailed --output quality.json  # Generate detailed report
-  gz doctor metrics --historical 30                   # Include 30-day trend analysis`).
+  gz doctor metrics --only-issues                    # Show issues with the same quality gate`).
 		WithExample("gz doctor metrics --detailed --threshold 85.0").
 		WithFormatFlag("table", []string{"table", "json", "yaml"}).
 		WithRunFuncE(func(ctx context.Context, flags *cli.CommonFlags, args []string) error {
@@ -163,11 +165,19 @@ Examples:
 	cmd.Flags().BoolVar(&includeTests, "include-tests", true, "Include test files in analysis")
 	cmd.Flags().StringVar(&outputFile, "output", "", "Output file for detailed report")
 	cmd.Flags().Float64Var(&threshold, "threshold", 75.0, "Quality score threshold")
-	cmd.Flags().IntVar(&historicalDays, "historical", 7, "Days of historical data to analyze")
+	cmd.Flags().IntVar(&historicalDays, "historical", 7, "Historical days (explicit requests are unsupported; default analysis remains available)")
 	cmd.Flags().BoolVar(&detailedReport, "detailed", false, "Generate detailed per-file analysis")
 	cmd.Flags().BoolVar(&skipComplexity, "skip-complexity", false, "Skip complexity analysis")
 	cmd.Flags().BoolVar(&onlyIssues, "only-issues", false, "Show only issues and recommendations")
 
+	// 기본값7 자체가 아니라 사용자가 명시한 이력 요청만 실행 전에 거절한다.
+	run := cmd.RunE
+	cmd.RunE = func(command *cobra.Command, args []string) error {
+		if command.Flags().Changed("historical") {
+			return fmt.Errorf("historical analysis is not supported: no history backend is configured")
+		}
+		return run(command, args)
+	}
 	return cmd
 }
 
@@ -219,6 +229,7 @@ type metricsCommandRunner func(context.Context, string, string, ...string) ([]by
 type metricsDependencies struct {
 	run    metricsCommandRunner
 	remove func(string) error
+	output io.Writer
 }
 
 func defaultMetricsDependencies() metricsDependencies {
@@ -246,21 +257,13 @@ func runQualityMetricsAnalysis(ctx context.Context, flags *cli.CommonFlags, opts
 }
 
 func runQualityMetricsAnalysisWithDependencies(ctx context.Context, flags *cli.CommonFlags, opts metricsOptions, deps metricsDependencies) error {
-	logger := logger.NewSimpleLogger("doctor-metrics")
-
-	logger.Info(
-		"Starting code quality metrics analysis",
-		"project_path", opts.projectPath,
-		"threshold", opts.threshold,
-		"detailed", opts.detailedReport,
-	)
-
 	// Initialize quality report
 	report := &CodeQualityReport{
-		Timestamp:    time.Now(),
-		ProjectPath:  opts.projectPath,
-		Issues:       make([]QualityIssue, 0),
-		FileAnalysis: make([]FileQualityInfo, 0),
+		Timestamp:         time.Now(),
+		HistoryAssessment: "not_assessed",
+		ProjectPath:       opts.projectPath,
+		Issues:            make([]QualityIssue, 0),
+		FileAnalysis:      make([]FileQualityInfo, 0),
 	}
 
 	// 분석 root를 한 번 고정해 walker callback의 경로가 바뀌어도 root 밖으로 나가지 못하게 한다.
@@ -303,23 +306,35 @@ func runQualityMetricsAnalysisWithDependencies(ctx context.Context, flags *cli.C
 	calculateQualityScores(report)
 	generateQualityRecommendations(report, opts.threshold)
 
-	// Save detailed report if requested
+	return finishQualityReport(report, opts, func() error {
+		writer := deps.output
+		if writer == nil {
+			writer = os.Stdout
+		}
+		formatter := cli.NewOutputFormatterWithWriter(flags.Format, writer)
+		switch flags.Format {
+		case "json", "yaml":
+			return formatter.FormatOutput(report)
+		default:
+			return displayQualityResultsWithWriter(report, opts, writer)
+		}
+	})
+}
+
+// finishQualityReport는 저장·출력 오류를 우선하고 성공 출력 뒤 형식 공통 판정을 적용한다.
+func finishQualityReport(report *CodeQualityReport, opts metricsOptions, render func() error) error {
 	if opts.outputFile != "" {
 		if err := saveQualityReport(report, opts.outputFile); err != nil {
 			return fmt.Errorf("failed to save report: %w", err)
 		}
-		logger.Info("Quality report saved", "file", opts.outputFile)
 	}
-
-	// Display results
-	formatter := cli.NewOutputFormatter(flags.Format)
-
-	switch flags.Format {
-	case "json", "yaml":
-		return formatter.FormatOutput(report)
-	default:
-		return displayQualityResults(report, opts)
+	if err := render(); err != nil {
+		return err
 	}
+	if report.Summary.OverallScore < opts.threshold {
+		return fmt.Errorf("quality score %g below threshold %g", report.Summary.OverallScore, opts.threshold)
+	}
+	return nil
 }
 
 func collectProjectMetrics(report *CodeQualityReport, opts metricsOptions, projectFiles *projectRootReader) error {
@@ -860,13 +875,33 @@ func saveQualityReport(report *CodeQualityReport, filename string) error {
 	return os.WriteFile(filename, data, 0o600)
 }
 
+// metricsReportOutput는 보고서 출력 오류를 보존해 quality 판정보다 먼저 반환한다.
+type metricsReportOutput struct {
+	writer io.Writer
+	err    error
+}
+
+func (output *metricsReportOutput) line(message string, args ...any) {
+	if output.err != nil {
+		return
+	}
+	values := append([]any{message}, args...)
+	_, output.err = fmt.Fprintln(output.writer, values...)
+}
+
 func displayQualityResults(report *CodeQualityReport, opts metricsOptions) error {
+	return displayQualityResultsWithWriter(report, opts, os.Stdout)
+}
+
+func displayQualityResultsWithWriter(report *CodeQualityReport, opts metricsOptions, writer io.Writer) error {
+	output := &metricsReportOutput{writer: writer}
+	output.line("Historical trends:", report.HistoryAssessment)
 	if opts.onlyIssues {
-		return displayIssuesOnly(report)
+		return displayIssuesOnlyWithOutput(report, output)
 	}
 
 	// Display project overview
-	logger.SimpleInfo(
+	output.line(
 		"🔍 Code Quality Analysis",
 		"project", report.ProjectPath,
 		"files", report.Summary.TotalFiles,
@@ -875,7 +910,7 @@ func displayQualityResults(report *CodeQualityReport, opts metricsOptions) error
 	)
 
 	// Display quality scores
-	logger.SimpleInfo(
+	output.line(
 		"📊 Quality Scores",
 		"overall", fmt.Sprintf("%.1f/100", report.Summary.OverallScore),
 		"maintainability", fmt.Sprintf("%.1f", report.Scores.Maintainability),
@@ -884,7 +919,7 @@ func displayQualityResults(report *CodeQualityReport, opts metricsOptions) error
 	)
 
 	// Display metrics
-	logger.SimpleInfo(
+	output.line(
 		"📈 Quality Metrics",
 		"issues", report.Summary.IssueCount,
 		"critical", report.Summary.CriticalIssues,
@@ -894,7 +929,7 @@ func displayQualityResults(report *CodeQualityReport, opts metricsOptions) error
 
 	// Display top issues by severity
 	if len(report.Issues) > 0 {
-		logger.SimpleWarn("⚠️ Top Quality Issues:")
+		output.line("⚠️ Top Quality Issues:")
 
 		// Sort issues by severity
 		sort.Slice(report.Issues, func(i, j int) bool {
@@ -915,7 +950,7 @@ func displayQualityResults(report *CodeQualityReport, opts metricsOptions) error
 				severityIcon = "🟢"
 			}
 
-			logger.SimpleWarn(
+			output.line(
 				fmt.Sprintf("  %s %s:%d", severityIcon, issue.File, issue.Line),
 				"rule", issue.Rule,
 				"message", issue.Message,
@@ -923,21 +958,21 @@ func displayQualityResults(report *CodeQualityReport, opts metricsOptions) error
 		}
 
 		if len(report.Issues) > maxIssues {
-			logger.SimpleInfo(fmt.Sprintf("  ... and %d more issues", len(report.Issues)-maxIssues))
+			output.line(fmt.Sprintf("  ... and %d more issues", len(report.Issues)-maxIssues))
 		}
 	}
 
 	// Display recommendations
 	if len(report.Recommendations) > 0 {
-		logger.SimpleInfo("💡 Recommendations:")
+		output.line("💡 Recommendations:")
 		for _, rec := range report.Recommendations {
-			logger.SimpleInfo(fmt.Sprintf("  • %s", rec))
+			output.line(fmt.Sprintf("  • %s", rec))
 		}
 	}
 
 	// Display file analysis if detailed
 	if opts.detailedReport && len(report.FileAnalysis) > 0 {
-		logger.SimpleInfo("📄 File Quality Analysis:")
+		output.line("📄 File Quality Analysis:")
 
 		// Sort by quality score (worst first)
 		sort.Slice(report.FileAnalysis, func(i, j int) bool {
@@ -953,7 +988,7 @@ func displayQualityResults(report *CodeQualityReport, opts metricsOptions) error
 				break // Stop at high quality files
 			}
 
-			logger.SimpleInfo(
+			output.line(
 				fmt.Sprintf("  📄 %s", file.Path),
 				"score", fmt.Sprintf("%.1f", file.QualityScore),
 				"issues", file.IssueCount,
@@ -963,21 +998,13 @@ func displayQualityResults(report *CodeQualityReport, opts metricsOptions) error
 		}
 	}
 
-	// Exit with error code if quality is below threshold
-	if report.Summary.OverallScore < opts.threshold {
-		logger.SimpleWarn(fmt.Sprintf("Quality score %.1f is below threshold %.1f",
-			report.Summary.OverallScore, opts.threshold))
-		return fmt.Errorf("quality score %.1f below threshold %.1f",
-			report.Summary.OverallScore, opts.threshold)
-	}
-
-	return nil
+	return output.err
 }
 
-func displayIssuesOnly(report *CodeQualityReport) error {
+func displayIssuesOnlyWithOutput(report *CodeQualityReport, output *metricsReportOutput) error {
 	if len(report.Issues) == 0 {
-		logger.SimpleInfo("✅ No quality issues found!")
-		return nil
+		output.line("✅ No quality issues found!")
+		return output.err
 	}
 
 	// Group issues by category
@@ -986,12 +1013,12 @@ func displayIssuesOnly(report *CodeQualityReport) error {
 		issuesByCategory[issue.Category] = append(issuesByCategory[issue.Category], issue)
 	}
 
-	logger.SimpleInfo(fmt.Sprintf("🔍 Found %d quality issues in %d categories",
+	output.line(fmt.Sprintf("🔍 Found %d quality issues in %d categories",
 		len(report.Issues), len(issuesByCategory)))
 
 	// Display issues by category
 	for category, issues := range issuesByCategory {
-		logger.SimpleWarn(fmt.Sprintf("📋 %s (%d issues):", category, len(issues)))
+		output.line(fmt.Sprintf("📋 %s (%d issues):", category, len(issues)))
 
 		for _, issue := range issues {
 			severityIcon := "🟡"
@@ -1002,10 +1029,10 @@ func displayIssuesOnly(report *CodeQualityReport) error {
 				severityIcon = "🟢"
 			}
 
-			logger.SimpleWarn(fmt.Sprintf("  %s %s:%d - %s",
+			output.line(fmt.Sprintf("  %s %s:%d - %s",
 				severityIcon, issue.File, issue.Line, issue.Message))
 		}
 	}
 
-	return nil
+	return output.err
 }

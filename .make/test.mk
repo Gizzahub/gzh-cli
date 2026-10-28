@@ -10,6 +10,7 @@
 # ==============================================================================
 
 .PHONY: test test-unit test-integration test-integration-only test-e2e test-e2e-only test-all
+.PHONY: coverage-contract-manifest coverage-contract-instrument coverage-contract-verify
 .PHONY: cover cover-html cover-report bench test-coverage test-docker
 
 test: clean ## run all tests with coverage
@@ -89,6 +90,18 @@ cover-report: ## generate detailed coverage report
 	@echo -e "$(BLUE)For detailed HTML report, run: make cover-html$(RESET)"
 
 test-coverage: cover-report ## alias for cover-report
+
+# checkout의 소스 바이트에 선택자를 묶고 같은 Go 도구로 계측한 기준 맵을 사용해
+# OS·태그별 전체 프로파일 집합의 완전성과 커버리지를 검증한다.
+coverage-contract-manifest: ## select maintained core files for all 24 release cohorts
+	@mkdir -p tmp/coveragecontract
+	go run ./scripts/coveragecontract manifest -root . -out tmp/coveragecontract/coverage-contract.json
+
+coverage-contract-instrument: coverage-contract-manifest ## generate source-only Go cover reference maps for all cohorts
+	go run ./scripts/coveragecontract instrument -root . -manifest tmp/coveragecontract/coverage-contract.json -out tmp/coveragecontract/profiles
+
+coverage-contract-verify: ## verify all 24 source-bound core coverage profiles (profiles supplied by CI)
+	go run ./scripts/coveragecontract verify -root . -manifest tmp/coveragecontract/coverage-contract.json -profiles tmp/coveragecontract/profiles
 
 # ==============================================================================
 # Benchmark Targets

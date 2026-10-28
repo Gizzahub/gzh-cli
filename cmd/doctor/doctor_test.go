@@ -1326,7 +1326,10 @@ func TestBenchmarkUtilityFunctions(t *testing.T) {
 	})
 
 	t.Run("git metadata outside repository", func(t *testing.T) {
-		t.Chdir(t.TempDir())
+		dir := t.TempDir()
+		// TMPDIR가 checkout 안에 있어도 이 fixture의 상위 Git 탐색을 차단한다.
+		t.Setenv("GIT_CEILING_DIRECTORIES", filepath.Dir(dir))
+		t.Chdir(dir)
 		ctx := context.Background()
 
 		commit, err := getGitCommit(ctx)

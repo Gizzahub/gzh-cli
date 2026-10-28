@@ -1,0 +1,115 @@
+name: Release Core Coverage Qualification
+'on':
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact commit to qualify (must match the selected ref)
+        required: true
+        type: string
+permissions:
+  contents: read
+  actions: read
+jobs:
+  collect:
+    name: Core (${{ matrix.native.cohort }}, ${{ matrix.tags || 'default' }})
+    runs-on: ${{ matrix.native.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        native:
+        - {runner: macos-latest, cohort: darwin-arm64}
+        - {runner: ubuntu-latest, cohort: linux-amd64}
+        - {runner: windows-latest, cohort: windows-amd64}
+        tags:
+        - ''
+        - devenv_external
+        - netenv_external
+        - pm_external
+        - devenv_external,netenv_external
+        - devenv_external,pm_external
+        - netenv_external,pm_external
+        - devenv_external,netenv_external,pm_external
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+    - uses: actions/setup-go@v7
+      with:
+        go-version: '1.27.3'
+        cache: true
+    - name: Collect native profile and execution evidence
+      shell: bash
+      env:
+        EXPECTED_SOURCE: ${{ inputs.source_sha }}
+        COHORT: ${{ matrix.native.cohort }}
+        TAGS: ${{ matrix.tags }}
+      run: |
+        set -euo pipefail
+        if [ "$RUNNER_OS" = Windows ]; then
+          python .github/scripts/collect-core-coverage.py "$EXPECTED_SOURCE" "$COHORT" "$TAGS"
+        else
+          python3 .github/scripts/collect-core-coverage.py "$EXPECTED_SOURCE" "$COHORT" "$TAGS"
+        fi
+    - name: Retain profile artifacts
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: core-profile-${{ matrix.native.cohort }}-${{ matrix.tags || 'default' }}
+        path: tmp/core-coverage-artifacts/*
+        if-no-files-found: warn
+    - name: Retain raw execution evidence
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: core-execution-${{ matrix.native.cohort }}-${{ matrix.tags || 'default' }}
+        path: tmp/core-coverage-execution/*
+        if-no-files-found: warn
+  verify:
+    name: Verify all 24 core profiles
+    needs: collect
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+    - uses: actions/setup-go@v7
+      with:
+        go-version: '1.27.3'
+        cache: true
+    - name: Check exact source
+      shell: bash
+      env:
+        EXPECTED_SOURCE: ${{ inputs.source_sha }}
+      run: test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+    - uses: actions/download-artifact@v7
+      with:
+        pattern: core-profile-*
+        path: tmp/coveragecontract/profiles
+        merge-multiple: true
+    - name: Verify independent thresholds and completeness
+      shell: bash
+      env:
+        GOMAXPROCS: '2'
+        GOFLAGS: -p=2
+        GOWORK: 'off'
+        GOENV: 'off'
+        GOTOOLCHAIN: local
+        CGO_ENABLED: '0'
+      run: |
+        set -euo pipefail
+        make coverage-contract-manifest
+        make coverage-contract-verify 2>&1 | tee tmp/coveragecontract/verification.log
+    - name: Retain aggregate verification
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: core-verification
+        path: |
+          tmp/coveragecontract/coverage-contract.json
+          tmp/coveragecontract/verification.log
+        if-no-files-found: warn

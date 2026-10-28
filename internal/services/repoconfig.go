@@ -56,13 +56,15 @@ type ListOptions struct {
 
 // RepositoryInfo represents repository information with configuration status.
 type RepositoryInfo struct {
-	Name        string                   `json:"name" yaml:"name"`
-	Description string                   `json:"description" yaml:"description"`
-	Visibility  string                   `json:"visibility" yaml:"visibility"`
-	Template    string                   `json:"template" yaml:"template"`
-	Compliant   bool                     `json:"compliant" yaml:"compliant"`
-	Issues      int                      `json:"issues" yaml:"issues"`
-	Config      *github.RepositoryConfig `json:"config,omitempty" yaml:"config,omitempty"`
+	// ComplianceAssessment가 not_assessed이면 기존 Compliant/Issues는 감사 결과가 아니다.
+	ComplianceAssessment string                   `json:"compliance_assessment" yaml:"compliance_assessment"`
+	Name                 string                   `json:"name" yaml:"name"`
+	Description          string                   `json:"description" yaml:"description"`
+	Visibility           string                   `json:"visibility" yaml:"visibility"`
+	Template             string                   `json:"template" yaml:"template"`
+	Compliant            bool                     `json:"compliant" yaml:"compliant"`
+	Issues               int                      `json:"issues" yaml:"issues"`
+	Config               *github.RepositoryConfig `json:"config,omitempty" yaml:"config,omitempty"`
 }
 
 // RepoConfigService provides repository configuration management functionality.
@@ -226,12 +228,13 @@ func (s *RepoConfigService) createRepositoryInfo(repo *github.Repository, repoCo
 	}
 
 	return RepositoryInfo{
-		Name:        repo.Name,
-		Description: repo.Description,
-		Visibility:  visibility,
-		Template:    s.detectTemplate(repo, repoConfig),
-		Compliant:   s.checkCompliance(repo, repoConfig),
-		Issues:      0, // Could be calculated based on actual compliance checks
+		ComplianceAssessment: "not_assessed",
+		Name:                 repo.Name,
+		Description:          repo.Description,
+		Visibility:           visibility,
+		Template:             s.detectTemplate(repo, repoConfig),
+		Compliant:            s.checkCompliance(repo, repoConfig),
+		Issues:               0, // 호환용 기본값이며 실제 감사의 문제 건수가 아니다.
 	}
 }
 
@@ -273,10 +276,9 @@ func (s *RepoConfigService) detectTemplate(repo *github.Repository, repoConfig *
 	return templateNone
 }
 
-// checkCompliance checks if a repository is compliant with its template.
+// checkCompliance는 호환용 template 할당값을 보존하며 실제 감사 판정은 수행하지 않는다.
 func (s *RepoConfigService) checkCompliance(repo *github.Repository, repoConfig *config.RepoConfig) bool {
-	// Simple compliance check - can be expanded
-	// For now, just check if it has a template assigned
+	// ComplianceAssessment가 미평가이면 이 bool을 준수 결과로 사용하지 않는다.
 	template := s.detectTemplate(repo, repoConfig)
 	return template != "none"
 }

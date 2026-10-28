@@ -37,7 +37,7 @@ func NewCmd() *cobra.Command {
 This command shows repository details including:
 - Basic information (name, description, visibility)
 - Current configuration status
-- Template compliance
+- Template assignment (compliance and issue counts are not assessed)
 - Security settings summary
 
 Output formats:
@@ -79,7 +79,9 @@ func runListCommand(ctx context.Context, flags GlobalFlags, filter, format strin
 	}
 
 	// Display header
-	displayListHeader(flags.Organization)
+	if format == "table" {
+		displayListHeader(flags.Organization)
+	}
 
 	// Create service and prepare options
 	service := services.NewRepoConfigService()
@@ -117,15 +119,9 @@ func printTableFormat(repos []services.RepositoryInfo, showConfig bool) {
 	fmt.Println("────────────────────────────────────────────────────────────────────")
 
 	for _, repo := range repos {
-		compliantSymbol := "✓"
-		if !repo.Compliant {
-			compliantSymbol = "✗"
-		}
-
-		issuesStr := fmt.Sprintf("%d", repo.Issues)
-		if repo.Issues == 0 {
-			issuesStr = "-"
-		}
+		// 현재 listing은 감사를 수행하지 않으므로 legacy bool/0을 판정으로 출력하지 않는다.
+		compliantSymbol := "NOT_ASSESSED"
+		issuesStr := "NOT_ASSESSED"
 
 		fmt.Printf(
 			"%-20s %-12s %-12s %-10s %s\n",
@@ -145,17 +141,7 @@ func printTableFormat(repos []services.RepositoryInfo, showConfig bool) {
 	fmt.Println()
 	fmt.Printf("Total repositories: %d\n", len(repos))
 
-	compliantCount := 0
-
-	for _, repo := range repos {
-		if repo.Compliant {
-			compliantCount++
-		}
-	}
-
-	fmt.Printf("Compliant: %d/%d (%.1f%%)\n",
-		compliantCount, len(repos),
-		float64(compliantCount)/float64(len(repos))*100)
+	fmt.Printf("Compliance: not assessed (%d repositories)\n", len(repos))
 }
 
 // displayRepositoryList displays the repository list in the specified format.
