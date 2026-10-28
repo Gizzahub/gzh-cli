@@ -4,6 +4,7 @@ package devenv
 import (
 	"context"
 	"encoding/json"
+	"os/exec"
 	"testing"
 	"time"
 
@@ -11,7 +12,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// withoutAzureCLI는 CLI 부재 시험이 개발자·runner의 실제 az를 실행하지 못하게 한다.
+func withoutAzureCLI(tb testing.TB) {
+	tb.Helper()
+	tb.Setenv("PATH", tb.TempDir())
+	tb.Setenv("AZURE_CONFIG_DIR", tb.TempDir())
+	_, err := exec.LookPath("az")
+	require.Error(tb, err)
+}
+
 func TestNewAzureSubscriptionManager(t *testing.T) {
+	withoutAzureCLI(t)
 	// Create temporary directory for testing
 	tmpDir := t.TempDir()
 
@@ -88,6 +99,7 @@ func TestAzureSubscription_JSONSerialization(t *testing.T) {
 }
 
 func TestAzureSubscriptionManager_EmptyState(t *testing.T) {
+	withoutAzureCLI(t)
 	tmpDir := t.TempDir()
 
 	setTestHome(t, tmpDir)
@@ -163,6 +175,7 @@ func TestAzureSubscriptionManager_SubscriptionFiltering(t *testing.T) {
 }
 
 func TestAzureSubscriptionManager_EnrichSubscriptionDetails(t *testing.T) {
+	withoutAzureCLI(t)
 	manager := &AzureSubscriptionManager{
 		ctx: context.Background(),
 	}
@@ -280,6 +293,7 @@ func TestAzureSubscription_DefaultValues(t *testing.T) {
 }
 
 func TestAzureSubscriptionManager_ShowSubscription(t *testing.T) {
+	withoutAzureCLI(t)
 	now := time.Now()
 	manager := &AzureSubscriptionManager{
 		subscriptions: map[string]*AzureSubscription{
@@ -324,11 +338,11 @@ func TestAzureSubscriptionManager_ShowSubscription(t *testing.T) {
 }
 
 func TestAzureSubscriptionManager_Integration(t *testing.T) {
-	// This test can be run with real Azure CLI for integration testing
-	// Skip if Azure CLI is not available or user is not authenticated
+	// 실제 Azure 통합이 아니라 CLI가 없을 때 빈 inventory를 처리하는 시험이다.
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
+	withoutAzureCLI(t)
 
 	tmpDir := t.TempDir()
 
@@ -382,6 +396,7 @@ func TestAzureSubscriptionManager_InvalidFormat(t *testing.T) {
 
 // Benchmark tests for performance.
 func BenchmarkAzureSubscriptionManager_LoadSubscriptions(b *testing.B) {
+	withoutAzureCLI(b)
 	tmpDir := b.TempDir()
 
 	setTestHome(b, tmpDir)

@@ -4,6 +4,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -292,6 +293,97 @@ func TestManifestRejectsForgedCohortSelection(t *testing.T) {
 	m.Cohorts[0].Files = append([]string(nil), m.Cohorts[0].Files[1:]...)
 	if err = validateManifest(root, m); err == nil {
 		t.Fatal("cohort with an omitted selected source was accepted")
+	}
+}
+
+func TestAutocrlfKeepsCoverageHashInputsByteStable(t *testing.T) {
+	_, testSource, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("test source path unavailable")
+	}
+	root := filepath.Clean(filepath.Join(filepath.Dir(testSource), "..", ".."))
+	coreFiles, err := readInventory(filepath.Join(root, filepath.FromSlash(coreInventoryPath)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	attributes, err := os.ReadFile(filepath.Join(root, ".gitattributes"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	fixture := t.TempDir()
+	inputs := map[string][]byte{}
+	for _, path := range []string{
+		coreFiles[0], coreInventoryPath, exclusionInventoryPath,
+		"scripts/coveragecontract/main.go", "scripts/coveragecontract/main_test.go",
+		"go.mod", "go.sum", ".goreleaser.yml", ".make/test.mk",
+	} {
+		data, readErr := os.ReadFile(filepath.Join(root, filepath.FromSlash(path)))
+		if readErr != nil {
+			t.Fatalf("read hash input %s: %v", path, readErr)
+		}
+		inputs[path] = data
+	}
+	if err := os.WriteFile(filepath.Join(fixture, ".gitattributes"), attributes, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	for path, data := range inputs {
+		fullPath := filepath.Join(fixture, filepath.FromSlash(path))
+		if err := os.MkdirAll(filepath.Dir(fullPath), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(fullPath, data, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, args := range [][]string{
+		{"init", "-q"},
+		{"config", "user.name", "coveragecontract test"},
+		{"config", "user.email", "coveragecontract@example.invalid"},
+		{"config", "core.autocrlf", "true"},
+	} {
+		if _, err := gitOutput(fixture, args...); err != nil {
+			t.Fatalf("git %v: %v", args, err)
+		}
+	}
+	if _, err := gitOutput(fixture, "add", "--", "."); err != nil {
+		t.Fatalf("stage fixture: %v", err)
+	}
+	if _, err := gitOutput(fixture, "commit", "-qm", "fixture"); err != nil {
+		t.Fatalf("commit fixture: %v", err)
+	}
+	for path, want := range inputs {
+		fullPath := filepath.Join(fixture, filepath.FromSlash(path))
+		if err := os.WriteFile(fullPath, []byte("modified\r\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := gitOutput(fixture, "checkout", "--", path); err != nil {
+			t.Fatalf("checkout %s: %v", path, err)
+		}
+		got, err := os.ReadFile(fullPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !bytes.Equal(got, want) {
+			t.Fatalf("core.autocrlf=true changed bound bytes for %s", path)
+		}
+		blob, err := gitOutput(fixture, "rev-parse", "HEAD:"+path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		workingHash, err := gitOutput(fixture, "hash-object", path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if workingHash != blob {
+			t.Fatalf("working tree bytes for %s do not hash to the committed blob", path)
+		}
+		gotSum, wantSum := sha256.Sum256(got), sha256.Sum256(want)
+		if gotSum != wantSum {
+			t.Fatalf("SHA256 changed after checkout for %s", path)
+		}
+	}
+	if err := validateInventories(fixture); err != nil {
+		t.Fatalf("coverage inventory rejected after autocrlf checkout: %v", err)
 	}
 }
 

@@ -1,1 +1,8 @@
 *.md text eol=lf
+# coverage 계약의 원문 해시는 모든 native checkout에서 같은 바이트를 요구한다.
+*.go text eol=lf
+/go.mod text eol=lf
+/go.sum text eol=lf
+/.goreleaser.yml text eol=lf
+/.make/test.mk text eol=lf
+/scripts/coveragecontract/*.txt text eol=lf
