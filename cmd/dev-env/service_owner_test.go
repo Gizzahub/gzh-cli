@@ -28,6 +28,9 @@ type ownerInvocation struct {
 
 func TestMain(m *testing.M) {
 	name := strings.TrimSuffix(filepath.Base(os.Args[0]), ".exe")
+	if os.Getenv("GZ_ACCOUNT_FIXTURE") == "native-v1" && name == "gcloud" {
+		os.Exit(runAccountBehaviorFixture())
+	}
 	if os.Getenv("GZ_MAIN_AWS_FIXTURE") == "native-v1" && name == "aws" {
 		os.Exit(runAWSOwnerFixture())
 	}

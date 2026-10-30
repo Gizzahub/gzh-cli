@@ -202,7 +202,7 @@ func (a *Analyzer) AnalyzePackage(_ context.Context, packagePath string) (*Packa
 	}
 
 	// Analyze functions
-	pkgInfo.PublicFunctions = a.analyzeFunctions(docPkg.Funcs)
+	pkgInfo.PublicFunctions = a.analyzeFunctions(collectPackageFunctions(docPkg))
 
 	// Analyze types
 	pkgInfo.PublicTypes = a.analyzeTypes(docPkg.Types)
@@ -233,6 +233,39 @@ func (a *Analyzer) AnalyzePackage(_ context.Context, packagePath string) (*Packa
 	)
 
 	return pkgInfo, nil
+}
+
+// collectPackageFunctions는 타입 반환 factory를 포함하되 같은 선언을 중복 집계하지 않는다.
+func collectPackageFunctions(pkg *doc.Package) []*doc.Func {
+	functions := make([]*doc.Func, 0, len(pkg.Funcs))
+	seenDecls := make(map[*ast.FuncDecl]struct{})
+	seenFunctions := make(map[*doc.Func]struct{})
+	appendUnique := func(function *doc.Func) {
+		if function == nil {
+			return
+		}
+		if function.Decl != nil {
+			if _, exists := seenDecls[function.Decl]; exists {
+				return
+			}
+			seenDecls[function.Decl] = struct{}{}
+		} else {
+			if _, exists := seenFunctions[function]; exists {
+				return
+			}
+			seenFunctions[function] = struct{}{}
+		}
+		functions = append(functions, function)
+	}
+	for _, function := range pkg.Funcs {
+		appendUnique(function)
+	}
+	for _, typ := range pkg.Types {
+		for _, function := range typ.Funcs {
+			appendUnique(function)
+		}
+	}
+	return functions
 }
 
 // getGoFiles returns a list of Go files in the directory.
@@ -323,7 +356,7 @@ func (a *Analyzer) analyzeTypes(types []*doc.Type) []TypeInfo {
 		}
 
 		// Analyze methods
-		for _, method := range typ.Funcs {
+		for _, method := range typ.Methods {
 			methodInfo := FunctionInfo{
 				Name:       method.Name,
 				Doc:        method.Doc,
@@ -458,6 +491,7 @@ func (a *Analyzer) countDocumentedFunctions(pkgInfo *PackageInfo, stats *Coverag
 
 	for _, fn := range pkgInfo.PublicFunctions {
 		if fn.IsExported {
+			counts.total++
 			stats.TotalPublicSymbols++
 			if fn.HasDoc {
 				counts.documented++
@@ -489,6 +523,7 @@ func (a *Analyzer) countDocumentedTypes(pkgInfo *PackageInfo, stats *CoverageSta
 			// Count methods
 			for _, method := range typ.Methods {
 				if method.IsExported {
+					functionCounts.total++
 					stats.TotalPublicSymbols++
 					if method.HasDoc {
 						functionCounts.documented++
@@ -552,7 +587,7 @@ func (a *Analyzer) calculateCoveragePercentages(stats *CoverageStats, functionCo
 	}
 
 	// Function coverage
-	totalFunctions := functionCounts.documented + (stats.UndocumentedSymbols - typeCounts.total - varCounts.total - constCounts.total)
+	totalFunctions := functionCounts.total
 	if totalFunctions > 0 {
 		stats.FunctionCoverage = float64(functionCounts.documented) * 100.0 / float64(totalFunctions)
 	}
