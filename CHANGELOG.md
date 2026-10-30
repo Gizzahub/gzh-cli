@@ -30,6 +30,9 @@
 
 ### 수정됨
 
+- `gz git repo sync`는 일반 push 실패 후 강제로 재시도하지 않습니다. 강제 덮어쓰기는
+  명시적 `--force` 옵션에만 따르며, 출력이 비어 있는 태그 push 실패도 원인을 보존해 반환합니다.
+
 - `gz doctor metrics`는 table·JSON·YAML·issues 출력 뒤 같은 threshold를 판정합니다.
   기본75 미만은 실패하며 정확히75는 통과합니다. 저장·출력 오류를 먼저 반환합니다.
 

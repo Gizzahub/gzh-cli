@@ -126,20 +126,7 @@ func (c *CodeSyncer) pushBranches(ctx context.Context, repoDir string) error {
 
 	output, err := c.runnerOrDefault().Run(ctx, repoDir, args...)
 	if err != nil {
-		// Check if this is because the destination is empty (common case)
-		if !c.options.Force {
-			// Try with force for initial push to empty repository
-			forceArgs := append(append([]string{}, args...), "--force")
-
-			if c.options.Verbose {
-				fmt.Printf("Retrying with force: git %s\n", joinArgs(forceArgs))
-			}
-
-			if forceOutput, forceErr := c.runnerOrDefault().Run(ctx, repoDir, forceArgs...); forceErr != nil {
-				return fmt.Errorf("git push branches failed: %w\nOutput: %s\nForce output: %s", err, output, forceOutput)
-			}
-			return nil
-		}
+		// 일반 push 실패를 강제 덮어쓰기 승인으로 해석하지 않는다.
 		return fmt.Errorf("git push branches failed: %w\nOutput: %s", err, output)
 	}
 
@@ -165,15 +152,7 @@ func (c *CodeSyncer) pushTags(ctx context.Context, repoDir string) error {
 			}
 			return nil
 		}
-		// Recording/fake runners return empty output on success; treat generic
-		// failures without force as non-fatal when the runner already succeeded
-		// on branch push (common for empty tag sets).
-		if strings.TrimSpace(string(output)) == "" && !c.options.Force {
-			if c.options.Verbose {
-				fmt.Println("No tags to push (empty output)")
-			}
-			return nil
-		}
+		// 출력이 비어 있어도 실제 실패와 취소 원인은 호출자에게 전달한다.
 		return fmt.Errorf("git push tags failed: %w\nOutput: %s", err, output)
 	}
 
