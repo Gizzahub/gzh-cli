@@ -8,7 +8,9 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"slices"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -185,20 +187,20 @@ func (sc *StreamingClient) StreamOrganizationRepositories(ctx context.Context, o
 
 			// Check memory usage before proceeding
 			if err := sc.checkMemoryLimit(config.MemoryLimit); err != nil {
-				sc.sendError(resultChan, fmt.Errorf("memory limit exceeded: %w", err))
+				sc.sendError(ctx, resultChan, fmt.Errorf("memory limit exceeded: %w", err))
 				return
 			}
 
 			// Check rate limit
 			if err := sc.waitForRateLimit(ctx, config.RateLimitBuffer); err != nil {
-				sc.sendError(resultChan, fmt.Errorf("rate limit check failed: %w", err))
+				sc.sendError(ctx, resultChan, fmt.Errorf("rate limit check failed: %w", err))
 				return
 			}
 
 			// Fetch page with streaming
 			repos, pagination, err := sc.fetchRepositoryPage(ctx, org, cursor)
 			if err != nil {
-				sc.sendError(resultChan, fmt.Errorf("failed to fetch page %d: %w", pageNum, err))
+				sc.sendError(ctx, resultChan, fmt.Errorf("failed to fetch page %d: %w", pageNum, err))
 				return
 			}
 
@@ -274,11 +276,11 @@ func (sc *StreamingClient) fetchRepositoryPage(ctx context.Context, org string, 
 	}
 
 	// Stream parse response to minimize memory usage
-	return sc.parseRepositoryResponse(resp.Body, cursor)
+	return sc.parseRepositoryResponse(resp.Body, cursor, req.URL, strings.Join(resp.Header.Values("Link"), ","))
 }
 
 // parseRepositoryResponse parses JSON response with streaming to minimize memory usage.
-func (sc *StreamingClient) parseRepositoryResponse(reader io.Reader, cursor CursorPagination) ([]*Repository, CursorPagination, error) {
+func (sc *StreamingClient) parseRepositoryResponse(reader io.Reader, cursor CursorPagination, requestURL *url.URL, linkHeader string) ([]*Repository, CursorPagination, error) {
 	// Use buffered reader for efficient streaming
 	bufReader := bufio.NewReaderSize(reader, constants.BytesPerKB*64)
 
@@ -297,10 +299,7 @@ func (sc *StreamingClient) parseRepositoryResponse(reader io.Reader, cursor Curs
 		return nil, CursorPagination{}, fmt.Errorf("failed to peek response: %w", err)
 	}
 
-	var (
-		repositories  []*Repository
-		newPagination CursorPagination
-	)
+	var repositories []*Repository
 
 	if firstByte[0] == '[' {
 		// Direct array response
@@ -325,8 +324,6 @@ func (sc *StreamingClient) parseRepositoryResponse(reader io.Reader, cursor Curs
 			repositories = append(repositories, repo)
 		}
 
-		// For array responses, pagination is handled via Link headers
-		newPagination = sc.parseLinkPagination(cursor)
 	} else {
 		// Object response (search results)
 		if err := decoder.Decode(&response); err != nil {
@@ -349,7 +346,11 @@ func (sc *StreamingClient) parseRepositoryResponse(reader io.Reader, cursor Curs
 			repositories = append(repositories, repo)
 		}
 
-		newPagination = cursor // Update based on actual response
+	}
+
+	newPagination, err := sc.parseLinkPagination(cursor, requestURL, linkHeader)
+	if err != nil {
+		return nil, CursorPagination{}, err
 	}
 
 	return repositories, newPagination, nil
@@ -372,14 +373,145 @@ func (sc *StreamingClient) buildRepositoryURL(org string, cursor CursorPaginatio
 	return baseURL + "?" + params.Encode()
 }
 
-// parseLinkPagination extracts pagination info from Link headers.
-func (sc *StreamingClient) parseLinkPagination(current CursorPagination) CursorPagination {
-	// Implementation would parse GitHub's Link header for next/prev URLs
-	// For now, return a simplified version
-	return CursorPagination{
-		After:   current.After,
-		HasNext: true, // Would be determined by Link header presence
+// parseLinkPagination 은 현재 조직 경로의 다음 페이지 번호만 Link에서 가져온다.
+func (sc *StreamingClient) parseLinkPagination(current CursorPagination, requestURL *url.URL, linkHeader string) (CursorPagination, error) {
+	pagination := current
+	pagination.HasNext = false
+	if strings.TrimSpace(linkHeader) == "" {
+		return pagination, nil
 	}
+	if requestURL == nil {
+		return CursorPagination{}, fmt.Errorf("invalid next page link: request URL is missing")
+	}
+	currentPage, err := parseCurrentPage(current.After)
+	if err != nil {
+		return CursorPagination{}, err
+	}
+	nextPage, found, err := findNextPage(currentPage, requestURL, linkHeader)
+	if err != nil {
+		return CursorPagination{}, err
+	}
+	if found {
+		pagination.HasNext = true
+		pagination.EndCursor = strconv.Itoa(nextPage)
+	}
+	return pagination, nil
+}
+
+func findNextPage(currentPage int, requestURL *url.URL, linkHeader string) (int, bool, error) {
+	foundNext := false
+	var nextPage int
+	for _, link := range strings.Split(linkHeader, ",") {
+		target, relation, err := parseLinkEntry(link)
+		if err != nil {
+			return 0, false, err
+		}
+		if !hasNextRelation(relation) {
+			continue
+		}
+		if foundNext {
+			return 0, false, fmt.Errorf("invalid next page link: multiple next relations")
+		}
+		foundNext = true
+
+		nextURL, err := resolveNextPageURL(requestURL, target)
+		if err != nil {
+			return 0, false, err
+		}
+		nextPage, err = parseNextPageNumber(currentPage, requestURL, nextURL)
+		if err != nil {
+			return 0, false, err
+		}
+	}
+	return nextPage, foundNext, nil
+}
+
+// parseCurrentPage는 요청에서 사용한 페이지 번호를 검증한다.
+func parseCurrentPage(cursor string) (int, error) {
+	if cursor == "" {
+		return 1, nil
+	}
+	page, err := strconv.Atoi(cursor)
+	if err != nil || page < 1 {
+		return 0, fmt.Errorf("invalid current page cursor %q", cursor)
+	}
+	return page, nil
+}
+
+// parseLinkEntry는 GitHub Link 항목 하나에서 대상과 관계를 추출한다.
+func parseLinkEntry(link string) (string, string, error) {
+	parts := strings.Split(link, ";")
+	if len(parts) < 2 {
+		return "", "", fmt.Errorf("invalid next page link: malformed link %q", strings.TrimSpace(link))
+	}
+	target := strings.TrimSpace(parts[0])
+	if len(target) < 3 || target[0] != '<' || target[len(target)-1] != '>' {
+		return "", "", fmt.Errorf("invalid next page link: malformed target %q", target)
+	}
+	relation := ""
+	for _, parameter := range parts[1:] {
+		name, value, ok := strings.Cut(strings.TrimSpace(parameter), "=")
+		if !ok {
+			return "", "", fmt.Errorf("invalid next page link: malformed parameter %q", strings.TrimSpace(parameter))
+		}
+		if strings.EqualFold(strings.TrimSpace(name), "rel") {
+			if relation != "" {
+				return "", "", fmt.Errorf("invalid next page link: duplicate relation")
+			}
+			relation = strings.Trim(strings.TrimSpace(value), `"`)
+		}
+	}
+	if relation == "" {
+		return "", "", fmt.Errorf("invalid next page link: relation is missing")
+	}
+	return target, relation, nil
+}
+
+func hasNextRelation(relation string) bool {
+	for _, rel := range strings.Fields(relation) {
+		if strings.EqualFold(rel, "next") {
+			return true
+		}
+	}
+	return false
+}
+
+func resolveNextPageURL(requestURL *url.URL, target string) (*url.URL, error) {
+	linkURL, err := url.Parse(strings.TrimSuffix(strings.TrimPrefix(target, "<"), ">"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid next page link: %w", err)
+	}
+	nextURL := requestURL.ResolveReference(linkURL)
+	if nextURL.User != nil || nextURL.Fragment != "" ||
+		!strings.EqualFold(nextURL.Scheme, requestURL.Scheme) ||
+		!strings.EqualFold(nextURL.Host, requestURL.Host) ||
+		nextURL.EscapedPath() != requestURL.EscapedPath() {
+		return nil, fmt.Errorf("invalid next page link: target must use the current API origin and organization path")
+	}
+	return nextURL, nil
+}
+
+func parseNextPageNumber(currentPage int, requestURL, nextURL *url.URL) (int, error) {
+	query := nextURL.Query()
+	pageValues := query["page"]
+	if len(pageValues) != 1 {
+		return 0, fmt.Errorf("invalid next page link: exactly one page value is required")
+	}
+	nextPage, err := strconv.Atoi(pageValues[0])
+	if err != nil || nextPage < 1 || nextPage <= currentPage {
+		return 0, fmt.Errorf("invalid next page link: page %q must be a positive number greater than %d", pageValues[0], currentPage)
+	}
+	requestQuery := requestURL.Query()
+	for name, values := range query {
+		if name == "page" {
+			continue
+		}
+		expected, ok := requestQuery[name]
+		if !ok || !slices.Equal(values, expected) {
+			return 0, fmt.Errorf("invalid next page link: query parameter %q changes the current request", name)
+		}
+	}
+	return nextPage, nil
 }
 
 // waitForRateLimit waits if necessary to respect rate limits.
@@ -493,7 +625,7 @@ func (sc *StreamingClient) updateRequestMetrics(latency time.Duration) {
 }
 
 // sendError sends an error to the result channel.
-func (sc *StreamingClient) sendError(resultChan chan<- RepositoryStream, err error) {
+func (sc *StreamingClient) sendError(ctx context.Context, resultChan chan<- RepositoryStream, err error) {
 	resultInterface := sc.memoryPool.resultPool.Get()
 	result, ok := resultInterface.(*RepositoryStream)
 	if !ok {
@@ -507,10 +639,14 @@ func (sc *StreamingClient) sendError(resultChan chan<- RepositoryStream, err err
 		MemoryUsage: sc.getCurrentMemoryUsage(),
 	}
 
+	streamError := *result
 	select {
-	case resultChan <- *result:
+	case resultChan <- streamError:
 	default:
-		// Channel full, drop error
+		select {
+		case resultChan <- streamError:
+		case <-ctx.Done():
+		}
 	}
 
 	sc.memoryPool.resultPool.Put(result)
