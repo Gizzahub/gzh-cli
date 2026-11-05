@@ -115,49 +115,49 @@ func (b *BulkOperationsManager) RefreshAllWithWorkerPool(ctx context.Context,
 		return b.processRepositoryJob(ctx, job, org)
 	}
 
-	// Submit jobs and collect results
-	resultsChan := b.pool.Results()
+	// 큐가 차면 결과 하나를 받은 뒤 다시 넣는다. 진행 중인 작업이 없는 거절은 실패로 남긴다.
+	batch := runRepositoryJobs(ctx, b.pool, jobs, processFn)
 
-	// Submit all jobs
-	for _, job := range jobs {
-		if err := b.pool.SubmitJob(job, processFn); err != nil {
-			return fmt.Errorf("failed to submit job for %s: %w", job.Repository, err)
-		}
-	}
-
-	// Collect results
 	successCount := 0
 	errorCount := 0
 
-	for i := 0; i < len(jobs); i++ {
-		select {
-		case result := <-resultsChan:
-			if result.Success {
-				successCount++
+	for _, result := range batch.Results {
+		if result.Success {
+			successCount++
 
-				if b.config.Verbose {
-					fmt.Printf("✓ %s: %s completed successfully\n",
-						result.Job.Repository, result.Job.Operation)
-				}
-			} else {
-				errorCount++
-
-				fmt.Printf("✗ %s: %s failed: %v\n",
-					result.Job.Repository, result.Job.Operation, result.Error)
+			if b.config.Verbose {
+				fmt.Printf("✓ %s: %s completed successfully\n",
+					result.Job.Repository, result.Job.Operation)
 			}
+		} else {
+			errorCount++
 
-			if bar != nil {
-				_ = bar.Add(1) // Progress bar error is not critical
-			}
+			fmt.Printf("✗ %s: %s failed: %v\n",
+				result.Job.Repository, result.Job.Operation, result.Error)
+		}
 
-		case <-ctx.Done():
-			return fmt.Errorf("operation cancelled: %w", ctx.Err())
+		if bar != nil {
+			_ = bar.Add(1) // Progress bar error is not critical
+		}
+	}
+
+	if ctx.Err() != nil {
+		return fmt.Errorf("operation cancelled: %w", ctx.Err())
+	}
+
+	for _, job := range batch.Unsent {
+		errorCount++
+
+		fmt.Printf("✗ %s: submit failed: %v\n", job.Repository, submitFailure(job.Repository, batch.Err))
+
+		if bar != nil {
+			_ = bar.Add(1) // Progress bar error is not critical
 		}
 	}
 
 	fmt.Printf("\nBulk operation completed: %d successful, %d failed\n", successCount, errorCount)
 
-	return nil
+	return batch.Err
 }
 
 // processRepositoryJob processes a single repository job.

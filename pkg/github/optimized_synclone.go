@@ -314,55 +314,51 @@ func (m *OptimizedSyncCloneManager) processBatch(ctx context.Context, targetPath
 		return m.processRepositoryJob(ctx, job, org)
 	}
 
-	// Submit jobs
-	for _, job := range jobs {
-		if err := m.workerPool.SubmitJob(job, processFn); err != nil {
+	// 큐가 차면 결과 하나를 받은 뒤 다시 넣는다. 거절된 작업은 결과 채널에 나오지 않는다.
+	batch := runRepositoryJobs(ctx, m.workerPool, jobs, processFn)
+	for _, result := range batch.Results {
+		if result.Success {
+			batchStats.Successful++
+
+			if m.config.VerboseLogging {
+				fmt.Printf("✅ %s: %s completed\n", result.Job.Repository, result.Job.Operation)
+			}
+		} else {
+			batchStats.Failed++
 			batchStats.ErrorDetails = append(batchStats.ErrorDetails, CloneError{
-				Repository:  job.Repository,
-				Operation:   "submit",
-				Error:       err,
+				Repository:  result.Job.Repository,
+				Operation:   string(result.Job.Operation),
+				Error:       result.Error,
 				Timestamp:   time.Now(),
 				MemoryUsage: m.getCurrentMemoryUsage(),
 			})
-			batchStats.Failed++
 
-			continue
+			if m.config.VerboseLogging {
+				fmt.Printf("❌ %s: %s failed: %v\n", result.Job.Repository, result.Job.Operation, result.Error)
+			}
+		}
+
+		if progressBar != nil {
+			_ = progressBar.Add(1)
 		}
 	}
 
-	// Collect results
-	resultsChan := m.workerPool.Results()
+	if ctx.Err() != nil {
+		return batchStats
+	}
 
-	for i := 0; i < len(jobs); i++ {
-		select {
-		case result := <-resultsChan:
-			if result.Success {
-				batchStats.Successful++
+	for _, job := range batch.Unsent {
+		batchStats.Failed++
+		batchStats.ErrorDetails = append(batchStats.ErrorDetails, CloneError{
+			Repository:  job.Repository,
+			Operation:   "submit",
+			Error:       submitFailure(job.Repository, batch.Err),
+			Timestamp:   time.Now(),
+			MemoryUsage: m.getCurrentMemoryUsage(),
+		})
 
-				if m.config.VerboseLogging {
-					fmt.Printf("✅ %s: %s completed\n", result.Job.Repository, result.Job.Operation)
-				}
-			} else {
-				batchStats.Failed++
-				batchStats.ErrorDetails = append(batchStats.ErrorDetails, CloneError{
-					Repository:  result.Job.Repository,
-					Operation:   string(result.Job.Operation),
-					Error:       result.Error,
-					Timestamp:   time.Now(),
-					MemoryUsage: m.getCurrentMemoryUsage(),
-				})
-
-				if m.config.VerboseLogging {
-					fmt.Printf("❌ %s: %s failed: %v\n", result.Job.Repository, result.Job.Operation, result.Error)
-				}
-			}
-
-			if progressBar != nil {
-				_ = progressBar.Add(1)
-			}
-
-		case <-ctx.Done():
-			return batchStats
+		if progressBar != nil {
+			_ = progressBar.Add(1)
 		}
 	}
 
