@@ -1,31 +1,20 @@
 package synclone
 
 import (
-	"bytes"
 	"encoding/json"
-	"io"
 	"os"
 	"path/filepath"
 	"testing"
 
-	synclonepkg "github.com/gizzahub/gzh-cli/pkg/synclone"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	synclonepkg "github.com/gizzahub/gzh-cli/pkg/synclone"
 )
 
 func captureStateClean(t *testing.T) (string, error) {
 	t.Helper()
-	original := os.Stdout
-	reader, writer, err := os.Pipe()
-	require.NoError(t, err)
-	os.Stdout = writer
-	cleanErr := runStateClean("", "", true)
-	require.NoError(t, writer.Close())
-	os.Stdout = original
-	var buf bytes.Buffer
-	_, err = io.Copy(&buf, reader)
-	require.NoError(t, err)
-	return buf.String(), cleanErr
+	return runStateCommand(t, "clean", "--all")
 }
 
 func TestStatePathSafetyCleanAllPreservesPoisonedIdentity(t *testing.T) {

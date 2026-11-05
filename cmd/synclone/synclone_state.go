@@ -6,6 +6,7 @@ package synclone
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"text/tabwriter"
 	"time"
 
@@ -22,8 +23,11 @@ func newSyncCloneStateCmd(appCtx *app.AppContext) *cobra.Command {
 		Short: "Manage bulk clone operation states",
 		Long: `Manage bulk clone operation states including listing, showing details, and cleaning up saved states.
 
-States are automatically created when using resumable clone operations and allow you to resume interrupted operations.`,
+States are automatically created when using resumable clone operations and allow you to resume interrupted operations.
+Without --target, commands read ~/.gzh/state. With --target, they read only <target>/.gzh/state.
+The two directories are not combined, and resume keeps writing under the clone target.`,
 	}
+	cmd.PersistentFlags().String("target", "", "Clone directory whose <target>/.gzh/state is read. Omit to read ~/.gzh/state only")
 
 	cmd.AddCommand(newBulkCloneStateListCmd())
 	cmd.AddCommand(newBulkCloneStateShowCmd())
@@ -49,7 +53,7 @@ func newBulkCloneStateShowCmd() *cobra.Command {
 		Use:   "show",
 		Short: "Show details of a specific clone state",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runStateShow(provider, organization)
+			return runStateShow(cmd, provider, organization)
 		},
 	}
 
@@ -78,7 +82,7 @@ func newBulkCloneStateCleanCmd() *cobra.Command {
 		Short: "Clean up saved clone states",
 		Long:  `Clean up saved clone states. Use --all to clean all states, or specify --provider and --organization to clean a specific state.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runStateClean(provider, organization, all)
+			return runStateClean(cmd, provider, organization, all)
 		},
 	}
 
@@ -93,8 +97,23 @@ func newBulkCloneStateCleanCmd() *cobra.Command {
 	return cmd
 }
 
+func stateManagerFromCommand(cmd *cobra.Command) (*synclonepkg.StateManager, error) {
+	target, err := cmd.Flags().GetString("target")
+	if err != nil {
+		return nil, fmt.Errorf("failed to read --target: %w", err)
+	}
+	if target == "" {
+		return synclonepkg.NewStateManager(""), nil
+	}
+
+	return synclonepkg.NewStateManager(filepath.Join(target, ".gzh", "state")), nil
+}
+
 func runStateList(cmd *cobra.Command, args []string) error {
-	stateManager := synclonepkg.NewStateManager("")
+	stateManager, err := stateManagerFromCommand(cmd)
+	if err != nil {
+		return err
+	}
 
 	states, err := stateManager.ListStates()
 	if err != nil {
@@ -139,8 +158,11 @@ func runStateList(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func runStateShow(provider, organization string) error {
-	stateManager := synclonepkg.NewStateManager("")
+func runStateShow(cmd *cobra.Command, provider, organization string) error {
+	stateManager, err := stateManagerFromCommand(cmd)
+	if err != nil {
+		return err
+	}
 
 	state, err := stateManager.LoadState(provider, organization)
 	if err != nil {
@@ -205,8 +227,11 @@ func runStateShow(provider, organization string) error {
 	return nil
 }
 
-func runStateClean(provider, organization string, all bool) error {
-	stateManager := synclonepkg.NewStateManager("")
+func runStateClean(cmd *cobra.Command, provider, organization string, all bool) error {
+	stateManager, err := stateManagerFromCommand(cmd)
+	if err != nil {
+		return err
+	}
 
 	if all {
 		// 목록 검증이 실패하면 이름도 찍지 않고 파일도 지우지 않는다.
