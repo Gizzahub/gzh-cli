@@ -21,6 +21,7 @@ type StreamingClient struct {
 	httpClient     *http.Client
 	token          string
 	baseURL        string
+	apiBaseURL     string
 	rateLimiter    *RateLimiter
 	memoryPool     *MemoryPool
 	bufferPool     sync.Pool
@@ -128,7 +129,9 @@ func DefaultStreamingConfig() StreamingConfig {
 
 // NewStreamingClient creates a new streaming GitLab API client.
 func NewStreamingClient(token, baseURL string, config StreamingConfig) *StreamingClient {
+	apiBaseURL := normalizeAPIBase(baseURL)
 	if baseURL == "" {
+		apiBaseURL = getBaseAPIURL()
 		baseURL = getWebBaseURL()
 	}
 
@@ -163,6 +166,7 @@ func NewStreamingClient(token, baseURL string, config StreamingConfig) *Streamin
 		httpClient:     httpClient,
 		token:          token,
 		baseURL:        baseURL,
+		apiBaseURL:     apiBaseURL,
 		rateLimiter:    rateLimiter,
 		memoryPool:     memoryPool,
 		requestMetrics: &RequestMetrics{},
@@ -251,7 +255,7 @@ func (sc *StreamingClient) StreamGroupProjects(ctx context.Context, groupID stri
 // fetchProjectPage fetches a single page of projects for a group.
 func (sc *StreamingClient) fetchProjectPage(ctx context.Context, groupID string, pagination CursorPagination) ([]*Project, CursorPagination, error) {
 	endpoint := fmt.Sprintf("groups/%s/projects?per_page=%d&page=%d", url.PathEscape(groupID), pagination.PerPage, pagination.Page)
-	reqURL := buildAPIURL(endpoint)
+	reqURL := sc.apiBaseURL + "/" + endpoint
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
 	if err != nil {

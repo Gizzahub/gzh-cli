@@ -379,14 +379,22 @@ func checkTemplateInheritance(name string, template *RepoTemplate, templates map
 
 // MergeRepoConfigs merges multiple repository configurations with priority.
 func MergeRepoConfigs(configs ...*RepoConfig) (*RepoConfig, error) {
-	if len(configs) == 0 {
+	// 앞쪽 nil 입력을 건너뛰고 첫 실제 설정의 식별자를 보존한다.
+	var first *RepoConfig
+	for _, config := range configs {
+		if config != nil {
+			first = config
+			break
+		}
+	}
+	if first == nil {
 		return nil, fmt.Errorf("no configurations to merge")
 	}
 
 	// Start with the first config as base
 	result := &RepoConfig{
-		Version:      configs[0].Version,
-		Organization: configs[0].Organization,
+		Version:      first.Version,
+		Organization: first.Organization,
 		Templates:    make(map[string]*RepoTemplate),
 		Policies:     make(map[string]*PolicyTemplate),
 	}
@@ -423,6 +431,10 @@ func (rc *RepoConfig) ValidateTemplateOverrides() []string {
 
 	// Check each template that has a base
 	for name, template := range rc.Templates {
+		if template == nil {
+			warnings = append(warnings, fmt.Sprintf("template %q must not be null", name))
+			continue
+		}
 		if template.Base == "" {
 			continue
 		}
@@ -570,6 +582,9 @@ func (rc *RepoConfig) GetTemplateInheritanceChain(templateName string) ([]string
 		if !ok {
 			return nil, fmt.Errorf("template '%s' not found", current)
 		}
+		if template == nil {
+			return nil, fmt.Errorf("template %q must not be null", current)
+		}
 
 		chain = append(chain, current)
 		visited[current] = true
@@ -607,6 +622,9 @@ func (rc *RepoConfig) resolveTemplateWithChain(templateName string, chain []stri
 	template, ok := rc.Templates[templateName]
 	if !ok {
 		return nil, fmt.Errorf("template '%s' not found", templateName)
+	}
+	if template == nil {
+		return nil, fmt.Errorf("template %q must not be null", templateName)
 	}
 
 	// If no base template, return as is
@@ -662,7 +680,9 @@ func (rc *RepoConfig) GetEffectiveConfig(repoName string) (*RepoSettings, *Secur
 
 	// Start with defaults
 	if rc.Defaults != nil {
-		rc.applyConfigLayer(config, rc.Defaults.Template, rc.Defaults.Settings, rc.Defaults.Security, rc.Defaults.Permissions, nil)
+		if err := rc.applyConfigLayer(config, rc.Defaults.Template, rc.Defaults.Settings, rc.Defaults.Security, rc.Defaults.Permissions, nil); err != nil {
+			return nil, nil, nil, nil, fmt.Errorf("repository %q defaults: %w", repoName, err)
+		}
 	}
 
 	// Apply repository-specific configuration
@@ -670,7 +690,9 @@ func (rc *RepoConfig) GetEffectiveConfig(repoName string) (*RepoSettings, *Secur
 		// Check specific repositories
 		for _, specific := range rc.Repositories.Specific {
 			if specific.Name == repoName {
-				rc.applyConfigLayer(config, specific.Template, specific.Settings, specific.Security, specific.Permissions, specific.Exceptions)
+				if err := rc.applyConfigLayer(config, specific.Template, specific.Settings, specific.Security, specific.Permissions, specific.Exceptions); err != nil {
+					return nil, nil, nil, nil, fmt.Errorf("repository %q specific: %w", repoName, err)
+				}
 				return config.settings, config.security, config.permissions, config.exceptions, nil
 			}
 		}
@@ -678,13 +700,17 @@ func (rc *RepoConfig) GetEffectiveConfig(repoName string) (*RepoSettings, *Secur
 		// Check patterns
 		for _, pattern := range rc.Repositories.Patterns {
 			if matchPattern(repoName, pattern.Match) {
-				rc.applyConfigLayer(config, pattern.Template, pattern.Settings, pattern.Security, pattern.Permissions, pattern.Exceptions)
+				if err := rc.applyConfigLayer(config, pattern.Template, pattern.Settings, pattern.Security, pattern.Permissions, pattern.Exceptions); err != nil {
+					return nil, nil, nil, nil, fmt.Errorf("repository %q pattern %q: %w", repoName, pattern.Match, err)
+				}
 			}
 		}
 
 		// Apply default if exists
 		if rc.Repositories.Default != nil {
-			rc.applyConfigLayer(config, rc.Repositories.Default.Template, rc.Repositories.Default.Settings, rc.Repositories.Default.Security, rc.Repositories.Default.Permissions, nil)
+			if err := rc.applyConfigLayer(config, rc.Repositories.Default.Template, rc.Repositories.Default.Settings, rc.Repositories.Default.Security, rc.Repositories.Default.Permissions, nil); err != nil {
+				return nil, nil, nil, nil, fmt.Errorf("repository %q repository default: %w", repoName, err)
+			}
 		}
 	}
 
@@ -700,15 +726,16 @@ type effectiveConfig struct {
 }
 
 // applyConfigLayer applies a configuration layer (template + direct settings).
-func (rc *RepoConfig) applyConfigLayer(config *effectiveConfig, templateName string, settings *RepoSettings, security *SecuritySettings, permissions *PermissionSettings, exceptions []PolicyException) {
+func (rc *RepoConfig) applyConfigLayer(config *effectiveConfig, templateName string, settings *RepoSettings, security *SecuritySettings, permissions *PermissionSettings, exceptions []PolicyException) error {
 	// Apply template if specified
 	if templateName != "" {
 		template, err := rc.resolveTemplate(templateName)
-		if err == nil {
-			config.settings = mergeRepoSettings(config.settings, template.Settings)
-			config.security = mergeSecuritySettings(config.security, template.Security)
-			config.permissions = mergePermissionSettings(config.permissions, template.Permissions)
+		if err != nil {
+			return err
 		}
+		config.settings = mergeRepoSettings(config.settings, template.Settings)
+		config.security = mergeSecuritySettings(config.security, template.Security)
+		config.permissions = mergePermissionSettings(config.permissions, template.Permissions)
 	}
 
 	// Apply direct settings
@@ -716,6 +743,7 @@ func (rc *RepoConfig) applyConfigLayer(config *effectiveConfig, templateName str
 	config.security = mergeSecuritySettings(config.security, security)
 	config.permissions = mergePermissionSettings(config.permissions, permissions)
 	config.exceptions = append(config.exceptions, exceptions...)
+	return nil
 }
 
 // ValidatePolicyExceptions validates all policy exceptions in the configuration.
