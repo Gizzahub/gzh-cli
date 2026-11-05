@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -45,10 +46,10 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 	}
 
 	if len(reposToProcess) == 0 {
-		fmt.Printf("✅ All repositories already processed\n")
-		state.MarkCompleted()
-		_ = rcm.stateManager.SaveState(state) //nolint:errcheck // State save is best effort
-		return nil
+		if ctx.Err() != nil {
+			return rcm.saveCancellation(state, ctx.Err())
+		}
+		return rcm.finalizeOperation(state, org)
 	}
 
 	fmt.Printf("📦 Processing %d repositories (%d remaining)\n", len(allRepos), len(reposToProcess))
@@ -147,10 +148,6 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 		}
 	}
 
-	// Track results and update state
-	successCount := 0
-	failureCount := 0
-
 	// Set up periodic state saving and progress updates
 	stateSaveTicker := time.NewTicker(30 * time.Second)
 	progressUpdateTicker := time.NewTicker(2 * time.Second) // Slightly delay to avoid initial 0.0% display
@@ -165,11 +162,9 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 		case result := <-resultsChan:
 			processed++
 			if result.Error != nil {
-				failureCount++
 				state.AddFailedRepository(result.Job.Repository, result.Job.Path, string(result.Job.Operation), result.Error.Error(), 1)
 				progressTracker.SetRepositoryError(result.Job.Repository, result.Error.Error())
 			} else {
-				successCount++
 				state.AddCompletedRepository(result.Job.Repository, result.Job.Path, string(result.Job.Operation), result.Message)
 				progressTracker.CompleteRepository(result.Job.Repository, result.Message)
 			}
@@ -185,20 +180,31 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 			}
 
 		case <-ctx.Done():
-			// Operation cancelled
-			state.MarkCancelled()
-			if err := rcm.stateManager.SaveState(state); err != nil {
-				fmt.Printf("\n⚠️  Warning: failed to save state: %v\n", err)
-			}
-
-			return fmt.Errorf("operation cancelled: %w", ctx.Err())
+			return rcm.saveCancellation(state, ctx.Err())
 		}
 	}
 	// Final progress update
 	fmt.Printf("\r\033[K%s\n", progressTracker.RenderProgress())
+	if ctx.Err() != nil {
+		return rcm.saveCancellation(state, ctx.Err())
+	}
+	return rcm.finalizeOperation(state, org)
+}
 
-	// Final state update
-	if len(state.GetRemainingRepositories()) == 0 {
+// 완료는 미처리 항목과 보존된 실패가 모두 없을 때만 확정한다.
+func (rcm *ResumableCloneManager) finalizeOperation(state *synclonepkg.CloneState, org string) error {
+	var operationErr error
+	if len(state.FailedRepos) > 0 {
+		failures := make([]error, 0, len(state.FailedRepos)+1)
+		failures = append(failures, fmt.Errorf("%d operations failed", len(state.FailedRepos)))
+		for _, failed := range state.FailedRepos {
+			failures = append(failures, fmt.Errorf("repository %s: %s", failed.Name, failed.Error))
+		}
+		operationErr = errors.Join(failures...)
+	} else if len(state.GetRemainingRepositories()) > 0 {
+		operationErr = fmt.Errorf("clone operation incomplete: %d repositories pending", len(state.GetRemainingRepositories()))
+	}
+	if len(state.GetRemainingRepositories()) == 0 && len(state.FailedRepos) == 0 {
 		state.MarkCompleted()
 	} else {
 		state.MarkFailed()
@@ -206,26 +212,38 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 
 	// Save final state
 	if err := rcm.stateManager.SaveState(state); err != nil {
-		fmt.Printf("⚠️  Warning: failed to save final state: %v\n", err)
+		return errors.Join(operationErr, fmt.Errorf("failed to save final state: %w", err))
 	}
 
 	// Skip detailed summary to avoid duplication
 
 	// Clean up state file if completed successfully
 	if state.Status == "completed" {
-		_ = rcm.stateManager.DeleteState("github", org)
+		if err := rcm.stateManager.DeleteState("github", org); err != nil {
+			return fmt.Errorf("failed to delete completed state: %w", err)
+		}
 		fmt.Printf("✅ Clone operation completed successfully\n")
-	} else {
+	} else if len(state.GetRemainingRepositories()) > 0 {
 		fmt.Printf("⚠️  Clone operation incomplete. Use --resume to continue\n")
+	} else {
+		fmt.Printf("⚠️  Recorded failures remain. GitHub --resume does not retry failed repositories; review and back up the saved snapshot and resolve failures before starting fresh.\n")
 	}
 
-	if failureCount > 0 {
+	if len(state.FailedRepos) > 0 {
 		// Print detailed failure information
 		rcm.printFailureDetails(state)
-		return fmt.Errorf("%d operations failed", failureCount)
 	}
 
-	return nil
+	return operationErr
+}
+
+// 취소 원인과 상태 저장 실패를 함께 반환하여 복구 정보 유실을 드러낸다.
+func (rcm *ResumableCloneManager) saveCancellation(state *synclonepkg.CloneState, cause error) error {
+	state.MarkCancelled()
+	if err := rcm.stateManager.SaveState(state); err != nil {
+		return errors.Join(fmt.Errorf("operation cancelled: %w", cause), fmt.Errorf("failed to save cancelled state: %w", err))
+	}
+	return fmt.Errorf("operation cancelled: %w", cause)
 }
 
 // initializeOrLoadState handles state initialization and loading for resume operations.
@@ -266,7 +284,7 @@ func (rcm *ResumableCloneManager) createNewState(org, targetPath, strategy strin
 		}
 		if existingState.TargetPath == targetPath {
 			// If it's the same target path, suggest using --resume
-			return nil, fmt.Errorf("existing state found for %s at %s. Use --resume to continue or 'gz synclone state clean --all' to start fresh", org, targetPath)
+			return nil, fmt.Errorf("existing state found for %s at %s. Use --resume to continue; review and back up the existing snapshot at %s. To start fresh after resolving failures, move this snapshot to a backup location to preserve recovery data", org, targetPath, rcm.stateManager.GetStateFilePath("github", org))
 		}
 		// Different target path, clean up old state
 		if err := rcm.stateManager.DeleteState("github", org); err != nil {
@@ -306,13 +324,13 @@ func (rcm *ResumableCloneManager) prepareRepositoryList(ctx context.Context, org
 
 	if len(allRepos) == 0 {
 		fmt.Printf("No repositories found for organization: %s\n", org)
-		return allRepos, []string{}, nil
 	}
 
 	// Determine which repositories need to be processed
 	var reposToProcess []string
 	if resume {
 		reposToProcess = rcm.getResumeRepositories(state, allRepos)
+		state.SetPendingRepositories(reposToProcess)
 	} else {
 		reposToProcess = allRepos
 		state.SetPendingRepositories(reposToProcess)
@@ -463,12 +481,12 @@ func (rcm *ResumableCloneManager) printFailureDetails(state *synclonepkg.CloneSt
 
 	fmt.Println("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	fmt.Println("\n💡 General Solutions:")
-	fmt.Println("   • Retry with --resume flag to continue from where it stopped")
+	fmt.Println("   • Use --resume for pending repositories; previously failed repositories are not retried automatically")
 	fmt.Println("   • Check network connection and GitHub access")
 	fmt.Println("   • Verify GitHub token is set: export GITHUB_TOKEN=\"your_token\"")
-	fmt.Println("   • For directory issues, manually remove problematic directories and retry")
-	fmt.Printf("   • View state details: gz synclone state show --org %s\n", state.Organization)
-	fmt.Printf("   • Clear state and start fresh: gz synclone state clean --provider github --org %s\n", state.Organization)
+	fmt.Println("   • Resolve failed repositories, then review and back up the saved snapshot before starting a fresh operation")
+	fmt.Printf("   • Saved snapshot: %s\n", rcm.stateManager.GetStateFilePath("github", state.Organization))
+	fmt.Println("   • Preserve this file for recovery before deciding how to start fresh")
 }
 
 // printSolutionSuggestion provides specific solution suggestions based on error patterns.
@@ -480,9 +498,9 @@ func (rcm *ResumableCloneManager) printSolutionSuggestion(repoName, repoPath, er
 
 	switch {
 	case strings.Contains(errorLower, "already exists") || strings.Contains(errorLower, "destination path"):
-		fmt.Printf("      → Directory exists but is not a valid git repository\n")
-		fmt.Printf("      → Remove it: rm -rf \"%s\"\n", repoPath)
-		fmt.Printf("      → Then retry the operation\n")
+		fmt.Printf("      → Clone destination already exists\n")
+		fmt.Printf("      → Inspect and back up the existing directory: %s\n", repoPath)
+		fmt.Printf("      → Preserve local data before choosing a separate clone destination\n")
 
 	case strings.Contains(errorLower, "authentication") || strings.Contains(errorLower, "403") || strings.Contains(errorLower, "401"):
 		fmt.Printf("      → Authentication failed - check your GitHub token\n")
@@ -497,21 +515,21 @@ func (rcm *ResumableCloneManager) printSolutionSuggestion(repoName, repoPath, er
 	case strings.Contains(errorLower, "timeout") || strings.Contains(errorLower, "connection"):
 		fmt.Printf("      → Network connection issue\n")
 		fmt.Printf("      → Check your internet connection\n")
-		fmt.Printf("      → Retry with: gz synclone github --org <org> --resume\n")
+		fmt.Printf("      → Resolve the connection issue, then review and back up the saved snapshot before starting fresh\n")
 
 	case strings.Contains(errorLower, "remote") || strings.Contains(errorLower, "origin"):
 		fmt.Printf("      → Git remote configuration issue\n")
-		fmt.Printf("      → Check remote URL: git -C \"%s\" remote -v\n", repoPath)
-		fmt.Printf("      → Or remove and re-clone: rm -rf \"%s\"\n", repoPath)
+		fmt.Printf("      → Inspect the configured remote URL in this repository: %s\n", repoPath)
+		fmt.Printf("      → Back up local data before choosing a separate clone destination\n")
 
 	case strings.Contains(errorLower, "permission") || strings.Contains(errorLower, "denied"):
 		fmt.Printf("      → Permission denied\n")
-		fmt.Printf("      → Check directory permissions: ls -la \"%s\"\n", filepath.Dir(repoPath))
+		fmt.Printf("      → Inspect directory permissions: %s\n", filepath.Dir(repoPath))
 		fmt.Printf("      → Ensure you have write access to the target directory\n")
 
 	default:
 		fmt.Printf("      → Check the error message above for specific details\n")
-		fmt.Printf("      → Try manual clone: git clone https://github.com/org/%s.git \"%s\"\n", repoName, repoPath)
+		fmt.Printf("      → Inspect and back up local data before choosing a separate clone destination: %s\n", repoPath)
 		fmt.Printf("      → For persistent issues, use --debug flag for detailed logs\n")
 	}
 }

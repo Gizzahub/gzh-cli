@@ -5,9 +5,11 @@ package bulkclone
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"time"
 )
 
@@ -82,7 +84,7 @@ func (sm *StateManager) GetStateFilePath(provider, organization string) string {
 }
 
 // SaveState saves the clone state to disk.
-func (sm *StateManager) SaveState(state *CloneState) error {
+func (sm *StateManager) SaveState(state *CloneState) (saveErr error) {
 	// Ensure state directory exists
 	if err := os.MkdirAll(sm.stateDir, 0o750); err != nil {
 		return fmt.Errorf("failed to create state directory: %w", err)
@@ -100,10 +102,42 @@ func (sm *StateManager) SaveState(state *CloneState) error {
 		return fmt.Errorf("failed to marshal state: %w", err)
 	}
 
-	// Write to file
-	if err := os.WriteFile(statePath, data, 0o600); err != nil {
+	// 심볼릭 링크나 특수 파일을 따라 쓰지 않고 기존 스냅샷을 보존한다.
+	if info, err := os.Lstat(statePath); err == nil {
+		if !info.Mode().IsRegular() {
+			return fmt.Errorf("state file is not a regular file: %s", statePath)
+		}
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("failed to inspect state file: %w", err)
+	}
+
+	// 같은 디렉터리에 완성한 파일을 배치하여 쓰기 실패 시 기존 파일을 자르지 않는다.
+	file, err := os.CreateTemp(filepath.Dir(statePath), ".clone-state-*")
+	if err != nil {
+		return fmt.Errorf("failed to create temporary state file: %w", err)
+	}
+	tempPath := file.Name()
+	cleanupTemp := true
+	defer func() {
+		if cleanupTemp {
+			if err := os.Remove(tempPath); err != nil && !os.IsNotExist(err) {
+				saveErr = errors.Join(saveErr, fmt.Errorf("failed to remove temporary state file: %w", err))
+			}
+		}
+	}()
+	if _, err := file.Write(data); err != nil {
+		return errors.Join(fmt.Errorf("failed to write state file: %w", err), file.Close())
+	}
+	if err := file.Sync(); err != nil {
+		return errors.Join(fmt.Errorf("failed to sync state file: %w", err), file.Close())
+	}
+	if err := file.Close(); err != nil {
+		return fmt.Errorf("failed to close state file: %w", err)
+	}
+	if err := os.Rename(tempPath, statePath); err != nil {
 		return fmt.Errorf("failed to write state file: %w", err)
 	}
+	cleanupTemp = false
 
 	return nil
 }
@@ -213,6 +247,9 @@ func NewCloneState(provider, organization, targetPath, strategy string, parallel
 
 // AddCompletedRepository adds a completed repository to the state.
 func (cs *CloneState) AddCompletedRepository(name, path, operation, message string) {
+	// 재시도 성공은 같은 저장소의 이전 실패를 대체한다.
+	cs.FailedRepos = slices.DeleteFunc(cs.FailedRepos, func(repo FailedRepository) bool { return repo.Name == name })
+	cs.CompletedRepos = slices.DeleteFunc(cs.CompletedRepos, func(repo CompletedRepository) bool { return repo.Name == name })
 	cs.CompletedRepos = append(cs.CompletedRepos, CompletedRepository{
 		Name:        name,
 		Path:        path,
@@ -230,12 +267,18 @@ func (cs *CloneState) AddCompletedRepository(name, path, operation, message stri
 
 // AddFailedRepository adds a failed repository to the state.
 func (cs *CloneState) AddFailedRepository(name, path, operation, errorMsg string, attempts int) {
+	// 한 저장소가 완료와 실패 양쪽에 남지 않도록 결과를 교체한다.
+	cs.CompletedRepos = slices.DeleteFunc(cs.CompletedRepos, func(repo CompletedRepository) bool { return repo.Name == name })
+	cs.removePendingRepo(name)
 	// Check if this repo already failed and update it
 	for i, failed := range cs.FailedRepos {
 		if failed.Name == name {
 			cs.FailedRepos[i].Error = errorMsg
 			cs.FailedRepos[i].Attempts = attempts
 			cs.FailedRepos[i].LastAttempt = time.Now()
+			cs.FailedRepos[i].Path = path
+			cs.FailedRepos[i].Operation = operation
+			cs.updateTotalRepositories()
 
 			return
 		}

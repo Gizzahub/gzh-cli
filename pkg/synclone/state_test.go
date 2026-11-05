@@ -2,14 +2,103 @@
 package bulkclone
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
+	"syscall"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestCloneStateSuccessfulRetryClearsFailure(t *testing.T) {
+	state := NewCloneState("gitlab", "example", t.TempDir(), "pull", 1, 0)
+	state.SetPendingRepositories([]string{"repo"})
+	state.AddFailedRepository("repo", "repo", "pull", "failed", 1)
+	state.AddCompletedRepository("repo", "repo", "pull", "retried")
+	require.False(t, state.IsFailed("repo"))
+	require.True(t, state.IsCompleted("repo"))
+	require.Equal(t, 1, state.TotalRepositories)
+}
+
+func TestCloneStateFailedRetryRemovesPending(t *testing.T) {
+	state := NewCloneState("gitlab", "example", t.TempDir(), "pull", 1, 0)
+	state.AddFailedRepository("repo", "old", "pull", "first failure", 1)
+	state.SetPendingRepositories([]string{"repo"})
+	state.AddFailedRepository("repo", "new", "fetch", "second failure", 2)
+	require.Empty(t, state.PendingRepos)
+	require.Len(t, state.FailedRepos, 1)
+	require.Equal(t, "second failure", state.FailedRepos[0].Error)
+	require.Equal(t, "new", state.FailedRepos[0].Path)
+	require.Equal(t, "fetch", state.FailedRepos[0].Operation)
+	require.Equal(t, 1, state.TotalRepositories)
+}
+
+func TestStateManagerReplacementPreservesSnapshotOnMarshalFailure(t *testing.T) {
+	sm := NewStateManager(t.TempDir())
+	state := NewCloneState("github", "example", t.TempDir(), "pull", 1, 0)
+	require.NoError(t, sm.SaveState(state))
+	path := sm.GetStateFilePath("github", "example")
+	before, err := os.ReadFile(path)
+	require.NoError(t, err)
+	state.StartTime = time.Date(10000, 1, 1, 0, 0, 0, 0, time.UTC)
+	require.ErrorContains(t, sm.SaveState(state), "marshal")
+	after, err := os.ReadFile(path)
+	require.NoError(t, err)
+	require.Equal(t, before, after)
+	entries, err := os.ReadDir(filepath.Dir(path))
+	require.NoError(t, err)
+	require.Len(t, entries, 1)
+}
+
+func TestStateManagerRejectsNonRegularDestination(t *testing.T) {
+	for _, kind := range []string{"directory", "symlink"} {
+		t.Run(kind, func(t *testing.T) {
+			dir := t.TempDir()
+			sm := NewStateManager(dir)
+			state := NewCloneState("github", "example", t.TempDir(), "pull", 1, 0)
+			path := sm.GetStateFilePath("github", "example")
+			sentinel := filepath.Join(t.TempDir(), "retain")
+			require.NoError(t, os.WriteFile(sentinel, []byte("retain existing bytes"), 0o600))
+			if kind == "directory" {
+				require.NoError(t, os.Mkdir(path, 0o750))
+			} else {
+				err := os.Symlink(sentinel, path)
+				if runtime.GOOS == "windows" && errors.Is(err, syscall.Errno(1314)) {
+					t.Skip("Windows symlink privilege is unavailable")
+				}
+				require.NoError(t, err)
+			}
+			require.ErrorContains(t, sm.SaveState(state), "not a regular file")
+			data, err := os.ReadFile(sentinel)
+			require.NoError(t, err)
+			require.Equal(t, "retain existing bytes", string(data))
+			entries, err := os.ReadDir(dir)
+			require.NoError(t, err)
+			require.Len(t, entries, 1)
+		})
+	}
+}
+
+func TestStateManagerReplacesCompleteSnapshot(t *testing.T) {
+	dir := t.TempDir()
+	sm := NewStateManager(dir)
+	state := NewCloneState("github", "example", t.TempDir(), "pull", 1, 0)
+	state.SetPendingRepositories([]string{"repo"})
+	require.NoError(t, sm.SaveState(state))
+	state.AddCompletedRepository("repo", "repo", "pull", "success")
+	require.NoError(t, sm.SaveState(state))
+	loaded, err := sm.LoadState("github", "example")
+	require.NoError(t, err)
+	require.True(t, loaded.IsCompleted("repo"))
+	require.Empty(t, loaded.PendingRepos)
+	entries, err := os.ReadDir(dir)
+	require.NoError(t, err)
+	require.Len(t, entries, 1)
+}
 
 func TestCloneState_NewCloneState(t *testing.T) {
 	state := NewCloneState("github", "myorg", "/tmp/repos", "reset", 10, 3)

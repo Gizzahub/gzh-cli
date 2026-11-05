@@ -2,6 +2,7 @@ package gitlab
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -45,6 +46,12 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 
 	if len(allRepos) == 0 {
 		fmt.Printf("No repositories found for group: %s\n", group)
+	}
+	if ctx.Err() != nil {
+		return rcm.saveCancellation(state, ctx.Err())
+	}
+	// 빈 그룹의 신규 요청은 기존 동작대로 상태 디렉터리를 만들지 않는다.
+	if !resume && len(allRepos) == 0 && len(reposToProcess) == 0 {
 		return nil
 	}
 
@@ -200,13 +207,17 @@ func (rcm *ResumableCloneManager) determineRepositoriesToProcess(ctx context.Con
 		return nil, nil, fmt.Errorf("failed to list repositories: %w", err)
 	}
 
-	if len(allRepos) == 0 {
-		return allRepos, nil, nil
-	}
-
 	var reposToProcess []string
 	if resume {
 		reposToProcess = rcm.getResumableRepositories(state, allRepos)
+		// 실패 재시도는 실패 목록에 유지하고 새 작업만 pending에 기록한다.
+		pending := make([]string, 0, len(reposToProcess))
+		for _, repo := range reposToProcess {
+			if !state.IsFailed(repo) {
+				pending = append(pending, repo)
+			}
+		}
+		state.SetPendingRepositories(pending)
 	} else {
 		// Process all repositories
 		reposToProcess = allRepos
@@ -244,12 +255,7 @@ func (rcm *ResumableCloneManager) getResumableRepositories(state *synclonepkg.Cl
 
 // handleNoRemainingRepositories handles the case where all repositories are already processed.
 func (rcm *ResumableCloneManager) handleNoRemainingRepositories(state *synclonepkg.CloneState) error {
-	fmt.Printf("✅ All repositories already processed\n")
-	state.MarkCompleted()
-	if err := rcm.stateManager.SaveState(state); err != nil {
-		fmt.Printf("Warning: failed to save state: %v\n", err)
-	}
-	return nil
+	return rcm.finalizeOperation(state, nil, state.Organization)
 }
 
 // executeCloneOperation executes the main clone operation with worker pool and progress tracking.
@@ -330,13 +336,13 @@ func (rcm *ResumableCloneManager) processRepositoriesWithTracking(ctx context.Co
 	}
 
 	// Track results with periodic state saving
-	_, failureCount, err := rcm.trackResultsWithPeriodicSaving(ctx, pool, jobs, state, progressTracker)
+	_, _, err := rcm.trackResultsWithPeriodicSaving(ctx, pool, jobs, state, progressTracker)
 	if err != nil {
 		return err
 	}
 
 	// Finalize operation
-	return rcm.finalizeOperation(state, progressTracker, group, failureCount)
+	return rcm.finalizeOperation(state, progressTracker, group)
 }
 
 // createRepositoryJobs creates worker pool jobs for repositories to process.
@@ -415,7 +421,8 @@ func (rcm *ResumableCloneManager) trackResultsWithPeriodicSaving(ctx context.Con
 	defer stateSaveTicker.Stop()
 	defer progressUpdateTicker.Stop()
 
-	for range jobs {
+	// 타이머 이벤트는 결과 개수에 포함하지 않는다.
+	for successCount+failureCount < len(jobs) {
 		select {
 		case result := <-resultsChan:
 			rcm.handleJobResult(result, state, progressTracker, &successCount, &failureCount)
@@ -427,15 +434,23 @@ func (rcm *ResumableCloneManager) trackResultsWithPeriodicSaving(ctx context.Con
 				fmt.Printf("\n⚠️  Warning: failed to save state: %v\n", err)
 			}
 		case <-ctx.Done():
-			state.MarkCancelled()
-			if err := rcm.stateManager.SaveState(state); err != nil {
-				fmt.Printf("Warning: failed to save state: %v\n", err)
-			}
-			return successCount, failureCount, fmt.Errorf("operation cancelled: %w", ctx.Err())
+			return successCount, failureCount, rcm.saveCancellation(state, ctx.Err())
 		}
+	}
+	if ctx.Err() != nil {
+		return successCount, failureCount, rcm.saveCancellation(state, ctx.Err())
 	}
 
 	return successCount, failureCount, nil
+}
+
+// 취소 원인과 상태 저장 실패를 함께 보존한다.
+func (rcm *ResumableCloneManager) saveCancellation(state *synclonepkg.CloneState, cause error) error {
+	state.MarkCancelled()
+	if err := rcm.stateManager.SaveState(state); err != nil {
+		return errors.Join(fmt.Errorf("operation cancelled: %w", cause), fmt.Errorf("failed to save cancelled state: %w", err))
+	}
+	return fmt.Errorf("operation cancelled: %w", cause)
 }
 
 // handleJobResult handles individual job results and updates state and progress.
@@ -452,13 +467,26 @@ func (rcm *ResumableCloneManager) handleJobResult(result workerpool.RepositoryRe
 }
 
 // finalizeOperation finalizes the clone operation with final state updates and cleanup.
-func (rcm *ResumableCloneManager) finalizeOperation(state *synclonepkg.CloneState, progressTracker *synclonepkg.ProgressTracker, group string, failureCount int) error {
+func (rcm *ResumableCloneManager) finalizeOperation(state *synclonepkg.CloneState, progressTracker *synclonepkg.ProgressTracker, group string) error {
+	var operationErr error
+	if len(state.FailedRepos) > 0 {
+		failures := make([]error, 0, len(state.FailedRepos)+1)
+		failures = append(failures, fmt.Errorf("%d operations failed", len(state.FailedRepos)))
+		for _, failed := range state.FailedRepos {
+			failures = append(failures, fmt.Errorf("repository %s: %s", failed.Name, failed.Error))
+		}
+		operationErr = errors.Join(failures...)
+	} else if len(state.GetRemainingRepositories()) > 0 {
+		operationErr = fmt.Errorf("clone operation incomplete: %d repositories pending", len(state.GetRemainingRepositories()))
+	}
 	// Final progress update - 마지막 줄 정리
-	fmt.Print("\r\033[2K") // 전체 줄 지우기
-	fmt.Printf("%s\n", progressTracker.RenderProgress())
+	if progressTracker != nil {
+		fmt.Print("\r\033[2K") // 전체 줄 지우기
+		fmt.Printf("%s\n", progressTracker.RenderProgress())
+	}
 
 	// Final state update
-	if len(state.GetRemainingRepositories()) == 0 {
+	if len(state.GetRemainingRepositories()) == 0 && len(state.FailedRepos) == 0 {
 		state.MarkCompleted()
 	} else {
 		state.MarkFailed()
@@ -466,29 +494,27 @@ func (rcm *ResumableCloneManager) finalizeOperation(state *synclonepkg.CloneStat
 
 	// Save final state
 	if err := rcm.stateManager.SaveState(state); err != nil {
-		fmt.Printf("⚠️  Warning: failed to save final state: %v\n", err)
+		return errors.Join(operationErr, fmt.Errorf("failed to save final state: %w", err))
 	}
 
 	// Show final summary
-	fmt.Printf("\n%s\n", progressTracker.GetSummary())
+	if progressTracker != nil {
+		fmt.Printf("\n%s\n", progressTracker.GetSummary())
+	}
 
 	// Clean up state file if completed successfully
-	if state.Status == "completed" && failureCount == 0 {
+	if state.Status == "completed" {
 		if err := rcm.stateManager.DeleteState("gitlab", group); err != nil {
-			fmt.Printf("Warning: failed to delete state: %v\n", err)
+			return fmt.Errorf("failed to delete completed state: %w", err)
 		}
 		fmt.Printf("✅ Clone operation completed successfully\n")
-	} else if failureCount > 0 {
-		fmt.Printf("❌ Clone operation completed with %d failures\n", failureCount)
+	} else if len(state.FailedRepos) > 0 {
+		fmt.Printf("❌ Clone operation completed with %d failures\n", len(state.FailedRepos))
 	} else {
 		fmt.Printf("⚠️  Clone operation incomplete. Use --resume to continue\n")
 	}
 
-	if failureCount > 0 {
-		return fmt.Errorf("%d operations failed", failureCount)
-	}
-
-	return nil
+	return operationErr
 }
 
 // getDisplayMode converts string to DisplayMode.
