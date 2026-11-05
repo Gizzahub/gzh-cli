@@ -5,6 +5,7 @@ package workerpool
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -197,6 +198,15 @@ func (rp *RepositoryWorkerPool) Results() <-chan RepositoryResult {
 	return rp.results
 }
 
+// DrainConfig는 제출과 결과 수집을 같이 돌릴 때 호출자가 받는 알림이다.
+type DrainConfig struct {
+	OnResult         func(RepositoryResult)
+	OnProgress       func()
+	OnSave           func()
+	ProgressInterval time.Duration
+	SaveInterval     time.Duration
+}
+
 // ProcessRepositories processes a batch of repository jobs.
 func (rp *RepositoryWorkerPool) ProcessRepositories(ctx context.Context,
 	jobs []RepositoryJob, processFn func(context.Context, RepositoryJob) error,
@@ -205,25 +215,111 @@ func (rp *RepositoryWorkerPool) ProcessRepositories(ctx context.Context,
 		return []RepositoryResult{}, nil
 	}
 
-	// Submit all jobs
-	for _, job := range jobs {
-		if err := rp.SubmitJob(job, processFn); err != nil {
-			return nil, fmt.Errorf("failed to submit job for %s: %w", job.Repository, err)
-		}
-	}
-
-	// Collect results
 	results := make([]RepositoryResult, 0, len(jobs))
-	for range jobs {
-		select {
-		case result := <-rp.results:
+	err := rp.SubmitDraining(ctx, jobs, processFn, DrainConfig{
+		OnResult: func(result RepositoryResult) {
 			results = append(results, result)
-		case <-ctx.Done():
-			return results, ctx.Err()
-		}
+		},
+	})
+	return results, err
+}
+
+// SubmitDraining은 작업을 넣으면서 결과도 읽는다.
+// 큐가 가득 차면 결과 하나가 나와 자리가 날 때까지 기다렸다가 같은 작업을 다시 넣는다.
+// Submit 자체는 기다리지 않는다. 진행 중인 작업이 없는데도 거절되면 남은 작업은 시작하지 않고 ErrQueueFull을 반환한다.
+func (rp *RepositoryWorkerPool) SubmitDraining(ctx context.Context, jobs []RepositoryJob, processFn func(context.Context, RepositoryJob) error, cfg DrainConfig) error {
+	if len(jobs) == 0 {
+		return nil
 	}
 
-	return results, nil
+	progressC, stopProgress := optionalTicker(cfg.ProgressInterval)
+	saveC, stopSave := optionalTicker(cfg.SaveInterval)
+	defer stopProgress()
+	defer stopSave()
+
+	next := 0
+	accepted := 0
+	finished := 0
+	for finished < len(jobs) {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+
+		progressed := false
+		for next < len(jobs) {
+			err := rp.SubmitJob(jobs[next], processFn)
+			if err == nil {
+				next++
+				accepted++
+				progressed = true
+				continue
+			}
+			if !errors.Is(err, ErrQueueFull) {
+				if drainErr := rp.collectAccepted(ctx, accepted, &finished, cfg.OnResult); drainErr != nil {
+					return errors.Join(fmt.Errorf("failed to submit job for %s: %w", jobs[next].Repository, err), drainErr)
+				}
+				return fmt.Errorf("failed to submit job for %s: %w", jobs[next].Repository, err)
+			}
+			break
+		}
+
+		if next == len(jobs) && finished >= accepted {
+			return nil
+		}
+		if !progressed && next < len(jobs) && finished >= accepted {
+			return fmt.Errorf("failed to submit job for %s: %w", jobs[next].Repository, ErrQueueFull)
+		}
+		if err := rp.waitForResult(ctx, &finished, progressC, saveC, cfg); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (rp *RepositoryWorkerPool) waitForResult(ctx context.Context, finished *int, progressC, saveC <-chan time.Time, cfg DrainConfig) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case result := <-rp.results:
+			if cfg.OnResult != nil {
+				cfg.OnResult(result)
+			}
+			*finished++
+			return nil
+		case <-progressC:
+			if cfg.OnProgress != nil {
+				cfg.OnProgress()
+			}
+		case <-saveC:
+			if cfg.OnSave != nil {
+				cfg.OnSave()
+			}
+		}
+	}
+}
+
+func (rp *RepositoryWorkerPool) collectAccepted(ctx context.Context, accepted int, finished *int, onResult func(RepositoryResult)) error {
+	for *finished < accepted {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case result := <-rp.results:
+			if onResult != nil {
+				onResult(result)
+			}
+			*finished++
+		}
+	}
+	return nil
+}
+
+func optionalTicker(interval time.Duration) (<-chan time.Time, func()) {
+	if interval <= 0 {
+		return nil, func() {}
+	}
+	ticker := time.NewTicker(interval)
+	return ticker.C, ticker.Stop
 }
 
 // collectResults collects results from a worker pool and forwards them.

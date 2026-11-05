@@ -99,6 +99,8 @@ ______________________________________________________________________
 **Testing**
 
 - `make test` pass; 핵심 로직 커버리지 >= 80%
+- 커버리지 퍼센트는 프로파일마다 분모가 다르다. gzh-cli 커밋 `5a5cca18`의 Darwin/default 전체 모듈 기록은 15291/31568(48.438%)이고, 그 증거의 Windows 확인은 컴파일만 했다. `gzh-cli-quality` 릴리스 게이트의 2422/2746(88.2010%)와 hosted 88.0554%는 다른 저장소의 다른 분모다. 두 숫자를 같은 80% 계약의 측정으로 합치지 않는다.
+- `master`/`main` push는 `.github/actions/main-test`에서 Windows를 포함한 `go test -race ./...`로 상태 경로와 resume 테스트를 실행한다. pull request의 같은 job은 Ubuntu만 돈다.
 
 **Performance**
 

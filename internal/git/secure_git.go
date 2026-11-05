@@ -117,9 +117,12 @@ func (e *SecureGitExecutor) Execute(ctx context.Context, cmd *ValidatedGitComman
 		maskRegex := regexp.MustCompile(`(https?://)[^/@:\s]+(?::[^@\s]*)?@`)
 		joined := strings.Join(cmd.Args, " ")
 		maskedArgs := maskRegex.ReplaceAllString(joined, `$1<masked>@`)
-		maskedOut := maskRegex.ReplaceAllString(string(output), `$1<masked>@`)
-		wrapped := fmt.Sprintf("%s: %s", maskedArgs, strings.TrimSpace(maskedOut))
-		return fmt.Errorf("git %s failed in %s: %s: %w", cmd.Command, cmd.RepoPath, wrapped, err)
+		maskedOut := strings.TrimSpace(maskRegex.ReplaceAllString(string(output), `$1<masked>@`))
+		detail := maskedArgs
+		if maskedOut != "" {
+			detail += ": " + maskedOut
+		}
+		return fmt.Errorf("git %s failed in %s: %s: %w", cmd.Command, cmd.RepoPath, detail, err)
 	}
 
 	return nil

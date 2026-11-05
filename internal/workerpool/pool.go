@@ -5,11 +5,16 @@ package workerpool
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"runtime"
 	"sync"
 	"time"
 )
+
+// ErrQueueFull is returned when Submit rejects a job instead of waiting.
+// 전역 Submit은 막히지 않는다. 대량 제출은 결과를 하나 받은 뒤 다시 넣는다.
+var ErrQueueFull = errors.New("job queue is full")
 
 // WorkerPoolConfig represents worker pool configuration.
 type WorkerPoolConfig struct {
@@ -117,7 +122,7 @@ func (p *Pool[T]) Submit(data T, fn func(context.Context, T) error) error {
 	case <-p.ctx.Done():
 		return p.ctx.Err()
 	default:
-		return fmt.Errorf("job queue is full")
+		return ErrQueueFull
 	}
 }
 

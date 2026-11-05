@@ -138,50 +138,37 @@ func (rcm *ResumableCloneManager) RefreshAllResumable(ctx context.Context, targe
 		return processRepositoryJob(ctx, job, org)
 	}
 
-	// Submit jobs and collect results
-	resultsChan := pool.Results()
-
-	// Submit all jobs
-	for _, job := range jobs {
-		if err := pool.SubmitJob(job, processFn); err != nil {
-			return fmt.Errorf("failed to submit job for %s: %w", job.Repository, err)
-		}
-	}
-
-	// Set up periodic state saving and progress updates
-	stateSaveTicker := time.NewTicker(30 * time.Second)
-	progressUpdateTicker := time.NewTicker(2 * time.Second) // Slightly delay to avoid initial 0.0% display
-
-	defer stateSaveTicker.Stop()
-	defer progressUpdateTicker.Stop()
-
-	// 결과 수신 시에만 카운트를 증가시켜 타이머 이벤트로 인한 조기 종료를 방지
-	processed := 0
-	for processed < len(jobs) {
-		select {
-		case result := <-resultsChan:
-			processed++
+	// 큐가 차면 Submit은 즉시 거절한다. 결과 하나를 받은 뒤에 같은 작업을 다시 넣는다.
+	if err := pool.SubmitDraining(ctx, jobs, processFn, workerpool.DrainConfig{
+		ProgressInterval: 2 * time.Second,
+		SaveInterval:     30 * time.Second,
+		OnResult: func(result workerpool.RepositoryResult) {
 			if result.Error != nil {
 				state.AddFailedRepository(result.Job.Repository, result.Job.Path, string(result.Job.Operation), result.Error.Error(), 1)
 				progressTracker.SetRepositoryError(result.Job.Repository, result.Error.Error())
-			} else {
-				state.AddCompletedRepository(result.Job.Repository, result.Job.Path, string(result.Job.Operation), result.Message)
-				progressTracker.CompleteRepository(result.Job.Repository, result.Message)
+				return
 			}
-
-		case <-progressUpdateTicker.C:
-			// Update progress display
+			state.AddCompletedRepository(result.Job.Repository, result.Job.Path, string(result.Job.Operation), result.Message)
+			progressTracker.CompleteRepository(result.Job.Repository, result.Message)
+		},
+		OnProgress: func() {
 			fmt.Printf("\r\033[K%s", progressTracker.RenderProgress())
-
-		case <-stateSaveTicker.C:
-			// Periodically save state
-			if err := rcm.stateManager.SaveState(state); err != nil {
-				fmt.Printf("\n⚠️  Warning: failed to save state: %v\n", err)
+		},
+		OnSave: func() {
+			if saveErr := rcm.stateManager.SaveState(state); saveErr != nil {
+				fmt.Printf("\n⚠️  Warning: failed to save state: %v\n", saveErr)
 			}
-
-		case <-ctx.Done():
+		},
+	}); err != nil {
+		if ctx.Err() != nil {
 			return rcm.saveCancellation(state, ctx.Err())
 		}
+		if errors.Is(err, workerpool.ErrQueueFull) {
+			if saveErr := rcm.stateManager.SaveState(state); saveErr != nil {
+				return errors.Join(err, fmt.Errorf("failed to save state: %w", saveErr))
+			}
+		}
+		return err
 	}
 	// Final progress update
 	fmt.Printf("\r\033[K%s\n", progressTracker.RenderProgress())

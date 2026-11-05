@@ -338,14 +338,33 @@ func (rcm *ResumableCloneManager) processRepositoriesWithTracking(ctx context.Co
 		progressTracker.UpdateRepository(job.Repository, getProgressStatusFromOperation(job.Operation), "Starting...", 0.0)
 	}
 
-	// Submit jobs to worker pool
-	if err := rcm.submitJobs(pool, jobs, group); err != nil {
-		return err
-	}
-
-	// Track results with periodic state saving
-	_, _, err := rcm.trackResultsWithPeriodicSaving(ctx, pool, jobs, state, progressTracker)
-	if err != nil {
+	// 큐가 차면 Submit은 즉시 거절한다. 결과 하나를 받은 뒤에 같은 작업을 다시 넣는다.
+	var successCount, failureCount int
+	if err := pool.SubmitDraining(ctx, jobs, func(ctx context.Context, job workerpool.RepositoryJob) error {
+		return rcm.processRepositoryJob(ctx, job, group)
+	}, workerpool.DrainConfig{
+		ProgressInterval: time.Second,
+		SaveInterval:     30 * time.Second,
+		OnResult: func(result workerpool.RepositoryResult) {
+			rcm.handleJobResult(result, state, progressTracker, &successCount, &failureCount)
+		},
+		OnProgress: func() {
+			fmt.Printf("\r%-120s", progressTracker.RenderProgress())
+		},
+		OnSave: func() {
+			if saveErr := rcm.stateManager.SaveState(state); saveErr != nil {
+				fmt.Printf("\n⚠️  Warning: failed to save state: %v\n", saveErr)
+			}
+		},
+	}); err != nil {
+		if ctx.Err() != nil {
+			return rcm.saveCancellation(state, ctx.Err())
+		}
+		if errors.Is(err, workerpool.ErrQueueFull) {
+			if saveErr := rcm.stateManager.SaveState(state); saveErr != nil {
+				return errors.Join(err, fmt.Errorf("failed to save state: %w", saveErr))
+			}
+		}
 		return err
 	}
 
@@ -401,20 +420,6 @@ func isGitRepository(path string) bool {
 		return false
 	}
 	return info.IsDir()
-}
-
-// submitJobs submits all jobs to the worker pool.
-func (rcm *ResumableCloneManager) submitJobs(pool *workerpool.RepositoryWorkerPool, jobs []workerpool.RepositoryJob, group string) error {
-	processFn := func(ctx context.Context, job workerpool.RepositoryJob) error {
-		return rcm.processRepositoryJob(ctx, job, group)
-	}
-
-	for _, job := range jobs {
-		if err := pool.SubmitJob(job, processFn); err != nil {
-			return fmt.Errorf("failed to submit job for %s: %w", job.Repository, err)
-		}
-	}
-	return nil
 }
 
 // trackResultsWithPeriodicSaving tracks job results with periodic state saving and progress updates.

@@ -28,6 +28,18 @@ func TestSecureGitExecutorPreservesProcessError(t *testing.T) {
 		require.Contains(t, err.Error(), "git remote failed")
 	})
 
+	t.Run("empty output", func(t *testing.T) {
+		repo := t.TempDir()
+		require.NoError(t, exec.CommandContext(t.Context(), "git", "init", "-q", repo).Run())
+		err := executor.ExecuteSecure(t.Context(), repo, "config", "gzh.missing")
+		require.Error(t, err)
+		var exitErr *exec.ExitError
+		require.ErrorAs(t, err, &exitErr)
+		require.Contains(t, err.Error(), "git config failed")
+		require.Contains(t, err.Error(), "gzh.missing")
+		require.NotContains(t, err.Error(), ": :")
+	})
+
 	t.Run("canceled context", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(t.Context())
 		cancel()

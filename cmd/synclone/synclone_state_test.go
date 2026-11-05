@@ -1,7 +1,9 @@
 package synclone
 
 import (
+	"bytes"
 	"encoding/json"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -10,6 +12,21 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func captureStateClean(t *testing.T) (string, error) {
+	t.Helper()
+	original := os.Stdout
+	reader, writer, err := os.Pipe()
+	require.NoError(t, err)
+	os.Stdout = writer
+	cleanErr := runStateClean("", "", true)
+	require.NoError(t, writer.Close())
+	os.Stdout = original
+	var buf bytes.Buffer
+	_, err = io.Copy(&buf, reader)
+	require.NoError(t, err)
+	return buf.String(), cleanErr
+}
 
 func TestStatePathSafetyCleanAllPreservesPoisonedIdentity(t *testing.T) {
 	home := t.TempDir()
@@ -24,7 +41,10 @@ func TestStatePathSafetyCleanAllPreservesPoisonedIdentity(t *testing.T) {
 	victim := filepath.Join(home, "outside_victim.json")
 	require.NoError(t, os.WriteFile(poison, data, 0o600))
 	require.NoError(t, os.WriteFile(victim, data, 0o600))
-	assert.Error(t, runStateClean("", "", true))
+	out, cleanErr := captureStateClean(t)
+	assert.Error(t, cleanErr)
+	assert.NotContains(t, out, "Cleaned")
+	assert.NotContains(t, out, "outside")
 	for _, path := range []string{poison, victim} {
 		got, err := os.ReadFile(path)
 		require.NoError(t, err)
@@ -41,7 +61,11 @@ func TestStatePathSafetyCleanAllPreservesCorruptSnapshot(t *testing.T) {
 	corrupt := sm.GetStateFilePath("github", "corrupt")
 	data := []byte("{preserve corrupt recovery data")
 	require.NoError(t, os.WriteFile(corrupt, data, 0o600))
-	assert.Error(t, runStateClean("", "", true))
+	out, cleanErr := captureStateClean(t)
+	assert.Error(t, cleanErr)
+	assert.NotContains(t, out, "Cleaned")
+	assert.NotContains(t, out, "github/org")
+	assert.NotContains(t, out, "github/corrupt")
 	require.FileExists(t, sm.GetStateFilePath("github", "org"))
 	got, err := os.ReadFile(corrupt)
 	require.NoError(t, err)
@@ -58,7 +82,11 @@ func TestStatePathSafetyCleanAllRemovesValidatedLegacyAndEncodedEntries(t *testi
 	require.NoError(t, sm.SaveState(synclonepkg.NewCloneState("gitlab", "team/platform", t.TempDir(), "pull", 1, 0)))
 	sentinel := filepath.Join(root, "notes.txt")
 	require.NoError(t, os.WriteFile(sentinel, []byte("preserve notes"), 0o600))
-	require.NoError(t, runStateClean("", "", true))
+	out, cleanErr := captureStateClean(t)
+	require.NoError(t, cleanErr)
+	require.Contains(t, out, "Cleaned github/org\n")
+	require.Contains(t, out, "Cleaned gitlab/team/platform\n")
+	require.Contains(t, out, "Cleaned 2 state(s)\n")
 	entries, err := os.ReadDir(root)
 	require.NoError(t, err)
 	require.Len(t, entries, 1)
