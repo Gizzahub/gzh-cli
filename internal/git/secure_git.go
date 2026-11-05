@@ -119,7 +119,7 @@ func (e *SecureGitExecutor) Execute(ctx context.Context, cmd *ValidatedGitComman
 		maskedArgs := maskRegex.ReplaceAllString(joined, `$1<masked>@`)
 		maskedOut := maskRegex.ReplaceAllString(string(output), `$1<masked>@`)
 		wrapped := fmt.Sprintf("%s: %s", maskedArgs, strings.TrimSpace(maskedOut))
-		return fmt.Errorf("git %s failed in %s: %s", cmd.Command, cmd.RepoPath, wrapped)
+		return fmt.Errorf("git %s failed in %s: %s: %w", cmd.Command, cmd.RepoPath, wrapped, err)
 	}
 
 	return nil
