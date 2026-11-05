@@ -285,6 +285,10 @@ func (w *webhookServiceImpl) CreateRepositoryWebhook(ctx context.Context, owner,
 	if err := w.validateWebhookRequest(request); err != nil {
 		return nil, fmt.Errorf("invalid webhook request: %w", err)
 	}
+	configURL := request.Config.URL
+	if configURL == "" {
+		configURL = request.URL
+	}
 
 	// GitHub API request body
 	apiRequest := map[string]any{
@@ -292,7 +296,7 @@ func (w *webhookServiceImpl) CreateRepositoryWebhook(ctx context.Context, owner,
 		"active": request.Active,
 		"events": request.Events,
 		"config": map[string]any{
-			"url":          request.Config.URL,
+			"url":          configURL,
 			"content_type": request.Config.ContentType,
 			"insecure_ssl": "0",
 		},
@@ -485,6 +489,10 @@ func (w *webhookServiceImpl) CreateOrganizationWebhook(ctx context.Context, org 
 	if err := w.validateWebhookRequest(request); err != nil {
 		return nil, fmt.Errorf("invalid webhook request: %w", err)
 	}
+	configURL := request.Config.URL
+	if configURL == "" {
+		configURL = request.URL
+	}
 
 	// GitHub API request body
 	apiRequest := map[string]any{
@@ -492,7 +500,7 @@ func (w *webhookServiceImpl) CreateOrganizationWebhook(ctx context.Context, org 
 		"active": request.Active,
 		"events": request.Events,
 		"config": map[string]any{
-			"url":          request.Config.URL,
+			"url":          configURL,
 			"content_type": request.Config.ContentType,
 			"insecure_ssl": "0",
 		},
@@ -748,8 +756,16 @@ func (w *webhookServiceImpl) BulkUpdateWebhooks(ctx context.Context, request *Bu
 	// Update webhooks for each repository
 	for _, repo := range repositories {
 		// Find webhooks matching the selector
+		opStartTime := time.Now()
 		existingWebhooks, err := w.ListRepositoryWebhooks(ctx, request.Organization, repo, nil)
 		if err != nil {
+			result.Results = append(result.Results, WebhookOperationResult{
+				Repository: repo,
+				Operation:  "update",
+				Error:      err.Error(),
+				Duration:   time.Since(opStartTime).String(),
+			})
+			result.FailureCount++
 			continue
 		}
 
@@ -803,8 +819,16 @@ func (w *webhookServiceImpl) BulkDeleteWebhooks(ctx context.Context, request *Bu
 	result.TotalRepositories = len(repositories)
 
 	for _, repo := range repositories {
+		opStartTime := time.Now()
 		existingWebhooks, err := w.ListRepositoryWebhooks(ctx, request.Organization, repo, nil)
 		if err != nil {
+			result.Results = append(result.Results, WebhookOperationResult{
+				Repository: repo,
+				Operation:  "delete",
+				Error:      err.Error(),
+				Duration:   time.Since(opStartTime).String(),
+			})
+			result.FailureCount++
 			continue
 		}
 
