@@ -1495,6 +1495,10 @@ func TestToolCheckerFunctions(t *testing.T) {
 	t.Run("CheckMultipleTools", func(t *testing.T) {
 		ctx := context.Background()
 		toolNames := []string{"nonexistent-tool-1", "nonexistent-tool-2"}
+		t.Setenv("PATH", t.TempDir())
+		if runtime.GOOS == "windows" {
+			t.Setenv("PATHEXT", ".EXE")
+		}
 
 		results := CheckMultipleTools(ctx, toolNames)
 		assert.Len(t, results, 2)
@@ -1508,6 +1512,10 @@ func TestToolCheckerFunctions(t *testing.T) {
 
 	t.Run("CheckAllCommonTools", func(t *testing.T) {
 		ctx := context.Background()
+		t.Setenv("PATH", t.TempDir())
+		if runtime.GOOS == "windows" {
+			t.Setenv("PATHEXT", ".EXE")
+		}
 
 		results := CheckAllCommonTools(ctx)
 		assert.Len(t, results, len(CommonToolConfigs))
@@ -1517,7 +1525,7 @@ func TestToolCheckerFunctions(t *testing.T) {
 		for _, result := range results {
 			toolsChecked[result.Tool] = true
 			assert.NotEmpty(t, result.Tool)
-			assert.Contains(t, []string{"missing", "found", "ok", "error"}, result.Status)
+			assert.Equal(t, "missing", result.Status)
 		}
 
 		// Verify all common tools were checked
