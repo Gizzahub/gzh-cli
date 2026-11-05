@@ -149,7 +149,15 @@ func (rcm *ResumableCloneManager) initializeState(group, targetPath, strategy st
 
 	// Check if there's already a state file
 	if rcm.stateManager.HasState("gitlab", group) {
-		return nil, fmt.Errorf("existing state found for %s. Use --resume to continue or delete state file", group)
+		// 존재 여부가 불확실하거나 손상된 경우 실제 로드 오류를 보존한다.
+		if _, err := rcm.stateManager.LoadState("gitlab", group); err != nil {
+			return nil, fmt.Errorf("failed to load existing state: %w", err)
+		}
+		path, err := rcm.stateManager.ResolveStateFilePath("gitlab", group)
+		if err != nil {
+			return nil, fmt.Errorf("failed to resolve existing state path: %w", err)
+		}
+		return nil, fmt.Errorf("existing state found for %s. Use --resume to continue; review and back up the existing snapshot at %s before starting fresh", group, path)
 	}
 
 	return state, nil

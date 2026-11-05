@@ -209,26 +209,18 @@ func runStateClean(provider, organization string, all bool) error {
 	stateManager := synclonepkg.NewStateManager("")
 
 	if all {
-		// Clean all states
-		states, err := stateManager.ListStates()
+		// 검증한 실제 파일만 삭제하고 일부 실패를 성공으로 숨기지 않는다.
+		removed, err := stateManager.DeleteAllStates()
 		if err != nil {
-			return fmt.Errorf("failed to list states: %w", err)
+			return fmt.Errorf("failed to clean states after deleting %d state(s): %w", removed, err)
 		}
 
-		if len(states) == 0 {
+		if removed == 0 {
 			fmt.Println("No saved states to clean")
 			return nil
 		}
 
-		for _, state := range states {
-			if err := stateManager.DeleteState(state.Provider, state.Organization); err != nil {
-				fmt.Printf("Failed to delete state for %s/%s: %v\n", state.Provider, state.Organization, err)
-			} else {
-				fmt.Printf("Deleted state for %s/%s\n", state.Provider, state.Organization)
-			}
-		}
-
-		fmt.Printf("Cleaned %d state(s)\n", len(states))
+		fmt.Printf("Cleaned %d state(s)\n", removed)
 	} else {
 		// Clean specific state
 		if !stateManager.HasState(provider, organization) {

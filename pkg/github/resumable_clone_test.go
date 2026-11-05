@@ -155,6 +155,28 @@ func TestResumeIntegrityGuidanceNamesDedicatedSnapshot(t *testing.T) {
 	require.True(t, manager.stateManager.HasState("github", "example"))
 }
 
+func TestResumeIntegrityGuidanceReportsUnverifiableSnapshot(t *testing.T) {
+	manager := newResumeTestManager(t)
+	state := synclonepkg.NewCloneState("github", "example", t.TempDir(), "pull", 1, 0)
+	state.AddFailedRepository("repo", filepath.Join(state.TargetPath, "repo"), "pull", "connection failed", 1)
+	path := manager.stateManager.GetStateFilePath("github", "example")
+	require.NoError(t, os.WriteFile(path, []byte("{preserve corrupt snapshot"), 0o600))
+	output, err := os.Create(filepath.Join(t.TempDir(), "failure-output"))
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, output.Close()) })
+	prior := os.Stdout
+	os.Stdout = output
+	defer func() { os.Stdout = prior }()
+	manager.printFailureDetails(state)
+	os.Stdout = prior
+	_, err = output.Seek(0, io.SeekStart)
+	require.NoError(t, err)
+	data, err := io.ReadAll(output)
+	require.NoError(t, err)
+	require.Contains(t, string(data), "Snapshot path could not be verified:")
+	require.NotContains(t, string(data), "Saved snapshot:")
+}
+
 func TestResumeStateDifferentTargetAndSaveFailure(t *testing.T) {
 	manager := newResumeTestManager(t)
 	state := synclonepkg.NewCloneState("github", "example", t.TempDir(), "pull", 2, 1)

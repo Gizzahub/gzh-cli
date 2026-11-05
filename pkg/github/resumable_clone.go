@@ -284,7 +284,11 @@ func (rcm *ResumableCloneManager) createNewState(org, targetPath, strategy strin
 		}
 		if existingState.TargetPath == targetPath {
 			// If it's the same target path, suggest using --resume
-			return nil, fmt.Errorf("existing state found for %s at %s. Use --resume to continue; review and back up the existing snapshot at %s. To start fresh after resolving failures, move this snapshot to a backup location to preserve recovery data", org, targetPath, rcm.stateManager.GetStateFilePath("github", org))
+			path, err := rcm.stateManager.ResolveStateFilePath("github", org)
+			if err != nil {
+				return nil, fmt.Errorf("failed to resolve existing state path: %w", err)
+			}
+			return nil, fmt.Errorf("existing state found for %s at %s. Use --resume to continue; review and back up the existing snapshot at %s. To start fresh after resolving failures, move this snapshot to a backup location to preserve recovery data", org, targetPath, path)
 		}
 		// Different target path, clean up old state
 		if err := rcm.stateManager.DeleteState("github", org); err != nil {
@@ -485,7 +489,11 @@ func (rcm *ResumableCloneManager) printFailureDetails(state *synclonepkg.CloneSt
 	fmt.Println("   • Check network connection and GitHub access")
 	fmt.Println("   • Verify GitHub token is set: export GITHUB_TOKEN=\"your_token\"")
 	fmt.Println("   • Resolve failed repositories, then review and back up the saved snapshot before starting a fresh operation")
-	fmt.Printf("   • Saved snapshot: %s\n", rcm.stateManager.GetStateFilePath("github", state.Organization))
+	if path, err := rcm.stateManager.ResolveStateFilePath("github", state.Organization); err != nil {
+		fmt.Printf("   • Snapshot path could not be verified: %v\n", err)
+	} else {
+		fmt.Printf("   • Saved snapshot: %s\n", path)
+	}
 	fmt.Println("   • Preserve this file for recovery before deciding how to start fresh")
 }
 

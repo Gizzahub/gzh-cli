@@ -85,6 +85,76 @@ func resumeManager(t *testing.T) *ResumableCloneManager {
 	return manager
 }
 
+func TestResumeStatePathSafetyInitializationPreservesLoadErrors(t *testing.T) {
+	for _, snapshot := range []string{"gitlab_example.json"} {
+		for _, resume := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%s/resume=%v", snapshot, resume), func(t *testing.T) {
+				root := t.TempDir()
+				path := filepath.Join(root, snapshot)
+				data := []byte("{preserve corrupt snapshot")
+				require.NoError(t, os.WriteFile(path, data, 0o600))
+				manager := resumeManager(t)
+				manager.stateManager = synclonepkg.NewStateManager(root)
+				_, loadErr := manager.stateManager.LoadState("gitlab", "example")
+				require.Error(t, loadErr)
+				state, err := manager.initializeState("example", t.TempDir(), "pull", 1, 0, resume)
+				require.Nil(t, state)
+				require.ErrorContains(t, err, loadErr.Error())
+				require.NotContains(t, err.Error(), "delete state file")
+				after, err := os.ReadFile(path)
+				require.NoError(t, err)
+				require.Equal(t, data, after)
+			})
+		}
+	}
+}
+
+func TestResumeStatePathSafetyInitializationAndResumeCompatibility(t *testing.T) {
+	manager := resumeManager(t)
+	target := t.TempDir()
+	state, err := manager.initializeState("team/platform", target, "pull", 1, 0, false)
+	require.NoError(t, err)
+	require.NoError(t, manager.stateManager.SaveState(state))
+	state, err = manager.initializeState("team/platform", target, "pull", 1, 0, false)
+	require.Nil(t, state)
+	require.ErrorContains(t, err, "existing state found")
+	require.ErrorContains(t, err, "--resume")
+	require.ErrorContains(t, err, manager.stateManager.GetStateFilePath("gitlab", "team/platform"))
+	require.ErrorContains(t, err, "back up")
+	require.NotContains(t, err.Error(), "delete state file")
+	state, err = manager.initializeState("team/platform", target, "fetch", 2, 1, true)
+	require.NoError(t, err)
+	require.Equal(t, "fetch", state.Strategy)
+	require.Equal(t, 2, state.Parallel)
+	_, err = manager.initializeState("team/platform", t.TempDir(), "pull", 1, 0, true)
+	require.ErrorContains(t, err, "target path mismatch")
+	state, err = manager.initializeState("missing", target, "pull", 1, 0, true)
+	require.NoError(t, err)
+	require.Equal(t, "missing", state.Organization)
+}
+
+func TestResumeStatePathSafetyIgnoresUnrelatedCorruption(t *testing.T) {
+	root := t.TempDir()
+	path := filepath.Join(root, "github_other.json")
+	data := []byte("{preserve unrelated snapshot")
+	require.NoError(t, os.WriteFile(path, data, 0o600))
+	manager := resumeManager(t)
+	manager.stateManager = synclonepkg.NewStateManager(root)
+	target := t.TempDir()
+	state, err := manager.initializeState("example", target, "pull", 1, 0, false)
+	require.NoError(t, err)
+	require.NoError(t, manager.stateManager.SaveState(state))
+	_, err = manager.initializeState("example", target, "pull", 1, 0, false)
+	require.ErrorContains(t, err, "existing state found")
+	require.ErrorContains(t, err, filepath.Join(root, "gitlab_example.json"))
+	state, err = manager.initializeState("example", target, "fetch", 2, 0, true)
+	require.NoError(t, err)
+	require.Equal(t, "fetch", state.Strategy)
+	after, err := os.ReadFile(path)
+	require.NoError(t, err)
+	require.Equal(t, data, after)
+}
+
 func TestResumeIntegrityFailureRetryAndCleanup(t *testing.T) {
 	resumeFakeGit(t)
 	resumeFixture(t, `[{"name":"repo"}]`, nil)
