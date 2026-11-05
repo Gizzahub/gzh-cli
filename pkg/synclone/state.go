@@ -88,7 +88,10 @@ func NewStateManager(stateDir string) *StateManager {
 // GetStateFilePath returns the existing validated legacy path or the new snapshot path.
 // 검증할 수 없거나 중복된 경로는 빈 문자열을 반환한다. 상세 오류는 ResolveStateFilePath로 확인한다.
 func (sm *StateManager) GetStateFilePath(provider, organization string) string {
-	path, _ := sm.ResolveStateFilePath(provider, organization)
+	path, err := sm.ResolveStateFilePath(provider, organization)
+	if err != nil {
+		return ""
+	}
 	return path
 }
 
@@ -296,45 +299,63 @@ type (
 )
 
 func stateFilename(provider, organization string) (string, error) {
-	if !utf8.ValidString(provider) || !utf8.ValidString(organization) {
-		return "", errors.New("state identity must be valid UTF-8")
-	}
-	if provider == "" || provider == "." || provider == ".." {
-		return "", fmt.Errorf("invalid state provider %q", provider)
-	}
-	portableProvider := true
-	for _, c := range provider {
-		if c == '/' || c == '\\' || c == ':' || unicode.IsControl(c) {
-			return "", fmt.Errorf("invalid state provider %q", provider)
-		}
-		if !(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '-' || c == '.') {
-			portableProvider = false
-		}
-	}
-	if organization == "" {
-		return "", errors.New("state organization must not be empty")
-	}
-	for _, component := range strings.Split(organization, "/") {
-		if component == "" || component == "." || component == ".." {
-			return "", fmt.Errorf("invalid state organization %q", organization)
-		}
-	}
-	portable := portableProvider
-	for _, c := range organization {
-		if c == '\\' || c == ':' || unicode.IsControl(c) {
-			return "", fmt.Errorf("invalid state organization %q", organization)
-		}
-		if !(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_' || c == '-' || c == '.') {
-			portable = false
-		}
+	if err := validateStateIdentity(provider, organization); err != nil {
+		return "", err
 	}
 	legacy := provider + "_" + organization + ".json"
-	if portable && len(legacy) <= 200 {
+	if portableStateToken(provider, false) && portableStateToken(organization, true) && len(legacy) <= 200 {
 		return legacy, nil
 	}
 	// 길이로 identity 경계를 구분하고 고정 길이 이름을 사용한다. 실제 JSON도 항상 검증한다.
 	digest := sha256.Sum256([]byte(fmt.Sprintf("%d:%s%d:%s", len(provider), provider, len(organization), organization)))
 	return "state-v2-" + hex.EncodeToString(digest[:]) + ".json", nil
+}
+
+func validateStateIdentity(provider, organization string) error {
+	if !utf8.ValidString(provider) || !utf8.ValidString(organization) {
+		return errors.New("state identity must be valid UTF-8")
+	}
+	if err := rejectStateProvider(provider); err != nil {
+		return err
+	}
+	if organization == "" {
+		return errors.New("state organization must not be empty")
+	}
+	for _, component := range strings.Split(organization, "/") {
+		if component == "" || component == "." || component == ".." {
+			return fmt.Errorf("invalid state organization %q", organization)
+		}
+	}
+	for _, c := range organization {
+		if c == '\\' || c == ':' || unicode.IsControl(c) {
+			return fmt.Errorf("invalid state organization %q", organization)
+		}
+	}
+	return nil
+}
+
+func rejectStateProvider(provider string) error {
+	if provider == "" || provider == "." || provider == ".." {
+		return fmt.Errorf("invalid state provider %q", provider)
+	}
+	for _, c := range provider {
+		if c == '/' || c == '\\' || c == ':' || unicode.IsControl(c) {
+			return fmt.Errorf("invalid state provider %q", provider)
+		}
+	}
+	return nil
+}
+
+func portableStateToken(value string, allowUnderscore bool) bool {
+	for _, c := range value {
+		switch {
+		case c >= 'a' && c <= 'z', c >= 'A' && c <= 'Z', c >= '0' && c <= '9', c == '-', c == '.':
+		case allowUnderscore && c == '_':
+		default:
+			return false
+		}
+	}
+	return true
 }
 
 func legacyStateName(provider, organization string) string {
