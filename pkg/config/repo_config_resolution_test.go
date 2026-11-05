@@ -4,10 +4,48 @@
 package config
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
+
+func TestComplianceAuditRejectsInvalidEffectiveConfiguration(t *testing.T) {
+	// 실제 파일에서 읽은 잘못된 참조가 100% 준수 보고서로 바뀌면 안 된다.
+	file := filepath.Join(t.TempDir(), "repository.yaml")
+	require.NoError(t, os.WriteFile(file, []byte(`version: "1"
+organization: example
+defaults:
+  template: missing
+policies:
+  privacy:
+    rules:
+      private:
+        type: visibility
+        value: private
+        enforcement: required
+`), 0o600))
+	config, err := LoadRepoConfig(file)
+	require.NoError(t, err)
+	actual := map[string]RepositoryState{"service-api": {Private: false}}
+	for _, invalid := range []string{"missing", "null", "cycle"} {
+		t.Run(invalid, func(t *testing.T) {
+			config.Defaults.Template = invalid
+			config.Templates = map[string]*RepoTemplate{"null": nil, "cycle": {Base: "cycle"}}
+			report, auditErr := config.RunComplianceAudit(actual)
+			require.ErrorContains(t, auditErr, "service-api")
+			require.ErrorContains(t, auditErr, invalid)
+			require.Nil(t, report)
+		})
+	}
+	config.Defaults.Template = ""
+	report, err := config.RunComplianceAudit(actual)
+	require.NoError(t, err)
+	require.Equal(t, 1, report.Summary.AuditedRepositories)
+	require.Zero(t, report.Summary.CompliantRepositories)
+	require.Equal(t, 1, report.Summary.RequiredViolations)
+}
 
 func TestEffectiveConfigRejectsInvalidTemplateLayers(t *testing.T) {
 	// 잘못된 참조가 부분 설정의 성공으로 바뀌지 않아야 한다.

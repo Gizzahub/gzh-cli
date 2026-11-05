@@ -106,7 +106,10 @@ func (rc *RepoConfig) RunComplianceAudit(actualRepos map[string]RepositoryState)
 
 	// Audit each repository
 	for repoName, repoState := range actualRepos {
-		repoResult := rc.auditRepository(repoName, repoState, policyResults)
+		repoResult, err := rc.auditRepository(repoName, repoState, policyResults)
+		if err != nil {
+			return nil, fmt.Errorf("audit repository %q: %w", repoName, err)
+		}
 		rc.updateAuditSummary(report, repoResult)
 		report.Repositories = append(report.Repositories, repoResult)
 	}
@@ -503,7 +506,7 @@ func (rc *RepoConfig) initializePolicyResults() map[string]*PolicyAuditResult {
 }
 
 // auditRepository audits a single repository against all policies.
-func (rc *RepoConfig) auditRepository(repoName string, repoState RepositoryState, policyResults map[string]*PolicyAuditResult) RepoAuditResult {
+func (rc *RepoConfig) auditRepository(repoName string, repoState RepositoryState, policyResults map[string]*PolicyAuditResult) (RepoAuditResult, error) {
 	repoResult := RepoAuditResult{
 		Repository:   repoName,
 		Compliant:    true,
@@ -515,7 +518,8 @@ func (rc *RepoConfig) auditRepository(repoName string, repoState RepositoryState
 	// Get effective configuration and exceptions for this repository
 	settings, security, permissions, exceptions, err := rc.GetEffectiveConfig(repoName)
 	if err != nil {
-		return repoResult // Return empty result if we can't get config
+		// 설정 실패를 준수 결과나 부분 통계로 보고하지 않는다.
+		return RepoAuditResult{}, err
 	}
 
 	repoResult.Exceptions = exceptions
@@ -525,7 +529,7 @@ func (rc *RepoConfig) auditRepository(repoName string, repoState RepositoryState
 		rc.auditRepositoryPolicy(repoName, repoState, policy, policyName, settings, security, permissions, exceptions, &repoResult, policyResults)
 	}
 
-	return repoResult
+	return repoResult, nil
 }
 
 // auditRepositoryPolicy audits a repository against a specific policy.
