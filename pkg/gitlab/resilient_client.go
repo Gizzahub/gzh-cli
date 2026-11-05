@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -89,7 +90,7 @@ func (c *ResilientGitLabClient) ListGroupProjects(ctx context.Context, groupID s
 // getProjectPage fetches a single page of projects.
 func (c *ResilientGitLabClient) getProjectPage(ctx context.Context, groupID string, page, perPage int) ([]ProjectInfo, bool, error) {
 	url := fmt.Sprintf("%s/api/v4/groups/%s/projects?page=%d&per_page=%d&include_subgroups=true",
-		c.baseURL, groupID, page, perPage)
+		c.baseURL, url.PathEscape(groupID), page, perPage)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {

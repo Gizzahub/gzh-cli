@@ -32,7 +32,7 @@ func TestResilientGitLabClientListGroupProjectsPagination(t *testing.T) {
 	}
 	var requests []requestRecord
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		requests = append(requests, requestRecord{r.URL.Path, r.URL.Query(), r.Header.Get("PRIVATE-TOKEN"), r.Header.Get("Accept"), r.Header.Get("User-Agent")})
+		requests = append(requests, requestRecord{r.URL.EscapedPath(), r.URL.Query(), r.Header.Get("PRIVATE-TOKEN"), r.Header.Get("Accept"), r.Header.Get("User-Agent")})
 		page, err := strconv.Atoi(r.URL.Query().Get("page"))
 		if err != nil {
 			http.Error(w, "bad page", http.StatusBadRequest)
@@ -52,7 +52,7 @@ func TestResilientGitLabClientListGroupProjectsPagination(t *testing.T) {
 	assert.Equal(t, []string{"repo-1", "repo-2"}, []string{projects[0].Name, projects[1].Name})
 	require.Len(t, requests, 2)
 	for i, request := range requests {
-		assert.Equal(t, "/api/v4/groups/platform/team/projects", request.path)
+		assert.Equal(t, "/api/v4/groups/platform%2Fteam/projects", request.path)
 		assert.Equal(t, strconv.Itoa(i+1), request.query.Get("page"))
 		assert.Equal(t, "100", request.query.Get("per_page"))
 		assert.Equal(t, "true", request.query.Get("include_subgroups"))

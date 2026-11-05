@@ -271,6 +271,7 @@ func (sc *StreamingClient) fetchProjectPage(ctx context.Context, groupID string,
 		return nil, pagination, fmt.Errorf("request failed: %w", err)
 	}
 	defer func() { _ = resp.Body.Close() }()
+	sc.updateRateLimit(resp.Header)
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, pagination, fmt.Errorf("unexpected status: %s", resp.Status)
