@@ -261,12 +261,17 @@ func (rcm *ResumableCloneManager) createNewState(org, targetPath, strategy strin
 	if rcm.stateManager.HasState("github", org) {
 		// Load existing state to check if it's for the same target path
 		existingState, err := rcm.stateManager.LoadState("github", org)
-		if err == nil && existingState.TargetPath == targetPath {
+		if err != nil {
+			return nil, fmt.Errorf("failed to load existing state: %w", err)
+		}
+		if existingState.TargetPath == targetPath {
 			// If it's the same target path, suggest using --resume
 			return nil, fmt.Errorf("existing state found for %s at %s. Use --resume to continue or 'gz synclone state clean --all' to start fresh", org, targetPath)
 		}
 		// Different target path, clean up old state
-		_ = rcm.stateManager.DeleteState("github", org)
+		if err := rcm.stateManager.DeleteState("github", org); err != nil {
+			return nil, fmt.Errorf("failed to remove previous state: %w", err)
+		}
 	}
 
 	// Create new state
