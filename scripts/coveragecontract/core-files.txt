@@ -313,6 +313,7 @@ pkg/github/filestore.go
 pkg/github/github_org_clone.go
 pkg/github/http_adapter.go
 pkg/github/interfaces.go
+pkg/github/job_batch.go
 pkg/github/largescale/adaptive_rate_limiter.go
 pkg/github/largescale/doc.go
 pkg/github/largescale/large_scale_operations.go
@@ -360,6 +361,7 @@ pkg/synclone/facade.go
 pkg/synclone/progress.go
 pkg/synclone/schema_validator.go
 pkg/synclone/state.go
+pkg/synclone/state_path.go
 pkg/synclone/synclone_config.go
 pkg/synclone/url_builder.go
 pkg/types/repoconfig/doc.go
