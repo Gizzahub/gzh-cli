@@ -362,6 +362,8 @@ pkg/synclone/progress.go
 pkg/synclone/schema_validator.go
 pkg/synclone/state.go
 pkg/synclone/state_path.go
+pkg/synclone/state_path_nonwindows.go
+pkg/synclone/state_path_windows.go
 pkg/synclone/synclone_config.go
 pkg/synclone/url_builder.go
 pkg/types/repoconfig/doc.go

@@ -214,17 +214,12 @@ func inspectStateCandidate(root *os.Root, name string, optionalLegacy bool) (sta
 	}()
 	components := strings.Split(name, string(filepath.Separator))
 	for i, component := range components {
-		info, err := parent.Lstat(component)
-		if os.IsNotExist(err) {
-			return stateRecord{}, false, nil
-		}
-		componentTooLong := errors.Is(err, syscall.ENAMETOOLONG) ||
-			runtime.GOOS == "windows" && errors.Is(err, syscall.Errno(206))
-		if optionalLegacy && componentTooLong {
-			return stateRecord{}, false, nil
-		}
+		info, present, err := inspectStateComponent(parent, component, name, optionalLegacy)
 		if err != nil {
-			return stateRecord{}, false, fmt.Errorf("failed to inspect state component %s in %s: %w", component, name, err)
+			return stateRecord{}, false, err
+		}
+		if !present {
+			return stateRecord{}, false, nil
 		}
 		if info.Mode()&os.ModeSymlink != 0 {
 			return stateRecord{}, false, fmt.Errorf("state file is not a regular file (symbolic link): %s", name)
@@ -253,6 +248,39 @@ func inspectStateCandidate(root *os.Root, name string, optionalLegacy bool) (sta
 		parent = next
 	}
 	return stateRecord{}, false, errors.New("empty state candidate path")
+}
+
+func inspectStateComponent(parent *os.Root, component, name string, optionalLegacy bool) (os.FileInfo, bool, error) {
+	info, err := parent.Lstat(component)
+	if err == nil {
+		return info, true, nil
+	}
+	if os.IsNotExist(err) {
+		return nil, false, nil
+	}
+	if optionalLegacy {
+		missing, classifyErr := optionalLegacyComponentMissing(parent, component, err)
+		if classifyErr != nil {
+			return nil, false, fmt.Errorf("failed to inspect state component %s in %s: %w", component, name, classifyErr)
+		}
+		if missing {
+			return nil, false, nil
+		}
+	}
+	return nil, false, fmt.Errorf("failed to inspect state component %s in %s: %w", component, name, err)
+}
+
+func optionalLegacyComponentMissing(parent *os.Root, component string, lookupErr error) (bool, error) {
+	tooLong := errors.Is(lookupErr, syscall.ENAMETOOLONG) ||
+		runtime.GOOS == "windows" && errors.Is(lookupErr, syscall.Errno(206))
+	if tooLong {
+		return true, nil
+	}
+	tooLong, limitErr := legacyWindowsComponentTooLong(parent, component, lookupErr)
+	if limitErr != nil {
+		return false, errors.Join(lookupErr, fmt.Errorf("failed to verify state component length: %w", limitErr))
+	}
+	return tooLong, nil
 }
 
 func sortedStateRecords(records map[stateIdentity]stateRecord) []stateRecord {
