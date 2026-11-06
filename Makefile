@@ -80,7 +80,7 @@ help: ## show main help menu with categories
 help-build: ## show build and deployment help
 	@echo -e "$(GREEN)🔨 Build and Installation Commands:$(RESET)"
 	@echo -e "  $(CYAN)build$(RESET)              Build golang binary ($(executablename))"
-	@echo -e "  $(CYAN)install$(RESET)            Install golang binary to GOPATH/bin"
+	@echo -e "  $(CYAN)install$(RESET)            Install golang binary to BINDIR"
 	@echo -e "  $(CYAN)run$(RESET)                Run the application"
 	@echo -e "  $(CYAN)bootstrap$(RESET)          Install build dependencies"
 	@echo -e "  $(CYAN)clean$(RESET)              Clean up build artifacts and binaries"

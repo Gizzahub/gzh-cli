@@ -74,7 +74,8 @@ make regenerate-mocks
 ## Build Output
 
 - **Binary name**: `gz`
-- **Install location**: `$GOPATH/bin/gz`
+- **Install location**: `~/.local/share/ce/bin/gz` (override with `make install BINDIR=...`)
+- `make install` preserves the source version and build output; use `make bump-version` explicitly when changing the release version.
 
 ## Troubleshooting
 

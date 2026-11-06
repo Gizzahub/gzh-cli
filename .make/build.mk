@@ -18,8 +18,6 @@ endif
 # Detect OS-specific executable extension (e.g., .exe on Windows)
 BINEXT := $(shell go env GOEXE)
 BINARY := $(executablename)$(BINEXT)
-GOBIN := $(shell go env GOBIN)
-GOPATH := $(shell go env GOPATH)
 
 # OS-specific path separator and binary install dir
 ifeq ($(OS),Windows_NT)
@@ -28,15 +26,7 @@ else
 SEP := /
 endif
 
-ifeq ($(strip $(GOBIN)),)
-  ifeq ($(OS),Windows_NT)
-    BINDIR := $(GOPATH)$(SEP)bin
-  else
-    BINDIR := $(GOPATH)$(SEP)bin
-  endif
-else
-  BINDIR := $(GOBIN)
-endif
+BINDIR ?= $(HOME)/.local/share/ce/bin
 
 # ==============================================================================
 # Build Targets
@@ -74,9 +64,10 @@ build: ## build golang binary
 	@go build -trimpath -o $(BINARY) ./cmd/gz
 	@printf "$(GREEN)Built %s v%s successfully$(RESET)\n" "$(BINARY)" "$(VERSION)"
 
-install: bump-version build ## install golang binary (auto bumps patch version)
+install: build ## install golang binary to BINDIR without changing the source version
 	@printf "$(CYAN)Installing to %s$(RESET)\n" "$(BINDIR)$(SEP)$(BINARY)"
-	@mv $(BINARY) "$(BINDIR)"/
+	@mkdir -p "$(BINDIR)"
+	@install -m 755 "$(BINARY)" "$(BINDIR)$(SEP)$(BINARY)"
 	@printf "$(GREEN)Installed %s to %s$(RESET)\n" "$(BINARY)" "$(BINDIR)$(SEP)$(BINARY)"
 
 run: ## run the application (usage: make run [args...] or ARGS="args" make run)
@@ -234,7 +225,7 @@ build-info: ## show build information and current configuration
 	@echo ""
 	@echo -e "$(GREEN)🎯 Build Targets:$(RESET)"
 	@echo -e "  • $(CYAN)build$(RESET)               Build golang binary"
-	@echo -e "  • $(CYAN)install$(RESET)             Install golang binary to GOPATH/bin"
+	@echo -e "  • $(CYAN)install$(RESET)             Install golang binary to BINDIR"
 	@echo -e "  • $(CYAN)run$(RESET)                 Run the application"
 	@echo -e "  • $(CYAN)bootstrap$(RESET)           Install build dependencies"
 	@echo -e "  • $(CYAN)clean$(RESET)               Clean up build artifacts"
