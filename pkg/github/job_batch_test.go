@@ -127,8 +127,23 @@ func TestRunRepositoryJobsReturnsJobsTheQueueNeverAccepted(t *testing.T) {
 	release, unlock := releaseOnce()
 	t.Cleanup(unlock)
 
-	block := blockUntilRelease(release)
-	accepted := 0
+	started := make(chan struct{})
+	var startOnce sync.Once
+	block := func(ctx context.Context, job workerpool.RepositoryJob) error {
+		startOnce.Do(func() { close(started) })
+		return blockUntilRelease(release)(ctx, job)
+	}
+	first := workerpool.RepositoryJob{Repository: "held-0", Operation: workerpool.OperationClone}
+	if err := pool.SubmitJob(first, block); err != nil {
+		t.Fatalf("SubmitJob: %v", err)
+	}
+	select {
+	case <-started:
+	case <-time.After(2 * time.Second):
+		t.Fatal("worker did not start")
+	}
+
+	accepted := 1
 	sawFull := false
 	deadline := time.Now().Add(2 * time.Second)
 	for time.Now().Before(deadline) && !sawFull {
