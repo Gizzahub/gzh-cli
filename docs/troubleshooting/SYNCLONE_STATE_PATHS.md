@@ -19,8 +19,9 @@ UTF-16 코드 단위 길이가 이 제한을 초과하는 optional legacy 후보
 조회 실패는 계속 오류로 반환한다. JSON 형식과 해시 파일명, 루트 제한, symlink·
 손상·중복 상태의 보존 규칙은 유지한다. 기존 장문 legacy 파일을 읽는 동작도 유지한다.
 
-수동 Actions 실행은 작업 브랜치에서도 Ubuntu·macOS·Windows를 모두 검사한다.
-일반 작업 브랜치 push와 PR은 기존 Ubuntu 범위를 유지한다.
+작업 브랜치 push와 수동 Actions 실행은 Ubuntu·macOS·Windows를 모두 검사한다.
+PR은 기존 Ubuntu 범위를 유지한다. 기본 브랜치에 반영하기 전에 Windows 실패를
+확인할 수 있으며 수동 실행 API 권한에 의존하지 않는다.
 
 ## 지원 범위와 제한
 
@@ -36,4 +37,4 @@ Windows 검증은 GitHub Actions의 로컬 파일시스템에서 수행한다. S
 기존 긴 이름·Unicode 왕복과 legacy 호환성·중복·symlink 보존 테스트를 유지한다.
 Windows 전용 테스트는 실제 긴 이름 오류, UTF-16 길이 경계, canonical 조회 오류와
 길이 이외의 잘못된 이름이 숨겨지지 않는지 확인한다. 전체 검증은 `make check`와
-작업 브랜치의 수동 Main CI/CD Pipeline 실행을 사용한다.
+작업 브랜치 push로 실행되는 Main CI/CD Pipeline 검사를 사용한다.

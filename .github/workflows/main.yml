@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 20
     strategy:
       matrix:
-        os: ${{ (github.event_name == 'pull_request' || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/dev/'))) && fromJSON('["ubuntu-latest"]')
+        os: ${{ (github.event_name == 'pull_request') && fromJSON('["ubuntu-latest"]')
           || fromJSON('["ubuntu-latest", "macos-latest", "windows-latest"]') }}
       fail-fast: false
     steps:
