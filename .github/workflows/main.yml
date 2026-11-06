@@ -1,17 +1,10 @@
 name: Main CI/CD Pipeline
 'on':
+  workflow_dispatch:
   push:
-    branches: [master, main]
-    paths: ['**/*.go', go.mod, go.sum, go.work, .golangci.yml, .gosec.json, .make/**, .github/workflows/main.yml,
-      cmd/**/AGENTS.md, cmd/AGENTS_COMMON.md, docs/bulk-clone-schema.json, examples/repo-config/**, examples/synclone/synclone-example.yaml,
-      scripts/check-agents.sh, Makefile, mise.toml, .github/actions/main-test/**, .github/actions/main-quality/**,
-      .github/actions/main-vulncheck/**, .github/actions/main-benchmark/**, .github/actions/main-build/**]
+    branches: [master, main, 'dev/**']
   pull_request:
     branches: [master, main, develop]
-    paths: ['**/*.go', go.mod, go.sum, go.work, .golangci.yml, .gosec.json, .make/**, .github/workflows/**, cmd/**/AGENTS.md,
-      cmd/AGENTS_COMMON.md, docs/bulk-clone-schema.json, examples/repo-config/**, examples/synclone/synclone-example.yaml,
-      scripts/check-agents.sh, Makefile, mise.toml, .github/actions/main-test/**, .github/actions/main-quality/**,
-      .github/actions/main-vulncheck/**, .github/actions/main-benchmark/**, .github/actions/main-build/**]
 permissions:
   contents: read
   security-events: write
@@ -177,13 +170,15 @@ jobs:
         echo "✅ All required jobs passed successfully!"
     - name: Generate job summary
       run: |
-        echo "## 🎉 CI/CD Pipeline Results" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
-        echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
-        echo "| Tests | ${{ needs.test.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-        echo "| Quality | ${{ needs.quality.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-        echo "| Build | ${{ needs.build.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
-        echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+        {
+          echo "## 🎉 CI/CD Pipeline Results"
+          echo ""
+          echo "| Job | Status |"
+          echo "|-----|--------|"
+          echo "| Tests | ${{ needs.test.result == 'success' && '✅ Passed' || '❌ Failed' }} |"
+          echo "| Quality | ${{ needs.quality.result == 'success' && '✅ Passed' || '❌ Failed' }} |"
+          echo "| Build | ${{ needs.build.result == 'success' && '✅ Passed' || '❌ Failed' }} |"
+          echo ""
+          echo "**Commit:** \`${{ github.sha }}\`"
+          echo "**Branch:** \`${{ github.ref_name }}\`"
+        } >> "$GITHUB_STEP_SUMMARY"
