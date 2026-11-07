@@ -37,18 +37,18 @@ ______________________________________________________________________
 
 ## Top 10 Commands
 
-| Command                     | Purpose                | When to Use             |
-| --------------------------- | ---------------------- | ----------------------- |
-| `make bootstrap`            | One-time setup         | First time only         |
-| `make fmt && make lint`     | Format + lint          | Before every commit     |
-| `make test`                 | All tests              | Pre-commit validation   |
-| `make build`                | Build `gz` binary      | After changes           |
-| `make install`              | Install to $GOPATH/bin | Local testing           |
-| `make cover`                | Coverage report        | Check coverage          |
-| `make generate-mocks`       | Generate test mocks    | After interface changes |
-| `go test ./cmd/{module} -v` | Test specific module   | Focused testing         |
-| `make clean`                | Clean artifacts        | Fresh start             |
-| `make dev`                  | Quick dev cycle        | Rapid iteration         |
+| Command                     | Purpose                                                | When to Use             |
+| --------------------------- | ------------------------------------------------------ | ----------------------- |
+| `make bootstrap`            | One-time setup                                         | First time only         |
+| `make fmt && make lint`     | Format + lint                                          | Before every commit     |
+| `make test`                 | All tests                                              | Pre-commit validation   |
+| `make build`                | Build `gz` binary                                      | After changes           |
+| `make install`              | Install to `~/.local/share/ce/bin` (`BINDIR` override) | Local testing           |
+| `make cover`                | Coverage report                                        | Check coverage          |
+| `make generate-mocks`       | Generate test mocks                                    | After interface changes |
+| `go test ./cmd/{module} -v` | Test specific module                                   | Focused testing         |
+| `make clean`                | Clean artifacts                                        | Fresh start             |
+| `make dev`                  | Quick dev cycle                                        | Rapid iteration         |
 
 ______________________________________________________________________
 
