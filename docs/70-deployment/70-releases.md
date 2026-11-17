@@ -114,7 +114,7 @@ tap이 실패하면 유효한 공개 Release와 이전 tap 상태를 보존하�
 
 ## 도구 pin과 검증 경계
 
-기존 Go1.27.3·GoReleaser v2.19.0·syft v1.51.1·cosign v3.1.3을 유지한다.
+Go1.27.4(GO-2026-6859 수정 패치)·GoReleaser v2.19.0·syft v1.51.1·cosign v3.1.3을 쓴다.
 도구는 로컬 `bin/tools` 또는 SHA로 고정된 공식 Actions를 통해 준비한다.
 `.make/tools.mk`와 release workflow의 세 version 선언은
 `verify-release-pins`로 대조한다. cosign validator도 감사한 v3.1.3을 요구하므로 향후 pin

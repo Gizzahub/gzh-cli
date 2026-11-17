@@ -41,7 +41,7 @@ def main():
                AWS_EC2_METADATA_DISABLED="true", GOENV="off", GOTOOLCHAIN="local", GOWORK="off",
                GOMAXPROCS="2", GOFLAGS="-p=2", CGO_ENABLED="0")
     native = json.loads(subprocess.check_output(["go", "env", "-json", "GOOS", "GOARCH", "GOVERSION"], env=env))
-    if native["GOOS"] + "-" + native["GOARCH"] != cohort or native["GOVERSION"] != "go1.27.3":
+    if native["GOOS"] + "-" + native["GOARCH"] != cohort or native["GOVERSION"] != "go1.27.4":
         raise RuntimeError("runner does not match the pinned native cohort/toolchain")
     artifacts = root / "tmp/core-coverage-artifacts"
     artifacts.mkdir(parents=True)

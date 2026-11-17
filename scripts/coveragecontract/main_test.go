@@ -499,7 +499,7 @@ func TestCohortUnionRejectsCoreSourceOutsideAllReleaseSelectors(t *testing.T) {
 }
 
 func TestNativeProvenanceSupportsDistinctHostBinariesUnderSharedManifest(t *testing.T) {
-	manifestBytes := []byte(`{"source_commit":"same","go_version":"go1.27.3","source_selector_sha256":"shared"}`)
+	manifestBytes := []byte(`{"source_commit":"same","go_version":"go1.27.4","source_selector_sha256":"shared"}`)
 	hosts := []cohort{{"darwin-arm64", "darwin", "arm64"}, {"linux-amd64", "linux", "amd64"}, {"windows-amd64", "windows", "amd64"}}
 	for i, host := range hosts {
 		t.Run(host.Name, func(t *testing.T) {
@@ -516,7 +516,7 @@ func TestNativeProvenanceSupportsDistinctHostBinariesUnderSharedManifest(t *test
 			goHash := strings.Repeat(string("0123456789abcdef"[i]), 64)
 			coverHash := strings.Repeat(string("abcdef0123456789"[i]), 64)
 			c := selectedCohort{Name: host.Name, GOOS: host.GOOS, GOARCH: host.GOARCH}
-			ref := referenceProvenance{ManifestSHA256: hex.EncodeToString(manifestSum[:]), SourceCommit: "same", GoVersion: "go1.27.3", ToolGOOS: host.GOOS, ToolGOARCH: host.GOARCH, GoBinarySHA256: goHash, CoverSHA256: coverHash, Cohort: c, ReferenceSHA256: mustSHA256(t, expected), Mode: "set", Instrumenter: "go tool cover go1.27.3", InstrumenterSHA256: coverHash}
+			ref := referenceProvenance{ManifestSHA256: hex.EncodeToString(manifestSum[:]), SourceCommit: "same", GoVersion: "go1.27.4", ToolGOOS: host.GOOS, ToolGOARCH: host.GOARCH, GoBinarySHA256: goHash, CoverSHA256: coverHash, Cohort: c, ReferenceSHA256: mustSHA256(t, expected), Mode: "set", Instrumenter: "go tool cover go1.27.4", InstrumenterSHA256: coverHash}
 			writeJSON(t, expected+".provenance.json", ref)
 			if err := validateNativeReferenceTool(expected, host.GOOS, host.GOARCH, goHash, coverHash); err != nil {
 				t.Fatalf("native expected-map tool identity rejected: %v", err)
@@ -524,10 +524,10 @@ func TestNativeProvenanceSupportsDistinctHostBinariesUnderSharedManifest(t *test
 			if err := validateNativeReferenceTool(expected, host.GOOS, host.GOARCH, strings.Repeat("f", 64), coverHash); err == nil {
 				t.Fatal("expected-map profile from another Go binary accepted at bind time")
 			}
-			p := provenance{ManifestSHA256: hex.EncodeToString(manifestSum[:]), SourceCommit: "same", GoVersion: "go1.27.3", ToolGOOS: host.GOOS, ToolGOARCH: host.GOARCH, GoBinarySHA256: goHash, CoverSHA256: coverHash, Cohort: c, ProfileSHA256: mustSHA256(t, profile), ExpectedSHA256: mustSHA256(t, expected), ExpectedProvenanceSHA256: mustSHA256(t, expected+".provenance.json"), Mode: "set", ExpectedMode: "set"}
+			p := provenance{ManifestSHA256: hex.EncodeToString(manifestSum[:]), SourceCommit: "same", GoVersion: "go1.27.4", ToolGOOS: host.GOOS, ToolGOARCH: host.GOARCH, GoBinarySHA256: goHash, CoverSHA256: coverHash, Cohort: c, ProfileSHA256: mustSHA256(t, profile), ExpectedSHA256: mustSHA256(t, expected), ExpectedProvenanceSHA256: mustSHA256(t, expected+".provenance.json"), Mode: "set", ExpectedMode: "set"}
 			prov := filepath.Join(dir, "bind.json")
 			writeJSON(t, prov, p)
-			m := manifest{SourceCommit: "same", GoVersion: "go1.27.3"}
+			m := manifest{SourceCommit: "same", GoVersion: "go1.27.4"}
 			if err := verifyProvenance(prov, m, manifestBytes, c, profile, expected); err != nil {
 				t.Fatalf("host-specific tool hashes rejected: %v", err)
 			}
