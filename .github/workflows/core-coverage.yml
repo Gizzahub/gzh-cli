@@ -86,7 +86,7 @@ jobs:
       env:
         EXPECTED_SOURCE: ${{ inputs.source_sha }}
       run: test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
-    - uses: actions/download-artifact@v7
+    - uses: actions/download-artifact@v8
       with:
         pattern: core-profile-*
         path: tmp/coveragecontract/profiles
